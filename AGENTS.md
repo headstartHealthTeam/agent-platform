@@ -126,8 +126,16 @@ pnpm qa
 - Pre-merge-commit installs from the frozen lockfile and runs full QA.
 - Hooks must work in the shell environment Git provides on macOS, Linux, and Windows. Do not add
   credentials, live API calls, production reads, or host-specific absolute paths to a hook.
-- Never bypass hooks merely to publish a failing change. If an emergency requires `--no-verify`, the
-  reason and equivalent completed validation must be documented in the pull request.
+- Never bypass repository hooks. Do not use `--no-verify`, set `HUSKY=0`, change or unset
+  `core.hooksPath`, rename or disable hook files, or invoke lower-level Git commands to avoid a hook.
+- When a hook fails or is unavailable, stop and repair the cause. Running an equivalent command
+  manually may help diagnose the failure, but it does not authorize publishing around the hook.
+- Tests and subprocesses that create temporary Git repositories must remove inherited
+  repository-local Git environment variables before invoking Git. They must never write fixture
+  identities or other test configuration into this repository's common or bare Git configuration.
+- Preserve LF line endings through the root `.gitattributes`, as in the established Braingraph
+  cross-platform pattern. Do not solve Windows formatting failures by weakening Prettier or removing
+  a Windows validation lane.
 
 ## Testing
 
