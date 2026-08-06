@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Headstart Skill Authoring'
+  short_description: 'Create portable, evaluated Headstart skills'
+  default_prompt: 'Use $headstart-skill-authoring to create or revise this shared Headstart skill.'
+policy:
+  allow_implicit_invocation: true

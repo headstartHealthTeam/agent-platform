@@ -1,0 +1,31 @@
+{
+  "skill": "headstart-dev-to-main-pr",
+  "cases": [
+    {
+      "name": "read-only-release-inventory",
+      "prompt": "Show me what would ship from dev to main, but do not create or update a PR.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Computes the net tree delta",
+        "Classifies supported Linear references",
+        "Performs no remote write"
+      ]
+    },
+    {
+      "name": "explicit-release-pr",
+      "prompt": "Create the Headstart dev-to-main release PR after showing me the final body.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Checks for an existing promotion PR",
+        "Builds the body from release evidence",
+        "Obtains the required write authorization before creating the PR"
+      ]
+    },
+    {
+      "name": "ordinary-feature-pr",
+      "prompt": "Open a feature PR from my branch into dev.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Does not use production promotion semantics"]
+    }
+  ]
+}

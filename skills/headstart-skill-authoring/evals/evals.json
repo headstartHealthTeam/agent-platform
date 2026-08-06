@@ -1,0 +1,30 @@
+{
+  "skill": "headstart-skill-authoring",
+  "cases": [
+    {
+      "name": "new-shared-skill",
+      "prompt": "Create a shared Headstart skill for validating AppConfig changes.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Defines positive and negative trigger examples",
+        "Uses capability-oriented portable instructions",
+        "Adds evaluations and validation"
+      ]
+    },
+    {
+      "name": "revise-workflow-skill",
+      "prompt": "Update the shared treatment authorization workflow skill to depend on a new Salesforce reader skill.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Defines an explicit dependency and handoff contract",
+        "Checks for cycles"
+      ]
+    },
+    {
+      "name": "repo-local-coding-rule",
+      "prompt": "Document this backend module's DTO naming convention.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Keeps repository-local conventions in repository instructions"]
+    }
+  ]
+}

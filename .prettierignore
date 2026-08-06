@@ -1,0 +1,4 @@
+node_modules
+coverage
+pnpm-lock.yaml
+skills/headstart-dev-to-main-pr/scripts/*.py

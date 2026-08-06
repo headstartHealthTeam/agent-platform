@@ -1,0 +1,28 @@
+{
+  "skill": "headstart-pr-review",
+  "cases": [
+    {
+      "name": "complete-headstart-review",
+      "prompt": "Use the Headstart review process on backend PR 1177 and keep the result local.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Loads deep-pr-review",
+        "Loads headstart-pr-review-context",
+        "Combines all findings in one evidence ledger",
+        "Does not post remotely"
+      ]
+    },
+    {
+      "name": "missing-dependency",
+      "prompt": "Run the Headstart PR review, but only this skill is installed.",
+      "shouldActivate": true,
+      "expectedBehaviors": ["Names the missing dependency", "Does not claim a complete review"]
+    },
+    {
+      "name": "fix-review-comment",
+      "prompt": "Implement the already-approved fix for this review comment.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Does not restart a full review without being asked"]
+    }
+  ]
+}

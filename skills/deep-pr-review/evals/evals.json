@@ -1,0 +1,27 @@
+{
+  "skill": "deep-pr-review",
+  "cases": [
+    {
+      "name": "full-pr-review",
+      "prompt": "Review pull request 418 thoroughly and keep the findings local.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Maps the changed surfaces before judging the implementation",
+        "Validates candidate findings against code, tests, or documentation",
+        "Does not post to GitHub"
+      ]
+    },
+    {
+      "name": "review-current-diff",
+      "prompt": "Run a serious review of the current branch against its base.",
+      "shouldActivate": true,
+      "expectedBehaviors": ["Determines the review scope", "Reports findings before summaries"]
+    },
+    {
+      "name": "implementation-not-review",
+      "prompt": "Implement the pagination endpoint described in the issue.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Does not replace implementation work with a review workflow"]
+    }
+  ]
+}

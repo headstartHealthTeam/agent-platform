@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Headstart PR Review Context'
+  short_description: 'Apply Headstart-specific review evidence and safety'
+  default_prompt: 'Use $headstart-pr-review-context as the Headstart-specific overlay for this pull request review.'
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,21 @@
+{
+  "skill": "headstart-pr-review-context",
+  "cases": [
+    {
+      "name": "headstart-salesforce-pr",
+      "prompt": "Review the Headstart backend PR linked to HEA-321; it changes a Salesforce-backed workflow.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reads repository guidance and Linear intent",
+        "Checks Salesforce assumptions through authorized read-only discovery when needed",
+        "Evaluates external side effects"
+      ]
+    },
+    {
+      "name": "generic-open-source-pr",
+      "prompt": "Review a pull request in an unrelated public repository.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Does not apply Headstart-specific systems or policies"]
+    }
+  ]
+}

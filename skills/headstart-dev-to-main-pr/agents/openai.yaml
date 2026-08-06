@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Headstart Dev to Main PR'
+  short_description: 'Prepare evidence-backed production promotion PRs'
+  default_prompt: 'Use $headstart-dev-to-main-pr to prepare the requested Headstart dev-to-main promotion from the current release evidence.'
+policy:
+  allow_implicit_invocation: false
