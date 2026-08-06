@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+set -eu
+
+if git diff --cached --name-only -- package.json | grep -q .; then
+  if ! pnpm install --frozen-lockfile --ignore-scripts >/dev/null 2>&1; then
+    printf '%s\n' 'package.json and pnpm-lock.yaml are out of sync.'
+    printf '%s\n' 'Run: pnpm install && git add package.json pnpm-lock.yaml'
+    exit 1
+  fi
+fi
+
+pnpm exec lint-staged --quiet
+pnpm qa:commit

@@ -2,7 +2,10 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    environment: 'node',
+    fileParallelism: false,
     include: ['scripts/__tests__/**/*.test.ts'],
+    testTimeout: 15_000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],
@@ -10,7 +13,7 @@ export default defineConfig({
       exclude: ['scripts/__tests__/**'],
       thresholds: {
         statements: 80,
-        branches: 75,
+        branches: 80,
         functions: 80,
         lines: 80,
       },

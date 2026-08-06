@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 import { parse as parseYaml } from 'yaml';
 
 interface SkillFrontmatter {
@@ -35,10 +36,12 @@ export interface ValidationIssue {
   message: string;
 }
 
-const SKILL_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SKILL_NAME_SEGMENT_PATTERN = /^[a-z0-9]+$/;
 const TEXT_EXTENSIONS = new Set(['.json', '.md', '.py', '.ts', '.yaml', '.yml']);
 const FORBIDDEN_FILES = new Set(['.env', '.env.local', 'id_rsa', 'id_ed25519']);
-const FORBIDDEN_CONTENT: Array<{ label: string; pattern: RegExp }> = [
+const REFERENCE_ROOTS = ['scripts/', 'references/', 'assets/'];
+const REFERENCE_PATTERNS = [/\]\(([^)\s]+)\)/g, /`([^`\s]+)`/g];
+const FORBIDDEN_CONTENT: { label: string; pattern: RegExp }[] = [
   { label: 'a machine-specific macOS user path', pattern: /\/Users\/[A-Za-z0-9._-]+\// },
   { label: 'a machine-specific Windows user path', pattern: /[A-Za-z]:\\Users\\[^\\\s]+\\/ },
   { label: 'a Codex installation path', pattern: /~\/\.codex\/skills\// },
@@ -49,6 +52,11 @@ const FORBIDDEN_CONTENT: Array<{ label: string; pattern: RegExp }> = [
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isValidSkillName = (value: string): boolean =>
+  value.length > 0 &&
+  value.length <= 64 &&
+  value.split('-').every((segment) => SKILL_NAME_SEGMENT_PATTERN.test(segment));
 
 const addIssue = (
   issues: ValidationIssue[],
@@ -157,7 +165,7 @@ const validateFrontmatter = (
   const directoryName = path.basename(skillDirectory);
   const { name, description, compatibility } = frontmatter;
 
-  if (typeof name !== 'string' || !SKILL_NAME_PATTERN.test(name) || name.length > 64) {
+  if (typeof name !== 'string' || !isValidSkillName(name)) {
     addIssue(
       issues,
       repositoryRoot,
@@ -186,7 +194,7 @@ const validateFrontmatter = (
       issues,
       repositoryRoot,
       skillFile,
-      `SKILL.md body has ${lineCount} lines; maximum is 500.`
+      `SKILL.md body has ${String(lineCount)} lines; maximum is 500.`
     );
   }
 
@@ -208,62 +216,80 @@ const walkFiles = (root: string): string[] => {
   return files;
 };
 
+const findSkillReferences = (source: string): string[] => {
+  const references = new Set<string>();
+
+  for (const pattern of REFERENCE_PATTERNS) {
+    for (const match of source.matchAll(pattern)) {
+      const candidate = match[1]?.split('#', 1)[0];
+      if (candidate && REFERENCE_ROOTS.some((root) => candidate.startsWith(root))) {
+        references.add(candidate);
+      }
+    }
+  }
+
+  return [...references];
+};
+
+const validateReference = (
+  repositoryRoot: string,
+  skillDirectory: string,
+  skillFile: string,
+  reference: string,
+  issues: ValidationIssue[]
+): void => {
+  const resolvedReference = path.resolve(skillDirectory, reference);
+  const relativeToSkill = path.relative(skillDirectory, resolvedReference);
+  if (relativeToSkill.startsWith('..') || path.isAbsolute(relativeToSkill)) {
+    addIssue(issues, repositoryRoot, skillFile, `Reference escapes skill directory: ${reference}.`);
+  } else if (!fs.existsSync(resolvedReference)) {
+    addIssue(issues, repositoryRoot, skillFile, `Referenced file does not exist: ${reference}.`);
+  }
+};
+
+const validateSkillFile = (
+  repositoryRoot: string,
+  skillDirectory: string,
+  file: string,
+  issues: ValidationIssue[]
+): void => {
+  const baseName = path.basename(file);
+  if (FORBIDDEN_FILES.has(baseName)) {
+    addIssue(
+      issues,
+      repositoryRoot,
+      file,
+      'Sensitive environment or key file must not be committed.'
+    );
+  }
+
+  if (!TEXT_EXTENSIONS.has(path.extname(file))) {
+    return;
+  }
+
+  const source = fs.readFileSync(file, 'utf8');
+  for (const forbidden of FORBIDDEN_CONTENT) {
+    if (forbidden.pattern.test(source)) {
+      addIssue(issues, repositoryRoot, file, `Contains ${forbidden.label}.`);
+    }
+  }
+
+  if (baseName !== 'SKILL.md') {
+    return;
+  }
+
+  for (const reference of findSkillReferences(source)) {
+    validateReference(repositoryRoot, skillDirectory, file, reference, issues);
+  }
+};
+
 const validateSkillFiles = (
   repositoryRoot: string,
   skillDirectory: string,
   issues: ValidationIssue[]
 ): void => {
-  const referencePatterns = [
-    /\]\(((?:scripts|references|assets)\/[^)#\s]+)(?:#[^)]+)?\)/g,
-    /`((?:scripts|references|assets)\/[^`\s]+)`/g,
-  ];
-
   for (const file of walkFiles(skillDirectory)) {
-    const baseName = path.basename(file);
-    if (FORBIDDEN_FILES.has(baseName)) {
-      addIssue(
-        issues,
-        repositoryRoot,
-        file,
-        'Sensitive environment or key file must not be committed.'
-      );
-    }
-
-    if (!TEXT_EXTENSIONS.has(path.extname(file))) {
-      continue;
-    }
-
-    const source = fs.readFileSync(file, 'utf8');
-    for (const forbidden of FORBIDDEN_CONTENT) {
-      if (forbidden.pattern.test(source)) {
-        addIssue(issues, repositoryRoot, file, `Contains ${forbidden.label}.`);
-      }
-    }
-
-    if (baseName !== 'SKILL.md') {
-      continue;
-    }
-
-    for (const pattern of referencePatterns) {
-      for (const match of source.matchAll(pattern)) {
-        const reference = match[1];
-        if (!reference) {
-          continue;
-        }
-        const resolvedReference = path.resolve(skillDirectory, reference);
-        const relativeToSkill = path.relative(skillDirectory, resolvedReference);
-        if (relativeToSkill.startsWith('..') || path.isAbsolute(relativeToSkill)) {
-          addIssue(
-            issues,
-            repositoryRoot,
-            file,
-            `Reference escapes skill directory: ${reference}.`
-          );
-        } else if (!fs.existsSync(resolvedReference)) {
-          addIssue(issues, repositoryRoot, file, `Referenced file does not exist: ${reference}.`);
-        }
-      }
-    }
+    validateSkillFile(repositoryRoot, skillDirectory, file, issues);
   }
 };
 
@@ -279,7 +305,7 @@ const validateOpenAiAdapter = (
 
   try {
     const adapter: unknown = parseYaml(fs.readFileSync(adapterFile, 'utf8'));
-    if (!isRecord(adapter) || !isRecord(adapter.interface)) {
+    if (!isRecord(adapter) || !isRecord(adapter['interface'])) {
       addIssue(
         issues,
         repositoryRoot,
@@ -289,9 +315,9 @@ const validateOpenAiAdapter = (
       return;
     }
 
-    const displayName = adapter.interface['display_name'];
-    const shortDescription = adapter.interface['short_description'];
-    const defaultPrompt = adapter.interface['default_prompt'];
+    const displayName = adapter['interface']['display_name'];
+    const shortDescription = adapter['interface']['short_description'];
+    const defaultPrompt = adapter['interface']['default_prompt'];
     const skillName =
       typeof skill.frontmatter.name === 'string'
         ? skill.frontmatter.name
@@ -320,9 +346,9 @@ const validateOpenAiAdapter = (
       );
     }
     if (
-      adapter.policy !== undefined &&
-      (!isRecord(adapter.policy) ||
-        typeof adapter.policy['allow_implicit_invocation'] !== 'boolean')
+      adapter['policy'] !== undefined &&
+      (!isRecord(adapter['policy']) ||
+        typeof adapter['policy']['allow_implicit_invocation'] !== 'boolean')
     ) {
       addIssue(
         issues,
@@ -339,6 +365,60 @@ const validateOpenAiAdapter = (
       `OpenAI adapter is not valid YAML: ${error instanceof Error ? error.message : String(error)}`
     );
   }
+};
+
+const validateEvaluationCase = (
+  repositoryRoot: string,
+  evaluationFile: string,
+  rawCase: unknown,
+  caseNames: Set<string>,
+  issues: ValidationIssue[]
+): boolean | undefined => {
+  if (!isRecord(rawCase)) {
+    addIssue(issues, repositoryRoot, evaluationFile, 'Every evaluation case must be an object.');
+    return undefined;
+  }
+
+  const evaluationCase = rawCase as EvaluationCase;
+  if (typeof evaluationCase.name !== 'string' || evaluationCase.name.trim().length === 0) {
+    addIssue(issues, repositoryRoot, evaluationFile, 'Every evaluation case needs a name.');
+  } else if (caseNames.has(evaluationCase.name)) {
+    addIssue(
+      issues,
+      repositoryRoot,
+      evaluationFile,
+      `Duplicate evaluation case: ${evaluationCase.name}.`
+    );
+  } else {
+    caseNames.add(evaluationCase.name);
+  }
+
+  if (typeof evaluationCase.prompt !== 'string' || evaluationCase.prompt.trim().length === 0) {
+    addIssue(issues, repositoryRoot, evaluationFile, 'Every evaluation case needs a prompt.');
+  }
+  if (
+    !Array.isArray(evaluationCase.expectedBehaviors) ||
+    evaluationCase.expectedBehaviors.length === 0 ||
+    evaluationCase.expectedBehaviors.some((behavior) => typeof behavior !== 'string')
+  ) {
+    addIssue(
+      issues,
+      repositoryRoot,
+      evaluationFile,
+      'Every evaluation case needs string expectedBehaviors.'
+    );
+  }
+  if (typeof evaluationCase.shouldActivate !== 'boolean') {
+    addIssue(
+      issues,
+      repositoryRoot,
+      evaluationFile,
+      'Every evaluation case needs boolean shouldActivate.'
+    );
+    return undefined;
+  }
+
+  return evaluationCase.shouldActivate;
 };
 
 const validateEvaluations = (
@@ -382,54 +462,17 @@ const validateEvaluations = (
     let negativeCases = 0;
     const caseNames = new Set<string>();
     for (const rawCase of evaluation.cases) {
-      if (!isRecord(rawCase)) {
-        addIssue(
-          issues,
-          repositoryRoot,
-          evaluationFile,
-          'Every evaluation case must be an object.'
-        );
-        continue;
-      }
-      const evaluationCase = rawCase as EvaluationCase;
-      if (typeof evaluationCase.name !== 'string' || evaluationCase.name.trim().length === 0) {
-        addIssue(issues, repositoryRoot, evaluationFile, 'Every evaluation case needs a name.');
-      } else if (caseNames.has(evaluationCase.name)) {
-        addIssue(
-          issues,
-          repositoryRoot,
-          evaluationFile,
-          `Duplicate evaluation case: ${evaluationCase.name}.`
-        );
-      } else {
-        caseNames.add(evaluationCase.name);
-      }
-      if (typeof evaluationCase.prompt !== 'string' || evaluationCase.prompt.trim().length === 0) {
-        addIssue(issues, repositoryRoot, evaluationFile, 'Every evaluation case needs a prompt.');
-      }
-      if (typeof evaluationCase.shouldActivate !== 'boolean') {
-        addIssue(
-          issues,
-          repositoryRoot,
-          evaluationFile,
-          'Every evaluation case needs boolean shouldActivate.'
-        );
-      } else if (evaluationCase.shouldActivate) {
+      const shouldActivate = validateEvaluationCase(
+        repositoryRoot,
+        evaluationFile,
+        rawCase,
+        caseNames,
+        issues
+      );
+      if (shouldActivate === true) {
         positiveCases += 1;
-      } else {
+      } else if (shouldActivate === false) {
         negativeCases += 1;
-      }
-      if (
-        !Array.isArray(evaluationCase.expectedBehaviors) ||
-        evaluationCase.expectedBehaviors.length === 0 ||
-        evaluationCase.expectedBehaviors.some((behavior) => typeof behavior !== 'string')
-      ) {
-        addIssue(
-          issues,
-          repositoryRoot,
-          evaluationFile,
-          'Every evaluation case needs string expectedBehaviors.'
-        );
       }
     }
 
@@ -583,6 +626,7 @@ if (isMainModule) {
     }
     process.exitCode = 1;
   } else {
-    console.log(`Validated ${fs.readdirSync(path.join(repositoryRoot, 'skills')).length} skills.`);
+    const skillCount = fs.readdirSync(path.join(repositoryRoot, 'skills')).length;
+    console.log(`Validated ${String(skillCount)} skills.`);
   }
 }

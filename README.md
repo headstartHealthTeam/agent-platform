@@ -87,6 +87,21 @@ pnpm qa
 
 `pnpm qa` runs formatting, lint, TypeScript checks, unit tests, portable skill validation, evaluation
 schema validation, dependency-cycle checks, and the release collector's deterministic fixture suite.
+The TypeScript suite enforces 80% minimum coverage for statements, branches, functions, and lines.
+
+`pnpm install` also configures repository-owned Git hooks through Husky:
+
+- **Pre-commit:** verifies lockfile consistency when `package.json` changes, formats and lints staged
+  files with `lint-staged`, then runs lint, type checks, unit tests, and skill validation.
+- **Pre-push:** requires a clean working tree, checks that the branch is not behind `origin/main` when
+  a remote exists, and runs the complete `pnpm qa` suite. This includes a repository-wide
+  non-mutating Prettier check.
+- **Pre-merge-commit:** installs from the frozen lockfile and runs complete QA before recording a
+  local merge commit.
+
+CI runs the same complete QA suite on Linux, macOS, and Windows, and against both the minimum Node.js
+version and the current Node.js release. A separate job audits production and development
+dependencies at moderate severity or higher.
 
 Read [AGENTS.md](AGENTS.md) and the documents under [standards](standards/) before changing a skill.
 

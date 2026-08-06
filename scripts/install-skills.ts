@@ -2,10 +2,17 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 import { validateRepository } from './validate-skills.js';
 
-export type AgentHost = 'codex' | 'claude-code' | 'cursor';
-export type InstallScope = 'project' | 'user';
+const CODEX_HOST = 'codex';
+const CLAUDE_CODE_HOST = 'claude-code';
+const CURSOR_HOST = 'cursor';
+const AGENT_HOST_VALUES = [CODEX_HOST, CLAUDE_CODE_HOST, CURSOR_HOST] as const;
+const INSTALL_SCOPE_VALUES = ['project', 'user'] as const;
+
+export type AgentHost = (typeof AGENT_HOST_VALUES)[number];
+export type InstallScope = (typeof INSTALL_SCOPE_VALUES)[number];
 
 export interface InstallOptions {
   agent: AgentHost;
@@ -24,11 +31,13 @@ export interface InstallOperation {
   replacesExisting: boolean;
 }
 
-const AGENT_HOSTS = new Set<AgentHost>(['codex', 'claude-code', 'cursor']);
-const INSTALL_SCOPES = new Set<InstallScope>(['project', 'user']);
+const includesValue = <Value extends string>(
+  values: readonly Value[],
+  candidate: string
+): candidate is Value => values.some((value) => value === candidate);
 
 const usage = `Usage:
-  pnpm skills:install -- --agent <codex|claude-code|cursor> --scope <user|project> (--all | --skill <name>...) [options]
+  pnpm skills:install -- --agent <${AGENT_HOST_VALUES.join('|')}> --scope <${INSTALL_SCOPE_VALUES.join('|')}> (--all | --skill <name>...) [options]
 
 Options:
   --project-dir <path>  Project root for project-scope installs (default: current directory)
@@ -37,7 +46,7 @@ Options:
 `;
 
 const requireValue = (args: string[], index: number, flag: string): string => {
-  const value = args[index + 1];
+  const value = args.at(index + 1);
   if (!value || value.startsWith('--')) {
     throw new Error(`${flag} requires a value.\n\n${usage}`);
   }
@@ -54,25 +63,28 @@ export const parseInstallArgs = (args: string[], cwd: string = process.cwd()): I
   let force = false;
 
   for (let index = 0; index < args.length; index += 1) {
-    const argument = args[index];
+    const argument = args.at(index);
+    if (argument === undefined) {
+      continue;
+    }
     switch (argument) {
       case '--':
         break;
       case '--agent': {
         const value = requireValue(args, index, '--agent');
-        if (!AGENT_HOSTS.has(value as AgentHost)) {
+        if (!includesValue(AGENT_HOST_VALUES, value)) {
           throw new Error(`Unsupported agent host: ${value}.\n\n${usage}`);
         }
-        agent = value as AgentHost;
+        agent = value;
         index += 1;
         break;
       }
       case '--scope': {
         const value = requireValue(args, index, '--scope');
-        if (!INSTALL_SCOPES.has(value as InstallScope)) {
+        if (!includesValue(INSTALL_SCOPE_VALUES, value)) {
           throw new Error(`Unsupported install scope: ${value}.\n\n${usage}`);
         }
-        scope = value as InstallScope;
+        scope = value;
         index += 1;
         break;
       }
@@ -97,7 +109,7 @@ export const parseInstallArgs = (args: string[], cwd: string = process.cwd()): I
       case '-h':
         throw new Error(usage);
       default:
-        throw new Error(`Unknown argument: ${String(argument)}.\n\n${usage}`);
+        throw new Error(`Unknown argument: ${argument}.\n\n${usage}`);
     }
   }
 
@@ -126,17 +138,17 @@ export const resolveInstallRoot = (
   homeDirectory: string = os.homedir()
 ): string => {
   if (scope === 'project') {
-    return agent === 'claude-code'
+    return agent === CLAUDE_CODE_HOST
       ? path.join(projectDirectory, '.claude', 'skills')
       : path.join(projectDirectory, '.agents', 'skills');
   }
 
   switch (agent) {
-    case 'codex':
+    case CODEX_HOST:
       return path.join(homeDirectory, '.agents', 'skills');
-    case 'claude-code':
+    case CLAUDE_CODE_HOST:
       return path.join(homeDirectory, '.claude', 'skills');
-    case 'cursor':
+    case CURSOR_HOST:
       return path.join(homeDirectory, '.cursor', 'skills');
   }
 };

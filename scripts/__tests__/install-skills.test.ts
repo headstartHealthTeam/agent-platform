@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
 import { afterEach, describe, expect, it } from 'vitest';
+
 import {
   createInstallPlan,
   installSkills,
@@ -122,7 +124,11 @@ describe('skill installation', () => {
     expect(fs.readFileSync(installedFile, 'utf8')).toContain('first-skill');
 
     const replacementPlan = createInstallPlan(root, installOptions, home);
-    expect(() => installSkills(replacementPlan, { ...installOptions, dryRun: true })).not.toThrow();
-    expect(() => installSkills(replacementPlan, installOptions)).toThrow('already exists');
+    expect(() => {
+      installSkills(replacementPlan, { ...installOptions, dryRun: true });
+    }).not.toThrow();
+    expect(() => {
+      installSkills(replacementPlan, installOptions);
+    }).toThrow('already exists');
   });
 });

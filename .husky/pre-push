@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+set -eu
+
+git fetch origin main --quiet 2>/dev/null || true
+if git rev-parse --verify origin/main >/dev/null 2>&1; then
+  behind_count="$(git rev-list --count HEAD..origin/main 2>/dev/null || printf '0')"
+  if [ "$behind_count" != '0' ]; then
+    printf '%s\n' "origin/main is ahead by ${behind_count} commit(s). Rebase before pushing."
+    exit 1
+  fi
+fi
+
+if [ -n "$(git status --porcelain 2>/dev/null || true)" ]; then
+  printf '%s\n' 'Uncommitted changes detected. Commit or stash them before pushing.'
+  exit 1
+fi
+
+pnpm qa

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { pythonCandidates } from '../run-python-tests.js';
 
 describe('pythonCandidates', () => {

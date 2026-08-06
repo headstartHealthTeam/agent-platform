@@ -89,7 +89,7 @@ Use pnpm and the checked-in lockfile:
 ```bash
 pnpm install
 pnpm lint
-pnpm typecheck
+pnpm check-types
 pnpm test
 pnpm format:check
 pnpm validate:skills
@@ -97,6 +97,36 @@ pnpm qa
 ```
 
 `pnpm qa` is the canonical local and CI validation command.
+
+## Quality Rails
+
+- Keep TypeScript in strict mode. Do not weaken a repository-wide compiler or lint rule to make one
+  change pass; correct the implementation or use the narrowest documented exception when the rule
+  cannot represent a deliberate boundary.
+- Treat ESLint errors and Prettier drift as blocking. The lint configuration includes strict typed
+  rules plus promise, import, security, secret-detection, complexity, and consistency checks.
+- Maintain at least 80% statement, branch, function, and line coverage for the measured TypeScript
+  source. Coverage is a floor, not a substitute for assertions that exercise meaningful behavior.
+- Keep tests synthetic, deterministic, cross-platform, credential-free, and independent of network
+  services. Place live or host-specific validation in an explicitly separate lane if it is ever
+  introduced.
+- Keep `pnpm-lock.yaml` synchronized with `package.json`. Install with the checked-in pnpm version and
+  use `pnpm install --frozen-lockfile` in CI and validation contexts.
+- `pnpm qa` must remain the single full local/CI quality command. Add new mandatory checks there
+  rather than creating undocumented release-only commands.
+
+## Git Hooks
+
+- Husky owns repository hooks. Do not introduce a second hook manager.
+- Pre-commit uses `lint-staged` to run ESLint auto-fixes and Prettier writes only on staged supported
+  files, followed by the fast deterministic `pnpm qa:commit` lane.
+- Pre-push requires a clean tree, rejects branches behind `origin/main` when that ref exists, and runs
+  full `pnpm qa`, including repository-wide `prettier --check`.
+- Pre-merge-commit installs from the frozen lockfile and runs full QA.
+- Hooks must work in the shell environment Git provides on macOS, Linux, and Windows. Do not add
+  credentials, live API calls, production reads, or host-specific absolute paths to a hook.
+- Never bypass hooks merely to publish a failing change. If an emergency requires `--no-verify`, the
+  reason and equivalent completed validation must be documented in the pull request.
 
 ## Testing
 
@@ -114,6 +144,8 @@ pnpm qa
 - Do not commit generated installation metadata or installed skill copies.
 - Pull requests must identify affected skills, behavior changes, compatibility impact, evaluations,
   and script validation. Include a `## Release Notes` section.
+- Required status checks should include the cross-platform quality matrix and dependency audit once
+  branch protection is configured on the organization remote.
 - Release reviewed changes with semantic tags. Workstations may follow a reviewed release; managed
   runtimes must pin an exact tag or commit.
 - Do not publish, tag, push, create a PR, or update external systems without explicit user approval.

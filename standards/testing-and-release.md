@@ -13,6 +13,27 @@ Each skill is validated at four levels:
 Model evaluations are repeated when changing descriptions or orchestration because one passing run
 does not prove reliable activation.
 
+## Repository Quality Gates
+
+Every pull request must pass the canonical `pnpm qa` command. It includes:
+
+- strict typed ESLint with promise, import, security, secret-detection, and complexity rules;
+- strict TypeScript compilation without emitting artifacts;
+- deterministic Vitest execution with at least 80% statements, branches, functions, and lines;
+- portable skill schema, reference, dependency, and safety validation;
+- the release collector's cross-platform Python fixture suite; and
+- a non-mutating repository-wide Prettier check.
+
+Pre-commit hooks format and lint only staged supported files before running the fast deterministic
+quality lane. Pre-push and pre-merge hooks run the complete suite. CI remains authoritative and runs
+complete QA on Linux, macOS, and Windows; local hooks improve feedback time but do not replace branch
+protection.
+
+Dependency audits run separately in CI so network or registry availability does not make local Git
+commits unreliable. Moderate-or-higher production and development findings are blocking until they
+are fixed, shown to be non-applicable, or intentionally accepted through the repository's review
+process.
+
 ## Pull Request Evidence
 
 A skill PR identifies changed behavior, affected hosts, dependencies, evaluations, deterministic
