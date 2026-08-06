@@ -165,10 +165,13 @@ The TypeScript suite enforces 80% minimum coverage for statements, branches, fun
 - **Pre-merge-commit:** installs from the frozen lockfile and runs complete QA before recording a
   local merge commit.
 
-CI runs the same complete QA suite on Linux, macOS, and Windows, and against both the minimum Node.js
-version and the current Node.js release. A separate job audits production and development
-dependencies at moderate severity or higher. The stable `Required` check succeeds only when the full
-matrix and dependency audit pass and is the status enforced on `main`.
+CI runs for every same-repository feature-branch pull request targeting `main` and again after every
+push or merge to `main`. It runs the same complete QA suite on Linux, macOS, and Windows, and against
+both the minimum Node.js version and the current Node.js release. A separate job audits production
+and development dependencies at moderate severity or higher. The stable `Required` check succeeds
+only when the full matrix and dependency audit pass and is the status enforced on `main`. Manual
+dispatch remains available for recovery and verification, but does not replace either automatic
+trigger.
 
 Read [AGENTS.md](AGENTS.md) and the documents under [standards](standards/) before changing a skill.
 

@@ -174,6 +174,10 @@ pnpm qa
 - Do not commit generated installation metadata or installed skill copies.
 - Pull requests must identify affected skills, behavior changes, compatibility impact, evaluations,
   and script validation. Include a `## Release Notes` section.
+- The full CI workflow must run for every same-repository feature-branch pull request targeting
+  `main` and again for every push or merge to `main`. Keep `workflow_dispatch` as a recovery path,
+  never as a substitute for either automatic trigger. Cancel stale PR runs only; never cancel a
+  `main` run when another `main` update arrives.
 - Branch protection requires the aggregate `Required` CI check. That job must continue to depend on
   the complete cross-platform quality matrix and dependency audit, so matrix changes do not silently
   weaken the stable required-check contract.
