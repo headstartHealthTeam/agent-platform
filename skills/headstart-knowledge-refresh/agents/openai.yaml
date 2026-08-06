@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Headstart Knowledge Refresh'
+  short_description: 'Audit shared knowledge for drift and overlap'
+  default_prompt: 'Use $headstart-knowledge-refresh to audit this knowledge area and propose evidence-backed maintenance actions.'

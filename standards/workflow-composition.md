@@ -24,6 +24,15 @@ A workflow skill declares required skills in the string-valued
 Dependency graphs must be acyclic. A shared capability cannot depend on a business workflow that
 consumes it.
 
+## Execution Shape
+
+Composition does not require one agent per skill. Default to one agent executing a clear sequential
+workflow. Add parallel workers or subagents only when tasks are genuinely independent, context
+isolation is valuable, or repeated evaluation shows a material quality or latency benefit.
+
+Keep planning and completion visible to the user. A workflow must not hide missing dependencies,
+failed handoffs, reduced evidence coverage, or partial completion behind orchestration.
+
 ## Consequential Work
 
 Workflow composition does not combine or widen permissions. External writes, PHI access, production

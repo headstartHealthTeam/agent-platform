@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Headstart Knowledge Capture'
+  short_description: 'Propose durable updates from verified learnings'
+  default_prompt: 'Use $headstart-knowledge-capture to turn this verified learning into a grounded knowledge update proposal.'

@@ -1,0 +1,47 @@
+{
+  "skill": "headstart-workflow-walkthrough-analysis",
+  "cases": [
+    {
+      "name": "analyze-process-recording",
+      "prompt": "Analyze this operations walkthrough and map the trigger, systems, documents, human decisions, failure modes, and automation opportunities with timestamps.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Builds a step-level current-state map",
+        "Distinguishes observed, stated, and inferred claims",
+        "Cites timestamps or identifies unavailable evidence"
+      ]
+    },
+    {
+      "name": "reconcile-old-walkthrough",
+      "prompt": "This video predates our latest workflow changes. Extract what it shows and compare it with the current procedure document.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves the walkthrough as dated evidence",
+        "Identifies material current-state differences",
+        "Does not assume either source is authoritative without support"
+      ]
+    },
+    {
+      "name": "summary-only-boundary",
+      "prompt": "I only have Gemini's summary of the recording. Document the process and be explicit about what you could not directly verify.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Identifies the summary as secondary evidence",
+        "Does not claim to have watched the recording",
+        "Marks unshown details and targeted verification questions"
+      ]
+    },
+    {
+      "name": "transcribe-only",
+      "prompt": "Transcribe this audio word for word and do not analyze the workflow.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Routes to a transcription capability"]
+    },
+    {
+      "name": "architecture-from-requirements",
+      "prompt": "Design the implementation architecture from this already-approved technical specification.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Routes to architecture or implementation planning"]
+    }
+  ]
+}

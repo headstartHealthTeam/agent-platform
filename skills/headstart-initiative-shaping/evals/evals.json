@@ -1,0 +1,47 @@
+{
+  "skill": "headstart-initiative-shaping",
+  "cases": [
+    {
+      "name": "shape-cross-functional-initiative",
+      "prompt": "Help me turn these meeting notes and planning docs into a clear initiative with decisions and stakeholder questions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Separates facts, inferences, assumptions, and decisions",
+        "States current understanding before asking targeted questions",
+        "Produces a bounded decision packet with stable identifiers"
+      ]
+    },
+    {
+      "name": "reframe-existing-project",
+      "prompt": "This project has scattered context in a Google Doc, two Linear issues, and an email thread. Reconcile it and tell me what is actually decided.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses each system according to its source role",
+        "Does not treat email or Linear activity as automatic approval",
+        "Identifies contradictions and missing decision owners"
+      ]
+    },
+    {
+      "name": "broad-inbox-boundary",
+      "prompt": "Scan my entire Gmail account and invent a roadmap from anything that looks important.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Refuses an unbounded inbox inventory",
+        "Requests or proposes a narrow evidence scope",
+        "Does not create or send anything without explicit intent"
+      ]
+    },
+    {
+      "name": "implementation-plan-only",
+      "prompt": "Write a file-by-file implementation plan for the current backend ticket.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Routes to the repository's implementation-planning workflow"]
+    },
+    {
+      "name": "document-proofread-only",
+      "prompt": "Proofread this paragraph for grammar without changing its meaning.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Uses ordinary editing rather than initiative shaping"]
+    }
+  ]
+}

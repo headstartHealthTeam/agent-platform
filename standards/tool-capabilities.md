@@ -15,6 +15,10 @@ The active host chooses an available provider: native connector, MCP server, app
 browser, or CLI. A skill may recommend a preferred provider when Headstart policy establishes one,
 but it must document the fallback and any loss of fidelity.
 
+Do not create a shared skill merely to restate a well-described tool's basic operations. Create a
+skill when Headstart has a reusable procedure, decision model, safety boundary, or output contract
+around one or more capabilities.
+
 ## Capability Checks
 
 Before relying on a capability:

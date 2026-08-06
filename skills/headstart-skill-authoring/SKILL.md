@@ -4,7 +4,7 @@ description: Create or revise reusable Headstart agent skills and workflow skill
 compatibility: Works with coding agents that can edit Markdown and run the repository's documented validation commands.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.2.0'
 ---
 
 # Headstart Skill Authoring
@@ -23,6 +23,8 @@ Read the repository `AGENTS.md` and the standards it identifies before editing a
 3. Keep repository-specific rules in that repository's `AGENTS.md` unless they are genuinely shared
    across Headstart repositories.
 4. Add a shared skill only when reuse, safety, or repeated execution justifies central ownership.
+5. Do not create a skill solely to restate a connector's basic tool descriptions. Put integration
+   operations and authorization in the tool layer; use a skill for the Headstart workflow around it.
 
 ## Author The Portable Core
 
@@ -34,6 +36,8 @@ Read the repository `AGENTS.md` and the standards it identifies before editing a
 - Use relative paths for bundled scripts, references, examples, and assets.
 - Keep the main file concise and move detailed material into one-level-deep references.
 - State inputs, outputs, side effects, authority, failure behavior, and handoff identifiers.
+- For knowledge work, assign each connected source a purpose and authority boundary. Follow
+  `standards/knowledge-workflow-sources.md` while authoring in this repository.
 - For consequential workflows, require explicit user intent in the skill body and use optional
   host adapters for stronger invocation controls where supported.
 - Never include local machine paths, credentials, tokens, PHI, production records, or copied
@@ -47,6 +51,19 @@ and state what happens when it is unavailable. Do not rely on an undocumented ac
 
 Avoid circular dependencies. A reusable skill must remain useful without importing a business
 workflow that happens to consume it.
+
+Default composed workflows to one agent executing sequentially. Add subagents or parallel workers
+only for independent work, context isolation, or an evaluation-backed improvement.
+
+## Adapt External Work Carefully
+
+- Treat external skills as design evidence, not as a drop-in team standard.
+- Preserve the useful problem-solving pattern while rewriting triggers, authority, source roles,
+  outputs, and failure behavior for Headstart.
+- Remove vendor-specific orchestration when it is not required by the portable outcome.
+- If substantial text, code, or assets are copied, preserve the applicable license and provenance in
+  the repository's approved third-party notice mechanism.
+- Validate the adapted skill independently; upstream popularity does not establish fit or safety.
 
 ## Scripts And Tools
 
@@ -66,6 +83,7 @@ workflow that happens to consume it.
 5. Compare observed output against the expected behavior; do not grade only whether the prose sounds
    reasonable.
 6. Record unsupported host behavior as a compatibility limitation or fix it before release.
+7. Include source-selection and no-unrequested-write cases for skills that use connected systems.
 
 ## Review Checklist
 

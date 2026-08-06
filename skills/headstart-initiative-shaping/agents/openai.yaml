@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Headstart Initiative Shaping'
+  short_description: 'Shape ambiguous work into clear decisions'
+  default_prompt: 'Use $headstart-initiative-shaping to turn this initiative into an evidence-backed decision packet.'

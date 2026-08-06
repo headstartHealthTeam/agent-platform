@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Headstart Discovery to Decision'
+  short_description: 'Turn mixed evidence into a reviewable decision'
+  default_prompt: 'Use $headstart-discovery-to-decision to turn these source materials into a stakeholder-ready decision packet.'

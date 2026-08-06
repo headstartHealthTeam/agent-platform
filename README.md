@@ -19,13 +19,35 @@ business systems of record, project tracking, or runtime infrastructure.
 
 ## Included Skills
 
-| Skill                         | Purpose                                                                     |
-| ----------------------------- | --------------------------------------------------------------------------- |
-| `deep-pr-review`              | Generic evidence-backed pull request review method                          |
-| `headstart-pr-review-context` | Headstart repository, Linear, integration, privacy, and side-effect context |
-| `headstart-pr-review`         | Complete Headstart review workflow that composes the two review skills      |
-| `headstart-dev-to-main-pr`    | Explicit-only production promotion inventory and PR workflow                |
-| `headstart-skill-authoring`   | Authoring and evaluation rules for shared Headstart skills                  |
+| Skill                                     | Purpose                                                                     |
+| ----------------------------------------- | --------------------------------------------------------------------------- |
+| `deep-pr-review`                          | Generic evidence-backed pull request review method                          |
+| `headstart-pr-review-context`             | Headstart repository, Linear, integration, privacy, and side-effect context |
+| `headstart-pr-review`                     | Complete Headstart review workflow that composes the two review skills      |
+| `headstart-dev-to-main-pr`                | Explicit-only production promotion inventory and PR workflow                |
+| `headstart-skill-authoring`               | Authoring and evaluation rules for shared Headstart skills                  |
+| `headstart-initiative-shaping`            | Evidence-backed scope, decisions, risks, and stakeholder questions          |
+| `headstart-workflow-walkthrough-analysis` | Cited current-state analysis from process demonstrations                    |
+| `headstart-document-review`               | Report-first substantive review of shared plans and procedures              |
+| `headstart-knowledge-capture`             | Proposed durable updates from verified team learnings                       |
+| `headstart-knowledge-refresh`             | Evidence-backed maintenance proposals for stale or overlapping guidance     |
+| `headstart-discovery-to-decision`         | Composed workflow from mixed discovery evidence to decision packet          |
+
+## Knowledge Workflow Sources
+
+The knowledge-work skills use connected systems according to their role rather than binding the
+portable workflow to one host's tool names:
+
+- Google Docs commonly owns collaborative planning, procedures, and stakeholder response surfaces.
+- Gmail provides narrowly scoped communication evidence.
+- Linear owns delivery state and tracked implementation work.
+- Notion may own team knowledge or planning where the relevant team uses it.
+- Repositories and business systems own the behavior and records within their actual boundaries.
+
+Native authenticated connectors are preferred for semantic reads and approved writes. Connector
+availability never authorizes broad searches or external changes. Read
+[`standards/knowledge-workflow-sources.md`](standards/knowledge-workflow-sources.md) for the complete
+source and canonical-destination policy.
 
 ## Compatibility Model
 
@@ -40,7 +62,7 @@ business systems of record, project tracking, or runtime infrastructure.
 The GitHub skill installer is currently a preview convenience. The repository remains valid without
 it because every skill follows the open filesystem format.
 
-## Local Installation Before A Remote Exists
+## Local Installation
 
 The repository includes a cross-platform TypeScript installer so setup does not depend on the
 preview GitHub CLI command being present. Preview the install for the host you use:
@@ -56,11 +78,10 @@ previously installed version. Run only the command for the desired host, or repe
 hosts. The installer copies files into the host's managed skill directory; edit the source
 repository, not those copies.
 
-After the organization remote and first release exist, GitHub CLI versions that include the preview
-skill command may install from the reviewed tag instead:
+GitHub CLI versions that include the preview skill command may install from a reviewed tag instead:
 
 ```bash
-gh skill install headstartHealthTeam/headstart-agent-skills <skill>@<tag> --agent <host> --scope user
+gh skill install headstartHealthTeam/agent-skills <skill>@<tag> --agent <host> --scope user
 ```
 
 Managed runners should pin an exact tag or commit. Individual workstations should inspect updates

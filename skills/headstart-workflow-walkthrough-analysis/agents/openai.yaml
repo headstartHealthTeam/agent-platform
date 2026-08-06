@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Headstart Workflow Walkthrough Analysis'
+  short_description: 'Extract operational truth from walkthroughs'
+  default_prompt: 'Use $headstart-workflow-walkthrough-analysis to analyze this process walkthrough and identify decisions, evidence, and gaps.'

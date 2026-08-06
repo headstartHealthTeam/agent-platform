@@ -25,6 +25,26 @@
       "prompt": "Document this backend module's DTO naming convention.",
       "shouldActivate": false,
       "expectedBehaviors": ["Keeps repository-local conventions in repository instructions"]
+    },
+    {
+      "name": "adapt-external-skill",
+      "prompt": "Adapt this popular open-source document review skill for Headstart and improve it rather than copying it directly.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Treats the upstream skill as design evidence",
+        "Rewrites authority and source boundaries for Headstart",
+        "Preserves license and provenance when substantial material is copied"
+      ]
+    },
+    {
+      "name": "connector-wrapper-near-miss",
+      "prompt": "Create a shared skill that only repeats the Gmail connector's existing read and send tool descriptions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Challenges whether a skill adds a reusable Headstart workflow",
+        "Keeps basic integration operations in tool metadata",
+        "Avoids adding a redundant wrapper skill"
+      ]
     }
   ]
 }

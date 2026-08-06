@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Headstart Document Review'
+  short_description: 'Review shared documents with grounded findings'
+  default_prompt: 'Use $headstart-document-review to review this document and return evidence-backed findings before proposing edits.'

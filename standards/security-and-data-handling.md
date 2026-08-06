@@ -21,6 +21,10 @@ Consequential workflows must distinguish read-only preparation from remote mutat
 default to the least consequential behavior, require explicit intent before writes, and report what
 was actually changed.
 
+Do not send internal or sensitive content to another model, external reviewer, or service merely to
+add a second opinion. Cross-provider egress requires explicit user intent and confirmation that the
+destination is permitted for the content.
+
 ## Tool Metadata
 
 Tool descriptions must state whether an operation reads or writes, its required identifiers,

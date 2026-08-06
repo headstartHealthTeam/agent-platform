@@ -58,6 +58,7 @@ Read the standards before authoring:
 - `standards/portable-skill-contract.md`
 - `standards/workflow-composition.md`
 - `standards/tool-capabilities.md`
+- `standards/knowledge-workflow-sources.md`
 - `standards/security-and-data-handling.md`
 - `standards/testing-and-release.md`
 

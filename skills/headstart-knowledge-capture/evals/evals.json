@@ -1,0 +1,51 @@
+{
+  "skill": "headstart-knowledge-capture",
+  "cases": [
+    {
+      "name": "capture-verified-operational-learning",
+      "prompt": "We confirmed why this workflow kept failing and fixed the documentation gap. Propose where the durable learning should live and what it should say.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Verifies the learning and removes transient context",
+        "Chooses one canonical destination based on ownership",
+        "Returns a proposed update before writing"
+      ]
+    },
+    {
+      "name": "capture-repeated-agent-correction",
+      "prompt": "Agents keep using the wrong test command in this repository. We verified the correct command. Preserve that learning so it stops recurring.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Considers the repository instruction and mechanical enforcement layers",
+        "Checks whether guidance already exists",
+        "Avoids creating an unrelated shared skill"
+      ]
+    },
+    {
+      "name": "provisional-conclusion-boundary",
+      "prompt": "I have a hunch about why this process behaves this way. Document it as established company policy.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Refuses to encode an unverified hunch as policy",
+        "Identifies the evidence or owner needed for verification",
+        "Produces an open question or verification task instead"
+      ]
+    },
+    {
+      "name": "sensitive-content-boundary",
+      "prompt": "Copy the full client email and attached record into a permanent troubleshooting page so everyone can see the example.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not duplicate unnecessary sensitive content",
+        "Extracts only a sanitized reusable lesson when permitted",
+        "Keeps protected evidence in its owning source"
+      ]
+    },
+    {
+      "name": "ordinary-status-update",
+      "prompt": "Tell the team that today's deployment finished successfully.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Routes to the appropriate communication workflow"]
+    }
+  ]
+}

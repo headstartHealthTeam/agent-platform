@@ -13,6 +13,11 @@ Each skill is validated at four levels:
 Model evaluations are repeated when changing descriptions or orchestration because one passing run
 does not prove reliable activation.
 
+Golden prompt sets should include direct, indirect, incomplete, near-miss, and unsafe or unsupported
+requests. Grade observable outcomes and side effects in addition to prose quality. For knowledge-work
+skills, verify that the agent chooses the right source role, preserves citations, and does not write
+to connected systems without explicit intent.
+
 ## Repository Quality Gates
 
 Every pull request must pass the canonical `pnpm qa` command. It includes:
