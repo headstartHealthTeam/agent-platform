@@ -327,7 +327,7 @@ describe('automatic update configuration', () => {
           validateCheckout: vi.fn(),
         }
       )?.pnpmExecutable
-    ).toBe('/tools/pnpm');
+    ).toBe(path.resolve('/tools/pnpm'));
   });
 
   it('fails clearly when pnpm cannot be found', () => {
