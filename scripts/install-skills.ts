@@ -208,14 +208,45 @@ export const installSkills = (operations: InstallOperation[], options: InstallOp
       continue;
     }
 
-    fs.mkdirSync(path.dirname(operation.destination), { recursive: true });
-    if (operation.replacesExisting) {
-      fs.rmSync(operation.destination, { recursive: true, force: true });
-    }
-    fs.cpSync(operation.source, operation.destination, { recursive: true });
+    replaceSkillDirectory(operation.source, operation.destination);
   }
 };
 
+const removeDirectory = (directory: string): void => {
+  fs.rmSync(directory, { recursive: true, force: true });
+};
+
+const replaceSkillDirectory = (source: string, destination: string): void => {
+  const parent = path.dirname(destination);
+  const uniqueSuffix = `${String(process.pid)}-${Date.now().toString(36)}`;
+  const staged = `${destination}.staged-${uniqueSuffix}`;
+  const backup = `${destination}.backup-${uniqueSuffix}`;
+  fs.mkdirSync(parent, { recursive: true });
+
+  try {
+    fs.cpSync(source, staged, { recursive: true, errorOnExist: true });
+    const hadExisting = fs.existsSync(destination);
+    if (hadExisting) {
+      fs.renameSync(destination, backup);
+    }
+    try {
+      fs.renameSync(staged, destination);
+    } catch (error) {
+      if (hadExisting && fs.existsSync(backup) && !fs.existsSync(destination)) {
+        fs.renameSync(backup, destination);
+      }
+      throw error;
+    }
+    removeDirectory(backup);
+  } finally {
+    removeDirectory(staged);
+    if (fs.existsSync(destination)) {
+      removeDirectory(backup);
+    }
+  }
+};
+
+/* v8 ignore start -- exercised by command-level usage; reusable behavior is unit tested above */
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 
 if (isMainModule) {
@@ -237,3 +268,4 @@ if (isMainModule) {
     process.exitCode = 1;
   }
 }
+/* v8 ignore stop */

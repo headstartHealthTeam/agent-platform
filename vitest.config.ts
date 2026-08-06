@@ -9,7 +9,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],
-      include: ['scripts/validate-skills.ts'],
+      include: ['scripts/*.ts'],
       exclude: ['scripts/__tests__/**'],
       thresholds: {
         statements: 80,

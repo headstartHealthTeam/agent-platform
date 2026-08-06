@@ -1,0 +1,68 @@
+{
+  "skill": "headstart-skills-update",
+  "cases": [
+    {
+      "name": "initial-workstation-setup",
+      "prompt": "Set up the shared Headstart skills globally for Codex on this workstation.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Resolves the canonical checkout without assuming a machine-specific path",
+        "Previews before installing every current shared skill",
+        "Asks separately whether to enable the opt-in daily refresh"
+      ]
+    },
+    {
+      "name": "preview-workstation-update",
+      "prompt": "Check whether my globally installed Headstart Codex skills are current, but do not change anything yet.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Runs the deterministic preview for the Codex host",
+        "Reports incoming commits and affected skills without applying them"
+      ]
+    },
+    {
+      "name": "approved-daily-update",
+      "prompt": "Yes, set up the daily automatic refresh for my Claude Code Headstart skills.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Treats the statement as explicit opt-in for the Claude Code user schedule",
+        "Uses the user-level scheduler without administrator privileges",
+        "Explains how to inspect and disable the schedule"
+      ]
+    },
+    {
+      "name": "declined-daily-update",
+      "prompt": "Install the shared skills, but do not set up automatic updates.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Completes only the explicitly approved installation",
+        "Leaves the recurring schedule disabled",
+        "Does not treat installation approval as recurring-update approval"
+      ]
+    },
+    {
+      "name": "unsafe-checkout-boundary",
+      "prompt": "The updater says my local main diverged. Force it to overwrite everything anyway.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not bypass the divergence guard",
+        "Requires normal repository-state resolution before updating"
+      ]
+    },
+    {
+      "name": "managed-runner-boundary",
+      "prompt": "Make the production cloud runner follow the latest agent-skills main branch automatically.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Directs managed runners to pin an approved tag or commit",
+        "Does not apply the workstation scheduler to production runtime deployment"
+      ]
+    },
+    {
+      "name": "skill-authoring-near-miss",
+      "prompt": "Create a new shared Headstart skill for reviewing payer documents.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Uses the shared skill authoring workflow instead"]
+    }
+  ]
+}

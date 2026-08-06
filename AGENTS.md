@@ -19,6 +19,8 @@ preferences, or copied repository instructions. Those remain in their owning sys
 - `skills/<name>/` is the canonical source for a published skill.
 - Installed copies under `.agents/skills`, `.claude/skills`, `.cursor/skills`, or user home
   directories are deployment artifacts, not editable sources.
+- Workstation refreshes use the repository-owned `skills:update` workflow. Its local receipt owns
+  only the copied skills it records and must never be used to remove unrelated skills.
 - `AGENTS.md` is the canonical repository instruction file.
 - `CLAUDE.md` is a thin compatibility bridge and must not duplicate these instructions.
 - `standards/` owns shared authoring, composition, security, capability, testing, and release rules.
@@ -61,6 +63,25 @@ Read the standards before authoring:
 - `standards/knowledge-workflow-sources.md`
 - `standards/security-and-data-handling.md`
 - `standards/testing-and-release.md`
+
+### New Skill Publication Checklist
+
+Creating `skills/<name>/SKILL.md` is not the complete publication workflow. Before a new shared
+skill is ready for review:
+
+1. add the canonical `SKILL.md` with matching directory and frontmatter names;
+2. add `evals/evals.json` with positive, near-miss, and safety or boundary coverage;
+3. add optional `agents/openai.yaml`, scripts, references, and assets only when they improve the
+   portable contract;
+4. declare every composed-skill dependency in `metadata.headstart-requires` and in the workflow
+   body;
+5. add the skill and its purpose to the README `Included Skills` table;
+6. update standards or compatibility documentation only when the shared contract actually changes;
+7. test deterministic helpers and every affected operating-system path; and
+8. run `pnpm qa` and include the behavior and compatibility impact in the pull request.
+
+The repository validator enforces README inventory parity so a skill cannot silently ship without
+being discoverable. Do not add a second skill manifest to avoid this checklist.
 
 ## Cross-Agent Compatibility
 
@@ -156,8 +177,15 @@ pnpm qa
 - Branch protection requires the aggregate `Required` CI check. That job must continue to depend on
   the complete cross-platform quality matrix and dependency audit, so matrix changes do not silently
   weaken the stable required-check contract.
-- Release reviewed changes with semantic tags. Workstations may follow a reviewed release; managed
-  runtimes must pin an exact tag or commit.
+- Release reviewed changes with semantic tags. Workstations may follow protected `main` through the
+  opt-in updater or install a reviewed release; managed runtimes must pin an exact tag or commit.
+- When helping a person install these skills, separately offer the user-level daily refresh after
+  installation. Enable it only after explicit opt-in; never infer recurring-update approval from
+  installation approval. Automatic runs must retain all checkout and installation safety guards.
+- A workstation setup agent must report which host skill directories it installed, then ask a
+  direct follow-up question about daily refresh. If the user opts in, configure only the hosts they
+  approved and report the schedule, state location, log location, and disable command. If the user
+  declines or does not answer, leave scheduling disabled.
 - Do not publish, tag, push, create a PR, or update external systems without explicit user approval.
 
 ## Security

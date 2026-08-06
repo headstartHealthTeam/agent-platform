@@ -278,4 +278,28 @@ describe('validateRepository', () => {
     expect(messages).toContain('Evaluation file must be a JSON object.');
     expect(messages).toContain('A skill cannot depend on itself.');
   });
+
+  it('keeps the README skill inventory aligned with canonical skill directories', () => {
+    const root = makeRepository();
+    addSkill(root, 'first-skill');
+    addSkill(root, 'second-skill');
+    fs.writeFileSync(
+      path.join(root, 'README.md'),
+      '# Fixture\n\n## Included Skills\n\n| Skill | Purpose |\n| --- | --- |\n| `first-skill` | Included |\n| `retired-skill` | Stale |\n\n## Other\n'
+    );
+
+    const messages = validateRepository(root).map((issue) => issue.message);
+    expect(messages).toContain('Included Skills table is missing: second-skill.');
+    expect(messages).toContain('Included Skills table references an unknown skill: retired-skill.');
+  });
+
+  it('reports a missing README skill inventory section when a README exists', () => {
+    const root = makeRepository();
+    addSkill(root, 'example-skill');
+    fs.writeFileSync(path.join(root, 'README.md'), '# Fixture\n');
+
+    expect(validateRepository(root).map((issue) => issue.message)).toContain(
+      'README.md requires an Included Skills section.'
+    );
+  });
 });

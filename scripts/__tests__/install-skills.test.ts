@@ -76,6 +76,43 @@ describe('parseInstallArgs', () => {
     expect(() =>
       parseInstallArgs(['--agent', 'codex', '--scope', 'user', '--all', '--skill', 'first-skill'])
     ).toThrow('Choose exactly one');
+    expect(() => parseInstallArgs(['--agent', 'codex', '--scope', 'invalid', '--all'])).toThrow(
+      'Unsupported install scope'
+    );
+    expect(() => parseInstallArgs(['--agent', 'codex', '--scope', 'user'])).toThrow(
+      'Choose exactly one'
+    );
+    expect(() => parseInstallArgs(['--agent'])).toThrow('requires a value');
+    expect(() => parseInstallArgs(['--unknown'])).toThrow('Unknown argument');
+  });
+
+  it('parses project directories, replacement approval, and duplicate skill selection', () => {
+    expect(
+      parseInstallArgs(
+        [
+          '--agent',
+          'cursor',
+          '--scope',
+          'project',
+          '--project-dir',
+          './fixture',
+          '--skill',
+          'first-skill',
+          '--skill',
+          'first-skill',
+          '--force',
+        ],
+        '/workspace'
+      )
+    ).toEqual({
+      agent: 'cursor',
+      scope: 'project',
+      projectDirectory: path.resolve('./fixture'),
+      skillNames: ['first-skill'],
+      all: false,
+      dryRun: false,
+      force: true,
+    });
   });
 });
 
@@ -90,6 +127,9 @@ describe('resolveInstallRoot', () => {
   });
 
   it('uses host-specific user directories', () => {
+    expect(resolveInstallRoot('codex', 'user', '/repo', '/home')).toBe(
+      path.join('/home', '.agents', 'skills')
+    );
     expect(resolveInstallRoot('claude-code', 'user', '/repo', '/home')).toBe(
       path.join('/home', '.claude', 'skills')
     );
@@ -106,6 +146,9 @@ describe('skill installation', () => {
 
     expect(plan.map((operation) => operation.skillName)).toEqual(['first-skill', 'second-skill']);
     expect(plan[0]?.destination).toBe(path.join('/home', '.agents', 'skills', 'first-skill'));
+    expect(() =>
+      createInstallPlan(root, options({ all: false, skillNames: ['missing-skill'] }), '/home')
+    ).toThrow('Unknown skill');
   });
 
   it('copies a selected skill and refuses an unapproved replacement', () => {
@@ -130,5 +173,17 @@ describe('skill installation', () => {
     expect(() => {
       installSkills(replacementPlan, installOptions);
     }).toThrow('already exists');
+
+    fs.writeFileSync(path.join(root, 'skills', 'first-skill', 'SKILL.md'), '# replaced\n');
+    installSkills(createInstallPlan(root, installOptions, home), {
+      ...installOptions,
+      force: true,
+    });
+    expect(fs.readFileSync(installedFile, 'utf8')).toBe('# replaced\n');
+    expect(
+      fs
+        .readdirSync(path.dirname(path.dirname(installedFile)))
+        .some((entry) => entry.includes('.backup-'))
+    ).toBe(false);
   });
 });

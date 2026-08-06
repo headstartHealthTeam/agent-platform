@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Headstart Skills Update'
+  short_description: 'Install and safely refresh shared team skills'
+  default_prompt: 'Use $headstart-skills-update to install, preview, apply, or schedule updates from the canonical Headstart skills repository.'
+policy:
+  allow_implicit_invocation: true

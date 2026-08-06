@@ -7,6 +7,33 @@ export interface PythonCommand {
   prefixArgs: string[];
 }
 
+export interface CommandResult {
+  status: number | null;
+  error?: Error;
+}
+
+interface CommandOptions {
+  cwd?: string;
+  environment?: NodeJS.ProcessEnv;
+  inheritStdio?: boolean;
+}
+
+type CommandRunner = (
+  command: string,
+  arguments_: string[],
+  options?: CommandOptions
+) => CommandResult;
+
+const runCommand: CommandRunner = (command, arguments_, options = {}) => {
+  const result = spawnSync(command, arguments_, {
+    ...(options.cwd ? { cwd: options.cwd } : {}),
+    ...(options.environment ? { env: options.environment } : {}),
+    encoding: 'utf8',
+    ...(options.inheritStdio ? { stdio: 'inherit' } : {}),
+  });
+  return { status: result.status, ...(result.error ? { error: result.error } : {}) };
+};
+
 const REPOSITORY_LOCAL_GIT_ENVIRONMENT_VARIABLES = new Set([
   'GIT_ALTERNATE_OBJECT_DIRECTORIES',
   'GIT_COMMON_DIR',
@@ -46,11 +73,12 @@ export const pythonCandidates = (platform: NodeJS.Platform): PythonCommand[] =>
         { command: 'python', prefixArgs: [] },
       ];
 
-export const findPython = (platform: NodeJS.Platform = process.platform): PythonCommand => {
+export const findPython = (
+  platform: NodeJS.Platform = process.platform,
+  runner: CommandRunner = runCommand
+): PythonCommand => {
   for (const candidate of pythonCandidates(platform)) {
-    const probe = spawnSync(candidate.command, [...candidate.prefixArgs, '--version'], {
-      encoding: 'utf8',
-    });
+    const probe = runner(candidate.command, [...candidate.prefixArgs, '--version']);
 
     if (probe.status === 0) {
       return candidate;
@@ -62,9 +90,10 @@ export const findPython = (platform: NodeJS.Platform = process.platform): Python
 
 export const runCollectorTests = (
   repositoryRoot: string,
-  platform: NodeJS.Platform = process.platform
+  platform: NodeJS.Platform = process.platform,
+  runner: CommandRunner = runCommand
 ): number => {
-  const python = findPython(platform);
+  const python = findPython(platform, runner);
   const testScript = path.join(
     repositoryRoot,
     'skills',
@@ -72,10 +101,10 @@ export const runCollectorTests = (
     'scripts',
     'test_collect_release_notes.py'
   );
-  const result = spawnSync(python.command, [...python.prefixArgs, testScript], {
+  const result = runner(python.command, [...python.prefixArgs, testScript], {
     cwd: repositoryRoot,
-    env: withoutRepositoryLocalGitEnvironment(process.env),
-    stdio: 'inherit',
+    environment: withoutRepositoryLocalGitEnvironment(process.env),
+    inheritStdio: true,
   });
 
   if (result.error) {
@@ -85,9 +114,11 @@ export const runCollectorTests = (
   return result.status ?? 1;
 };
 
+/* v8 ignore start -- exercised by pnpm test:collector; reusable behavior is unit tested above */
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 
 if (isMainModule) {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   process.exitCode = runCollectorTests(repositoryRoot);
 }
+/* v8 ignore stop */

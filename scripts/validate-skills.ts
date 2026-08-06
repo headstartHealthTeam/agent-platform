@@ -41,6 +41,7 @@ const TEXT_EXTENSIONS = new Set(['.json', '.md', '.py', '.ts', '.yaml', '.yml'])
 const FORBIDDEN_FILES = new Set(['.env', '.env.local', 'id_rsa', 'id_ed25519']);
 const REFERENCE_ROOTS = ['scripts/', 'references/', 'assets/'];
 const REFERENCE_PATTERNS = [/\]\(([^)\s]+)\)/g, /`([^`\s]+)`/g];
+const README_SKILL_ROW_PATTERN = /^\|\s*`([a-z0-9-]+)`\s*\|/gm;
 const FORBIDDEN_CONTENT: { label: string; pattern: RegExp }[] = [
   { label: 'a machine-specific macOS user path', pattern: /\/Users\/[A-Za-z0-9._-]+\// },
   { label: 'a machine-specific Windows user path', pattern: /[A-Za-z]:\\Users\\[^\\\s]+\\/ },
@@ -552,6 +553,52 @@ const validateDependencyGraph = (
   }
 };
 
+const validateReadmeSkillInventory = (
+  repositoryRoot: string,
+  skills: Map<string, ParsedSkill>,
+  issues: ValidationIssue[]
+): void => {
+  const readmeFile = path.join(repositoryRoot, 'README.md');
+  if (!fs.existsSync(readmeFile)) {
+    return;
+  }
+
+  const source = fs.readFileSync(readmeFile, 'utf8');
+  const headingMatch = /^## Included Skills\s*$/m.exec(source);
+  if (!headingMatch) {
+    addIssue(issues, repositoryRoot, readmeFile, 'README.md requires an Included Skills section.');
+    return;
+  }
+
+  const sectionStart = headingMatch.index + headingMatch[0].length;
+  const remainingSource = source.slice(sectionStart);
+  const nextHeading = /^##\s/m.exec(remainingSource);
+  const section = remainingSource.slice(0, nextHeading?.index ?? remainingSource.length);
+  const documentedSkills = new Set(
+    [...section.matchAll(README_SKILL_ROW_PATTERN)].flatMap((match) => (match[1] ? [match[1]] : []))
+  );
+  for (const skillName of skills.keys()) {
+    if (!documentedSkills.has(skillName)) {
+      addIssue(
+        issues,
+        repositoryRoot,
+        readmeFile,
+        `Included Skills table is missing: ${skillName}.`
+      );
+    }
+  }
+  for (const skillName of documentedSkills) {
+    if (!skills.has(skillName)) {
+      addIssue(
+        issues,
+        repositoryRoot,
+        readmeFile,
+        `Included Skills table references an unknown skill: ${skillName}.`
+      );
+    }
+  }
+};
+
 export const validateRepository = (repositoryRoot: string): ValidationIssue[] => {
   const issues: ValidationIssue[] = [];
   const skillsRoot = path.join(repositoryRoot, 'skills');
@@ -610,11 +657,13 @@ export const validateRepository = (repositoryRoot: string): ValidationIssue[] =>
   }
 
   validateDependencyGraph(repositoryRoot, skills, issues);
+  validateReadmeSkillInventory(repositoryRoot, skills, issues);
   return issues.sort((left, right) =>
     `${left.file}:${left.message}`.localeCompare(`${right.file}:${right.message}`)
   );
 };
 
+/* v8 ignore start -- exercised by command-level usage; reusable behavior is unit tested above */
 const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
 
 if (isMainModule) {
@@ -630,3 +679,4 @@ if (isMainModule) {
     console.log(`Validated ${String(skillCount)} skills.`);
   }
 }
+/* v8 ignore stop */

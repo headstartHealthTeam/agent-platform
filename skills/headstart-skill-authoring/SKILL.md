@@ -4,7 +4,7 @@ description: Create or revise reusable Headstart agent skills and workflow skill
 compatibility: Works with coding agents that can edit Markdown and run the repository's documented validation commands.
 metadata:
   author: headstart-health
-  version: '0.2.0'
+  version: '0.2.1'
 ---
 
 # Headstart Skill Authoring
@@ -95,3 +95,7 @@ only for independent work, context isolation, or an evaluation-backed improvemen
 - Scripts and references are necessary, reachable, and tested.
 - The version change and release notes communicate behavior changes.
 - Installation and update instructions do not make copied files a second source of truth.
+- The README `Included Skills` table names every new or retired skill and describes its current
+  purpose.
+- `pnpm qa` passes, including inventory parity, dependency validation, evaluations, deterministic
+  tests, portability checks, and formatting.
