@@ -23,8 +23,8 @@ __pycache__/
 !.env.example
 
 # Editors, operating systems, and logs
-.idea/
-.vscode/
+.idea
+.vscode
 .DS_Store
 Thumbs.db
 *.log
