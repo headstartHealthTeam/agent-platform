@@ -101,7 +101,8 @@ The TypeScript suite enforces 80% minimum coverage for statements, branches, fun
 
 CI runs the same complete QA suite on Linux, macOS, and Windows, and against both the minimum Node.js
 version and the current Node.js release. A separate job audits production and development
-dependencies at moderate severity or higher.
+dependencies at moderate severity or higher. The stable `Required` check succeeds only when the full
+matrix and dependency audit pass and is the status enforced on `main`.
 
 Read [AGENTS.md](AGENTS.md) and the documents under [standards](standards/) before changing a skill.
 

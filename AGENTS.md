@@ -144,8 +144,9 @@ pnpm qa
 - Do not commit generated installation metadata or installed skill copies.
 - Pull requests must identify affected skills, behavior changes, compatibility impact, evaluations,
   and script validation. Include a `## Release Notes` section.
-- Required status checks should include the cross-platform quality matrix and dependency audit once
-  branch protection is configured on the organization remote.
+- Branch protection requires the aggregate `Required` CI check. That job must continue to depend on
+  the complete cross-platform quality matrix and dependency audit, so matrix changes do not silently
+  weaken the stable required-check contract.
 - Release reviewed changes with semantic tags. Workstations may follow a reviewed release; managed
   runtimes must pin an exact tag or commit.
 - Do not publish, tag, push, create a PR, or update external systems without explicit user approval.

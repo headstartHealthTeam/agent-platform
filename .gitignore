@@ -1,9 +1,32 @@
+# Dependencies and generated output
 node_modules/
 coverage/
 dist/
-.DS_Store
-.idea
-*.log
+*.tsbuildinfo
+.eslintcache
+.pnpm-store/
+
+# Generated tool state
+.husky/_/
+.agents/skills/
+.claude/skills/
+.cursor/skills/
+
+# Python runtime artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local environment files
 .env
 .env.*
 !.env.example
+
+# Editors, operating systems, and logs
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+
+# The Headstart workspace keeps its bare Git store beside the worktrees, not inside this repository.

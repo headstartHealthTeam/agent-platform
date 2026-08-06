@@ -27,7 +27,8 @@ Every pull request must pass the canonical `pnpm qa` command. It includes:
 Pre-commit hooks format and lint only staged supported files before running the fast deterministic
 quality lane. Pre-push and pre-merge hooks run the complete suite. CI remains authoritative and runs
 complete QA on Linux, macOS, and Windows; local hooks improve feedback time but do not replace branch
-protection.
+protection. The stable `Required` status check aggregates the matrix and dependency audit and is the
+branch-protection contract; it must never stop depending on either job.
 
 Dependency audits run separately in CI so network or registry availability does not make local Git
 commits unreliable. Moderate-or-higher production and development findings are blocking until they

@@ -85,3 +85,21 @@ jobs:
 
       - name: Audit development dependencies
         run: pnpm audit:dev
+
+  required:
+    name: Required
+    if: ${{ always() }}
+    needs: [quality, dependency-audit]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify required jobs passed
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          DEPENDENCY_AUDIT_RESULT: ${{ needs.dependency-audit.result }}
+        run: |
+          if [ "$QUALITY_RESULT" != "success" ] || [ "$DEPENDENCY_AUDIT_RESULT" != "success" ]; then
+            printf '%s\n' "Quality result: $QUALITY_RESULT"
+            printf '%s\n' "Dependency audit result: $DEPENDENCY_AUDIT_RESULT"
+            exit 1
+          fi
