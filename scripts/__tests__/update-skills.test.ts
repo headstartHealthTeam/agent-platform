@@ -165,17 +165,17 @@ describe('parseUpdateArgs', () => {
 
 describe('normalizeRemoteIdentity', () => {
   it('treats common GitHub URL forms as the same repository', () => {
-    const expected = 'github.com/headstarthealthteam/agent-skills';
-    expect(normalizeRemoteIdentity('https://github.com/headstartHealthTeam/agent-skills.git')).toBe(
+    const expected = 'github.com/headstarthealthteam/agent-platform';
+    expect(
+      normalizeRemoteIdentity('https://github.com/headstartHealthTeam/agent-platform.git')
+    ).toBe(expected);
+    expect(normalizeRemoteIdentity('git@github.com:headstartHealthTeam/agent-platform.git')).toBe(
       expected
     );
-    expect(normalizeRemoteIdentity('git@github.com:headstartHealthTeam/agent-skills.git')).toBe(
+    expect(normalizeRemoteIdentity('ssh://git@github.com/headstartHealthTeam/agent-platform')).toBe(
       expected
     );
-    expect(normalizeRemoteIdentity('ssh://git@github.com/headstartHealthTeam/agent-skills')).toBe(
-      expected
-    );
-    expect(normalizeRemoteIdentity('https://github.com/headstartHealthTeam/agent-skills/')).toBe(
+    expect(normalizeRemoteIdentity('https://github.com/headstartHealthTeam/agent-platform/')).toBe(
       expected
     );
     expect(normalizeRemoteIdentity('./agent-skills')).toContain('file:');

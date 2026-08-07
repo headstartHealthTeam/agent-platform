@@ -18,7 +18,7 @@ import { validateRepository } from './validate-skills.js';
 const AGENT_HOST_VALUES = ['codex', 'claude-code', 'cursor'] as const;
 const DEFAULT_REMOTE = 'origin';
 const DEFAULT_BRANCH = 'main';
-const EXPECTED_REMOTE_IDENTITY = 'github.com/headstarthealthteam/agent-skills';
+const EXPECTED_REMOTE_IDENTITY = 'github.com/headstarthealthteam/agent-platform';
 const RECEIPT_FILE = '.headstart-agent-skills.json';
 
 const usage = `Usage:

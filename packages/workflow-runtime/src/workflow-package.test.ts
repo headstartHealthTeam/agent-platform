@@ -44,7 +44,7 @@ spec:
       id: configured-at-deployment
   skills:
     source:
-      repository: headstartHealthTeam/agent-skills
+      repository: headstartHealthTeam/agent-platform
       revision: workspace
     required:
       - headstart-document-review

@@ -49,7 +49,7 @@ spec:
       id: gpt-example
   skills:
     source:
-      repository: headstartHealthTeam/agent-skills
+      repository: headstartHealthTeam/agent-platform
       revision: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     required:
       - headstart-document-review

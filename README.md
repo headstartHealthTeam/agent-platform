@@ -212,7 +212,7 @@ that is dirty or on a feature branch.
 GitHub CLI versions that include the preview skill command may install from a reviewed tag instead:
 
 ```bash
-gh skill install headstartHealthTeam/agent-skills <skill>@<tag> --agent <host> --scope user
+gh skill install headstartHealthTeam/agent-platform <skill>@<tag> --agent <host> --scope user
 ```
 
 Managed runners should pin an exact tag or commit. The preview GitHub command remains an optional

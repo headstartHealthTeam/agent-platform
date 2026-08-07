@@ -51,7 +51,7 @@
     },
     {
       "name": "managed-runner-boundary",
-      "prompt": "Make the production cloud runner follow the latest agent-skills main branch automatically.",
+      "prompt": "Make the production cloud runner follow the latest Agent Platform main branch automatically.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Directs managed runners to pin an approved tag or commit",

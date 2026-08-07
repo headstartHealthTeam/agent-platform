@@ -1,7 +1,7 @@
 ---
 name: headstart-skills-update
 description: Safely install, preview, manually refresh, or configure opt-in daily updates of portable skills from the canonical Headstart Agent Platform repository to user-level Codex, Claude Code, or Cursor skill directories. Use when setting up shared Headstart skills on a workstation, checking whether installed skills are stale, applying edits or newly published skills, or managing the user-level automatic refresh schedule.
-compatibility: Requires Git, Node.js 22 or newer, pnpm 9.15, and read access to the Headstart Agent Platform repository at headstartHealthTeam/agent-skills. Scheduled refresh uses user cron on macOS/Linux or Task Scheduler on Windows.
+compatibility: Requires Git, Node.js 22 or newer, pnpm 9.15, and read access to the Headstart Agent Platform repository at headstartHealthTeam/agent-platform. Scheduled refresh uses user cron on macOS/Linux or Task Scheduler on Windows.
 metadata:
   author: headstart-health
   version: '0.1.0'
@@ -15,7 +15,7 @@ copies as editable sources.
 ## Resolve The Source Checkout
 
 1. Use an existing clean `main` checkout whose `origin` resolves to
-   `headstartHealthTeam/agent-skills`.
+   `headstartHealthTeam/agent-platform`.
 2. If more than one checkout is plausible, ask which checkout is canonical.
 3. If no checkout exists, propose a neutral user-selected location and confirm it before cloning.
    Do not assume a machine-specific workspace path.

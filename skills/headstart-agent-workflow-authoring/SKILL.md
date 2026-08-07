@@ -15,7 +15,7 @@ while making only the context that must be shared, tested, or operated durable.
 ## Load Canonical Guidance
 
 1. Locate a current checkout or authenticated repository view of
-   `headstartHealthTeam/agent-skills`.
+   `headstartHealthTeam/agent-platform`.
 2. Read the root `AGENTS.md`, `docs/README.md`, and `docs/workflow-authoring-guide.md`.
 3. Read `docs/codex-managed-workflow-architecture.md` only when independent managed execution is a
    plausible requirement.

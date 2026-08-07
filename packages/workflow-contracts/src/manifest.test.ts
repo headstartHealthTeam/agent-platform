@@ -38,7 +38,7 @@ const makeManifest = (): WorkflowManifest => ({
       model: { id: 'configured-at-deployment' },
     },
     skills: {
-      source: { repository: 'headstartHealthTeam/agent-skills', revision: 'workspace' },
+      source: { repository: 'headstartHealthTeam/agent-platform', revision: 'workspace' },
       required: ['headstart-document-review'],
     },
     identity: { serviceProfile: 'synthetic-none', requiredSecrets: [] },
@@ -100,7 +100,7 @@ describe('workflowManifestSchema', () => {
     expect(() => parseWorkflowManifest(manifest)).toThrow(/actionable contact for the technical/);
   });
 
-  it.each(['v1.2.3', 'agent-skills-v1.2.3', 'v1.2.3-rc.1'])(
+  it.each(['v1.2.3', 'agent-platform-v1.2.3', 'v1.2.3-rc.1'])(
     'accepts immutable semantic tag revision %s',
     (revision) => {
       const manifest = makeManifest();
