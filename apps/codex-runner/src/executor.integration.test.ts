@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { CodexSdkExecutor } from './executor.js';
+import { CodexSdkExecutor, type CodexTurnResult } from './executor.js';
 
 interface CapturedInvocation {
   args: string[];
@@ -14,9 +14,10 @@ interface CapturedInvocation {
 const temporaryDirectories: string[] = [];
 
 const createFakeCodexExecutable = (directory: string): string => {
-  const scriptFile = path.join(directory, 'fake-codex.cjs');
+  const scriptFile = path.join(directory, 'exec');
   const captureScript = `
 const fs = require('node:fs');
+const path = require('node:path');
 
 let input = '';
 process.stdin.setEncoding('utf8');
@@ -24,7 +25,7 @@ process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   fs.writeFileSync(
     process.env.FAKE_CODEX_CAPTURE,
-    JSON.stringify({ args: process.argv.slice(2), input }),
+    JSON.stringify({ args: [path.basename(process.argv[1]), ...process.argv.slice(2)], input }),
   );
   process.stdout.write(JSON.stringify({ type: 'thread.started', thread_id: 'thread-synthetic' }) + '\\n');
   process.stdout.write(JSON.stringify({
@@ -38,20 +39,7 @@ process.stdin.on('end', () => {
 });
 `;
   fs.writeFileSync(scriptFile, captureScript);
-
-  if (process.platform === 'win32') {
-    const commandFile = path.join(directory, 'fake-codex.cmd');
-    fs.writeFileSync(
-      commandFile,
-      `@echo off\r\n"${process.execPath}" "%~dp0fake-codex.cjs" %*\r\n`
-    );
-    return commandFile;
-  }
-
-  const executableFile = path.join(directory, 'fake-codex');
-  fs.writeFileSync(executableFile, `#!${process.execPath}\n${captureScript}`);
-  fs.chmodSync(executableFile, 0o755);
-  return executableFile;
+  return process.execPath;
 };
 
 afterEach(() => {
@@ -70,23 +58,31 @@ describe('CodexSdkExecutor SDK subprocess contract', () => {
       codexPathOverride: executable,
       environment: { FAKE_CODEX_CAPTURE: captureFile },
     });
+    const originalWorkingDirectory = process.cwd();
 
-    const result = await executor.execute({
-      prompt: 'Return one synthetic status object.',
-      outputSchema: {
-        type: 'object',
-        properties: { status: { type: 'string' } },
-        required: ['status'],
-        additionalProperties: false,
-      },
-      workingDirectory: directory,
-      model: 'synthetic-model',
-      reasoningEffort: 'medium',
-      sandbox: 'read-only',
-      networkAccess: 'disabled',
-      timeoutSeconds: 5,
-      emitEvents: false,
-    });
+    const result = await (async (): Promise<CodexTurnResult> => {
+      try {
+        process.chdir(directory);
+        return await executor.execute({
+          prompt: 'Return one synthetic status object.',
+          outputSchema: {
+            type: 'object',
+            properties: { status: { type: 'string' } },
+            required: ['status'],
+            additionalProperties: false,
+          },
+          workingDirectory: directory,
+          model: 'synthetic-model',
+          reasoningEffort: 'medium',
+          sandbox: 'read-only',
+          networkAccess: 'disabled',
+          timeoutSeconds: 5,
+          emitEvents: false,
+        });
+      } finally {
+        process.chdir(originalWorkingDirectory);
+      }
+    })();
 
     const captured = JSON.parse(fs.readFileSync(captureFile, 'utf8')) as CapturedInvocation;
     expect(result).toEqual({
