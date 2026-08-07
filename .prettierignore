@@ -1,4 +1,7 @@
 node_modules
 coverage
+dist
+.turbo
+*.tsbuildinfo
 pnpm-lock.yaml
 skills/headstart-dev-to-main-pr/scripts/*.py

@@ -1,0 +1,7 @@
+{
+  "name": "@headstart-health/workflow-synthetic-read-only-reference",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Disabled synthetic reference package for the managed workflow contract"
+}

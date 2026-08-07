@@ -1,29 +1,69 @@
-# Headstart Agent Skills Repository Guide
+# Headstart Agent Platform Repository Guide
 
-This repository is the canonical source for reusable Headstart agent skills and workflow skills.
-The source must remain usable from Codex, Claude Code, Cursor, and other hosts that implement the
-open Agent Skills format.
+This repository is the canonical source for reusable Headstart agent skills, managed workflow
+definitions, shared workflow contracts, and the Codex managed runner. Portable skill source must
+remain usable from Codex, Claude Code, Cursor, and other hosts that implement the open Agent Skills
+format.
 
 ## Repository Purpose
 
 - Store reusable team capabilities under `skills/`.
 - Define how bounded skills compose into Headstart workflows.
+- Store deployable managed workflow packages under `workflows/`.
+- Maintain runtime-neutral workflow and run contracts under `packages/`.
+- Maintain the managed Codex execution worker under `apps/codex-runner/`.
 - Validate activation, behavior, portability, safety, and cross-platform scripts before release.
-- Publish reviewed, versioned skills that individual workstations and managed runtimes can install.
+- Publish reviewed, versioned skills and workflow artifacts that workstations and managed runtimes
+  can consume through their separate installation paths.
 
 Do not use this repository for application code, project status, meeting notes, machine-local agent
 preferences, or copied repository instructions. Those remain in their owning systems.
 
+## Start Here
+
+Before creating files for a new agent task or automation:
+
+1. Read [`docs/README.md`](docs/README.md) for the repository and documentation map.
+2. Read [`docs/workflow-authoring-guide.md`](docs/workflow-authoring-guide.md) and select the smallest
+   durable shape that satisfies the operating requirement.
+3. Read only the standards and package documentation linked for that shape.
+4. Confirm the source systems, trigger, inputs, outputs, human decisions, side effects, failure
+   behavior, data classification, and owner before implementing unattended behavior.
+
+Do not assume that a new request needs a managed workflow. A one-off Codex task, reusable skill, or
+interactive workflow skill using existing MCPs, native connectors, browser control, or CLIs is often
+the correct solution. Add deterministic code when reproducibility or enforced invariants justify it.
+Add a managed package only when execution must be independent of an employee laptop or needs
+explicit triggers, service identity, durable state, retries, observability, or operational ownership.
+Treat those as independent design decisions, not a maturity ladder. Any selected shape may be the
+correct permanent operating model. State why workflow-specific code is or is not warranted, state
+why execution should remain supervised or become managed, and create only the artifacts required by
+those decisions.
+
 ## Source Of Truth
 
-- `skills/<name>/` is the canonical source for a published skill.
+- `skills/<name>/` is the canonical source for a published portable skill.
+- `workflows/<id>/` is the canonical source for one deployable managed workflow.
+- `packages/workflow-contracts/` owns manifest and durable run schemas.
+- `packages/workflow-runtime/` owns safe workflow-package loading, reference resolution, and JSON
+  Schema validation used during authoring and execution.
+- `apps/codex-runner/` owns Codex execution policy and SDK integration.
 - Installed copies under `.agents/skills`, `.claude/skills`, `.cursor/skills`, or user home
   directories are deployment artifacts, not editable sources.
 - Workstation refreshes use the repository-owned `skills:update` workflow. Its local receipt owns
   only the copied skills it records and must never be used to remove unrelated skills.
+- Most team consumption is local and person-supervised. The same canonical skill source may also be
+  pinned into managed runs; never fork shared behavior into separate workstation and cloud copies.
+- A managed workflow package may support local development, synthetic evaluation, or an explicitly
+  designed supervised launch from a repository checkout. It remains a package, not a globally
+  installed skill, and the workstation updater must not distribute it.
 - `AGENTS.md` is the canonical repository instruction file.
 - `CLAUDE.md` is a thin compatibility bridge and must not duplicate these instructions.
 - `standards/` owns shared authoring, composition, security, capability, testing, and release rules.
+- `docs/README.md` is the canonical documentation index.
+- `docs/workflow-authoring-guide.md` owns the workflow-shape decision process.
+- `docs/codex-managed-workflow-architecture.md` owns the managed runtime design and current
+  implementation boundary.
 - GitHub owns current branches, pull requests, reviews, releases, and tags once a remote exists.
 
 ## Structure
@@ -41,9 +81,30 @@ skills/<skill-name>/
 Only `SKILL.md` is universally required. Host adapters may add metadata or invocation controls, but
 they must never redefine the portable workflow.
 
+```text
+workflows/<workflow-id>/
+  workflow.yaml            # Ownership, runtime, trigger, tool, and policy contract
+  package.json             # Workspace identity
+  README.md                # Purpose, boundaries, and operating notes
+  prompts/                 # Managed entry prompts
+  schemas/                 # Input and output JSON Schemas
+  fixtures/                # Valid synthetic input and output contract examples
+  src/                     # Optional workflow-specific deterministic adapters
+  evals/evals.json         # Synthetic happy-path, boundary, and failure cases
+```
+
+A workflow skill and a managed workflow are different artifacts, but they may represent two
+execution contexts for the same business workflow. The former is installed for an interactive
+agent; the latter supplies the explicit operational contract needed for unattended execution and
+may also expose a local development or supervised entry point from its checkout. Put shared
+reasoning and procedure in the portable skill and reference it from the package rather than copying
+prompt behavior between the two artifacts.
+
 ## Authoring Rules
 
 - Load `headstart-skill-authoring` before creating or materially changing a shared skill.
+- Load `headstart-agent-workflow-authoring` before classifying or designing a new recurring,
+  persistent, scheduled, event-triggered, or cloud agent workflow.
 - Follow the open Agent Skills specification. Skill directory and frontmatter names must match.
 - Write required capabilities, inputs, outputs, side effects, failure behavior, and handoffs
   explicitly.
@@ -54,6 +115,11 @@ they must never redefine the portable workflow.
 - Consequential workflows must require explicit user intent and preserve external-write approvals.
 - Declare workflow dependencies in `metadata.headstart-requires` as a comma-separated string.
 - Do not create circular dependencies or make a bounded capability depend on a business workflow.
+- Do not scaffold empty helpers, packages, adapters, or managed runtime artifacts in anticipation of
+  a future need. Add them only when the current operating requirement justifies them.
+- When one workflow supports both local and managed execution, keep shared guidance in canonical
+  skills, make execution-context differences explicit, and test that both consumers honor the same
+  behavioral contract. Do not maintain separate prompt forks.
 
 Read the standards before authoring:
 
@@ -63,6 +129,9 @@ Read the standards before authoring:
 - `standards/knowledge-workflow-sources.md`
 - `standards/security-and-data-handling.md`
 - `standards/testing-and-release.md`
+
+Use [`docs/workflow-authoring-guide.md`](docs/workflow-authoring-guide.md) before choosing whether the
+artifact belongs under `skills/`, `workflows/`, `packages/`, or an owning application repository.
 
 ### New Skill Publication Checklist
 
@@ -82,6 +151,45 @@ skill is ready for review:
 
 The repository validator enforces README inventory parity so a skill cannot silently ship without
 being discoverable. Do not add a second skill manifest to avoid this checklist.
+
+### New Managed Workflow Checklist
+
+Before a managed workflow can be reviewed:
+
+1. add `workflows/<id>/workflow.yaml` with an id matching the directory;
+2. add package metadata, README, entry prompt, and input/output schemas;
+3. declare real business and technical owners, plus a backup and actionable contact for each before
+   activation, rather than copying synthetic example owners;
+4. declare every skill, MCP server, CLI command, trigger, sandbox, network, retry, and side-effect
+   requirement;
+5. add schema-valid input/output fixtures plus happy-path and boundary evaluation definitions, and
+   test deterministic adapters when the workflow actually has them;
+6. add the workflow to the README `Managed Workflows` table;
+7. keep lifecycle `draft` until immutable skill and runtime versions, deployment decisions, and the
+   repository's active-workflow capability gate are available;
+8. document approval, idempotency, failure, rollback, PHI, retention, and observability behavior;
+9. run `pnpm qa`; and
+10. identify any required coordinating backend, admin-panel, and infrastructure changes in the pull
+    request, or state explicitly that existing shared platform capabilities are sufficient.
+
+Do not promote a local prompt by copying its current machine context. Convert implicit credentials,
+files, tools, approvals, and judgment into explicit managed-workflow policy.
+
+### New Package Or Runner Checklist
+
+Before adding a shared package or changing the runner:
+
+1. confirm that the behavior is reused across workflows or belongs to the execution boundary rather
+   than one skill or workflow;
+2. define a narrow typed public contract and keep business-system authority in its owning service;
+3. add package-local build, lint, check-types, test, coverage, format, and clean commands when the
+   workspace contains TypeScript source;
+4. declare internal dependencies with `workspace:*` and external runtime dependencies in the
+   consuming package;
+5. add synthetic tests and package-level coverage thresholds;
+6. document purpose, boundaries, failure behavior, and links back to the documentation hub;
+7. update the Turborepo task graph only when a new repository-wide task class is required; and
+8. run `pnpm qa`.
 
 ## Cross-Agent Compatibility
 
@@ -103,6 +211,9 @@ being discoverable. Do not add a second skill manifest to avoid this checklist.
   fixtures.
 - Scripts that can write to external systems must default to dry-run behavior and require an
   explicit write flag plus user authorization.
+- Skill-local TypeScript helpers and their `*.test.ts` files are covered by the root lint,
+  type-check, test, and coverage lanes. Keep them under `skills/<name>/scripts/`; do not create a
+  workspace package merely to obtain QA coverage.
 
 ## Commands
 
@@ -114,7 +225,10 @@ pnpm lint
 pnpm check-types
 pnpm test
 pnpm format:check
+pnpm validate:docs
 pnpm validate:skills
+pnpm validate:workflows
+pnpm build
 pnpm qa
 ```
 
@@ -127,8 +241,9 @@ pnpm qa
   cannot represent a deliberate boundary.
 - Treat ESLint errors and Prettier drift as blocking. The lint configuration includes strict typed
   rules plus promise, import, security, secret-detection, complexity, and consistency checks.
-- Maintain at least 80% statement, branch, function, and line coverage for the measured TypeScript
-  source. Coverage is a floor, not a substitute for assertions that exercise meaningful behavior.
+- Maintain at least 80% statement, branch, function, and line coverage for every measured TypeScript
+  package and root tooling. Coverage is a floor, not a substitute for assertions that exercise
+  meaningful behavior.
 - Keep tests synthetic, deterministic, cross-platform, credential-free, and independent of network
   services. Place live or host-specific validation in an explicitly separate lane if it is ever
   introduced.
@@ -136,6 +251,12 @@ pnpm qa
   use `pnpm install --frozen-lockfile` in CI and validation contexts.
 - `pnpm qa` must remain the single full local/CI quality command. Add new mandatory checks there
   rather than creating undocumented release-only commands.
+- Package manifests must declare the build and test tools they invoke instead of depending on
+  accidental root-level binary availability. Keep repository-wide policy and versions coordinated
+  from the root lockfile.
+- Canonical documents under `docs/` and `standards/` must be reachable from `docs/README.md`.
+  Package, application, and managed-workflow READMEs must link back to that hub. Keep local Markdown
+  files and heading anchors valid and run the documentation validator through `pnpm qa`.
 
 ## Git Hooks
 
@@ -161,11 +282,27 @@ pnpm qa
 ## Testing
 
 - Every skill needs positive, near-miss, and boundary cases in `evals/evals.json`.
+- Every managed workflow needs schema-valid fixtures, happy-path and policy-boundary evaluation
+  definitions, deterministic adapter tests where applicable, and representative repeated model
+  evaluation evidence before activation.
 - Test deterministic scripts with fixtures that do not require credentials or network access.
 - Validate workflow dependency names and cycles.
 - Treat agent output as nondeterministic: run activation and behavior evaluations repeatedly when
   changing descriptions or orchestration.
 - Cross-agent testing must verify the same behavioral contract, not identical wording.
+
+## Documentation Maintenance
+
+- Prefer links to one canonical explanation over copied prose that will drift.
+- Update the root README for repository-level capabilities and human onboarding; update this file
+  for contributor and coding-agent behavior.
+- Add each new canonical document under `docs/` or `standards/` to `docs/README.md`.
+- Link package and workflow READMEs to the documentation hub, the authoring guide when relevant, and
+  their direct architectural dependencies.
+- Keep current implementation status in the managed architecture document or package README rather
+  than repeating it across standards.
+- Do not put volatile branch, pull-request, deployment, or ticket status in durable documentation.
+- Run `pnpm validate:docs` after moving or renaming Markdown files; full QA runs it automatically.
 
 ## Git And Releases
 
@@ -182,7 +319,13 @@ pnpm qa
   the complete cross-platform quality matrix and dependency audit, so matrix changes do not silently
   weaken the stable required-check contract.
 - Release reviewed changes with semantic tags. Workstations may follow protected `main` through the
-  opt-in updater or install a reviewed release; managed runtimes must pin an exact tag or commit.
+  opt-in updater or install a reviewed skill release; managed runtimes must pin an exact tag or
+  commit and record the workflow version and runner image digest.
+- The workstation updater installs only `skills/`. It must never copy managed workflow packages,
+  runner code, infrastructure, or workflow credentials into a user's global skill directory.
+- A local launcher or evaluation may load a managed package from an explicit repository checkout.
+  That path must validate the same package contracts and policies as hosted execution and must not
+  turn `skills:update` into a workflow deployment mechanism.
 - When helping a person install these skills, separately offer the user-level daily refresh after
   installation. Enable it only after explicit opt-in; never infer recurring-update approval from
   installation approval. Automatic runs must retain all checkout and installation safety guards.

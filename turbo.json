@@ -1,0 +1,50 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "tui",
+  "globalDependencies": [
+    ".prettierignore",
+    ".prettierrc.json",
+    "eslint.config.mjs",
+    "tsconfig.base.json"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["dist/**"],
+      "outputLogs": "errors-only"
+    },
+    "lint": {
+      "dependsOn": ["^lint", "^build"],
+      "inputs": ["$TURBO_DEFAULT$", "^$TURBO_DEFAULT$"],
+      "outputs": [],
+      "outputLogs": "errors-only"
+    },
+    "check-types": {
+      "dependsOn": ["^check-types", "^build"],
+      "outputs": [],
+      "outputLogs": "errors-only"
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": [],
+      "outputLogs": "errors-only"
+    },
+    "test:coverage": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["coverage/**"],
+      "outputLogs": "errors-only"
+    },
+    "format": {
+      "outputs": []
+    },
+    "format:check": {
+      "outputs": []
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}

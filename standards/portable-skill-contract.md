@@ -34,3 +34,11 @@ standard. The canonical skill must remain understandable when adapters are ignor
 A skill is not portable when it requires an absolute workstation path, assumes a particular agent
 product, silently depends on an undeclared local skill, uses an operating-system-specific command
 without a supported alternative, or treats one connector's availability as authorization.
+
+## Related Guidance
+
+- [Documentation hub](../docs/README.md)
+- [Workflow authoring guide](../docs/workflow-authoring-guide.md)
+- [Workflow composition](workflow-composition.md)
+- [Tool capabilities](tool-capabilities.md)
+- [Testing and release](testing-and-release.md)

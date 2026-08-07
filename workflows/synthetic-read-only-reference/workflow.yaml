@@ -1,0 +1,53 @@
+apiVersion: headstart.health/v1alpha1
+kind: ManagedAgentWorkflow
+metadata:
+  id: synthetic-read-only-reference
+  displayName: Synthetic read-only reference
+  version: 0.1.0
+  description: Demonstrates a managed read-only workflow without accessing live systems.
+  lifecycle: draft
+  owners:
+    business:
+      name: Example business owner
+      team: Example team
+    technical:
+      name: Example technical steward
+      team: Engineering
+spec:
+  execution:
+    entrypoint: prompts/run.md
+    sandbox: read-only
+    networkAccess: disabled
+    timeoutSeconds: 300
+    model:
+      id: configured-at-deployment
+      reasoningEffort: medium
+  skills:
+    source:
+      repository: headstartHealthTeam/agent-skills
+      revision: workspace
+    required:
+      - headstart-document-review
+  identity:
+    serviceProfile: synthetic-none
+    requiredSecrets: []
+  workspace:
+    repositories: []
+  tools:
+    mcpServers: []
+    cliCommands: []
+  triggers:
+    - type: manual
+  contracts:
+    inputSchema: schemas/input.schema.json
+    outputSchema: schemas/output.schema.json
+  sideEffects:
+    mode: read-only
+    approvalRequired: false
+  retry:
+    maxAttempts: 1
+    initialBackoffSeconds: 5
+  observability:
+    dataClassification: internal
+    retentionDays: 30
+    emitCodexEvents: true

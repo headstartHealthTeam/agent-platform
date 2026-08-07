@@ -31,3 +31,11 @@ Before relying on a capability:
 
 Never convert an unavailable connector into guessed output. Never infer authorization from successful
 authentication.
+
+## Related Guidance
+
+- [Documentation hub](../docs/README.md)
+- [Workflow authoring guide](../docs/workflow-authoring-guide.md)
+- [Workflow composition](workflow-composition.md)
+- [Security and data handling](security-and-data-handling.md)
+- [Knowledge workflow sources](knowledge-workflow-sources.md)

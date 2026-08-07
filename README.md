@@ -1,38 +1,122 @@
-# Headstart Agent Skills
+# Headstart Agent Platform
 
-Canonical, versioned agent skills and workflow skills for Headstart Health engineering and
-operations. The repository uses the open Agent Skills format so the same reviewed source can run in
-Codex, Claude Code, Cursor, and other compatible coding agents.
+Canonical, versioned agent skills, managed workflow definitions, and Codex execution tooling for
+Headstart Health engineering and operations. Portable skills use the open Agent Skills format so
+the same reviewed source can run in Codex, Claude Code, Cursor, and other compatible coding agents.
 
 ## Why This Repository Exists
 
-Headstart workflows should not depend on one employee's laptop, one agent product, or copied prompt
-files that drift independently. This repository separates:
+Headstart workflow definitions should not depend on copied prompts that drift independently, and
+workflows that require independent operation should not depend on one employee's laptop. This
+repository separates these composable concerns:
 
 1. integration tools that expose bounded operations;
 2. reusable skills that explain one capability;
-3. workflow skills that compose capabilities and handoffs; and
-4. managed runtimes that schedule work and own durable execution state.
+3. workflow skills that compose capabilities and handoffs;
+4. managed workflow packages that make execution requirements explicit; and
+5. managed runtimes that schedule work and own durable execution state.
 
-The repository owns layers two and three. It does not replace application code, MCP servers,
-business systems of record, project tracking, or runtime infrastructure.
+The repository owns layers two through four and the Codex worker code within layer five. The
+Headstart backend and admin panel retain control-plane state and user interfaces. This repository
+does not replace application code, MCP servers, business systems of record, or project tracking.
+These are not sequential maturity levels. Many final team workflows should remain a reviewed skill
+or prompt using existing MCPs, APIs, connectors, browser control, or CLIs.
+
+## Start Here
+
+Use the [documentation hub](docs/README.md) as the repository map. If you are designing a new Codex
+workflow, agent, or cloud automation, begin with the
+[workflow authoring guide](docs/workflow-authoring-guide.md). It helps choose among:
+
+- a one-off supervised agent task;
+- one reusable skill;
+- an interactive workflow skill that composes skills, MCPs, connectors, or CLIs;
+- a code-assisted workflow with deterministic parsing, validation, or transformation;
+- a managed workflow package that runs independently of a person's laptop; and
+- application or infrastructure changes for durable state, permissions, writes, and user interfaces.
+
+Start with the smallest shape that satisfies the operating requirement. Existing authenticated
+capabilities plus a clear skill are often sufficient; managed infrastructure is appropriate when a
+workflow needs explicit triggers, service identity, durable state, retries, observability, or
+operational ownership. Decide separately whether any workflow-specific calculation,
+transformation, validation, or invariant warrants deterministic code.
+
+After installing the shared skills, a team member can start from any Codex session with a request
+such as:
+
+> Use `headstart-agent-workflow-authoring` to recommend and explain the best steady-state design for
+> this workflow before we implement it, including whether it needs workflow-specific code or managed
+> execution: [describe the business outcome and current manual process].
+
+## Local And Managed Consumption
+
+Most Headstart use of this repository is expected to begin and often remain on team members'
+workstations. The updater installs and refreshes the reviewed contents of `skills/` for local Codex,
+Claude Code, and Cursor agents so a person can launch and supervise those capabilities from their
+normal working context.
+
+The same canonical skills can also be pinned into an organization-managed run. Do not create a
+second cloud-specific copy of behavior that already belongs in a portable skill. A business
+workflow may offer both a local workflow skill for supervised use and a managed package under
+`workflows/` for independent execution; the package should reference the shared skill and add only
+the explicit schemas, identity, trigger, policy, ownership, and operating contract required by the
+managed context.
+
+A managed package may also be loaded from a repository checkout for local development, synthetic
+evaluation, or an intentionally supported supervised launch. It is not installed into a user's
+global skills directory. The workstation updater intentionally distributes `skills/` only; managed
+deployments use a separate pinned checkout or artifact path. Local and managed are execution
+contexts, not competing sources of truth.
+
+## Monorepo Structure
+
+| Path                           | Responsibility                                                        |
+| ------------------------------ | --------------------------------------------------------------------- |
+| `skills/`                      | Portable capabilities and interactive workflow skills                 |
+| `workflows/`                   | Deployable workflow prompts, schemas, ownership, triggers, and policy |
+| `packages/workflow-contracts/` | Runtime-neutral workflow manifest and run schemas                     |
+| `packages/workflow-runtime/`   | Safe package loading, reference resolution, and schema validation     |
+| `apps/codex-runner/`           | Managed Codex SDK execution worker                                    |
+| `docs/`                        | Documentation map, workflow design guide, and managed architecture    |
+| `standards/`                   | Shared authoring, security, composition, testing, and release rules   |
+
+The pnpm workspace and Turborepo task graph follow the established `new-skunkworks` pattern:
+package-local build and test commands, dependency-aware builds, explicit cache outputs, and one root
+`pnpm qa` command.
 
 ## Included Skills
 
-| Skill                                     | Purpose                                                                     |
-| ----------------------------------------- | --------------------------------------------------------------------------- |
-| `deep-pr-review`                          | Generic evidence-backed pull request review method                          |
-| `headstart-pr-review-context`             | Headstart repository, Linear, integration, privacy, and side-effect context |
-| `headstart-pr-review`                     | Complete Headstart review workflow that composes the two review skills      |
-| `headstart-dev-to-main-pr`                | Explicit-only production promotion inventory and PR workflow                |
-| `headstart-skill-authoring`               | Authoring and evaluation rules for shared Headstart skills                  |
-| `headstart-initiative-shaping`            | Evidence-backed scope, decisions, risks, and stakeholder questions          |
-| `headstart-workflow-walkthrough-analysis` | Cited current-state analysis from process demonstrations                    |
-| `headstart-document-review`               | Report-first substantive review of shared plans and procedures              |
-| `headstart-knowledge-capture`             | Proposed durable updates from verified team learnings                       |
-| `headstart-knowledge-refresh`             | Evidence-backed maintenance proposals for stale or overlapping guidance     |
-| `headstart-discovery-to-decision`         | Composed workflow from mixed discovery evidence to decision packet          |
-| `headstart-skills-update`                 | Install, preview, apply, or schedule complete workstation skill refreshes   |
+| Skill                                                                                                | Purpose                                                                     |
+| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [`deep-pr-review`](skills/deep-pr-review/SKILL.md)                                                   | Generic evidence-backed pull request review method                          |
+| [`headstart-agent-workflow-authoring`](skills/headstart-agent-workflow-authoring/SKILL.md)           | Select and design the smallest safe local or managed agent workflow         |
+| [`headstart-pr-review-context`](skills/headstart-pr-review-context/SKILL.md)                         | Headstart repository, Linear, integration, privacy, and side-effect context |
+| [`headstart-pr-review`](skills/headstart-pr-review/SKILL.md)                                         | Complete Headstart review workflow that composes the two review skills      |
+| [`headstart-dev-to-main-pr`](skills/headstart-dev-to-main-pr/SKILL.md)                               | Explicit-only production promotion inventory and PR workflow                |
+| [`headstart-skill-authoring`](skills/headstart-skill-authoring/SKILL.md)                             | Authoring and evaluation rules for shared Headstart skills                  |
+| [`headstart-initiative-shaping`](skills/headstart-initiative-shaping/SKILL.md)                       | Evidence-backed scope, decisions, risks, and stakeholder questions          |
+| [`headstart-workflow-walkthrough-analysis`](skills/headstart-workflow-walkthrough-analysis/SKILL.md) | Cited current-state analysis from process demonstrations                    |
+| [`headstart-document-review`](skills/headstart-document-review/SKILL.md)                             | Report-first substantive review of shared plans and procedures              |
+| [`headstart-knowledge-capture`](skills/headstart-knowledge-capture/SKILL.md)                         | Proposed durable updates from verified team learnings                       |
+| [`headstart-knowledge-refresh`](skills/headstart-knowledge-refresh/SKILL.md)                         | Evidence-backed maintenance proposals for stale or overlapping guidance     |
+| [`headstart-discovery-to-decision`](skills/headstart-discovery-to-decision/SKILL.md)                 | Composed workflow from mixed discovery evidence to decision packet          |
+| [`headstart-skills-update`](skills/headstart-skills-update/SKILL.md)                                 | Install, preview, apply, or schedule complete workstation skill refreshes   |
+
+## Managed Workflows
+
+| Workflow                                                                             | Status | Purpose                                                             |
+| ------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------- |
+| [`synthetic-read-only-reference`](workflows/synthetic-read-only-reference/README.md) | Draft  | Disabled synthetic example of the managed workflow package contract |
+
+Managed workflow packages are not installed globally with portable skills. They may be loaded from
+a repository checkout for local development, evaluation, or an explicitly supported supervised
+run. A managed runner pins an exact repository revision and loads only the workflow selected by the
+control plane. Use the
+[workflow authoring guide](docs/workflow-authoring-guide.md) to decide whether one is needed, then
+read the [managed workflow architecture](docs/codex-managed-workflow-architecture.md) before adding
+or promoting it. The current implementation is intentionally draft-only: repository validation
+blocks active workflows until isolated workspace, skill, tool, and environment materialization is
+implemented and tested.
 
 ## Knowledge Workflow Sources
 
@@ -151,9 +235,10 @@ pnpm install
 pnpm qa
 ```
 
-`pnpm qa` runs formatting, lint, TypeScript checks, unit tests, portable skill validation, evaluation
-schema validation, dependency-cycle checks, and the release collector's deterministic fixture suite.
-The TypeScript suite enforces 80% minimum coverage for statements, branches, functions, and lines.
+`pnpm qa` runs formatting, lint, TypeScript checks, package builds, unit tests, portable skill
+validation, managed workflow validation, evaluation schema validation, dependency-cycle checks,
+documentation graph validation, and the release collector's deterministic fixture suite. The
+TypeScript suites enforce 80% minimum coverage for statements, branches, functions, and lines.
 
 `pnpm install` also configures repository-owned Git hooks through Husky:
 
@@ -173,13 +258,15 @@ only when the full matrix and dependency audit pass and is the status enforced o
 dispatch remains available for recovery and verification, but does not replace either automatic
 trigger.
 
-Read [AGENTS.md](AGENTS.md) and the documents under [standards](standards/) before changing a skill.
+Read the [repository guide](AGENTS.md), [documentation hub](docs/README.md), and applicable
+[standards](standards/) before changing a skill, workflow, package, or runner.
 
 ## Release Policy
 
-`main` contains stable reviewed source. Releases use semantic tags. A skill change must identify its
-behavioral and compatibility impact, pass the repository QA command, and include release notes.
-Cloud or scheduled runtimes never follow an unreviewed branch automatically.
+`main` contains stable reviewed source. Releases use semantic tags. Skill and workflow changes must
+identify their behavioral and compatibility impact, pass the repository QA command, and include
+release notes. Cloud or scheduled runtimes never follow an unreviewed branch automatically and must
+record the exact repository commit, workflow version, skill revision, and runner image digest.
 
 ## Security
 

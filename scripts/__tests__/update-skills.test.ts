@@ -72,7 +72,7 @@ interface GitFixture {
 
 const commitAll = (repositoryRoot: string, message: string): void => {
   runGit(repositoryRoot, ['add', '.']);
-  runGit(repositoryRoot, ['commit', '-m', message]);
+  runGit(repositoryRoot, ['-c', 'commit.gpgSign=false', 'commit', '-m', message]);
 };
 
 const makeGitFixture = (): GitFixture => {

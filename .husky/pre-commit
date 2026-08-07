@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-if git diff --cached --name-only -- package.json | grep -q .; then
+if git diff --cached --name-only -- package.json pnpm-workspace.yaml 'apps/*/package.json' 'packages/*/package.json' 'workflows/*/package.json' | grep -q .; then
   if ! pnpm install --frozen-lockfile --ignore-scripts >/dev/null 2>&1; then
     printf '%s\n' 'package.json and pnpm-lock.yaml are out of sync.'
     printf '%s\n' 'Run: pnpm install && git add package.json pnpm-lock.yaml'

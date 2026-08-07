@@ -11,9 +11,16 @@ tests, hooks, or CI.
 
 ## Shared Skill
 
-Use the agent-skills repository for a repeatable Headstart procedure or domain capability that has a
-recognizable trigger, explicit inputs and outputs, stable boundaries, and value across users or
-repositories. Do not create a skill merely to store facts.
+Use the Headstart Agent Platform repository's `skills/` directory for a repeatable Headstart
+procedure or domain capability that has a recognizable trigger, explicit inputs and outputs, stable
+boundaries, and value across users or repositories. Do not create a skill merely to store facts.
+
+## Managed Workflow
+
+Use a managed package in the Headstart Agent Platform only when a proven workflow must run
+independently of an employee laptop or requires explicit triggers, service identity, durable run
+state, retries, observability, or operational ownership. Keep person-supervised composition as a
+workflow skill and keep business-system authority in the owning application.
 
 ## Application Code Or Configuration
 

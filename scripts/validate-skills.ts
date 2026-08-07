@@ -41,7 +41,7 @@ const TEXT_EXTENSIONS = new Set(['.json', '.md', '.py', '.ts', '.yaml', '.yml'])
 const FORBIDDEN_FILES = new Set(['.env', '.env.local', 'id_rsa', 'id_ed25519']);
 const REFERENCE_ROOTS = ['scripts/', 'references/', 'assets/'];
 const REFERENCE_PATTERNS = [/\]\(([^)\s]+)\)/g, /`([^`\s]+)`/g];
-const README_SKILL_ROW_PATTERN = /^\|\s*`([a-z0-9-]+)`\s*\|/gm;
+const README_SKILL_ROW_PATTERN = /^\|\s*(?:`([a-z0-9-]+)`|\[`([a-z0-9-]+)`\]\([^)]+\))\s*\|/gm;
 const FORBIDDEN_CONTENT: { label: string; pattern: RegExp }[] = [
   { label: 'a machine-specific macOS user path', pattern: /\/Users\/[A-Za-z0-9._-]+\// },
   { label: 'a machine-specific Windows user path', pattern: /[A-Za-z]:\\Users\\[^\\\s]+\\/ },
@@ -575,7 +575,10 @@ const validateReadmeSkillInventory = (
   const nextHeading = /^##\s/m.exec(remainingSource);
   const section = remainingSource.slice(0, nextHeading?.index ?? remainingSource.length);
   const documentedSkills = new Set(
-    [...section.matchAll(README_SKILL_ROW_PATTERN)].flatMap((match) => (match[1] ? [match[1]] : []))
+    [...section.matchAll(README_SKILL_ROW_PATTERN)].flatMap((match) => {
+      const skillName = match[1] ?? match[2];
+      return skillName ? [skillName] : [];
+    })
   );
   for (const skillName of skills.keys()) {
     if (!documentedSkills.has(skillName)) {

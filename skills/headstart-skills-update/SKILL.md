@@ -1,7 +1,7 @@
 ---
 name: headstart-skills-update
-description: Safely install, preview, manually refresh, or configure opt-in daily updates from Headstart's canonical shared agent-skills repository to user-level Codex, Claude Code, or Cursor skill directories. Use when setting up shared Headstart skills on a workstation, checking whether installed skills are stale, applying edits or newly published skills, or managing the user-level automatic refresh schedule.
-compatibility: Requires Git, Node.js 22 or newer, pnpm 9.15, and read access to the Headstart agent-skills repository. Scheduled refresh uses user cron on macOS/Linux or Task Scheduler on Windows.
+description: Safely install, preview, manually refresh, or configure opt-in daily updates of portable skills from the canonical Headstart Agent Platform repository to user-level Codex, Claude Code, or Cursor skill directories. Use when setting up shared Headstart skills on a workstation, checking whether installed skills are stale, applying edits or newly published skills, or managing the user-level automatic refresh schedule.
+compatibility: Requires Git, Node.js 22 or newer, pnpm 9.15, and read access to the Headstart Agent Platform repository at headstartHealthTeam/agent-skills. Scheduled refresh uses user cron on macOS/Linux or Task Scheduler on Windows.
 metadata:
   author: headstart-health
   version: '0.1.0'
@@ -101,9 +101,16 @@ and how to disable it. Contributors who use this repository for authoring should
 
 ## Runtime Boundary
 
-Use manual or scheduled refresh only for individual workstations. Managed, scheduled, or cloud
+This updater copies only the portable and workflow skills under `skills/` into individual users'
+agent skill directories. Those locally installed skills are the common team consumption path. The
+same canonical skill source may also be used by managed, scheduled, or cloud runners, but those
 runners must pin an approved tag or commit through deployment configuration rather than following
 `main` automatically.
+
+Do not use this updater to install `workflows/`, runner code, infrastructure, credentials, or other
+monorepo packages globally. A managed workflow package may be loaded locally from an explicit
+repository checkout for development, evaluation, or a supported supervised launch; that is a
+separate package execution path.
 
 ## Completion
 

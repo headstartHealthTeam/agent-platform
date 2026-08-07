@@ -12,6 +12,10 @@ metadata:
 Create shared skills as durable team capabilities, not transcripts of how one person used one agent.
 Read the repository `AGENTS.md` and the standards it identifies before editing a skill.
 
+If the request may require workflow-specific code, independent execution, durable state, triggers,
+or cloud operation, first use `docs/workflow-authoring-guide.md` to decide whether the artifact is a
+skill, managed workflow package, shared package, or application change.
+
 ## Decide The Boundary
 
 1. Define concrete prompts that should and should not activate the skill.

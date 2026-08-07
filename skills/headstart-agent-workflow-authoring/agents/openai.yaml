@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Headstart Agent Workflow Authoring'
+  short_description: 'Choose and design the right Headstart agent workflow shape'
+  default_prompt: 'Use $headstart-agent-workflow-authoring to classify and design this Headstart agent workflow before implementation.'
+policy:
+  allow_implicit_invocation: true

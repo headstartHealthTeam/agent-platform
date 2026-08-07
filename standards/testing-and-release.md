@@ -2,7 +2,7 @@
 
 ## Evaluation Layers
 
-Each skill is validated at four levels:
+Each portable skill is validated at four levels:
 
 1. **Static format:** frontmatter, names, references, adapters, and dependency graph.
 2. **Deterministic behavior:** bundled scripts and transformations use synthetic fixtures.
@@ -12,6 +12,13 @@ Each skill is validated at four levels:
 
 Model evaluations are repeated when changing descriptions or orchestration because one passing run
 does not prove reliable activation.
+
+Each managed workflow additionally requires manifest validation, referenced-file resolution, input
+and output JSON Schema compilation, schema-valid synthetic contract fixtures, happy-path and
+policy-boundary evaluation definitions, and tests for deterministic adapters when they are present.
+Repository validation checks the fixture and evaluation contracts; repeated model evaluation
+evidence remains release evidence rather than a credentialed CI dependency. Live services and
+credentials remain outside ordinary unit tests and hooks.
 
 Golden prompt sets should include direct, indirect, incomplete, near-miss, and unsafe or unsupported
 requests. Grade observable outcomes and side effects in addition to prose quality. For knowledge-work
@@ -26,6 +33,10 @@ Every pull request must pass the canonical `pnpm qa` command. It includes:
 - strict TypeScript compilation without emitting artifacts;
 - deterministic Vitest execution with at least 80% statements, branches, functions, and lines;
 - portable skill schema, reference, dependency, and safety validation;
+- managed workflow manifest, ownership, policy, reference, and schema validation;
+- local Markdown file and heading-anchor validation plus canonical documentation index and backlink
+  checks;
+- dependency-aware package builds through Turborepo;
 - the release collector's cross-platform Python fixture suite; and
 - a non-mutating repository-wide Prettier check.
 
@@ -42,15 +53,24 @@ process.
 
 ## Pull Request Evidence
 
-A skill PR identifies changed behavior, affected hosts, dependencies, evaluations, deterministic
-checks, migration needs, and known limitations. Formatting or prose-only checks do not substitute for
-behavior validation.
+A skill or workflow PR identifies changed behavior, affected hosts or runtimes, dependencies,
+evaluations, deterministic checks, migration needs, and known limitations. Managed workflow PRs also
+identify owners, triggers, permissions, data classification, side effects, deployment coordination,
+and rollback behavior. Formatting or prose-only checks do not substitute for behavior validation.
 
 ## Releases
 
-`main` contains stable reviewed source. Semantic tags create installable releases. Individual
-workstations may inspect and adopt a newer release; managed runtimes pin an exact tag or commit and
-change only through an intentional deployment.
+`main` contains stable reviewed source. Semantic tags create installable skill releases. Individual
+workstations may inspect and adopt a newer release; managed runtimes pin an exact tag or commit,
+workflow version, and immutable runner image and change only through an intentional deployment.
 
 Rollback means reinstalling or redeploying a known-good tag. Do not repair an installed copy and
 leave the canonical source unchanged.
+
+## Related Guidance
+
+- [Documentation hub](../docs/README.md)
+- [Workflow authoring guide](../docs/workflow-authoring-guide.md)
+- [Managed workflow architecture](../docs/codex-managed-workflow-architecture.md)
+- [Workflow composition](workflow-composition.md)
+- [Security and data handling](security-and-data-handling.md)

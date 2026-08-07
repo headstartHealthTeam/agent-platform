@@ -295,7 +295,9 @@ export const inspectUpdate = (
   );
   const topLevel = runGit(repositoryRoot, ['rev-parse', '--show-toplevel']);
   if (canonicalPath(topLevel) !== canonicalPath(repositoryRoot)) {
-    throw new Error('Run the updater from the root of the canonical agent-skills checkout.');
+    throw new Error(
+      'Run the updater from the root of the canonical Headstart Agent Platform checkout.'
+    );
   }
   if (runGit(repositoryRoot, ['status', '--porcelain']).length > 0) {
     throw new Error(

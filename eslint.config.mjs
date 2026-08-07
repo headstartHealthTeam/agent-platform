@@ -12,7 +12,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['coverage/**', 'dist/**', 'node_modules/**', '**/*.snap'],
+    ignores: ['**/.turbo/**', '**/coverage/**', '**/dist/**', 'node_modules/**', '**/*.snap'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked.map((config) => ({
@@ -37,7 +37,9 @@ export default tseslint.config(
         ...globals.es2022,
       },
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ['apps/*/vitest.config.ts', 'packages/*/vitest.config.ts'],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -101,6 +103,7 @@ export default tseslint.config(
       'import-x/first': 'error',
       'import-x/no-cycle': 'error',
       'import-x/no-duplicates': 'error',
+      'import-x/no-relative-packages': 'error',
       'import-x/no-self-import': 'error',
       'import-x/no-useless-path-segments': 'error',
       'import-x/order': [
@@ -114,6 +117,17 @@ export default tseslint.config(
       'no-alert': 'error',
       'no-debugger': 'error',
       'no-secrets/no-secrets': ['error', { tolerance: 4.5 }],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@headstart-health/*/src', '@headstart-health/*/src/**'],
+              message: 'Import another workspace through its declared package exports.',
+            },
+          ],
+        },
+      ],
       'no-var': 'error',
       'no-void': ['error', { allowAsStatement: false }],
       'promise/always-return': 'error',
@@ -158,15 +172,17 @@ export default tseslint.config(
     },
   },
   {
-    files: ['scripts/**/*.ts'],
+    files: ['scripts/**/*.ts', 'skills/**/scripts/**/*.ts'],
     rules: {
       // These files are command-line programs; stdout/stderr are their public interface.
       'no-console': 'off',
     },
   },
   {
-    files: ['scripts/__tests__/**/*.ts'],
+    files: ['**/*.test.ts', '**/*.spec.ts', 'scripts/__tests__/**/*.ts'],
     rules: {
+      // Async-generator fixtures yield events without needing an awaited setup step.
+      '@typescript-eslint/require-await': 'off',
       'sonarjs/no-duplicate-string': 'off',
       // Vitest's conventional __tests__ directory is intentionally not kebab-case.
       'unicorn/filename-case': 'off',

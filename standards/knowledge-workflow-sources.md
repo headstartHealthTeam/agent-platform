@@ -58,3 +58,10 @@ tasks, status, or communication, but should not receive copied content that will
 Default knowledge discovery and review workflows to read-only. An external write requires explicit
 user intent for the target system and action. Permission to edit one system does not authorize
 corresponding edits in every linked system.
+
+## Related Guidance
+
+- [Documentation hub](../docs/README.md)
+- [Workflow authoring guide](../docs/workflow-authoring-guide.md)
+- [Tool capabilities](tool-capabilities.md)
+- [Security and data handling](security-and-data-handling.md)
