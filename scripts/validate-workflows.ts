@@ -45,7 +45,8 @@ const addIssue = (
   file: string,
   message: string
 ): void => {
-  issues.push({ file: path.relative(repositoryRoot, file) || '.', message });
+  const relativeFile = path.relative(repositoryRoot, file) || '.';
+  issues.push({ file: relativeFile.split(path.sep).join('/'), message });
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
