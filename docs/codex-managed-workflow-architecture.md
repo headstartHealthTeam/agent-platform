@@ -9,7 +9,9 @@ behavior that made the local workflow effective.
 Use the [workflow authoring guide](workflow-authoring-guide.md) before this document to determine
 whether a managed workflow is warranted. Use the [documentation hub](README.md) to navigate the
 portable skill, contract, workflow runtime, runner, and standards documentation around this
-architecture.
+architecture. Use the
+[managed runtime completion roadmap](managed-runtime-completion-roadmap.md) for the ordered
+implementation slices between the current library foundation and Operational V1.
 
 This architecture applies only after managed execution is selected. It is not the expected eventual
 state of every recurring agent workflow. A managed workflow may use only prompts, skills, and
@@ -370,7 +372,9 @@ This repository currently establishes:
 It does not yet provide the AWS queue consumer, backend control-plane module, admin UI, service
 identity issuance, repository workspace materialization, skill installation into an isolated run,
 approval executor, external writes, deployment pipeline, or live workflow. Those are subsequent
-reviewed slices.
+reviewed slices. The
+[managed runtime completion roadmap](managed-runtime-completion-roadmap.md) defines their ownership,
+sequence, exclusions, and verification requirements.
 
 ## Required Next Decisions
 

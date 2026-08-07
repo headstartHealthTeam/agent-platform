@@ -64,6 +64,8 @@ those decisions.
 - `docs/workflow-authoring-guide.md` owns the workflow-shape decision process.
 - `docs/codex-managed-workflow-architecture.md` owns the managed runtime design and current
   implementation boundary.
+- `docs/managed-runtime-completion-roadmap.md` owns the ordered implementation work required to
+  reach the first operational managed workflow.
 - GitHub owns current branches, pull requests, reviews, releases, and tags once a remote exists.
 
 ## Structure

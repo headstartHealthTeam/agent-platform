@@ -15,6 +15,7 @@ has not worked in this repository before.
 | Add deterministic parsing, validation, or transformation           | [Workflow authoring guide](workflow-authoring-guide.md#choose-where-deterministic-code-belongs) | [`headstart-dev-to-main-pr`](../skills/headstart-dev-to-main-pr/SKILL.md), [testing and release](../standards/testing-and-release.md)                                      |
 | Make a workflow scheduled, event-driven, or independently operated | [Managed workflow architecture](codex-managed-workflow-architecture.md)                         | [Workflow contracts](../packages/workflow-contracts/README.md), [workflow runtime](../packages/workflow-runtime/README.md), [Codex runner](../apps/codex-runner/README.md) |
 | Add a managed workflow package                                     | [Workflow authoring guide](workflow-authoring-guide.md#managed-workflow-package)                | [Synthetic reference workflow](../workflows/synthetic-read-only-reference/README.md), [managed workflow architecture](codex-managed-workflow-architecture.md)              |
+| Complete the managed runtime foundation                            | [Managed runtime completion roadmap](managed-runtime-completion-roadmap.md)                     | [Managed workflow architecture](codex-managed-workflow-architecture.md), [Codex runner](../apps/codex-runner/README.md)                                                    |
 | Change repository-wide engineering policy                          | [Repository guide](../AGENTS.md)                                                                | [Testing and release](../standards/testing-and-release.md), [security and data handling](../standards/security-and-data-handling.md)                                       |
 
 ## Choose The Smallest Durable Shape
@@ -106,6 +107,8 @@ flowchart TD
 - [Workflow authoring guide](workflow-authoring-guide.md) owns the workflow-shape decision process.
 - [Managed workflow architecture](codex-managed-workflow-architecture.md) owns the managed runtime
   design and current implementation boundary.
+- [Managed runtime completion roadmap](managed-runtime-completion-roadmap.md) owns the ordered work
+  required to reach the first operational managed workflow.
 - Package READMEs own package-level behavior and limitations.
 - Standards own cross-cutting rules; they do not own volatile project or deployment status.
 

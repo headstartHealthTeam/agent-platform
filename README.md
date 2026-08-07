@@ -114,7 +114,9 @@ run. A managed runner pins an exact repository revision and loads only the workf
 control plane. Use the
 [workflow authoring guide](docs/workflow-authoring-guide.md) to decide whether one is needed, then
 read the [managed workflow architecture](docs/codex-managed-workflow-architecture.md) before adding
-or promoting it. The current implementation is intentionally draft-only: repository validation
+or promoting it. The [managed runtime completion roadmap](docs/managed-runtime-completion-roadmap.md)
+defines the remaining implementation slices and names isolated workflow materialization as the
+immediate next step. The current implementation is intentionally draft-only: repository validation
 blocks active workflows until isolated workspace, skill, tool, and environment materialization is
 implemented and tested.
 
