@@ -8,14 +8,14 @@ description: >
 compatibility: Works with coding agents that can read repositories, inspect Git history, and access pull request metadata through an authenticated integration or CLI.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.1.1'
 ---
 
 # Deep PR Review
 
-Use this skill to run a disciplined PR review that is suitable for real engineering work and
-live interview demonstrations. The goal is not to produce the most comments. The goal is to find
-material issues, validate them, and explain them in a way a reviewer can defend.
+Use this skill to run a disciplined PR review for real engineering work. The goal is not to produce
+the most comments. The goal is to find material issues, validate them, and explain them in a way a
+reviewer can defend.
 
 Default to a full review when the user invokes this skill without a mode. Only run a quick or
 lightweight review when the user explicitly asks for one.
@@ -102,8 +102,7 @@ Recommended passes:
 - `workflow-product`: check whether the feature fits the operator workflow, exposes the right next actions, handles empty/error/loading states,
   and avoids automating or surfacing decisions that should remain human-reviewed.
 
-For a small PR, run fewer passes directly in the main context. For a live interview, say which passes you are running
-and why, then continue without over-explaining the machinery.
+For a small PR, run fewer passes directly in the main context.
 
 For the default full review, cover at least: scope mapping, blank-slate adversary,
 correctness/regression, domain semantics/invariants, API/data contract, state/data integrity,
@@ -368,16 +367,3 @@ printf '%s\n\n%s\n' \
 For longer bodies, write the exact approved Markdown to a temporary file and use
 `--body-file <path>`. Use the same rule for `gh pr comment`, `gh issue comment`, and review
 submissions whenever the body has paragraphs, bullets, or code blocks.
-
-## Interview Mode
-
-For interview PR reviews, optimize for visible judgment:
-
-- Narrate the workflow briefly: "I am splitting the review into correctness, API/data, tests, and security/privacy passes, then I will validate and synthesize."
-- Keep the terminal output concise while the artifact captures detail.
-- Do not hide behind agent output. Manually verify findings before presenting them.
-- Prefer operationally meaningful comments: user impact, broken workflow, missing guardrail, unsafe assumption, or untested edge case.
-- Tie observations to the role when natural: automation judgment, workflow impact, TypeScript/Postgres correctness, and production-grade validation.
-
-The strongest signal is not that multiple agents were used. The strongest signal is that the review process is systematic,
-auditable, and restrained.
