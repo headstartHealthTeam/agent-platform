@@ -2,13 +2,17 @@
 
 ## Evaluation Layers
 
-Each portable skill is validated at four levels:
+Portable skills are evaluated across five applicable layers. Static format and activation always
+apply; the remaining layers apply when the skill includes the corresponding behavior:
 
 1. **Static format:** frontmatter, names, references, adapters, and dependency graph.
 2. **Deterministic behavior:** bundled scripts and transformations use synthetic fixtures.
 3. **Activation:** realistic positive, near-miss, and boundary prompts test whether the description
    selects the skill appropriately.
 4. **Workflow behavior:** supported agent hosts are checked for the same safety and output contract.
+5. **Operational portability:** a fresh session and second authorized operator can follow only the
+   documented inputs and dependencies without relying on the creator's chat history, machine files,
+   personal credentials, or implicit knowledge.
 
 Model evaluations are repeated when changing descriptions or orchestration because one passing run
 does not prove reliable activation.
@@ -24,6 +28,18 @@ Golden prompt sets should include direct, indirect, incomplete, near-miss, and u
 requests. Grade observable outcomes and side effects in addition to prose quality. For knowledge-work
 skills, verify that the agent chooses the right source role, preserves citations, and does not write
 to connected systems without explicit intent.
+
+For a workflow whose recommendation can later be compared with an external outcome, preserve the
+original recommendation, evidence, and exact workflow, skill, rule, source, schema, and model
+versions separately from the observed outcome. Classify mismatches before changing behavior: source
+staleness, extraction failure, model judgment, human override, external policy, and upstream data
+quality are different failure modes. Outcome review may propose a repository change and regression
+case; it must not mutate canonical skills or references automatically.
+
+Before publishing a shared operational workflow, run a clean-handoff exercise whenever practical:
+install from canonical source, start a fresh supported agent session, use an authorized operator
+other than the creator, and verify the behavioral contract with documented inputs. Record hidden
+dependencies as defects. Equivalent behavior is required; identical prose is not.
 
 ## Repository Quality Gates
 
@@ -54,9 +70,10 @@ process.
 ## Pull Request Evidence
 
 A skill or workflow PR identifies changed behavior, affected hosts or runtimes, dependencies,
-evaluations, deterministic checks, migration needs, and known limitations. Managed workflow PRs also
-identify owners, triggers, permissions, data classification, side effects, deployment coordination,
-and rollback behavior. Formatting or prose-only checks do not substitute for behavior validation.
+evaluations, deterministic checks, operational handoff evidence when applicable, migration needs,
+and known limitations. Managed workflow PRs also identify owners, triggers, permissions, data
+classification, side effects, deployment coordination, and rollback behavior. Formatting or
+prose-only checks do not substitute for behavior validation.
 
 ## Releases
 

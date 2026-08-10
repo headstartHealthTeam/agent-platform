@@ -4,7 +4,7 @@ description: Create or revise reusable Headstart agent skills and workflow skill
 compatibility: Works with coding agents that can edit Markdown and run the repository's documented validation commands.
 metadata:
   author: headstart-health
-  version: '0.2.1'
+  version: '0.3.0'
 ---
 
 # Headstart Skill Authoring
@@ -21,6 +21,7 @@ skill, managed workflow package, shared package, or application change.
 1. Define concrete prompts that should and should not activate the skill.
 2. Separate the layers:
    - tools expose operations;
+   - references hold supporting knowledge, templates, checklists, or source excerpts;
    - reusable skills explain one bounded capability;
    - workflow skills compose capabilities and handoffs;
    - deterministic services own invariants, durable state, and consequential writes when required.
@@ -29,6 +30,8 @@ skill, managed workflow package, shared package, or application change.
 4. Add a shared skill only when reuse, safety, or repeated execution justifies central ownership.
 5. Do not create a skill solely to restate a connector's basic tool descriptions. Put integration
    operations and authorization in the tool layer; use a skill for the Headstart workflow around it.
+6. Do not create one skill per workflow step. Extract a skill only for independent reuse, a
+   meaningful contract, or a distinct safety or evaluation boundary.
 
 ## Author The Portable Core
 
@@ -42,6 +45,9 @@ skill, managed workflow package, shared package, or application change.
 - State inputs, outputs, side effects, authority, failure behavior, and handoff identifiers.
 - For knowledge work, assign each connected source a purpose and authority boundary. Follow
   `standards/knowledge-workflow-sources.md` while authoring in this repository.
+- When bundling condensed knowledge derived from another source, preserve its stable identifier,
+  exact revision or fingerprint, citations, retrieval scope, owner, freshness trigger, and stale
+  behavior. Keep human operational interpretation distinct from the formal source.
 - For consequential workflows, require explicit user intent in the skill body and use optional
   host adapters for stronger invocation controls where supported.
 - Never include local machine paths, credentials, tokens, PHI, production records, or copied
@@ -88,6 +94,8 @@ only for independent work, context isolation, or an evaluation-backed improvemen
    reasonable.
 6. Record unsupported host behavior as a compatibility limitation or fix it before release.
 7. Include source-selection and no-unrequested-write cases for skills that use connected systems.
+8. For a shared operational workflow, perform a clean handoff from the canonical installation to a
+   fresh session and second authorized operator without creator-only context.
 
 ## Review Checklist
 
@@ -97,6 +105,8 @@ only for independent work, context isolation, or an evaluation-backed improvemen
 - Consequential reads and writes preserve applicable approval and privacy boundaries.
 - Composition dependencies exist and have no cycle.
 - Scripts and references are necessary, reachable, and tested.
+- Derived references preserve provenance, ownership, freshness, and stale behavior.
+- Shared operational workflows have clean second-operator handoff evidence when practical.
 - The version change and release notes communicate behavior changes.
 - Installation and update instructions do not make copied files a second source of truth.
 - The README `Included Skills` table names every new or retired skill and describes its current

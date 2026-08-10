@@ -16,6 +16,26 @@ managed execution can use guidance and existing tools alone or add focused teste
 Do not place runtime state or business-system authority inside a skill merely because the skill uses
 that system.
 
+## Choose The Right Artifact Boundary
+
+- A tool, API, MCP server, or CLI owns bounded authenticated operations and their permission model.
+- A reference owns supporting knowledge, examples, templates, or checklists; it does not activate or
+  orchestrate behavior by itself.
+- A reusable skill owns one independently useful Headstart procedure, judgment contract, or safety
+  boundary.
+- A workflow skill owns sequencing, handoffs, exception behavior, and human decisions across
+  capabilities.
+- A deterministic helper owns parsing, calculation, transformation, or validation that benefits
+  from reproducibility and focused tests.
+- An owning application or service owns durable state, authorization, concurrency controls,
+  business invariants, and consequential writes.
+
+A workflow step does not need its own skill merely because it is a separate step. Extract a skill
+when the capability is independently reusable, has a meaningful input/output contract, or needs a
+separate safety or evaluation boundary. Keep workflow-specific procedure in the workflow skill and
+static supporting material in references. Do not create a skill that only repeats a tool's existing
+operation descriptions.
+
 ## Shared Source Across Execution Contexts
 
 Most shared skills and workflow skills are consumed from employees' local agents through the
@@ -73,6 +93,20 @@ isolation is valuable, or repeated evaluation shows a material quality or latenc
 
 Keep planning and completion visible to the user. A workflow must not hide missing dependencies,
 failed handoffs, reduced evidence coverage, or partial completion behind orchestration.
+
+## Repeated And Concurrent Runs
+
+For every shared workflow, define whether repeating the same run or launching multiple runs against
+the same business record is harmless. A write-capable workflow must identify its unit of work,
+deduplication or idempotency key, append-versus-overwrite behavior, stale-read behavior, and the
+system that enforces collision safety.
+
+Prompt instructions such as checking whether another person ran recently are advisory, not a lock.
+When concurrent or repeated execution could corrupt, duplicate, or overwrite business state, require
+the owning application or permission-aware tool to enforce idempotency, version checks,
+compare-and-set behavior, a lease, or an equivalent invariant. Until that exists, keep the workflow
+read-only or proposal-only and require a person to perform the final action through the owning
+system.
 
 ## Consequential Work
 

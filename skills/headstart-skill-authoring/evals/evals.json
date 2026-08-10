@@ -45,6 +45,16 @@
         "Keeps basic integration operations in tool metadata",
         "Avoids adding a redundant wrapper skill"
       ]
+    },
+    {
+      "name": "derived-knowledge-reference",
+      "prompt": "Bundle a concise list of authorization requirements extracted from a payer manual that changes periodically so agents do not need the whole source in context.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses a supporting reference rather than creating an unnecessary skill",
+        "Preserves source identity, exact revision, citations, extraction scope, owner, freshness trigger, and stale behavior",
+        "Requires reviewed updates and regression evidence instead of self-modifying from observed outcomes"
+      ]
     }
   ]
 }

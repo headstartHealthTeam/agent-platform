@@ -53,6 +53,28 @@ approved decision record when practical.
 Choose one durable owner for a decision or learning. Other systems may hold links, implementation
 tasks, status, or communication, but should not receive copied content that will drift independently.
 
+## Derived Knowledge Artifacts
+
+A condensed rule set, manifest, checklist, or source-specific reference is derived evidence, not a
+new authority merely because an agent created it. Create one only when bounded retrieval at run time
+is insufficient and a reviewed, stable artifact materially improves consistency, latency, or context
+quality.
+
+Every derived artifact must identify:
+
+- the authoritative source, stable identifier, and exact revision, fingerprint, or effective date;
+- when it was retrieved or verified, what scope was extracted, and what was intentionally excluded;
+- citations that allow a reviewer to trace material rules back to the source;
+- the owner, review cadence or freshness trigger, and behavior when the source is missing or stale;
+  and
+- any human-approved operational interpretation separately from the formal source requirement.
+
+Prefer retrieving only the relevant source fragments over loading a broad corpus into every run.
+The narrowing step may be agent-assisted or deterministic, but its output must preserve provenance
+and must not silently replace the source of truth. Observed outcomes may identify a possible rule or
+source problem; they must not automatically rewrite a shared artifact. Changes require human review,
+a canonical repository update, and regression evidence.
+
 ## Write Boundary
 
 Default knowledge discovery and review workflows to read-only. An external write requires explicit

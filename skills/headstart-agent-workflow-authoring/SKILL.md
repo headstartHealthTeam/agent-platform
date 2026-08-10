@@ -4,7 +4,7 @@ description: 'Classify, design, scaffold, or evolve a Headstart agent-assisted w
 compatibility: Requires read access to the Headstart Agent Platform repository for canonical implementation guidance.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.2.0'
 ---
 
 # Headstart Agent Workflow Authoring
@@ -35,9 +35,15 @@ Determine:
 - deterministic, model-assisted, and human-only decisions;
 - available native connectors, MCPs, APIs, browser operations, and CLIs;
 - read, proposal, and write side effects;
+- repeated and concurrent-run behavior, plus the system that enforces collision safety;
 - missing, conflicting, duplicate, stale, timeout, and partial-completion behavior;
+- any derived rule pack or reference, including its source revision, citations, owner, and freshness
+  behavior;
+- any external outcome that can later validate the recommendation without rewriting it automatically;
 - data classification and minimum necessary access; and
-- the person who reviews the output, resolves exceptions, and approves side effects.
+- the person who reviews the output, resolves exceptions, and approves side effects; and
+- whether a second authorized operator can run it from canonical instructions without creator-only
+  context.
 
 When managed execution is plausible, also determine:
 
@@ -97,6 +103,22 @@ and do not scaffold elements that the selected steady state does not need.
 A recurring human-launched cadence remains supervised. Treat a schedule or event as a managed
 requirement only when it starts work independently of a supervising person.
 
+## Resolve Artifact Boundaries
+
+Do not create one skill per workflow step. Classify each concern before naming artifacts:
+
+- tools, APIs, MCP servers, and CLIs own authenticated operations;
+- references own static supporting knowledge and source excerpts;
+- reusable skills own independently useful procedures, judgment contracts, or safety boundaries;
+- workflow skills own sequencing, handoffs, exceptions, and human decisions;
+- deterministic helpers own reproducible parsing, calculation, transformation, or validation; and
+- owning applications or services own durable state, authorization, concurrency controls, business
+  invariants, and consequential writes.
+
+Extract a skill only when it adds independent reuse, a meaningful input/output contract, or a
+separate safety or evaluation boundary. Do not wrap existing tool descriptions or encode an
+application invariant in prompt prose.
+
 ## Place Deterministic Support Correctly When Needed
 
 - Use `skills/<name>/scripts/` for a portable helper that supports only that skill.
@@ -127,11 +149,13 @@ Summarize:
 5. only the proposed artifacts actually required, organized by repository and path;
 6. input, output, handoff, side-effect, and human-review contracts;
 7. deterministic, model-assisted, and human responsibilities;
-8. test and evaluation plan;
-9. deployment and operating requirements when managed execution applies; and
-10. local installation or launch behavior and managed consumption behavior when both are supported;
+8. repeated and concurrent-run behavior, including the enforcing system;
+9. derived-knowledge provenance and freshness behavior when applicable;
+10. test, evaluation, clean-handoff, and outcome-feedback validation plans;
+11. deployment and operating requirements when managed execution applies;
+12. local installation or launch behavior and managed consumption behavior when both are supported;
     and
-11. unresolved decisions that block safe implementation.
+13. unresolved decisions that block safe implementation.
 
 When the user asked only for design, stop before editing. When implementation was requested, follow
 the canonical checklist for each selected artifact, scaffold only those artifacts, and run `pnpm qa`
@@ -143,8 +167,12 @@ in the platform repository.
 - Do not copy personal credentials, local auth caches, machine paths, PHI, or production records into
   shared artifacts or fixtures.
 - Keep external writes explicit and independently authorized.
+- Treat prompt-level duplicate checks as advisory, not concurrency controls. Keep unsafe writes
+  proposal-only until the owning system enforces the required invariant.
 - A managed workflow may produce a typed proposal; the owning application must revalidate current
   authorization and business state before a consequential write.
+- Do not let observed outcomes automatically rewrite canonical skills, rules, or references. Preserve
+  provenance, classify the mismatch, and route changes through review with regression evidence.
 - Keep live external validation separate from ordinary Git hooks and pull-request CI.
 - Do not add deterministic code merely to make an agent workflow appear production-ready.
 - Leave uncertain workflows in an exploratory or draft state rather than encoding assumptions as

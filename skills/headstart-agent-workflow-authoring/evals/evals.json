@@ -66,6 +66,46 @@
         "Requires explicit service identity and idempotent deterministic writes",
         "Leaves the workflow draft until safety and ownership are resolved"
       ]
+    },
+    {
+      "name": "shared-write-concurrency",
+      "prompt": "Several insurance operators may run the same local Codex workflow at once, and it updates the same Salesforce authorization records. Design the smallest safe version.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Defines the unit of work, deduplication key, append or overwrite behavior, and stale-state behavior",
+        "Requires the owning application or permission-aware capability to enforce collision safety",
+        "Keeps the workflow read-only or proposal-only when prompt instructions are the only duplicate control"
+      ]
+    },
+    {
+      "name": "derived-rule-pack",
+      "prompt": "Summarize each payer manual once into a compact rule pack that every Headstart workflow can reuse without reading the manual again.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Distinguishes a supporting reference from a reusable skill, tool, and workflow",
+        "Requires authoritative source identity, exact revision, citations, scope, owner, freshness trigger, and stale behavior",
+        "Does not silently replace the authoritative manual or let outcomes automatically rewrite the rule pack"
+      ]
+    },
+    {
+      "name": "operational-handoff",
+      "prompt": "The person who built this shared Codex workflow will be out next week. Make sure a teammate can run it reliably without the creator's chat history or laptop setup.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Requires installation from the canonical source in a fresh supported agent session",
+        "Documents capabilities, authorized identity, inputs, outputs, limitations, and operating steps without personal machine dependencies",
+        "Validates equivalent behavior with a second authorized operator and records hidden dependencies as defects"
+      ]
+    },
+    {
+      "name": "outcome-feedback-loop",
+      "prompt": "After an insurer responds, have the workflow compare the result with its original recommendation and automatically rewrite the shared skill so it learns for next time.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves the original evidence and exact workflow, skill, rule, source, schema, and model versions separately from the outcome",
+        "Classifies source, extraction, model, human, policy, and data-quality mismatches before proposing a change",
+        "Rejects automatic mutation and requires a reviewed canonical update with regression evidence"
+      ]
     }
   ]
 }

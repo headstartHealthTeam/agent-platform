@@ -31,6 +31,26 @@ When beginning work with Codex or another supported coding agent:
 The agent should read the [repository guide](../AGENTS.md), this guide, and the standards linked for
 the selected shape before creating files.
 
+## Choose The Artifact Boundary
+
+Do not map workflow steps one-for-one to skills. Classify each durable concern by what it must own:
+
+| Artifact                      | Owns                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------------ |
+| Tool, API, MCP server, or CLI | Authenticated operations and permission-aware capability contracts             |
+| Reference                     | Supporting rules, examples, templates, checklists, or source excerpts          |
+| Reusable skill                | One independently useful procedure, judgment contract, or safety boundary      |
+| Workflow skill                | Sequencing, handoffs, exceptions, and human decisions across capabilities      |
+| Deterministic helper          | Reproducible parsing, calculation, transformation, or validation               |
+| Managed package               | Independent execution contract, pinned dependencies, policies, and evaluations |
+| Owning application or service | Durable state, authorization, concurrency, business invariants, and writes     |
+
+Extract a separate skill when the capability is independently reusable, has a meaningful contract,
+or needs its own safety or evaluation boundary. Keep workflow-specific instructions in the workflow
+skill and static supporting material in references. Do not wrap existing tool descriptions in a
+skill or rely on prompt prose to enforce an application invariant. See
+[workflow composition](../standards/workflow-composition.md).
+
 ## Shapes Are Steady States, Not Maturity Levels
 
 The shapes in this guide are alternatives and composable elements, not stages that every workflow
@@ -184,6 +204,18 @@ A managed workflow may propose a typed action. It does not become the source of 
 because Codex reasoned about the action. The owning application must revalidate authorization and
 current business state before a consequential write.
 
+## Design Repeated And Concurrent Execution
+
+Before allowing a shared workflow to write, define what happens when the same work is run twice or
+two authorized people run it at the same time. Identify the business unit of work, deduplication or
+idempotency key, append-versus-overwrite behavior, stale-read behavior, and the system that enforces
+collision safety.
+
+Agent instructions can request a pre-write check, but they are not a lock. If the owning application
+or permission-aware capability cannot enforce idempotency, version checks, compare-and-set behavior,
+a lease, or an equivalent invariant, keep the workflow read-only or proposal-only and require a
+person to complete the write in the owning system.
+
 ## Decision Table
 
 | Requirement                                | One-off task | Reusable or workflow skill | Deterministic helper | Managed workflow | Owning application       |
@@ -240,6 +272,21 @@ The workflow declares the capability it needs and its authorization boundary. To
 not permission. See [tool capabilities](../standards/tool-capabilities.md) and
 [security and data handling](../standards/security-and-data-handling.md).
 
+## Manage Derived Knowledge Deliberately
+
+Use bounded retrieval from the authoritative source when practical. Create a condensed rule pack,
+manifest, checklist, or reference only when a reviewed stable artifact materially improves context,
+latency, or consistency. Record the source identifier and exact revision or fingerprint, citations,
+retrieval date, extraction scope, owner, freshness trigger, and stale behavior. Separate formal
+source requirements from human-approved operational interpretation.
+
+Observed outcomes can reveal a stale source, extraction defect, model error, human override,
+external-policy change, or upstream data-quality problem. Preserve the original recommendation and
+its exact workflow, skill, rule, source, schema, and model versions before classifying the mismatch.
+Do not let a workflow automatically rewrite a shared skill or reference from outcome data. Route a
+proposed canonical change through review and add regression evidence. See
+[knowledge workflow sources](../standards/knowledge-workflow-sources.md).
+
 ## Evidence-Based Evolution
 
 1. **Prove the behavior:** complete the task with a person present and capture observed edge cases.
@@ -254,6 +301,9 @@ not permission. See [tool capabilities](../standards/tool-capabilities.md) and
 6. **Stop at the selected architecture:** do not scaffold unused packages, adapters, control-plane
    features, or deployment infrastructure. Re-evaluate only when new evidence changes the
    requirement.
+7. **Prove operational transfer:** for a shared workflow, have a second authorized operator use the
+   canonical installation from a fresh agent session without the creator's chat history, local
+   files, personal credentials, or implicit knowledge.
 
 An interactive skill can be the permanent production operating model for supervised work. A
 managed workflow can also remain prompt-, skill-, and tool-driven when no workflow-specific
@@ -263,6 +313,8 @@ deterministic logic is warranted.
 
 - One-off task: verify the requested result and disclose evidence limits.
 - Reusable skill: static validation plus positive, near-miss, boundary, and side-effect evaluations.
+- Shared operational workflow: fresh-session and second-operator handoff validation using only its
+  documented inputs and dependencies.
 - Deterministic helper: typed unit tests with synthetic fixtures and meaningful failure assertions.
 - Managed package: manifest, reference, schema, policy, and fixture tests, plus adapter tests when
   adapters are present.
@@ -280,11 +332,19 @@ The canonical commands and coverage policy live in [testing and release](../stan
 - Which decisions are deterministic, model-assisted, or human-only?
 - What identifiers and structured outputs connect the steps?
 - What can the workflow read, propose, or write?
+- What happens when the same business record is processed twice or concurrently, and which system
+  enforces the required invariant?
 - What happens on missing evidence, conflicting evidence, stale state, duplicate triggers, timeout,
   partial completion, or ambiguous external writes?
+- Does the workflow create derived knowledge, and if so, how are source version, citations,
+  freshness, ownership, and stale behavior preserved?
+- Can a later external outcome be compared with the original recommendation without collapsing
+  source, extraction, model, human, policy, and data-quality failures into one category?
 - Does the workflow touch PHI or another sensitive class, and what is the minimum necessary input and
   retained output?
 - Who reviews the output, resolves exceptions, and approves side effects?
+- Can a second authorized operator reproduce the behavior from canonical instructions without the
+  creator's session or machine context?
 - What observation would prove that more infrastructure is now justified?
 
 For managed execution, also ask:
