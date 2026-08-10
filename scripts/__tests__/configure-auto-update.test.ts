@@ -346,6 +346,7 @@ describe('automatic update configuration', () => {
   it('discovers pnpm when an explicit executable is not supplied', () => {
     const stateDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'headstart-pnpm-update-'));
     temporaryDirectories.push(stateDirectory);
+    const corepackExecutable = path.resolve('/tools/corepack');
     let crontab = '';
     const runProcess = (
       command: string,
@@ -357,7 +358,7 @@ describe('automatic update configuration', () => {
           ? { status: 0, stdout: '/tools/corepack\n' }
           : { status: 1, stdout: '' };
       }
-      if (command === '/tools/corepack' && arguments_.at(-1) === '--version') {
+      if (command === corepackExecutable && arguments_.at(-1) === '--version') {
         return { status: 0, stdout: '9.15.0' };
       }
       if (arguments_[0] === '-l') {
@@ -380,12 +381,13 @@ describe('automatic update configuration', () => {
           validateCheckout: vi.fn(),
         }
       )?.packageManager
-    ).toEqual({ executable: path.resolve('/tools/corepack'), arguments: ['pnpm'] });
+    ).toEqual({ executable: corepackExecutable, arguments: ['pnpm'] });
   });
 
   it('uses an exact direct pnpm installation when Corepack is unavailable', () => {
     const stateDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'headstart-direct-pnpm-'));
     temporaryDirectories.push(stateDirectory);
+    const pnpmExecutable = path.resolve('/tools/pnpm');
     let crontab = '';
     const runProcess = (
       command: string,
@@ -397,7 +399,7 @@ describe('automatic update configuration', () => {
           ? { status: 0, stdout: '/tools/pnpm\n' }
           : { status: 1, stdout: '' };
       }
-      if (command === '/tools/pnpm' && arguments_[0] === '--version') {
+      if (command === pnpmExecutable && arguments_[0] === '--version') {
         return { status: 0, stdout: '9.15.0' };
       }
       if (arguments_[0] === '-l') {
@@ -420,7 +422,7 @@ describe('automatic update configuration', () => {
           validateCheckout: vi.fn(),
         }
       )?.packageManager
-    ).toEqual({ executable: path.resolve('/tools/pnpm'), arguments: [] });
+    ).toEqual({ executable: pnpmExecutable, arguments: [] });
   });
 
   it('fails clearly when pnpm cannot be found', () => {
