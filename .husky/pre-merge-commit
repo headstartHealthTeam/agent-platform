@@ -1,5 +1,13 @@
 #!/usr/bin/env sh
 set -eu
 
-pnpm install --frozen-lockfile
-pnpm qa
+run_pnpm() {
+  if command -v corepack >/dev/null 2>&1; then
+    corepack pnpm "$@"
+  else
+    pnpm "$@"
+  fi
+}
+
+run_pnpm install --frozen-lockfile
+run_pnpm qa

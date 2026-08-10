@@ -156,15 +156,21 @@ preview GitHub CLI command being present. A setup agent should first confirm the
 user actually uses, clone or reuse a clean canonical checkout, and install the locked dependencies:
 
 ```bash
-pnpm install --frozen-lockfile
+corepack pnpm --version
+corepack pnpm install --frozen-lockfile
 ```
+
+The first command must report `9.15.0`, the exact version declared by `packageManager` and enforced
+by the repository. Do not change `package.json` or regenerate the lockfile to match an unrelated
+global pnpm installation. If `corepack` is unavailable, install the official userland Corepack
+package first; Node.js no longer bundles it starting with Node 25.
 
 For normal complete workstation setup and ongoing refresh, use the repository-owned updater. It
 previews by default and refuses dirty, non-`main`, divergent, or unexpected checkouts:
 
 ```bash
-pnpm skills:update -- --agent codex
-pnpm skills:update -- --agent codex --apply --expected-commit <sha-from-preview>
+corepack pnpm skills:update -- --agent codex
+corepack pnpm skills:update -- --agent codex --apply --expected-commit <sha-from-preview>
 ```
 
 Run `--apply` only after reviewing the preview, using the exact commit it reports. If `main` advances,
@@ -179,9 +185,9 @@ The lower-level installer is available only for intentionally selected, project-
 unmanaged copies:
 
 ```bash
-pnpm skills:install -- --agent codex --scope user --all --dry-run
-pnpm skills:install -- --agent claude-code --scope user --all --dry-run
-pnpm skills:install -- --agent cursor --scope user --all --dry-run
+corepack pnpm skills:install -- --agent codex --scope user --all --dry-run
+corepack pnpm skills:install -- --agent claude-code --scope user --all --dry-run
+corepack pnpm skills:install -- --agent cursor --scope user --all --dry-run
 ```
 
 Remove `--dry-run` after checking the destination. Use `--force` only when intentionally replacing a
@@ -193,15 +199,17 @@ Because most users should not need to remember a manual refresh, setup agents mu
 the opt-in user-level daily schedule after the initial installation:
 
 ```bash
-pnpm skills:auto-update -- --enable --agent codex
-pnpm skills:auto-update -- --status
-pnpm skills:auto-update -- --disable --agent codex
+corepack pnpm skills:auto-update -- --enable --agent codex
+corepack pnpm skills:auto-update -- --status
+corepack pnpm skills:auto-update -- --disable --agent codex
 ```
 
 The job attempts a refresh at 09:00 local time through user cron on macOS/Linux or Task Scheduler on
 Windows. A sleeping or powered-off workstation may miss that attempt and will retry at the next
 scheduled time. It requires no administrator privileges and preserves the same repository safety
-guards. Approval to install skills does not imply approval to enable this recurring job; ask
+guards. Setup validates and records a command that resolves the repository's exact pnpm version,
+preferring `corepack pnpm` and accepting a direct pnpm executable only when its version matches.
+Approval to install skills does not imply approval to enable this recurring job; ask
 explicitly and leave it disabled when the user declines or does not answer. After setup, report the
 installed hosts, schedule state, local log location, and disable command.
 
@@ -233,8 +241,8 @@ Requirements:
 Install and validate:
 
 ```bash
-pnpm install
-pnpm qa
+corepack pnpm install
+corepack pnpm qa
 ```
 
 `pnpm qa` runs formatting, lint, TypeScript checks, package builds, unit tests, portable skill
@@ -253,12 +261,13 @@ TypeScript suites enforce 80% minimum coverage for statements, branches, functio
   local merge commit.
 
 CI runs for every same-repository feature-branch pull request targeting `main` and again after every
-push or merge to `main`. It runs the same complete QA suite on Linux, macOS, and Windows, and against
-both the minimum Node.js version and the current Node.js release. A separate job audits production
-and development dependencies at moderate severity or higher. The stable `Required` check succeeds
-only when the full matrix and dependency audit pass and is the status enforced on `main`. Manual
-dispatch remains available for recovery and verification, but does not replace either automatic
-trigger.
+push or merge to `main`. The pnpm setup action reads the exact version from `packageManager`, so CI
+and workstation setup share one version source. CI runs the same complete QA suite on Linux, macOS,
+and Windows, and against both the minimum Node.js version and the current Node.js release. A separate
+job audits production and development dependencies at moderate severity or higher. The stable
+`Required` check succeeds only when the full matrix and dependency audit pass and is the status
+enforced on `main`. Manual dispatch remains available for recovery and verification, but does not
+replace either automatic trigger.
 
 Read the [repository guide](AGENTS.md), [documentation hub](docs/README.md), and applicable
 [standards](standards/) before changing a skill, workflow, package, or runner.

@@ -29,12 +29,17 @@ export interface AutoUpdateOptions {
 }
 
 export interface AutoUpdateConfig {
-  schemaVersion: 1;
+  schemaVersion: 2;
   repositoryRoot: string;
   nodeExecutable: string;
-  pnpmExecutable: string;
+  packageManager: PackageManagerCommand;
   logFile: string;
   agents: AgentHost[];
+}
+
+export interface PackageManagerCommand {
+  executable: string;
+  arguments: string[];
 }
 
 export interface ProcessResult {
@@ -53,7 +58,8 @@ interface AutoUpdateDependencies {
   homeDirectory?: string;
   stateDirectory?: string;
   nodeExecutable?: string;
-  pnpmExecutable?: string;
+  packageManager?: PackageManagerCommand;
+  requiredPnpmVersion?: string;
   runProcess?: ProcessRunner;
   validateCheckout?: () => void;
 }
@@ -153,18 +159,59 @@ export const runProcessCommand: ProcessRunner = (command, arguments_, options = 
   return { status: result.status ?? 1, stdout: result.stdout.trim() };
 };
 
-const findPnpmExecutable = (platform: NodeJS.Platform, runProcess: ProcessRunner): string => {
+const findExecutable = (
+  executableName: string,
+  platform: NodeJS.Platform,
+  runProcess: ProcessRunner
+): string | undefined => {
   const command = platform === 'win32' ? 'where' : 'which';
-  const result = runProcess(command, ['pnpm']);
+  const result = runProcess(command, [executableName]);
   const candidates = result.stdout.split(/\r?\n/).filter((line) => line.trim().length > 0);
   const executable =
     platform === 'win32'
       ? (candidates.find((candidate) => candidate.toLowerCase().endsWith('.cmd')) ?? candidates[0])
       : candidates[0];
-  if (result.status !== 0 || !executable) {
-    throw new Error('Unable to locate pnpm. Install pnpm 9.15 before enabling automatic updates.');
+  return result.status === 0 && executable ? path.resolve(executable.trim()) : undefined;
+};
+
+const validatePackageManager = (
+  command: PackageManagerCommand,
+  requiredPnpmVersion: string,
+  runProcess: ProcessRunner
+): void => {
+  const result = runProcess(command.executable, [...command.arguments, '--version']);
+  const actualVersion = result.stdout.trim();
+  if (result.status !== 0 || actualVersion !== requiredPnpmVersion) {
+    const reportedVersion = actualVersion || 'no version';
+    throw new Error(
+      `Automatic updates require pnpm ${requiredPnpmVersion}, but ${command.executable} reported ${reportedVersion}. ` +
+        'Activate the packageManager version with Corepack, verify it, and retry.'
+    );
   }
-  return path.resolve(executable.trim());
+};
+
+const findPackageManager = (
+  platform: NodeJS.Platform,
+  requiredPnpmVersion: string,
+  runProcess: ProcessRunner
+): PackageManagerCommand => {
+  const corepackExecutable = findExecutable('corepack', platform, runProcess);
+  if (corepackExecutable) {
+    const command = { executable: corepackExecutable, arguments: ['pnpm'] };
+    validatePackageManager(command, requiredPnpmVersion, runProcess);
+    return command;
+  }
+
+  const pnpmExecutable = findExecutable('pnpm', platform, runProcess);
+  if (pnpmExecutable) {
+    const command = { executable: pnpmExecutable, arguments: [] };
+    validatePackageManager(command, requiredPnpmVersion, runProcess);
+    return command;
+  }
+
+  throw new Error(
+    `Unable to locate Corepack or pnpm ${requiredPnpmVersion}. Install the repository package manager before enabling automatic updates.`
+  );
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -173,24 +220,94 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const isAgentHost = (value: unknown): value is AgentHost =>
   typeof value === 'string' && includesValue(AGENT_HOST_VALUES, value);
 
+export const readRequiredPnpmVersion = (repositoryRoot: string): string => {
+  const manifestFile = path.join(repositoryRoot, 'package.json');
+  const parsed: unknown = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
+  if (!isRecord(parsed) || typeof parsed['packageManager'] !== 'string') {
+    throw new Error(`Missing exact packageManager declaration in ${manifestFile}.`);
+  }
+
+  const descriptor = parsed['packageManager'];
+  const versionWithIntegrity = descriptor.startsWith('pnpm@') ? descriptor.slice(5) : '';
+  const requiredPnpmVersion = versionWithIntegrity.split('+')[0];
+  const versionParts = requiredPnpmVersion?.split('.') ?? [];
+  const isExactVersion =
+    versionParts.length === 3 &&
+    versionParts.every((part) => {
+      const numericPart = Number(part);
+      return Number.isSafeInteger(numericPart) && numericPart >= 0 && String(numericPart) === part;
+    });
+  const engines = parsed['engines'];
+  if (
+    requiredPnpmVersion === undefined ||
+    !isExactVersion ||
+    !isRecord(engines) ||
+    engines['pnpm'] !== requiredPnpmVersion
+  ) {
+    throw new Error(
+      `packageManager and engines.pnpm must declare the same exact pnpm version in ${manifestFile}.`
+    );
+  }
+  return requiredPnpmVersion;
+};
+
+const hasCommonConfigFields = (
+  parsed: Record<string, unknown>
+): parsed is Record<string, unknown> & {
+  repositoryRoot: string;
+  nodeExecutable: string;
+  logFile: string;
+  agents: AgentHost[];
+} =>
+  typeof parsed['repositoryRoot'] === 'string' &&
+  typeof parsed['nodeExecutable'] === 'string' &&
+  typeof parsed['logFile'] === 'string' &&
+  Array.isArray(parsed['agents']) &&
+  parsed['agents'].every(isAgentHost);
+
 const readConfig = (configFile: string): AutoUpdateConfig | undefined => {
   if (!fs.existsSync(configFile)) {
     return undefined;
   }
   const parsed: unknown = JSON.parse(fs.readFileSync(configFile, 'utf8'));
-  if (
-    !isRecord(parsed) ||
-    parsed['schemaVersion'] !== 1 ||
-    typeof parsed['repositoryRoot'] !== 'string' ||
-    typeof parsed['nodeExecutable'] !== 'string' ||
-    typeof parsed['pnpmExecutable'] !== 'string' ||
-    typeof parsed['logFile'] !== 'string' ||
-    !Array.isArray(parsed['agents']) ||
-    !parsed['agents'].every(isAgentHost)
-  ) {
+  if (!isRecord(parsed) || !hasCommonConfigFields(parsed)) {
     throw new Error(`Invalid automatic-update configuration: ${configFile}`);
   }
-  return parsed as unknown as AutoUpdateConfig;
+
+  const packageManager = parsed['packageManager'];
+  if (
+    parsed['schemaVersion'] === 2 &&
+    isRecord(packageManager) &&
+    typeof packageManager['executable'] === 'string' &&
+    Array.isArray(packageManager['arguments']) &&
+    packageManager['arguments'].every((argument) => typeof argument === 'string')
+  ) {
+    return {
+      schemaVersion: 2,
+      repositoryRoot: parsed.repositoryRoot,
+      nodeExecutable: parsed.nodeExecutable,
+      packageManager: {
+        executable: packageManager['executable'],
+        arguments: [...packageManager['arguments']],
+      },
+      logFile: parsed.logFile,
+      agents: [...parsed.agents],
+    };
+  }
+
+  const legacyPnpmExecutable = parsed['pnpmExecutable'];
+  if (parsed['schemaVersion'] === 1 && typeof legacyPnpmExecutable === 'string') {
+    return {
+      schemaVersion: 2,
+      repositoryRoot: parsed.repositoryRoot,
+      nodeExecutable: parsed.nodeExecutable,
+      packageManager: { executable: legacyPnpmExecutable, arguments: [] },
+      logFile: parsed.logFile,
+      agents: [...parsed.agents],
+    };
+  }
+
+  throw new Error(`Invalid automatic-update configuration: ${configFile}`);
 };
 
 const writeConfig = (configFile: string, config: AutoUpdateConfig): void => {
@@ -199,10 +316,15 @@ const writeConfig = (configFile: string, config: AutoUpdateConfig): void => {
 
 const shellQuote = (value: string): string => `'${value.replaceAll("'", `'"'"'`)}'`;
 
+const renderUnixPackageManager = (config: AutoUpdateConfig): string =>
+  [config.packageManager.executable, ...config.packageManager.arguments]
+    .map((argument) => shellQuote(argument))
+    .join(' ');
+
 export const renderUnixRunner = (config: AutoUpdateConfig): string => {
   const pathValue = [
     path.dirname(config.nodeExecutable),
-    path.dirname(config.pnpmExecutable),
+    path.dirname(config.packageManager.executable),
     '/usr/local/bin',
     '/usr/bin',
     '/bin',
@@ -212,12 +334,12 @@ export const renderUnixRunner = (config: AutoUpdateConfig): string => {
     'set -eu',
     `export PATH=${shellQuote(pathValue)}`,
     `cd ${shellQuote(config.repositoryRoot)}`,
-    `${shellQuote(config.pnpmExecutable)} install --frozen-lockfile`,
+    `${renderUnixPackageManager(config)} install --frozen-lockfile`,
   ];
   for (const agent of config.agents) {
     commands.push(
-      `${shellQuote(config.pnpmExecutable)} skills:update -- --agent ${agent} --apply --scheduled`,
-      `${shellQuote(config.pnpmExecutable)} install --frozen-lockfile`
+      `${renderUnixPackageManager(config)} skills:update -- --agent ${agent} --apply --scheduled`,
+      `${renderUnixPackageManager(config)} install --frozen-lockfile`
     );
   }
   return `${commands.join('\n')}\n`;
@@ -225,20 +347,25 @@ export const renderUnixRunner = (config: AutoUpdateConfig): string => {
 
 const quoteCommand = (value: string): string => `"${value.replaceAll('"', '""')}"`;
 
+const renderWindowsPackageManager = (config: AutoUpdateConfig): string =>
+  [config.packageManager.executable, ...config.packageManager.arguments]
+    .map((argument) => quoteCommand(argument))
+    .join(' ');
+
 export const renderWindowsRunner = (config: AutoUpdateConfig): string => {
   const commands = [
     '@echo off',
     `call :run >> ${quoteCommand(config.logFile)} 2>&1`,
     'exit /b %ERRORLEVEL%',
     ':run',
-    `set "PATH=${path.win32.dirname(config.nodeExecutable)};${path.win32.dirname(config.pnpmExecutable)};%PATH%"`,
+    `set "PATH=${path.win32.dirname(config.nodeExecutable)};${path.win32.dirname(config.packageManager.executable)};%PATH%"`,
     `cd /d ${quoteCommand(config.repositoryRoot)} || exit /b 1`,
-    `call ${quoteCommand(config.pnpmExecutable)} install --frozen-lockfile || exit /b 1`,
+    `call ${renderWindowsPackageManager(config)} install --frozen-lockfile || exit /b 1`,
   ];
   for (const agent of config.agents) {
     commands.push(
-      `call ${quoteCommand(config.pnpmExecutable)} skills:update -- --agent ${agent} --apply --scheduled || exit /b 1`,
-      `call ${quoteCommand(config.pnpmExecutable)} install --frozen-lockfile || exit /b 1`
+      `call ${renderWindowsPackageManager(config)} skills:update -- --agent ${agent} --apply --scheduled || exit /b 1`,
+      `call ${renderWindowsPackageManager(config)} install --frozen-lockfile || exit /b 1`
     );
   }
   commands.push('exit /b 0');
@@ -407,14 +534,16 @@ export const configureAutoUpdate = (
   }
 
   fs.mkdirSync(stateDirectory, { recursive: true, mode: 0o700 });
+  const requiredPnpmVersion =
+    dependencies.requiredPnpmVersion ?? readRequiredPnpmVersion(repositoryRoot);
+  const packageManager =
+    dependencies.packageManager ?? findPackageManager(platform, requiredPnpmVersion, runProcess);
+  validatePackageManager(packageManager, requiredPnpmVersion, runProcess);
   const config: AutoUpdateConfig = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     repositoryRoot: path.resolve(repositoryRoot),
     nodeExecutable: dependencies.nodeExecutable ?? process.execPath,
-    pnpmExecutable:
-      dependencies.pnpmExecutable ??
-      existing?.pnpmExecutable ??
-      findPnpmExecutable(platform, runProcess),
+    packageManager,
     logFile,
     agents,
   };

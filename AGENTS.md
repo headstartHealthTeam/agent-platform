@@ -219,19 +219,22 @@ Before adding a shared package or changing the runner:
 
 ## Commands
 
-Use pnpm and the checked-in lockfile:
+Use the exact pnpm version declared in `packageManager` and the checked-in lockfile. Bootstrap with
+`corepack pnpm --version` and require it to report the declared version before installation. If a
+different global pnpm appears on `PATH`, use Corepack or correct the workstation setup; never edit
+the manifest or lockfile merely to accommodate that global installation.
 
 ```bash
-pnpm install
-pnpm lint
-pnpm check-types
-pnpm test
-pnpm format:check
-pnpm validate:docs
-pnpm validate:skills
-pnpm validate:workflows
-pnpm build
-pnpm qa
+corepack pnpm install
+corepack pnpm lint
+corepack pnpm check-types
+corepack pnpm test
+corepack pnpm format:check
+corepack pnpm validate:docs
+corepack pnpm validate:skills
+corepack pnpm validate:workflows
+corepack pnpm build
+corepack pnpm qa
 ```
 
 `pnpm qa` is the canonical local and CI validation command.
@@ -251,6 +254,8 @@ pnpm qa
   introduced.
 - Keep `pnpm-lock.yaml` synchronized with `package.json`. Install with the checked-in pnpm version and
   use `pnpm install --frozen-lockfile` in CI and validation contexts.
+- Keep `packageManager` and `engines.pnpm` on the same exact version. CI derives its pnpm version from
+  `packageManager`; do not add a second independently maintained workflow pin.
 - `pnpm qa` must remain the single full local/CI quality command. Add new mandatory checks there
   rather than creating undocumented release-only commands.
 - Package manifests must declare the build and test tools they invoke instead of depending on

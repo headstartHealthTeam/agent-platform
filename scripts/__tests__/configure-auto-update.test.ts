@@ -8,6 +8,7 @@ import {
   configureAutoUpdate,
   defaultStateDirectory,
   parseAutoUpdateArgs,
+  readRequiredPnpmVersion,
   renderUnixRunner,
   renderWindowsRunner,
   type AutoUpdateConfig,
@@ -17,10 +18,10 @@ import {
 const temporaryDirectories: string[] = [];
 
 const config = (overrides: Partial<AutoUpdateConfig> = {}): AutoUpdateConfig => ({
-  schemaVersion: 1,
+  schemaVersion: 2,
   repositoryRoot: '/workspace/agent-skills',
   nodeExecutable: '/tools/node',
-  pnpmExecutable: '/tools/pnpm',
+  packageManager: { executable: '/tools/corepack', arguments: ['pnpm'] },
   logFile: '/state/auto-update.log',
   agents: ['codex'],
   ...overrides,
@@ -68,6 +69,7 @@ describe('scheduled runner rendering', () => {
     );
 
     expect(runner).toContain("cd '/workspace/team'\"'\"'s skills'");
+    expect(runner).toContain("'/tools/corepack' 'pnpm' install --frozen-lockfile");
     expect(runner).toContain('skills:update -- --agent claude-code --apply');
     expect(runner).toContain('skills:update -- --agent codex --apply');
     expect(runner).toContain('--agent claude-code --apply --scheduled');
@@ -80,14 +82,44 @@ describe('scheduled runner rendering', () => {
       config({
         repositoryRoot: 'C:\\Work\\Agent Skills',
         nodeExecutable: 'C:\\Tools\\node.exe',
-        pnpmExecutable: 'C:\\Tools\\pnpm.cmd',
+        packageManager: {
+          executable: 'C:\\Tools\\corepack.cmd',
+          arguments: ['pnpm'],
+        },
         agents: ['cursor'],
       })
     );
 
     expect(runner).toContain('cd /d "C:\\Work\\Agent Skills" || exit /b 1');
+    expect(runner).toContain('call "C:\\Tools\\corepack.cmd" "pnpm" install');
     expect(runner).toContain('skills:update -- --agent cursor --apply --scheduled || exit /b 1');
     expect(runner).toContain('call :run >> "/state/auto-update.log" 2>&1');
+  });
+});
+
+describe('package-manager contract', () => {
+  it('reads one exact pnpm version from packageManager and engines', () => {
+    const repositoryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'headstart-pnpm-contract-'));
+    temporaryDirectories.push(repositoryRoot);
+    fs.writeFileSync(
+      path.join(repositoryRoot, 'package.json'),
+      `${JSON.stringify({ packageManager: 'pnpm@9.15.0', engines: { pnpm: '9.15.0' } })}\n`
+    );
+
+    expect(readRequiredPnpmVersion(repositoryRoot)).toBe('9.15.0');
+  });
+
+  it('rejects divergent packageManager and engines versions', () => {
+    const repositoryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'headstart-pnpm-mismatch-'));
+    temporaryDirectories.push(repositoryRoot);
+    fs.writeFileSync(
+      path.join(repositoryRoot, 'package.json'),
+      `${JSON.stringify({ packageManager: 'pnpm@9.15.0', engines: { pnpm: '9.12.3' } })}\n`
+    );
+
+    expect(() => readRequiredPnpmVersion(repositoryRoot)).toThrow(
+      'packageManager and engines.pnpm'
+    );
   });
 });
 
@@ -135,6 +167,9 @@ describe('automatic update configuration', () => {
       if (command === 'crontab' && arguments_[0] === '-') {
         crontab = options.input ?? '';
       }
+      if (command === '/tools/corepack' && arguments_.at(-1) === '--version') {
+        return { status: 0, stdout: '9.15.0' };
+      }
       return { status: 0, stdout: '' };
     };
     const validateCheckout = vi.fn();
@@ -142,7 +177,8 @@ describe('automatic update configuration', () => {
       platform: 'linux' as const,
       stateDirectory,
       nodeExecutable: '/tools/node',
-      pnpmExecutable: '/tools/pnpm',
+      packageManager: { executable: '/tools/corepack', arguments: ['pnpm'] },
+      requiredPnpmVersion: '9.15.0',
       runProcess,
       validateCheckout,
     };
@@ -193,6 +229,9 @@ describe('automatic update configuration', () => {
     const calls: { command: string; arguments_: string[] }[] = [];
     const runProcess = (command: string, arguments_: string[]): ProcessResult => {
       calls.push({ command, arguments_ });
+      if (command === 'C:\\Tools\\corepack.cmd' && arguments_.at(-1) === '--version') {
+        return { status: 0, stdout: '9.15.0' };
+      }
       return { status: 0, stdout: '' };
     };
 
@@ -203,7 +242,11 @@ describe('automatic update configuration', () => {
         platform: 'win32',
         stateDirectory,
         nodeExecutable: 'C:\\Tools\\node.exe',
-        pnpmExecutable: 'C:\\Tools\\pnpm.cmd',
+        packageManager: {
+          executable: 'C:\\Tools\\corepack.cmd',
+          arguments: ['pnpm'],
+        },
+        requiredPnpmVersion: '9.15.0',
         runProcess,
         validateCheckout: vi.fn(),
       }
@@ -234,6 +277,9 @@ describe('automatic update configuration', () => {
     const stateDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'headstart-failed-update-'));
     temporaryDirectories.push(stateDirectory);
     const runProcess = (command: string, arguments_: string[]): ProcessResult => {
+      if (command === '/tools/corepack' && arguments_.at(-1) === '--version') {
+        return { status: 0, stdout: '9.15.0' };
+      }
       if (command === 'crontab' && arguments_[0] === '-l') {
         return { status: 1, stdout: '' };
       }
@@ -248,7 +294,8 @@ describe('automatic update configuration', () => {
           platform: 'linux',
           stateDirectory,
           nodeExecutable: '/tools/node',
-          pnpmExecutable: '/tools/pnpm',
+          packageManager: { executable: '/tools/corepack', arguments: ['pnpm'] },
+          requiredPnpmVersion: '9.15.0',
           runProcess,
           validateCheckout: vi.fn(),
         }
@@ -306,7 +353,12 @@ describe('automatic update configuration', () => {
       options: { input?: string } = {}
     ): ProcessResult => {
       if (command === 'which') {
-        return { status: 0, stdout: '/tools/pnpm\n' };
+        return arguments_[0] === 'corepack'
+          ? { status: 0, stdout: '/tools/corepack\n' }
+          : { status: 1, stdout: '' };
+      }
+      if (command === '/tools/corepack' && arguments_.at(-1) === '--version') {
+        return { status: 0, stdout: '9.15.0' };
       }
       if (arguments_[0] === '-l') {
         return { status: crontab ? 0 : 1, stdout: crontab };
@@ -323,11 +375,52 @@ describe('automatic update configuration', () => {
           platform: 'linux',
           stateDirectory,
           nodeExecutable: '/tools/node',
+          requiredPnpmVersion: '9.15.0',
           runProcess,
           validateCheckout: vi.fn(),
         }
-      )?.pnpmExecutable
-    ).toBe(path.resolve('/tools/pnpm'));
+      )?.packageManager
+    ).toEqual({ executable: path.resolve('/tools/corepack'), arguments: ['pnpm'] });
+  });
+
+  it('uses an exact direct pnpm installation when Corepack is unavailable', () => {
+    const stateDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'headstart-direct-pnpm-'));
+    temporaryDirectories.push(stateDirectory);
+    let crontab = '';
+    const runProcess = (
+      command: string,
+      arguments_: string[],
+      options: { input?: string } = {}
+    ): ProcessResult => {
+      if (command === 'which') {
+        return arguments_[0] === 'pnpm'
+          ? { status: 0, stdout: '/tools/pnpm\n' }
+          : { status: 1, stdout: '' };
+      }
+      if (command === '/tools/pnpm' && arguments_[0] === '--version') {
+        return { status: 0, stdout: '9.15.0' };
+      }
+      if (arguments_[0] === '-l') {
+        return { status: crontab ? 0 : 1, stdout: crontab };
+      }
+      crontab = options.input ?? '';
+      return { status: 0, stdout: '' };
+    };
+
+    expect(
+      configureAutoUpdate(
+        '/workspace/agent-skills',
+        { action: 'enable', agent: 'codex' },
+        {
+          platform: 'linux',
+          stateDirectory,
+          nodeExecutable: '/tools/node',
+          requiredPnpmVersion: '9.15.0',
+          runProcess,
+          validateCheckout: vi.fn(),
+        }
+      )?.packageManager
+    ).toEqual({ executable: path.resolve('/tools/pnpm'), arguments: [] });
   });
 
   it('fails clearly when pnpm cannot be found', () => {
@@ -342,10 +435,60 @@ describe('automatic update configuration', () => {
           platform: 'linux',
           stateDirectory,
           nodeExecutable: '/tools/node',
+          requiredPnpmVersion: '9.15.0',
           runProcess: () => ({ status: 1, stdout: '' }),
           validateCheckout: vi.fn(),
         }
       )
-    ).toThrow('Unable to locate pnpm');
+    ).toThrow('Unable to locate Corepack or pnpm 9.15.0');
+  });
+
+  it('rejects a package-manager command that resolves the wrong pnpm version', () => {
+    const stateDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'headstart-wrong-pnpm-'));
+    temporaryDirectories.push(stateDirectory);
+
+    expect(() =>
+      configureAutoUpdate(
+        '/workspace/agent-skills',
+        { action: 'enable', agent: 'codex' },
+        {
+          platform: 'linux',
+          stateDirectory,
+          nodeExecutable: '/tools/node',
+          packageManager: { executable: '/tools/pnpm', arguments: [] },
+          requiredPnpmVersion: '9.15.0',
+          runProcess: () => ({ status: 0, stdout: '9.12.3' }),
+          validateCheckout: vi.fn(),
+        }
+      )
+    ).toThrow('require pnpm 9.15.0');
+  });
+
+  it('normalizes legacy pnpm-only configuration for status reporting', () => {
+    const stateDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'headstart-legacy-update-'));
+    temporaryDirectories.push(stateDirectory);
+    fs.writeFileSync(
+      path.join(stateDirectory, 'auto-update.json'),
+      `${JSON.stringify({
+        schemaVersion: 1,
+        repositoryRoot: '/workspace/agent-skills',
+        nodeExecutable: '/tools/node',
+        pnpmExecutable: '/tools/pnpm',
+        logFile: '/state/auto-update.log',
+        agents: ['codex'],
+      })}\n`
+    );
+
+    expect(
+      configureAutoUpdate(
+        '/workspace/agent-skills',
+        { action: 'status' },
+        {
+          platform: 'linux',
+          stateDirectory,
+          runProcess: () => ({ status: 0, stdout: '# headstart-agent-skills-auto-update' }),
+        }
+      )?.packageManager
+    ).toEqual({ executable: '/tools/pnpm', arguments: [] });
   });
 });

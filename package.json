@@ -5,7 +5,8 @@
   "type": "module",
   "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "pnpm": "9.15.0"
   },
   "scripts": {
     "build": "turbo run build --output-logs=errors-only",
@@ -14,7 +15,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint --quiet --cache --cache-location node_modules/.cache/eslint/ --cache-strategy content --no-error-on-unmatched-pattern scripts skills vitest.config.ts eslint.config.mjs lint-staged.config.mjs && turbo run lint --output-logs=errors-only",
     "check-types": "tsc --noEmit && turbo run check-types --output-logs=errors-only",
-    "typecheck": "pnpm check-types",
+    "typecheck": "npm run check-types",
     "test": "vitest run --silent && turbo run test --output-logs=errors-only",
     "test:coverage": "vitest run --coverage --silent && turbo run test:coverage --output-logs=errors-only",
     "test:collector": "node --import tsx scripts/run-python-tests.ts",
@@ -24,11 +25,9 @@
     "validate:docs": "node --import tsx scripts/validate-documentation.ts",
     "validate:skills": "node --import tsx scripts/validate-skills.ts",
     "validate:workflows": "node --conditions=development --import tsx scripts/validate-workflows.ts",
-    "audit:prod": "pnpm audit --prod --audit-level moderate",
-    "audit:dev": "pnpm audit --audit-level moderate",
     "prepare": "husky",
-    "qa:commit": "pnpm lint && pnpm check-types && pnpm test && pnpm validate:skills && pnpm validate:workflows && pnpm validate:docs",
-    "qa": "pnpm lint && pnpm check-types && pnpm test:coverage && pnpm validate:skills && pnpm validate:workflows && pnpm validate:docs && pnpm test:collector && pnpm build && pnpm format:check"
+    "qa:commit": "npm run lint && npm run check-types && npm test && npm run validate:skills && npm run validate:workflows && npm run validate:docs",
+    "qa": "npm run lint && npm run check-types && npm run test:coverage && npm run validate:skills && npm run validate:workflows && npm run validate:docs && npm run test:collector && npm run build && npm run format:check"
   },
   "devDependencies": {
     "@eslint-community/eslint-plugin-eslint-comments": "^4.7.2",

@@ -1,6 +1,14 @@
 #!/usr/bin/env sh
 set -eu
 
+run_pnpm() {
+  if command -v corepack >/dev/null 2>&1; then
+    corepack pnpm "$@"
+  else
+    pnpm "$@"
+  fi
+}
+
 git fetch origin main --quiet 2>/dev/null || true
 if git rev-parse --verify origin/main >/dev/null 2>&1; then
   behind_count="$(git rev-list --count HEAD..origin/main 2>/dev/null || printf '0')"
@@ -15,4 +23,4 @@ if [ -n "$(git status --porcelain 2>/dev/null || true)" ]; then
   exit 1
 fi
 
-pnpm qa
+run_pnpm qa
