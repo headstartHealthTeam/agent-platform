@@ -94,6 +94,34 @@ isolation is valuable, or repeated evaluation shows a material quality or latenc
 Keep planning and completion visible to the user. A workflow must not hide missing dependencies,
 failed handoffs, reduced evidence coverage, or partial completion behind orchestration.
 
+## Control-Flow Topology
+
+Choose one-pass execution, a bounded quality loop, and explicit graph orchestration independently
+from choosing supervised or managed execution. None is a maturity level.
+
+- Use one coherent agent pass when one reasoning context can complete the work and the result can be
+  reviewed or verified afterward.
+- Use a quality loop only when a verifier has explicit acceptance criteria, returns actionable
+  feedback, and repeated evaluation shows refinement improves the outcome.
+- Use an explicit graph for real branches, joins, parallel work, or context, permission, ownership,
+  or model isolation. A graph node may be deterministic code, an agent call, a human decision, or an
+  application action; do not create one agent per workflow step.
+
+Every quality loop must declare the artifact, verifier, pass criteria, maximum attempts, applicable
+time, token, cost, and tool-call budgets, no-progress behavior, escalation path, and side-effect
+boundary. Prefer deterministic graders, then narrowly scoped model graders calibrated against human
+judgment. Keep iterative work read-only or proposal-only until a person or owning application
+authorizes a consequential action.
+
+Operational retries repeat failed infrastructure operations according to retry policy. Quality
+loops revise completed artifacts according to acceptance criteria. Do not combine them into one
+ambiguous attempt counter, and never refine by repeatedly executing an external write.
+
+For graph handoffs, define a typed payload and the minimum context the next node needs. Preserve
+source identity, decisions, failures, and verifier evidence; compact or discard irrelevant history
+to control cost, context degradation, and sensitive-data retention. Default multi-agent graphs to a
+coordinator that owns synthesis. Peer-to-peer coordination requires specific evaluation evidence.
+
 ## Repeated And Concurrent Runs
 
 For every shared workflow, define whether repeating the same run or launching multiple runs against

@@ -106,6 +106,56 @@
         "Classifies source, extraction, model, human, policy, and data-quality mismatches before proposing a change",
         "Rejects automatic mutation and requires a reviewed canonical update with regression evidence"
       ]
+    },
+    {
+      "name": "bounded-quality-loop",
+      "prompt": "Our document extraction produces schema-valid drafts, but some citations point to the wrong page. Design a loop that improves the draft before a reviewer sees it.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Selects a bounded quality loop only after defining the artifact, citation verifier, and actionable repair feedback",
+        "Uses deterministic source and page validation before any narrowly scoped model grader",
+        "Defines attempt and budget limits, no-progress behavior, human escalation, and a proposal-only side-effect boundary"
+      ]
+    },
+    {
+      "name": "operational-retry-is-not-quality-loop",
+      "prompt": "A read-only Salesforce MCP call occasionally times out. Should we add an evaluator agent that keeps regenerating the whole report until the call works?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Classifies the timeout as an operational retry concern rather than a quality-refinement loop",
+        "Uses bounded retry and explicit failure or escalation without regenerating completed work unnecessarily",
+        "Keeps operational retry accounting separate from artifact-quality attempts"
+      ]
+    },
+    {
+      "name": "parallelizable-graph",
+      "prompt": "A supervised research workflow must inspect eight independent payer manuals with isolated contexts, then reconcile all findings into one cited comparison. Decide whether multiple agents or a graph is justified.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Recognizes independently parallelizable research as a plausible explicit graph",
+        "Defaults to bounded workers with typed outputs and one coordinator responsible for final synthesis",
+        "Requires evaluation against a single-agent baseline, explicit context handoffs, budgets, and partial-failure behavior"
+      ]
+    },
+    {
+      "name": "sequential-work-does-not-need-agent-per-step",
+      "prompt": "Create a different agent for every step of a treatment authorization form even though each step depends on the same case evidence and reviewer decisions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Rejects one-agent-per-step decomposition for tightly sequential work with shared reasoning state",
+        "Keeps the workflow with one coordinating agent unless repeated evaluation proves a material benefit",
+        "Explains that skills, deterministic transformations, human decisions, and application actions do not each require separate agents"
+      ]
+    },
+    {
+      "name": "uncalibrated-self-approval-loop",
+      "prompt": "Have the same agent repeatedly rewrite its answer and ask itself whether it looks good. Stop whenever it says yes, with no iteration limit.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Rejects the unbounded self-approval loop and identifies correlated generator and verifier failures",
+        "Requires explicit criteria, deterministic checks where possible, calibrated narrow model grading, and human escalation",
+        "Defines attempt, time, token or cost, and no-progress limits before recommending a loop"
+      ]
     }
   ]
 }

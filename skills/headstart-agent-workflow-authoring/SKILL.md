@@ -4,7 +4,7 @@ description: 'Classify, design, scaffold, or evolve a Headstart agent-assisted w
 compatibility: Requires read access to the Headstart Agent Platform repository for canonical implementation guidance.
 metadata:
   author: headstart-health
-  version: '0.2.0'
+  version: '0.3.0'
 ---
 
 # Headstart Agent Workflow Authoring
@@ -29,7 +29,7 @@ deployment state from this skill alone.
 
 Determine:
 
-- business outcome and success signal;
+- business outcome, success signal, and whether one pass is sufficient;
 - trigger and whether work must continue while the creator is offline;
 - source systems, inputs, outputs, and durable identifiers;
 - deterministic, model-assisted, and human-only decisions;
@@ -37,6 +37,8 @@ Determine:
 - read, proposal, and write side effects;
 - repeated and concurrent-run behavior, plus the system that enforces collision safety;
 - missing, conflicting, duplicate, stale, timeout, and partial-completion behavior;
+- sequential dependencies, genuinely independent work, and any context, permission, or model
+  boundaries that might justify explicit orchestration;
 - any derived rule pack or reference, including its source revision, citations, owner, and freshness
   behavior;
 - any external outcome that can later validate the recommendation without rewriting it automatically;
@@ -68,6 +70,43 @@ Decide independently:
 All four combinations are valid: supervised without custom code, supervised with a tested helper,
 managed without workflow-specific code, and managed with deterministic adapters. Revisit the
 decision only when evidence or operating requirements change.
+
+## Choose One Pass, A Quality Loop, Or A Graph Separately
+
+Execution topology is independent of supervision, hosting, and deterministic support. Do not treat
+one pass, a loop, and a graph as maturity levels.
+
+1. Default to one agent completing one coherent pass when the output can be reviewed or verified
+   without iterative refinement.
+2. Add a bounded quality loop only when a verifier can identify a repairable failure and provide
+   actionable feedback that measurably improves the next attempt.
+3. Add explicit graph orchestration only when the workflow has genuine branches, joins, independent
+   parallel work, or context, permission, ownership, or model boundaries that benefit from isolated
+   nodes and explicit state transitions.
+
+A graph does not require one agent per node. Nodes may be deterministic transformations, agent
+calls, human decisions, or application actions. Conversely, a single agent may execute several
+skills and tools without becoming a graph. Prefer one coordinator over peer-to-peer agent
+coordination unless evaluation demonstrates a need for another topology.
+
+For every proposed quality loop, define:
+
+- the artifact being improved and the verifier's exact pass criteria;
+- deterministic checks used before model judgment;
+- how verifier feedback changes the next attempt;
+- maximum attempts, elapsed time, token or cost budget, and tool calls where measurable;
+- a no-progress condition and human escalation path;
+- whether a fresh or context-isolated verifier is needed to reduce correlated mistakes; and
+- the side-effect boundary, keeping iterative work read-only or proposal-only until approval.
+
+Do not confuse quality refinement with operational retry. Retry handles transient execution failure;
+a quality loop revises a completed but inadequate artifact. Never repeatedly execute a consequential
+write as a quality-improvement strategy.
+
+Select a multi-agent graph only when the task is demonstrably decomposable or parallelizable, when
+specialists need materially different context or permissions, or when explicit routing is itself an
+operating requirement. Keep sequential work with tightly shared state in one agent unless repeated
+evaluation shows a material quality, latency, or safety improvement from decomposition.
 
 ## Reuse One Source Across Execution Contexts
 
@@ -145,17 +184,20 @@ Summarize:
 2. supervised or managed execution, with the operating evidence for that decision;
 3. whether workflow-specific deterministic code is needed, with the reliability or invariant that
    justifies it;
-4. systems of record and capability providers;
-5. only the proposed artifacts actually required, organized by repository and path;
-6. input, output, handoff, side-effect, and human-review contracts;
-7. deterministic, model-assisted, and human responsibilities;
-8. repeated and concurrent-run behavior, including the enforcing system;
-9. derived-knowledge provenance and freshness behavior when applicable;
-10. test, evaluation, clean-handoff, and outcome-feedback validation plans;
-11. deployment and operating requirements when managed execution applies;
-12. local installation or launch behavior and managed consumption behavior when both are supported;
+4. one-pass, quality-loop, or graph topology, including the measured need and verifier contract for
+   any added complexity;
+5. systems of record and capability providers;
+6. only the proposed artifacts actually required, organized by repository and path;
+7. input, output, handoff, side-effect, and human-review contracts;
+8. deterministic, model-assisted, and human responsibilities;
+9. repeated and concurrent-run behavior, including the enforcing system;
+10. context selection, compaction, handoff, and durable-progress behavior when applicable;
+11. derived-knowledge provenance and freshness behavior when applicable;
+12. test, evaluation, clean-handoff, and outcome-feedback validation plans;
+13. deployment and operating requirements when managed execution applies;
+14. local installation or launch behavior and managed consumption behavior when both are supported;
     and
-13. unresolved decisions that block safe implementation.
+15. unresolved decisions that block safe implementation.
 
 When the user asked only for design, stop before editing. When implementation was requested, follow
 the canonical checklist for each selected artifact, scaffold only those artifacts, and run `pnpm qa`
@@ -174,6 +216,8 @@ in the platform repository.
 - Do not let observed outcomes automatically rewrite canonical skills, rules, or references. Preserve
   provenance, classify the mismatch, and route changes through review with regression evidence.
 - Keep live external validation separate from ordinary Git hooks and pull-request CI.
+- Do not add an unbounded refinement loop, self-approval loop, or multi-agent graph without explicit
+  verification and stopping behavior.
 - Do not add deterministic code merely to make an agent workflow appear production-ready.
 - Leave uncertain workflows in an exploratory or draft state rather than encoding assumptions as
   unattended behavior.

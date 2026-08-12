@@ -17,6 +17,24 @@ apply; the remaining layers apply when the skill includes the corresponding beha
 Model evaluations are repeated when changing descriptions or orchestration because one passing run
 does not prove reliable activation.
 
+Evaluate the complete tested system, not only the model name. Record the workflow, prompt, skill,
+tool, source, schema, model, harness, grader, and budget versions needed to reproduce a claim. Each
+task should use multiple trials when model behavior can vary. Preserve PHI-safe trajectories or
+equivalent structured run evidence so failures can be attributed to context, tools, routing,
+verification, or model behavior rather than only the final answer.
+
+Use deterministic graders wherever the outcome permits them. Model graders must use bounded rubric
+dimensions and be calibrated against representative human judgments; they must not silently replace
+human review for consequential or clinically ambiguous decisions. Track outcome quality together
+with false-pass and false-reject rates, latency, iterations, tool calls, token or cost usage,
+escalation, and no-progress termination when applicable.
+
+A quality-loop evaluation must compare against the simpler one-pass baseline and prove that
+refinement improves the intended outcome within its budgets. A graph evaluation must additionally
+exercise node contracts, routing, joins, partial failure, and context handoffs and compare against a
+single-agent baseline. Do not accept added orchestration solely because its final pass rate is
+higher when cost, latency, or unsafe false passes materially worsen.
+
 Each managed workflow additionally requires manifest validation, referenced-file resolution, input
 and output JSON Schema compilation, schema-valid synthetic contract fixtures, happy-path and
 policy-boundary evaluation definitions, and tests for deterministic adapters when they are present.

@@ -77,6 +77,69 @@ failure handling. That does not mean every managed workflow needs custom busines
 Revisit the chosen steady state only when observed reliability, scale, side effects, or operating
 requirements change.
 
+## Choose Execution Topology Separately
+
+After selecting supervised or managed execution and deciding whether deterministic support is
+needed, choose the smallest control-flow topology that reliably completes the task. One pass, a
+quality loop, and a graph are alternatives or composable elements, not maturity levels.
+
+| Topology             | Use when                                                                                                 | Avoid when                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| One coherent pass    | One agent can complete the task with shared context and the result can be reviewed or verified afterward | Repeated evidence shows a specific, repairable failure that needs iterative feedback              |
+| Bounded quality loop | A verifier has explicit criteria, can explain failures, and refinement produces measurable improvement   | The verifier is subjective, correlated with the generator, or cannot tell whether progress occurs |
+| Explicit graph       | Branches, joins, parallel work, or isolated context, permissions, ownership, or models must be visible   | The work is sequential, shares one reasoning state, or merely has several named steps             |
+
+A managed workflow may still be one-pass. A supervised workflow may use a quality loop. A graph may
+contain deterministic steps, model calls, human decisions, and application actions; it does not
+require a separate agent for every node. A single agent using several skills and tools is not
+automatically a graph.
+
+### Quality Loop Contract
+
+Add a produce-verify-revise loop only when all of the following can be stated:
+
+- the exact artifact being improved;
+- objective pass criteria and the grader or verifier that applies them;
+- actionable feedback that changes the next attempt rather than repeating the same prompt;
+- maximum attempts, elapsed time, token or cost budget, and tool-call budget where measurable;
+- a no-progress rule, such as repeated identical failures or no score improvement;
+- human escalation or a safe fallback when the loop cannot pass; and
+- a side-effect policy that keeps refinement read-only or proposal-only until approval.
+
+Use deterministic validation first: schemas, types, tests, calculations, policy checks, or source
+and citation verification. Use model grading only for behavior that cannot be reduced to those
+checks, define one-dimensional rubric criteria, and calibrate the grader against representative
+human judgments. Consider a fresh or context-isolated verifier when generator and verifier would
+otherwise share the same assumptions. A verifier that can only say that an output "looks good" is
+not a release gate.
+
+Operational retry and quality refinement are different. Retry repeats an operation after a
+transient infrastructure failure. A quality loop revises a completed artifact that failed its
+acceptance criteria. Do not use a quality loop to repeat external writes.
+
+### Graph And Multi-Agent Contract
+
+Use explicit graph orchestration only when the topology itself provides value:
+
+- independent work can run in parallel and be joined through a typed aggregation contract;
+- branches or approval paths must be inspectable without asking the model what happened;
+- specialists need materially different context, tools, permissions, owners, or models; or
+- evaluation shows that one agent with the relevant tools cannot meet the required quality,
+  latency, or safety bar.
+
+Default to a coordinator that delegates bounded work and owns final synthesis. Peer-to-peer or
+debate-style coordination adds context growth, routing uncertainty, cost, and failure modes and
+requires separate evidence. Keep tightly sequential work with shared reasoning state in one agent
+unless repeated evaluations prove decomposition is beneficial.
+
+### Context Across Loops And Handoffs
+
+Every repeated attempt or graph edge must define what context continues, what is compacted, and what
+is discarded. Preserve durable identifiers, source versions, decisions, verifier results, and
+unresolved failures rather than replaying an entire transcript by default. Treat context as a finite
+budget and persisted state as minimum-necessary data, especially for PHI. A compacted handoff must
+remain attributable to its source and must not silently turn an inference into a fact.
+
 ## Design For Local And Managed Consumption
 
 Local and managed describe where and under whose identity a workflow runs. They do not require
@@ -318,6 +381,10 @@ deterministic logic is warranted.
 - Deterministic helper: typed unit tests with synthetic fixtures and meaningful failure assertions.
 - Managed package: manifest, reference, schema, policy, and fixture tests, plus adapter tests when
   adapters are present.
+- Quality loop: verifier unit tests where deterministic, repeated trials, pass and false-pass rates,
+  convergence and no-progress behavior, iteration and cost distributions, and escalation tests.
+- Explicit graph: node-contract tests, routing and join tests, partial-failure behavior, repeated
+  end-to-end trials, and comparison against the simpler single-agent baseline.
 - Runner or shared package: strict TypeScript, lint, package coverage, and integration-boundary tests.
 - Live external capability: a separate explicitly authorized read-only or synthetic integration
   lane; never an ordinary Git hook or pull-request dependency.
@@ -330,6 +397,12 @@ The canonical commands and coverage policy live in [testing and release](../stan
 - What starts the workflow, and must it run when the creator is offline?
 - Which systems own the inputs and final business state?
 - Which decisions are deterministic, model-assisted, or human-only?
+- Can one coherent agent pass satisfy the outcome, and what evidence would justify a quality loop
+  or explicit graph?
+- If refinement is proposed, what verifier, stopping rule, budget, no-progress signal, and escalation
+  path make the loop safe and measurable?
+- If multiple agents are proposed, is the work genuinely parallelizable or isolated by context,
+  permissions, ownership, or model requirements?
 - What identifiers and structured outputs connect the steps?
 - What can the workflow read, propose, or write?
 - What happens when the same business record is processed twice or concurrently, and which system

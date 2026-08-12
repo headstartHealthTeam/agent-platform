@@ -41,12 +41,16 @@ workflow needs explicit triggers, service identity, durable state, retries, obse
 operational ownership. Decide separately whether any workflow-specific calculation,
 transformation, validation, or invariant warrants deterministic code.
 
+Also choose one coherent pass, a bounded verifier-driven quality loop, or an explicit graph as a
+separate topology decision. Multiple workflow steps do not by themselves justify multiple agents.
+
 After installing the shared skills, a team member can start from any Codex session with a request
 such as:
 
 > Use `headstart-agent-workflow-authoring` to recommend and explain the best steady-state design for
 > this workflow before we implement it, including whether it needs workflow-specific code or managed
-> execution: [describe the business outcome and current manual process].
+> execution and whether one-pass, loop, or graph topology is justified: [describe the business
+> outcome and current manual process].
 
 ## Local And Managed Consumption
 
