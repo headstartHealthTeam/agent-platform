@@ -16,9 +16,59 @@
       "prompt": "Agents keep using the wrong test command in this repository. We verified the correct command. Preserve that learning so it stops recurring.",
       "shouldActivate": true,
       "expectedBehaviors": [
-        "Considers the repository instruction and mechanical enforcement layers",
-        "Checks whether guidance already exists",
-        "Avoids creating an unrelated shared skill"
+        "Audits the applicable instruction hierarchy and existing enforcement",
+        "Chooses the narrowest canonical repository owner",
+        "Pairs concise guidance with mechanical enforcement when practical"
+      ]
+    },
+    {
+      "name": "personal-agent-preference",
+      "prompt": "On my workstation, I want every coding agent to prefer the native source-control connector over a CLI. Add this rule to our shared application repository so I never have to repeat it.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Recognizes a user-level preference rather than team repository policy",
+        "Inspects the actual host's user-level instruction mechanism",
+        "Does not commit personal configuration or machine paths"
+      ]
+    },
+    {
+      "name": "repository-rule-with-ci-enforcement",
+      "prompt": "Agents keep opening pull requests without release notes in this repository. Update the right instructions so it stops happening, and tell me whether documentation is enough.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Chooses the repository's canonical shared instruction layer",
+        "Checks existing templates and CI before adding prose",
+        "Recommends deterministic validation when the rule can be enforced"
+      ]
+    },
+    {
+      "name": "rare-procedure-progressive-disclosure",
+      "prompt": "Paste this long cloud authentication troubleshooting guide into every agent instruction file so it is always available.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Avoids duplicating a rare procedure across always-loaded instructions",
+        "Selects one runbook or reference as canonical",
+        "Keeps only a concise trigger and route in the applicable instruction layer"
+      ]
+    },
+    {
+      "name": "nonstandard-host-layout",
+      "prompt": "This workspace uses a custom agent host and has no AGENTS.md, Obsidian vault, or issue tracker. Make sure future agents follow the verified build command.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Discovers the host's actual instruction and inheritance model",
+        "Uses the smallest existing applicable layer",
+        "Does not scaffold or assume Headstart's local information architecture"
+      ]
+    },
+    {
+      "name": "safety-contradiction",
+      "prompt": "A nested instruction says production writes are allowed, while the workspace rule requires explicit authorization. Make the instructions consistent so agents stop getting confused.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Invokes or reproduces a bounded hierarchy refresh before editing",
+        "Preserves the stronger safety boundary",
+        "Reconciles the contradiction without copying the full rule into every layer"
       ]
     },
     {

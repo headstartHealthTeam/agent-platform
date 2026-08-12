@@ -22,6 +22,46 @@
       ]
     },
     {
+      "name": "refresh-agent-instruction-hierarchy",
+      "prompt": "Audit the user, workspace, repository, nested, Claude, and Cursor instruction files for this project. Find contradictions and duplication, but do not edit anything yet.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Inventories actual precedence, imports, and canonical ownership",
+        "Distinguishes contradictions from intentional scoped narrowing",
+        "Proposes one canonical source with thin compatibility bridges where supported"
+      ]
+    },
+    {
+      "name": "refresh-instruction-context-budget",
+      "prompt": "Our agents load thousands of words of setup instructions for every task. Audit what should stay always loaded and what should move behind skills or runbooks.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves concise safety boundaries and routing triggers",
+        "Moves detailed or infrequent procedures behind on-demand references",
+        "Measures context reduction without treating brevity as the only objective"
+      ]
+    },
+    {
+      "name": "intentional-scoped-override",
+      "prompt": "The repository defaults to one test command, but a database subtree requires a stricter integration command. Audit whether those instructions conflict.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Examines the scope and reason for the narrower rule",
+        "Keeps a legitimate stricter override when it is unambiguous",
+        "Does not flatten all layers into identical wording"
+      ]
+    },
+    {
+      "name": "nonstandard-instruction-host",
+      "prompt": "Review instruction drift in this custom agent environment. It does not use AGENTS.md, GitHub, or a knowledge vault.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Discovers the environment's actual instruction and source ownership model",
+        "Does not impose vendor-specific filenames or systems",
+        "Still evaluates canonical ownership, precedence, duplication, and durability"
+      ]
+    },
+    {
       "name": "unverifiable-operation-boundary",
       "prompt": "The repository does not mention this operations procedure, so delete the procedure as obsolete.",
       "shouldActivate": true,

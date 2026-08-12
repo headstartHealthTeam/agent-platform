@@ -97,8 +97,8 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 | [`headstart-initiative-shaping`](skills/headstart-initiative-shaping/SKILL.md)                       | Evidence-backed scope, decisions, risks, and stakeholder questions          |
 | [`headstart-workflow-walkthrough-analysis`](skills/headstart-workflow-walkthrough-analysis/SKILL.md) | Cited current-state analysis from process demonstrations                    |
 | [`headstart-document-review`](skills/headstart-document-review/SKILL.md)                             | Report-first substantive review of shared plans and procedures              |
-| [`headstart-knowledge-capture`](skills/headstart-knowledge-capture/SKILL.md)                         | Proposed durable updates from verified team learnings                       |
-| [`headstart-knowledge-refresh`](skills/headstart-knowledge-refresh/SKILL.md)                         | Evidence-backed maintenance proposals for stale or overlapping guidance     |
+| [`headstart-knowledge-capture`](skills/headstart-knowledge-capture/SKILL.md)                         | Canonical placement for verified learnings and recurring agent corrections  |
+| [`headstart-knowledge-refresh`](skills/headstart-knowledge-refresh/SKILL.md)                         | Evidence-backed audits of knowledge and agent instruction hierarchies       |
 | [`headstart-discovery-to-decision`](skills/headstart-discovery-to-decision/SKILL.md)                 | Composed workflow from mixed discovery evidence to decision packet          |
 | [`headstart-skills-update`](skills/headstart-skills-update/SKILL.md)                                 | Install, preview, apply, or schedule complete workstation skill refreshes   |
 
