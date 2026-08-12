@@ -18,6 +18,16 @@
       "expectedBehaviors": ["Determines the review scope", "Reports findings before summaries"]
     },
     {
+      "name": "headstart-composed-review",
+      "prompt": "Run a deep review of this Headstart backend pull request linked to HEA-418.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Enters through headstart-pr-review",
+        "Retains the complete deep-pr-review method as the primary review standard",
+        "Adds Headstart-specific context without replacing generic specialist or verification passes"
+      ]
+    },
+    {
       "name": "implementation-not-review",
       "prompt": "Implement the pagination endpoint described in the issue.",
       "shouldActivate": false,

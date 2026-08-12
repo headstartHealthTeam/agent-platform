@@ -8,7 +8,7 @@ description: >
 compatibility: Works with coding agents that can read repositories, inspect Git history, and access pull request metadata through an authenticated integration or CLI.
 metadata:
   author: headstart-health
-  version: '0.1.1'
+  version: '0.1.2'
 ---
 
 # Deep PR Review
@@ -31,9 +31,11 @@ lightweight review when the user explicitly asks for one.
 
 ## Organization-Specific Context
 
-When reviewing Headstart Health repositories or `HEA-*` or `SAL-*` work, use the
-`headstart-pr-review` workflow instead. It composes this generic method with Headstart-specific
-intent discovery, live-data validation, local runtime checks, and side-effect safety.
+When reviewing Headstart Health repositories or `HEA-*` or `SAL-*` work, enter through the
+`headstart-pr-review` workflow. That workflow must load and apply this complete skill as its primary
+review method, then add Headstart-specific intent discovery, live-data validation, local runtime
+checks, and side-effect safety. Routing through the composed workflow must not replace or reduce the
+standards below.
 
 ## Scope Modes
 

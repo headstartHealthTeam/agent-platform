@@ -4,7 +4,7 @@ description: Run a complete, evidence-backed pull request review for Headstart H
 compatibility: Requires the deep-pr-review and headstart-pr-review-context skills plus authenticated read access to the pull request and relevant Headstart planning sources.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.1.1'
   headstart-requires: deep-pr-review,headstart-pr-review-context
 ---
 
@@ -13,17 +13,23 @@ metadata:
 Use this workflow as the normal entrypoint for reviewing Headstart pull requests. It composes two
 bounded skills without replacing either one:
 
-1. Load and follow `deep-pr-review` as the primary review method.
+1. Load and follow the complete `deep-pr-review` skill as the primary review method, including its
+   scope mapping, risk-based specialist passes, deterministic verification, validation ledger, and
+   final review standard.
 2. Load and apply `headstart-pr-review-context` to Headstart-specific intent, validation, privacy,
    integration, and side-effect questions.
+
+Do not interpret this workflow entrypoint as a smaller alternative to `deep-pr-review`. It
+coordinates the generic method and the Headstart overlay; it does not replace, summarize, or weaken
+either dependency.
 
 If either required skill is unavailable, stop before claiming a full Headstart review. Name the
 missing skill and continue only if the user explicitly accepts a reduced-scope review.
 
 ## Composition Contract
 
-- The generic skill owns scope mapping, specialist lenses, deterministic verification, finding
-  validation, artifact structure, and final review format.
+- The generic skill owns and must execute scope mapping, risk-based specialist lenses,
+  deterministic verification, finding validation, artifact structure, and final review format.
 - The Headstart context skill owns repository guidance, Linear intent, cross-repository contracts,
   Salesforce and MCP discovery, PHI boundaries, live-data validation, and external side effects.
 - The active repository's instructions remain authoritative when they are more specific.

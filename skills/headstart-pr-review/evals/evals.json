@@ -8,7 +8,9 @@
       "expectedBehaviors": [
         "Loads deep-pr-review",
         "Loads headstart-pr-review-context",
-        "Combines all findings in one evidence ledger",
+        "Executes deep-pr-review scope mapping and risk-based specialist passes",
+        "Performs deterministic verification and combines all findings in one evidence ledger",
+        "Adds Headstart-specific context without replacing the generic review method",
         "Does not post remotely"
       ]
     },
