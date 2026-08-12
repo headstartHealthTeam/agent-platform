@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { withoutRepositoryLocalGitEnvironment } from '../run-python-tests.js';
 import {
   inspectUpdate,
+  isExpectedRemote,
   normalizeRemoteIdentity,
   parseUpdateArgs,
   printUpdatePlan,
@@ -182,6 +183,15 @@ describe('normalizeRemoteIdentity', () => {
     expect(normalizeRemoteIdentity(`file://${path.resolve('/tmp/agent-skills')}`)).toContain(
       'file:'
     );
+  });
+
+  it('accepts the canonical remote by default without weakening custom checks', () => {
+    expect(isExpectedRemote('https://github.com/headstartHealthTeam/agent-platform.git')).toBe(
+      true
+    );
+    expect(isExpectedRemote('git@github.com:headstartHealthTeam/agent-platform.git')).toBe(true);
+    expect(isExpectedRemote('https://github.com/other/agent-platform.git')).toBe(false);
+    expect(isExpectedRemote('/tmp/canonical.git', '/tmp/canonical.git')).toBe(true);
   });
 });
 

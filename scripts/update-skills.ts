@@ -18,7 +18,8 @@ import { validateRepository } from './validate-skills.js';
 const AGENT_HOST_VALUES = ['codex', 'claude-code', 'cursor'] as const;
 const DEFAULT_REMOTE = 'origin';
 const DEFAULT_BRANCH = 'main';
-const EXPECTED_REMOTE_IDENTITY = 'github.com/headstarthealthteam/agent-platform';
+const CANONICAL_REMOTE_URL = 'https://github.com/headstartHealthTeam/agent-platform.git';
+const CANONICAL_REPOSITORY_IDENTITY = 'github.com/headstarthealthteam/agent-platform';
 const RECEIPT_FILE = '.headstart-agent-skills.json';
 
 const usage = `Usage:
@@ -206,6 +207,11 @@ export const normalizeRemoteIdentity = (remoteUrl: string): string => {
   }
 };
 
+export const isExpectedRemote = (
+  remoteUrl: string,
+  expectedRemote: string = CANONICAL_REMOTE_URL
+): boolean => normalizeRemoteIdentity(remoteUrl) === normalizeRemoteIdentity(expectedRemote);
+
 export const runGitCommand: GitRunner = (repositoryRoot, arguments_) => {
   const result = spawnSync('git', arguments_, {
     cwd: repositoryRoot,
@@ -290,9 +296,6 @@ export const inspectUpdate = (
   dependencies: UpdateDependencies = {}
 ): UpdatePlan => {
   const runGit = dependencies.runGit ?? runGitCommand;
-  const expectedRemoteIdentity = normalizeRemoteIdentity(
-    dependencies.expectedRemoteIdentity ?? EXPECTED_REMOTE_IDENTITY
-  );
   const topLevel = runGit(repositoryRoot, ['rev-parse', '--show-toplevel']);
   if (canonicalPath(topLevel) !== canonicalPath(repositoryRoot)) {
     throw new Error(
@@ -312,7 +315,7 @@ export const inspectUpdate = (
   }
 
   const remoteUrl = runGit(repositoryRoot, ['remote', 'get-url', DEFAULT_REMOTE]);
-  if (normalizeRemoteIdentity(remoteUrl) !== expectedRemoteIdentity) {
+  if (!isExpectedRemote(remoteUrl, dependencies.expectedRemoteIdentity)) {
     throw new Error('Refusing to update from an unexpected origin remote.');
   }
 
@@ -400,7 +403,7 @@ const readReceipt = (receiptFile: string, agent: AgentHost): UpdateReceipt | und
   if (
     !isRecord(parsed) ||
     parsed['schemaVersion'] !== 1 ||
-    parsed['repository'] !== EXPECTED_REMOTE_IDENTITY ||
+    parsed['repository'] !== CANONICAL_REPOSITORY_IDENTITY ||
     parsed['agent'] !== agent ||
     typeof parsed['commit'] !== 'string' ||
     !Array.isArray(parsed['skills']) ||
@@ -496,7 +499,7 @@ export const applyUpdate = (
   const currentTime = (): Date => new Date();
   const receipt: UpdateReceipt = {
     schemaVersion: 1,
-    repository: EXPECTED_REMOTE_IDENTITY,
+    repository: CANONICAL_REPOSITORY_IDENTITY,
     agent: options.agent,
     commit: plan.remoteCommit,
     skills: skillNames,
