@@ -12,7 +12,9 @@ design.
 The immediate next step is **Slice 1: isolated workflow materialization and local launch**. That
 slice proves that the existing runner can receive a workflow identity and exact source revision,
 construct its declared environment without developer-global state, execute with synthetic inputs,
-and clean up. It creates the testable boundary that the VM or ECS deployment will later call.
+and clean up. It creates the testable boundary that either AgentCore Runtime or the ECS/Fargate
+fallback will later call. A bounded AgentCore Runtime compatibility gate follows Slice 1 and
+precedes production-image and deployment decisions.
 
 ## Current Baseline
 
@@ -29,7 +31,7 @@ The repository already provides:
 
 The current runner is a tested library. It does not yet construct an isolated workspace, install
 pinned skills, select approved CLIs, generate MCP configuration, resolve a service profile, retrieve
-scoped secrets, consume a queue, deploy an image, or report to a durable control plane.
+scoped secrets, accept hosted dispatch, deploy an image, or report to a durable control plane.
 
 ## Operational V1 Definition Of Done
 
@@ -62,14 +64,14 @@ external writes, or support for every candidate workflow.
 
 ## Ownership By Repository And System
 
-| Owner                 | Responsibilities                                                                                                                                                                  |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| This repository       | Workflow packages, contracts, materialization, runner executable, Docker image, worker deployment infrastructure, service-profile schema, ECR publishing, and worker smoke tests  |
-| Headstart backend     | Durable run and approval records, trigger validation, idempotency, queue publication, cancellation and retry APIs, and deterministic execution of approved business-system writes |
-| Headstart admin panel | Workflow discovery, manual launch, run history, review, approval, cancellation, retry, and operator-facing failure details when those surfaces are required                       |
-| Headstart MCP         | Bounded permission-gated Headstart operations; it does not own scheduling, run state, or workflow retries                                                                         |
-| AWS                   | Workload identity, ECR, selected compute target, SQS and dead-letter queue, Secrets Manager, KMS, CloudWatch, and network controls                                                |
-| External providers    | OAuth application registration, delegated or service-account authorization, scopes, refresh behavior, and provider-side revocation                                                |
+| Owner                 | Responsibilities                                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| This repository       | Workflow packages, contracts, materialization, runner executable, Docker image, runtime adapters, deployment infrastructure, service-profile schema, ECR publishing, and smoke tests |
+| Headstart backend     | Durable run and approval records, trigger validation, idempotency, runtime dispatch, cancellation and retry APIs, and deterministic execution of approved business-system writes     |
+| Headstart admin panel | Workflow discovery, manual launch, run history, review, approval, cancellation, retry, and operator-facing failure details when those surfaces are required                          |
+| Headstart MCP         | Bounded permission-gated Headstart operations; it does not own scheduling, run state, or workflow retries                                                                            |
+| AWS                   | Workload identity, ECR, selected compute target, optional queue and dead-letter queue, Secrets Manager, KMS, CloudWatch, and network controls                                        |
+| External providers    | OAuth application registration, delegated or service-account authorization, scopes, refresh behavior, and provider-side revocation                                                   |
 
 No new general infrastructure repository is required for the first implementation. The deployable
 worker's Dockerfile, GitHub deployment workflow, and AWS infrastructure-as-code should live here,
@@ -81,7 +83,8 @@ service. Backend and admin changes remain in their owning repositories.
 AWS Secrets Manager is the runtime credential store, not a universal identity. The deployment must
 preserve these separate boundaries:
 
-- The VM instance role or ECS task role authenticates the worker to AWS without static AWS keys.
+- The AgentCore runtime role, ECS task role, or temporary pilot VM role authenticates the worker to
+  AWS without static AWS keys.
 - Codex receives an approved non-interactive organization credential through deployment policy.
 - Headstart MCP receives a dedicated service identity with only the workflow's approved
   permissions.
@@ -103,8 +106,8 @@ Secure operational setup supplies the actual values and performs external OAuth 
 ```text
 manual request, backend event, or schedule
   -> backend/control plane validates request and persists run
-  -> SQS receives immutable run request and idempotency key
-  -> worker acquires run under a lease
+  -> selected runtime adapter dispatches immutable run request and idempotency key
+  -> AgentCore Runtime session or ECS worker acquires the execution
   -> materializer resolves exact workflow commit and package
   -> materializer creates isolated workspace and Codex home
   -> materializer installs pinned skills and declared repositories
@@ -135,14 +138,18 @@ an idempotent executor performs an approved action.
   action execution exist.
 - Retries cannot duplicate a business action.
 - Raw credentials, PHI, and unrestricted Codex or tool events do not enter logs.
+- AgentCore session state, container filesystems, and optional runtime memory are never authoritative
+  run or business state.
 - Local skill installation remains independent: `skills:update` continues to distribute only
   `skills/` and never becomes a managed deployment mechanism.
 
 ## Slice-To-Behavior Mapping
 
 - Workspace, skill, repository, MCP, CLI, and environment preparation -> Slice 1
+- AgentCore Runtime compatibility and hosting decision -> Gate A
 - Container image and immutable build artifact -> Slice 2
-- AWS compute, queue, workload identity, secret delivery, logging, and deployment -> Slice 3
+- AWS compute, runtime dispatch, optional queue, workload identity, secret delivery, logging, and
+  deployment -> Slice 3
 - Durable run state, trigger intake, leases, cancellation, and retries -> Slice 4
 - Operator launch, status, review, cancellation, and retry experience -> Slice 5
 - First live read-only workflow activation and production-readiness evidence -> Slice 6
@@ -194,6 +201,58 @@ Review note:
 - Judge this slice on hermetic materialization and fail-closed behavior. It is not an AWS deployment
   or live integration slice.
 
+### Gate A - AgentCore Runtime Compatibility Spike
+
+Objective:
+
+- Determine whether AgentCore Runtime can host the existing Codex SDK runner without changing the
+  workflow's execution engine or weakening its contracts.
+
+Includes:
+
+- Package the current runner and Slice 1 materializer in the smallest AgentCore-compatible custom
+  ARM64 container needed for the test.
+- Invoke one synthetic read-only workflow through AgentCore Runtime using the exact reviewed prompt,
+  skills, schemas, and runner code.
+- Verify approved non-interactive Codex authentication without placing credentials in the image,
+  workflow package, prompt, command arguments, or logs.
+- Verify Headstart MCP-compatible configuration, one synthetic or dev-safe MCP connection, approved
+  CLI execution, explicit environment delivery, and constrained egress.
+- Verify structured output, timeout, cancellation, failure cleanup, runtime versioning, and
+  PHI-safe CloudWatch telemetry.
+- Measure cold start, execution latency, cost, quotas, and the operational effect of AgentCore's
+  session lifetime and ephemeral state.
+- Record a pass/fail decision against the criteria below; do not expand the spike into a live
+  business workflow.
+
+Pass criteria:
+
+- The repository-owned `@openai/codex-sdk` loop remains the execution engine; AgentCore does not
+  replace it with Harness or another agent loop.
+- The same synthetic workflow contract passes locally and in AgentCore Runtime.
+- Exact source revisions and isolated materialization remain verifiable.
+- Required MCPs, CLIs, credentials, network policy, cancellation, and telemetry fail closed.
+- The backend can correlate the AgentCore runtime session to its own durable run id without making
+  AgentCore state authoritative.
+- Security, compliance, cost, latency, quotas, and regional availability are acceptable for the
+  pilot.
+
+Decision:
+
+- If every material criterion passes, select AgentCore Runtime for Slice 3.
+- If a material criterion fails, select ECS/Fargate and preserve the same runner, image inputs,
+  workflow contracts, and control-plane boundary.
+- Do not select AgentCore Harness or ChatGPT Workspace Agents as an equivalent substitute. Either
+  would require its own workflow classification and behavioral acceptance evidence.
+
+Verification:
+
+- Full `pnpm qa` for repository changes.
+- Credential-free contract tests around the AgentCore adapter.
+- An explicitly approved AWS dev smoke run with synthetic data only.
+- A short decision record containing evidence, limitations, measured cost and latency, and the
+  selected target.
+
 ### Slice 2 - Containerized Worker Artifact
 
 Objective:
@@ -205,6 +264,8 @@ Includes:
 
 - Add a production runner entrypoint and graceful shutdown behavior.
 - Add a multi-stage Dockerfile with pinned Node, pnpm, Codex, and explicitly approved CLI versions.
+  When Gate A passes, target AgentCore Runtime's ARM64 custom-container contract; otherwise choose
+  and document the ECS/Fargate image architecture.
 - Run as a non-root user with a writable ephemeral workspace and read-only application files.
 - Add image build, vulnerability scan, synthetic container smoke test, and immutable ECR tagging.
 - Add a GitHub Actions workflow that authenticates to AWS through OIDC and publishes the image after
@@ -212,8 +273,8 @@ Includes:
 
 Explicitly excludes:
 
-- Starting a VM or ECS service, consuming SQS, real secrets, live MCP authentication, backend APIs,
-  and production deployment.
+- Starting AgentCore Runtime, a VM, or an ECS service; consuming SQS; real secrets; live MCP
+  authentication; backend APIs; and production deployment.
 
 Files / subsystems:
 
@@ -238,21 +299,23 @@ Review note:
 
 Objective:
 
-- Run the container in Headstart AWS dev with bounded identity, queueing, secrets, and observability.
+- Run the container in Headstart AWS dev with bounded identity, dispatch, secrets, and
+  observability.
 
 Includes:
 
-- Select the pilot target before implementation: controlled VM for the shortest pilot or
-  ECS/Fargate when the team wants the operational target immediately.
-- Add infrastructure-as-code for compute, ECR consumption, SQS, dead-letter queue, CloudWatch,
-  KMS, network policy, and a dedicated workload role.
+- Use the target selected by Gate A: AgentCore Runtime when it passes, otherwise ECS/Fargate. A
+  controlled VM requires a separately justified, time-boxed contingency decision.
+- Add infrastructure-as-code for the selected compute and dispatch path, ECR consumption,
+  CloudWatch, KMS, network policy, and a dedicated workload role. Add SQS and a dead-letter queue
+  only when the selected dispatch design requires them.
 - Add typed service-profile configuration mapping logical workflow requirements to exact secret
   resources and delivery methods.
 - Resolve Secrets Manager values at runtime without exposing them to prompts or logs.
 - Generate MCP and CLI authentication configuration in ephemeral files or allowlisted environment
   variables.
-- Add queue consumption, leases or visibility extension, graceful shutdown, and durable result
-  delivery adapter interfaces.
+- Add the selected runtime invocation or queue-consumption adapter, cancellation and shutdown
+  behavior, and durable result-delivery interfaces.
 - Add PHI-safe metrics and alerts for startup failures, missing identity, timeout, retry exhaustion,
   and dead-lettered runs.
 
@@ -272,7 +335,8 @@ Verification:
 
 - Infrastructure template validation and least-privilege policy review.
 - Dev deployment from an immutable ECR digest.
-- Synthetic SQS run covering success, retry, timeout, worker termination, and dead-letter behavior.
+- Synthetic hosted run covering success, retry, timeout, cancellation, runtime termination, and any
+  selected dead-letter behavior.
 - Credential-redaction and environment-allowlist tests.
 - Explicitly approved read-only smoke test against the selected dev capabilities.
 
@@ -293,7 +357,8 @@ Includes:
 - Add workflow-definition, run, attempt, lease, result, and audit persistence as required by the
   selected pilot.
 - Add authenticated APIs for manual launch, status, cancellation, and eligible retry.
-- Validate trigger payloads and publish immutable run requests to SQS.
+- Validate trigger payloads and dispatch immutable run requests through the selected runtime
+  adapter.
 - Enforce idempotency and reject stale or duplicate triggers.
 - Receive worker lifecycle and final result updates through an authenticated service boundary.
 - Record exact workflow, skill, schema, model, and image versions.
@@ -307,7 +372,7 @@ Files / subsystems:
 
 - Headstart backend repository modules, entities, migrations, services, DTOs, tests, and AWS
   integration configuration
-- Coordinating queue and worker service-profile definitions in this repository
+- Coordinating runtime-adapter and worker service-profile definitions in this repository
 
 Verification:
 
@@ -405,7 +470,7 @@ resources are codified:
 - register external OAuth applications and approve requested scopes;
 - enter initial secret values and verify rotation or revocation procedures;
 - approve the pilot data classification, retention, and observability policy;
-- choose the pilot compute target before Slice 3; and
+- approve the Gate A result and selected compute target before Slice 3; and
 - select the first workflow and accountable owners before Slice 6.
 
 These actions must have documented outcomes, but credentials and sensitive provider responses must
@@ -416,7 +481,7 @@ not be copied into repository documentation or workflow fixtures.
 Slice 1 can begin without selecting a live pilot or deployment target. Before Slice 3, the team must
 decide:
 
-1. controlled VM or ECS/Fargate for the dev pilot;
+1. AgentCore Runtime or ECS/Fargate based on the Gate A evidence;
 2. approved managed Codex authentication method;
 3. Headstart MCP service-identity and permission model;
 4. first external integration, if any, and its organization-owned authentication method;
@@ -444,5 +509,7 @@ data policy, failure policy, and production approval boundary.
 - visual workflow authoring;
 - arbitrary user-created schedules or tool permissions;
 - generalized long-term agent memory;
-- automatic adoption of unreviewed skills, workflows, models, MCPs, or CLI versions; and
-- migration to another orchestration framework without measured need.
+- automatic adoption of unreviewed skills, workflows, models, MCPs, or CLI versions;
+- migration to another orchestration framework without measured need; and
+- ChatGPT Workspace Agents as a substitute for Codex-managed execution without separate behavioral
+  acceptance evidence.

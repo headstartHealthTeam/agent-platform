@@ -38,6 +38,35 @@ triggers, service identities, versions, isolation, durable run state, approvals,
 observability, and operational responsibility. Business systems remain authoritative for their own
 records.
 
+## Codex Execution Is A Product Requirement
+
+The first managed runtime must execute the reviewed workflow through Codex, not merely use an OpenAI
+model inside another agent loop. This requirement preserves the behavior employees already rely on:
+repository navigation, instruction discovery, skill composition, MCP and CLI use, iterative tool
+reasoning, and structured completion through the Codex SDK.
+
+ChatGPT Workspace Agents are a separate product and execution runtime. Codex can configure their
+instructions, skills, connections, schedules, and triggers, but it does not execute them. A workflow
+may deliberately target Workspace Agents when its owner accepts that runtime and validates it
+independently. Workspace Agents are not a hosting substitute for a workflow whose acceptance
+criteria require Codex behavior, and their configuration must not be presented as a deployment of
+the managed Codex runner. Their API trigger also does not currently return a run id or make the
+result retrievable through the API, so it cannot satisfy this architecture's durable run-correlation
+contract.
+
+This distinction separates two decisions that must not be conflated:
+
+- **Execution engine:** the initial managed engine is the repository-owned Codex SDK runner.
+- **Compute substrate:** AgentCore Runtime, ECS/Fargate, or another approved host may run that exact
+  engine without changing the workflow contract.
+
+Amazon Bedrock AgentCore Runtime is the preferred managed-hosting candidate because Runtime accepts
+customer-owned agent code and containers while supplying isolated sessions, identity integration,
+scaling, and observability. AgentCore Harness is not the selected path: Harness supplies its own
+agent loop, so using an OpenAI model there would not establish equivalence with Codex. Runtime must
+pass the compatibility gate in the
+[managed runtime completion roadmap](managed-runtime-completion-roadmap.md) before adoption.
+
 ## Repository Responsibilities
 
 This monorepo has four internal layers:
@@ -98,8 +127,8 @@ difference must be expressed as a reviewed input, policy, adapter, or separate w
 ```text
 Salesforce event, EventBridge schedule, or manual request
   -> control plane validates trigger and creates durable run record
-  -> control plane publishes run request with idempotency key to SQS
-  -> isolated runner receives exact workflow version
+  -> control plane dispatches immutable request through the selected runtime adapter
+  -> isolated Codex runner receives exact workflow version and idempotency key
   -> runner resolves pinned skills and approved workspace
   -> runner validates input schema and policy
   -> Codex executes prompt using allowed skills, MCPs, CLIs, and any declared adapters
@@ -115,9 +144,10 @@ managed workflow may finish after persisted output is delivered through an exist
 capability, with no workflow-specific backend, admin-panel, or adapter code. The shared control plane
 and runner still provide identity, versioning, policy, durable state, and operational evidence.
 
-The persistent unit is the workflow definition and durable run record. A Codex process or thread is
-an execution detail. A worker can disappear and be replaced without losing the authoritative run
-status, approvals, or business outcome.
+The persistent unit is the workflow definition and durable run record. A Codex process, thread,
+AgentCore session, container, queue message, or worker lease is an execution detail. Compute can
+disappear and be replaced without losing the authoritative run status, approvals, or business
+outcome. Runtime-native session or memory state must never become the business system of record.
 
 ## Local Development And Managed Packaging
 
@@ -311,33 +341,46 @@ again immediately before execution. It must apply a stable idempotency key, reco
 receipt, and make replay behavior explicit. Human approval never converts arbitrary model text into
 authority.
 
-## AWS Deployment Progression
+## Hosting Decision And AWS Deployment Progression
 
-The code should remain compute-neutral while deployment matures.
+The code remains compute-neutral, but the first deployment decision is now explicit: evaluate
+AgentCore Runtime before implementing a custom long-lived VM or ECS worker fleet.
 
-### Pilot
+### Compatibility Gate
 
-- One controlled AWS VM runs the containerized queue consumer.
-- EventBridge, the backend, or a manual admin action creates run requests.
-- SQS provides buffering and a dead-letter queue.
-- Secrets Manager and an instance role provide narrowly scoped credentials.
-- CloudWatch captures PHI-safe operational logs, metrics, and alerts.
-- Only read-only or fully human-reviewed pilot workflows are eligible.
+A bounded dev spike must package the existing Codex SDK runner in an AgentCore Runtime custom
+container and prove that the exact execution contract survives the move. The spike must use a
+synthetic read-only workflow and verify pinned repository and skill materialization, approved Codex
+authentication, MCP and CLI startup, explicit environment delivery, structured output, timeout and
+cancellation behavior, PHI-safe observability, network restrictions, cold-start and run cost, and
+failure cleanup. AgentCore session state remains ephemeral; the Headstart control plane remains
+authoritative.
+
+Passing the gate means AgentCore Runtime becomes the initial managed compute target. Failing a
+material requirement means ECS/Fargate becomes the fallback without changing workflow packages,
+the Codex runner, or control-plane contracts. A controlled VM is reserved for a time-boxed
+demonstration or contingency, not the intended Operational V1 architecture.
 
 ### Operational V1
 
-- The runner image is published to ECR.
-- ECS/Fargate starts isolated workers or tasks with per-workflow IAM policy.
-- The backend provides durable run, approval, cancellation, and retry APIs.
-- The admin panel provides the workflow catalog and operations UI.
-- Deployment records exact workflow commit, image digest, and configuration.
+- The exact reviewed Codex runner image is published to ECR.
+- The selected runtime adapter invokes AgentCore Runtime or dispatches to an ECS/Fargate worker.
+- AWS supplies isolated compute, narrowly scoped workload identity, secrets, network controls, and
+  CloudWatch observability.
+- The backend provides durable run, approval, cancellation, retry, and idempotency APIs independent
+  of the selected compute target.
+- The admin panel provides the workflow catalog and operations UI required by the pilot.
+- Deployment records the exact workflow commit, image digest, runtime configuration, and execution
+  target.
 
 ### Later Evaluation
 
-AgentCore, Windmill, or another orchestration platform may be adopted if measured needs justify it.
-The workflow contract should allow the executor to change without rewriting business workflows.
-The platform should not acquire a visual graph builder, custom scheduler, or general-purpose agent
-memory system until a real operating requirement demonstrates their value.
+AgentCore Gateway, AgentCore Memory, AgentCore Harness, Windmill, or another orchestration platform
+may be adopted only when a measured requirement justifies it. AgentCore Runtime adoption does not
+implicitly adopt those services. The workflow contract allows the compute adapter to change without
+rewriting business workflows. The platform should not acquire a visual graph builder, custom
+scheduler, or general-purpose agent memory system until a real operating requirement demonstrates
+their value.
 
 ## Failure And Recovery Model
 
@@ -369,7 +412,7 @@ This repository currently establishes:
 - repository validation that enforces fixtures, evaluation definitions, draft-only lifecycle, and
   unit-test coverage for these boundaries.
 
-It does not yet provide the AWS queue consumer, backend control-plane module, admin UI, service
+It does not yet provide a hosted runtime adapter, backend control-plane module, admin UI, service
 identity issuance, repository workspace materialization, skill installation into an isolated run,
 approval executor, external writes, deployment pipeline, or live workflow. Those are subsequent
 reviewed slices. The
@@ -383,7 +426,7 @@ Before promoting the first real workflow, Headstart must select:
 1. the pilot workflow and named owners;
 2. the Codex authentication method approved for managed execution;
 3. the Headstart MCP service-identity and permission model;
-4. the initial VM versus ECS execution target;
+4. whether AgentCore Runtime passes the compatibility gate or ECS/Fargate is required;
 5. the control-plane database and API contract;
 6. the exact approval boundary for the pilot;
 7. PHI classification and observability policy; and
@@ -394,6 +437,10 @@ Before promoting the first real workflow, Headstart must select:
 - [Codex SDK](https://learn.chatgpt.com/docs/codex-sdk)
 - [Codex access tokens](https://learn.chatgpt.com/docs/enterprise/access-tokens)
 - [Non-interactive Codex](https://learn.chatgpt.com/docs/non-interactive-mode)
+- [ChatGPT Workspace Agents](https://help.openai.com/en/articles/20001143)
+- [AgentCore Harness versus Runtime](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/harness-vs-runtime.html)
+- [AgentCore Runtime operation](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-how-it-works.html)
+- [AgentCore Runtime security practices](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-security-best-practices.html)
 
 ## Related Repository Documentation
 

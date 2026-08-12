@@ -120,9 +120,10 @@ control plane. Use the
 read the [managed workflow architecture](docs/codex-managed-workflow-architecture.md) before adding
 or promoting it. The [managed runtime completion roadmap](docs/managed-runtime-completion-roadmap.md)
 defines the remaining implementation slices and names isolated workflow materialization as the
-immediate next step. The current implementation is intentionally draft-only: repository validation
-blocks active workflows until isolated workspace, skill, tool, and environment materialization is
-implemented and tested.
+immediate next step. A bounded compatibility gate then evaluates AgentCore Runtime as the preferred
+host for the existing Codex SDK runner, with ECS/Fargate retained as the fallback. The current
+implementation is intentionally draft-only: repository validation blocks active workflows until
+isolated workspace, skill, tool, and environment materialization is implemented and tested.
 
 ## Knowledge Workflow Sources
 
