@@ -112,6 +112,16 @@
       ]
     },
     {
+      "name": "seo-informed-family-page",
+      "prompt": "Rewrite this Headstart family landing page from an SEO brief targeting 'ABA therapy insurance coverage.' Preserve the supplied facts and search intent, but make the copy natural and useful for parents instead of repeating keyword phrases.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Answers the family question behind the target query in reader-first language",
+        "Preserves the supplied facts, qualifiers, and relevant topic",
+        "Avoids exact-match repetition, keyword stacking, and sterile search-engine-first prose"
+      ]
+    },
+    {
       "name": "internal-engineering-document",
       "prompt": "Rewrite this backend migration plan and pull request description for Headstart engineers.",
       "shouldActivate": false,

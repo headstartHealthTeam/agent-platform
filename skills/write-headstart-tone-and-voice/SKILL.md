@@ -64,6 +64,22 @@ Headstart can be encouraging and energetic. Do not add guarantees, superlatives,
 or unsupported specifics to make the writing more compelling. Preserve material qualifiers and
 variation supplied by the source.
 
+### Use Search Intent Without Writing For Search Engines
+
+SEO evidence may identify the reader's question, the page's purpose, useful terminology, and the
+subjects the copy needs to cover. Use those inputs to make the content more relevant, not to define
+its voice.
+
+- Answer the human need behind a target query.
+- Use important search terms where they fit naturally and accurately.
+- Do not force exact-match phrases, stack keyword variants, or repeat the page topic merely to
+  signal relevance.
+- Prefer the wording a real reader would understand when an SEO phrase sounds stiff or unnatural.
+- Keep titles, headings, and body copy useful as writing even when read without the keyword brief.
+
+Copy that satisfies a search brief but feels sterile, repetitive, or search-engine-first does not
+meet the Headstart voice standard.
+
 ## Adapt The Voice By Audience
 
 ### Families
