@@ -1,0 +1,123 @@
+{
+  "skill": "write-headstart-tone-and-voice",
+  "cases": [
+    {
+      "name": "family-intake-email",
+      "prompt": "Rewrite this Headstart intake email for a parent. Preserve the supplied insurance and scheduling details, explain what happens next, and make it feel less formal.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses calm family-facing language and moves quickly into useful guidance",
+        "Preserves the supplied details and qualifiers",
+        "Makes the next step explicit without pressure or hype"
+      ]
+    },
+    {
+      "name": "family-educational-resource",
+      "prompt": "Draft a Headstart resource for parents explaining what a BCBA and RBT each do during ABA therapy.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Defines unfamiliar roles in plain language",
+        "Uses calm, respectful language that preserves family agency",
+        "Uses a clear educational sequence and practical takeaway"
+      ]
+    },
+    {
+      "name": "bcba-partnership-overview",
+      "prompt": "Rewrite this Headstart overview for BCBAs. Keep it peer-to-peer and specific about the supplied administrative support, but remove the anti-corporate and dream-practice language.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses substantive professional language that respects BCBA expertise",
+        "Keeps clinical authority and ownership visible",
+        "Removes adversarial framing and entrepreneurial hype"
+      ]
+    },
+    {
+      "name": "rbt-recruiting-message",
+      "prompt": "Revise this Headstart RBT recruiting message so candidates understand the supplied employment relationship, how matching works, and what details they can evaluate.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses direct adult-to-adult recruiting language",
+        "Preserves the supplied employment and matching distinctions",
+        "Avoids generic slogans and universal promises"
+      ]
+    },
+    {
+      "name": "public-service-status",
+      "prompt": "Rewrite this Headstart message for a family: 'The intake record failed validation and was not persisted to the database.'",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Translates internal terminology into language meaningful to the family",
+        "States what happened in calm, concise language",
+        "Does not add a cause, resolution, or timeline"
+      ]
+    },
+    {
+      "name": "named-author-edit",
+      "prompt": "Lightly edit this Headstart article by a named BCBA for clarity while preserving her candid first-person voice and argument.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves the author's cadence, point of view, and attributed experience",
+        "Does not flatten the article into uniform product copy",
+        "Removes needless repetition without changing meaning"
+      ]
+    },
+    {
+      "name": "approved-testimonial-edit",
+      "prompt": "Lightly edit these approved Headstart RBT testimonials for grammar and length without changing the speakers' meaning or making every quote sound the same.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves each speaker's distinct voice",
+        "Makes only light grammar or length edits",
+        "Does not strengthen, combine, or generalize the quotes"
+      ]
+    },
+    {
+      "name": "fact-preserving-family-copy",
+      "prompt": "Make this Headstart family copy warmer and clearer using only the facts and qualifiers supplied in the brief.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses warm and practical family-facing language",
+        "Preserves all supplied qualifiers",
+        "Does not add guarantees, superlatives, or unsupported specifics"
+      ]
+    },
+    {
+      "name": "transactional-reminder",
+      "prompt": "Rewrite this Headstart reminder so a caregiver can quickly understand the missing information, the deadline, and what will happen after they respond.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Puts the required action and deadline near the beginning",
+        "Explains the next step in calm, direct language",
+        "Avoids unrelated promotional language"
+      ]
+    },
+    {
+      "name": "mixed-audience-announcement",
+      "prompt": "Write a short Headstart announcement for families, BCBAs, and RBTs, with a distinct explanation of what the supplied change means for each audience.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Names all three audiences without collapsing their needs",
+        "Keeps professional and family terminology understandable",
+        "Provides distinct audience-specific implications"
+      ]
+    },
+    {
+      "name": "short-form-social-copy",
+      "prompt": "Turn this approved Headstart program update into a concise LinkedIn post for BCBAs without adding claims or making it sound like generic corporate marketing.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves the supplied facts and qualifiers",
+        "Uses a professional and natural Headstart voice",
+        "Avoids generic hype and invented performance claims"
+      ]
+    },
+    {
+      "name": "internal-engineering-document",
+      "prompt": "Rewrite this backend migration plan and pull request description for Headstart engineers.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses repository engineering guidance rather than the audience-facing voice skill"
+      ]
+    }
+  ]
+}
