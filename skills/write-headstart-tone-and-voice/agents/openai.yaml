@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Write Headstart Tone And Voice'
+  short_description: 'Write clear Headstart copy for each audience'
+  default_prompt: 'Use $write-headstart-tone-and-voice to write or revise this audience-facing Headstart content.'
+policy:
+  allow_implicit_invocation: true

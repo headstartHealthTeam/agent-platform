@@ -8,6 +8,11 @@
     "node": ">=22",
     "pnpm": "9.15.0"
   },
+  "pnpm": {
+    "overrides": {
+      "nanoid@<3.3.18": "3.3.18"
+    }
+  },
   "scripts": {
     "build": "turbo run build --output-logs=errors-only",
     "clean": "turbo run clean && rimraf .turbo coverage",
