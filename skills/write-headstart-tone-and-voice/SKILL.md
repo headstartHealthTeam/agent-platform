@@ -15,6 +15,20 @@ consistent while adapting the tone, detail, and energy to the audience and commu
 This skill governs writing style only. Use the facts and constraints supplied with the task,
 preserve their meaning, and return the copy the user requested.
 
+## Brand North Star
+
+Headstart is a **capable guide and supportive partner**. It understands what the reader is dealing
+with, makes complicated things easier to understand, tells the truth, and helps the reader decide
+what to do next.
+
+Use this working rule:
+
+> Understand the person. Say the simple thing. Be specific. Be useful. Tell the truth. Help them
+> move forward.
+
+Choose clarity before cleverness and specificity before impressiveness. Credibility should come
+from accurate, useful detail rather than polish, jargon, or adjective stacks.
+
 ## Voice At A Glance
 
 Headstart sounds:
@@ -44,6 +58,17 @@ the point, not delay it.
 
 Name the real action, responsibility, or benefit. Replace vague promises of `support`, `solutions`,
 `tools`, and `resources` with what the reader can actually understand or do.
+
+### Explain Complexity In A Useful Order
+
+Do not hide a real complication or lead with operational language. When a limitation or complex
+condition matters, use this sequence:
+
+1. state the reality plainly;
+2. explain what it means for the reader; and
+3. describe how Headstart or another named actor helps.
+
+This pattern should reduce uncertainty without pretending the situation is simpler than it is.
 
 ### Preserve Agency
 
@@ -86,6 +111,9 @@ meet the Headstart voice standard.
 
 Write to parents and caregivers making decisions for a child.
 
+Headstart's role is a **calm guide**. The emotional job is to reduce uncertainty and make the next
+step clearer without making the family feel managed or talked down to.
+
 - Be calm, welcoming, and practical.
 - Briefly acknowledge uncertainty or stress when it is relevant, then move into useful guidance.
 - Put context before clinical or insurance detail.
@@ -106,6 +134,10 @@ Family content can recognize emotion, but the useful explanation should carry th
 Write peer-to-peer for clinicians considering ownership, leadership, partnership, or professional
 resources.
 
+Headstart's role is a **capable peer and operating partner**. The emotional job is to make practice
+ownership feel realistic and workable while keeping clinical authority and ownership with the
+BCBA.
+
 - Respect clinical expertise; do not over-explain standard ABA concepts without a reason.
 - Be substantive about responsibilities, decisions, practice administration, economics, and
   tradeoffs.
@@ -118,6 +150,9 @@ resources.
 ### RBTs
 
 Write adult-to-adult for people evaluating a role, supervisor, schedule, practice, or career path.
+
+Headstart's role is a **respectful career ally**. The emotional job is to help RBTs feel respected,
+supported, and thoughtfully matched while preserving their ability to evaluate fit.
 
 - Be direct, encouraging, and specific.
 - Prioritize details that shape fit, such as communication, supervision, mentorship, matching,
@@ -190,6 +225,9 @@ professional language.
 - Define an acronym at first use unless the intended audience reliably knows it.
 - Use one stable term for the same concept within a communication.
 - Use headings, lists, steps, or examples when they make complex material easier to follow.
+- Do not make every section re-explain Headstart when the reader already has the context.
+- Rewrite a sentence that stacks three abstract nouns or three adjectives before reaching a real
+  person or action.
 - Read the draft aloud. If it sounds like a pitch deck, policy memo, implementation note, or AI
   summary, rewrite it.
 
@@ -259,6 +297,20 @@ After: `Your child's BCBA creates the treatment plan, reviews progress, and adju
 
 These examples demonstrate voice and style. They are not reusable factual claims.
 
+## Sterile Copy Check
+
+Before accepting polished copy, challenge it with these questions:
+
+- Could another ABA, healthcare, or software company use the sentence unchanged?
+- Does `support`, `guidance`, `path`, `solution`, or `clinician-led` appear without explaining the
+  real action or reader benefit?
+- Does the paragraph summarize a category instead of saying something a person needs to know?
+- Does the section restate Headstart's value proposition instead of moving the reader forward?
+- Would a real person say the sentence aloud?
+
+If several answers expose generic language, rewrite with a concrete person, action, concern,
+example, or next step. Clean grammar is not enough when the writing feels impersonal or generated.
+
 ## Style Check
 
 Before returning the copy, confirm that:
@@ -271,7 +323,8 @@ Before returning the copy, confirm that:
 - the audience's agency and expertise are respected;
 - supplied facts, qualifiers, and attributed meaning remain intact;
 - no hype, guarantee, or unsupported specificity was added; and
-- the tone fits the communication type without losing the Headstart voice.
+- the tone fits the communication type without losing the Headstart voice; and
+- the copy could not be pasted unchanged onto another company's page.
 
 Revise anything that sounds generic, inflated, paternalistic, overly technical, or unlike a
 thoughtful person speaking clearly.

@@ -1,0 +1,89 @@
+{
+  "skill": "design-headstart-public-website",
+  "cases": [
+    {
+      "name": "family-landing-page-design",
+      "prompt": "Design a responsive Headstart public landing page for families using the approved brand assets and supplied copy. Include the hero, how it works, insurance help, family proof, resources, and a final call to action.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses a human, photographic, editorial composition rather than repeating card grids",
+        "Chooses components according to the content and makes the primary action clear",
+        "Requires visual inspection at mobile, tablet, desktop, and wide desktop sizes"
+      ]
+    },
+    {
+      "name": "rbt-page-visual-review",
+      "prompt": "Review this rendered Headstart RBT landing page for visual hierarchy, image use, page rhythm, interaction clarity, and responsive defects. Separate objective defects from taste-based recommendations.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Evaluates whether imagery proves the RBT support and mentorship story",
+        "Reports objective layout and interaction defects before subjective recommendations",
+        "Checks repeated patterns, generic icon use, and viewport behavior"
+      ]
+    },
+    {
+      "name": "resource-card-system",
+      "prompt": "Design the cards and responsive grid for a Headstart public resource library containing real articles, guides, videos, and tools.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Recognizes resources as distinct objects for which cards are appropriate",
+        "Uses editorial imagery and stable repeated-item dimensions",
+        "Keeps filters, interactions, and focus states clear across viewports"
+      ]
+    },
+    {
+      "name": "abstract-values-grid",
+      "prompt": "Improve this Headstart website section where six abstract values are presented as identical icon cards on a pale mint background.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Challenges cards as the default treatment for abstract ideas",
+        "Uses typography, photography, spacing, or one stronger editorial composition",
+        "Preserves the supplied meaning rather than inventing new claims"
+      ]
+    },
+    {
+      "name": "testimonial-layout",
+      "prompt": "Create a public Headstart testimonial section from four approved, attributed quotes and three approved photos.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses a featured editorial quote with real attribution and supporting proof",
+        "Avoids four identical quote cards with generic icons",
+        "Does not fabricate a missing photo or alter testimonial meaning"
+      ]
+    },
+    {
+      "name": "missing-approved-photography",
+      "prompt": "Build a public Headstart mentorship section, but no approved photo has been supplied. Use an AI-generated clinician image so the layout looks complete.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not generate or substitute unapproved photography",
+        "Builds a truthful layout state or identifies the approved asset requirement",
+        "Avoids presenting fabricated people as real Headstart clinicians"
+      ]
+    },
+    {
+      "name": "website-copy-only",
+      "prompt": "Rewrite this Headstart family webpage paragraph so it sounds warmer and less clinical. Do not change the design.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses the Headstart tone and voice skill instead of the website aesthetic skill"
+      ]
+    },
+    {
+      "name": "admin-dashboard-design",
+      "prompt": "Redesign the Headstart admin dashboard to make authorization queues easier to scan.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses the internal product design system rather than the public website aesthetic skill"
+      ]
+    },
+    {
+      "name": "single-icon-request",
+      "prompt": "Choose a Lucide icon for the save button in an internal Headstart form.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Does not invoke a page-level public website design capability for an internal control"
+      ]
+    }
+  ]
+}

@@ -122,6 +122,36 @@
       ]
     },
     {
+      "name": "family-complexity-sequence",
+      "prompt": "Rewrite this Headstart family explanation of variable insurance requirements using only the supplied facts. Make the complexity understandable and explain what it means before describing how Headstart helps.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the reality, reader meaning, and named-help sequence",
+        "Sounds like a calm guide without minimizing insurance complexity",
+        "Preserves supplied limits and does not invent coverage or authorization claims"
+      ]
+    },
+    {
+      "name": "sterile-website-copy",
+      "prompt": "Rewrite this polished but generic Headstart website section so it sounds human and specific: 'Our comprehensive, clinician-led support pathways empower families throughout their care journey.' Use only the concrete facts in the attached brief.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Removes abstract and interchangeable brand language",
+        "Names a concrete reader concern, action, or next step supported by the brief",
+        "Does not manufacture warmth, promises, or implementation details"
+      ]
+    },
+    {
+      "name": "audience-role-flex",
+      "prompt": "Create three short Headstart versions of the same supplied service update: one for families, one for RBTs, and one for BCBAs. Keep the facts identical while adapting the relationship and emotional job for each audience.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses calm-guide language for families, respectful-career-ally language for RBTs, and capable-peer language for BCBAs",
+        "Keeps the underlying facts and roles consistent across all three versions",
+        "Avoids making every audience sound like the same generic brand reader"
+      ]
+    },
+    {
       "name": "internal-engineering-document",
       "prompt": "Rewrite this backend migration plan and pull request description for Headstart engineers.",
       "shouldActivate": false,

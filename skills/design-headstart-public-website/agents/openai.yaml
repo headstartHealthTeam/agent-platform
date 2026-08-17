@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Design Headstart Public Website'
+  short_description: 'Design human, photographic Headstart public pages'
+  default_prompt: 'Use $design-headstart-public-website to design, implement, or review this public Headstart website experience.'
+policy:
+  allow_implicit_invocation: true
