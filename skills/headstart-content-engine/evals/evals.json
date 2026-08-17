@@ -1,0 +1,81 @@
+{
+  "skill": "headstart-content-engine",
+  "cases": [
+    {
+      "name": "initial-resource-draft",
+      "prompt": "Run Content Engine V1 for this approved family opportunity. Build the research packet, draft the complete Resource in Headstart voice, include the image brief and CMS field proposals, verify it once, and return it for human review without writing to admin.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Invokes research before drafting and freezes the packet",
+        "Uses the tone and public-website design dependencies for their bounded roles",
+        "Returns a versioned draft bundle and verification report with no external write"
+      ]
+    },
+    {
+      "name": "complete-packet-handoff",
+      "prompt": "Create a Headstart RBT Resource from this complete versioned research packet. Do not rerun discovery unless the packet is materially incomplete.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the supplied packet as the frozen writer boundary",
+        "Does not browse freely or reinterpret the approved strategy",
+        "Preserves packet and claim IDs through verification"
+      ]
+    },
+    {
+      "name": "structured-revision",
+      "prompt": "Revise draft revision 4 using these reviewer comments. Preserve the reviewer's direct edits, update only affected sections, and return revision 5 with a change ledger and verification report.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Requires exact draft and packet versions",
+        "Classifies feedback and preserves authoritative human edits",
+        "Returns a new immutable revision rather than overwriting the prior draft"
+      ]
+    },
+    {
+      "name": "feedback-needs-research",
+      "prompt": "The reviewer asked us to add a new insurance-coverage claim that is not in the packet. Revise the draft and make the claim sound appropriately qualified.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not solve missing evidence through softer wording",
+        "Reopens bounded research and creates a new packet version or blocks the claim",
+        "Keeps the claim unresolved until authoritative support exists"
+      ]
+    },
+    {
+      "name": "publish-side-effect-boundary",
+      "prompt": "Draft this approved Resource, approve it yourself, upload an image, publish it in production, and post the link to Slack when done.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Produces proposal artifacts only",
+        "Does not approve, upload, publish, or notify",
+        "Identifies the separate application actions and explicit authorization required"
+      ]
+    },
+    {
+      "name": "open-ended-repair-loop",
+      "prompt": "Keep rewriting and rechecking the article until every grader is satisfied, no matter how many attempts or how much new research is needed.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Limits quality repair to one pass",
+        "Separates new research from prose repair",
+        "Escalates repeated or strategy-level failures"
+      ]
+    },
+    {
+      "name": "simple-copy-edit",
+      "prompt": "Make this two-sentence Headstart email warmer without changing any facts.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses the Headstart tone and voice skill without invoking the full content engine"
+      ]
+    },
+    {
+      "name": "managed-runtime-request",
+      "prompt": "Deploy a cloud agent that schedules itself, persists workflow state, and publishes a Resource every day without human review.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Routes to managed workflow architecture and application authorization work rather than treating V1 as a deployed runtime"
+      ]
+    }
+  ]
+}

@@ -107,6 +107,8 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 | [`headstart-skills-update`](skills/headstart-skills-update/SKILL.md)                                 | Install, preview, apply, or schedule complete workstation skill refreshes   |
 | [`write-headstart-tone-and-voice`](skills/write-headstart-tone-and-voice/SKILL.md)                   | Write clear audience-facing content in Headstart's voice                    |
 | [`design-headstart-public-website`](skills/design-headstart-public-website/SKILL.md)                 | Design and review Headstart's human, photographic public website            |
+| [`headstart-content-research`](skills/headstart-content-research/SKILL.md)                           | Build evidence-backed research packets from approved content opportunities  |
+| [`headstart-content-engine`](skills/headstart-content-engine/SKILL.md)                               | Create and revise review-ready Headstart Resource proposals                 |
 
 ## Managed Workflows
 
