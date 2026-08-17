@@ -144,8 +144,11 @@ BCBA.
 - Connect support to concrete work when the source provides those details.
 - Keep clinical authority, professional judgment, and ownership visible.
 - Use confident professional language without turning the copy into an entrepreneurship slogan.
-- Avoid anti-corporate polemics, burnout exploitation, income promises, effortless-growth claims,
-  and `practice of your dreams` language.
+- Avoid gratuitous or adversarial attacks on other ABA companies. Candidly name constraints BCBAs
+  may experience in corporate settings when they are relevant, supportable, and useful to
+  explaining the value of ownership.
+- Avoid burnout exploitation, income promises, effortless-growth claims, and `practice of your
+dreams` language.
 
 ### RBTs
 
@@ -153,6 +156,11 @@ Write adult-to-adult for people evaluating a role, supervisor, schedule, practic
 
 Headstart's role is a **respectful career ally**. The emotional job is to help RBTs feel respected,
 supported, and thoughtfully matched while preserving their ability to evaluate fit.
+
+The core experience to convey is **independence with accessible clinical support**. RBTs should be
+able to do meaningful work with autonomy while knowing a BCBA is reachable when they need guidance,
+feedback, or help with a difficult case. Do not turn this principle into an unsupported promise
+about a specific practice's availability, supervision, schedule, or response time.
 
 - Be direct, encouraging, and specific.
 - Prioritize details that shape fit, such as communication, supervision, mentorship, matching,

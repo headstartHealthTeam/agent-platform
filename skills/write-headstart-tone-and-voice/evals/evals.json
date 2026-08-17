@@ -23,12 +23,12 @@
     },
     {
       "name": "bcba-partnership-overview",
-      "prompt": "Rewrite this Headstart overview for BCBAs. Keep it peer-to-peer and specific about the supplied administrative support, but remove the anti-corporate and dream-practice language.",
+      "prompt": "Rewrite this Headstart overview for BCBAs. Keep it peer-to-peer and specific about the supplied administrative support. Preserve the supplied, supportable constraints BCBAs experience in corporate settings, but remove gratuitous competitor attacks and dream-practice language.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Uses substantive professional language that respects BCBA expertise",
         "Keeps clinical authority and ownership visible",
-        "Removes adversarial framing and entrepreneurial hype"
+        "Preserves grounded, source-backed contrast while removing gratuitous attacks and entrepreneurial hype"
       ]
     },
     {
@@ -38,6 +38,7 @@
       "expectedBehaviors": [
         "Uses direct adult-to-adult recruiting language",
         "Preserves the supplied employment and matching distinctions",
+        "Conveys independence with accessible clinical support without inventing availability or supervision guarantees",
         "Avoids generic slogans and universal promises"
       ]
     },
