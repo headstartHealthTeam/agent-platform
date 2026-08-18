@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Provider Perspective Simulator'
+  short_description: 'Evaluate designs through evolving provider personas'
+  default_prompt: 'Use $simulate-provider-perspectives to evaluate this provider-facing design or workflow and surface persona-specific usability risks.'
+policy:
+  allow_implicit_invocation: true

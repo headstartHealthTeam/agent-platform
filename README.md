@@ -92,6 +92,7 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 
 | Skill                                                                                                | Purpose                                                                     |
 | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [`bulletin-writer`](skills/bulletin-writer/SKILL.md)                                                 | Provider-portal bulletins with clear actions and grounded Headstart voice   |
 | [`deep-pr-review`](skills/deep-pr-review/SKILL.md)                                                   | Generic evidence-backed pull request review method                          |
 | [`headstart-agent-workflow-authoring`](skills/headstart-agent-workflow-authoring/SKILL.md)           | Select and design the smallest safe local or managed agent workflow         |
 | [`headstart-pr-review-context`](skills/headstart-pr-review-context/SKILL.md)                         | Headstart repository, Linear, integration, privacy, and side-effect context |
@@ -105,6 +106,7 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 | [`headstart-knowledge-refresh`](skills/headstart-knowledge-refresh/SKILL.md)                         | Evidence-backed audits of knowledge and agent instruction hierarchies       |
 | [`headstart-discovery-to-decision`](skills/headstart-discovery-to-decision/SKILL.md)                 | Composed workflow from mixed discovery evidence to decision packet          |
 | [`headstart-skills-update`](skills/headstart-skills-update/SKILL.md)                                 | Install, preview, apply, or schedule complete workstation skill refreshes   |
+| [`simulate-provider-perspectives`](skills/simulate-provider-perspectives/SKILL.md)                   | Evidence-backed provider persona evaluation and model calibration           |
 | [`write-headstart-tone-and-voice`](skills/write-headstart-tone-and-voice/SKILL.md)                   | Write clear audience-facing content in Headstart's voice                    |
 | [`design-headstart-public-website`](skills/design-headstart-public-website/SKILL.md)                 | Design and review Headstart's human, photographic public website            |
 
