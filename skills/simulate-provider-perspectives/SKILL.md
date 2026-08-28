@@ -19,8 +19,9 @@ Use composite provider personas to evaluate an experience without impersonating 
 - Use current product artifacts to establish observed interface behavior. Treat portal chats,
   meeting notes, transcripts, and research as dated observations, not approved policy or complete
   explanations of provider motivation.
-- Default to read-only evaluation and proposed changes. Do not edit a prototype, connected source,
-  persona, rubric, or evidence registry unless the user explicitly requests that exact write.
+- Default to read-only evaluation and proposed changes. Do not edit a prototype or connected source
+  unless the user explicitly requests that exact write. Learn and Calibrate mode have the stricter
+  canonical-source boundary below.
 - If an interactive state or required source cannot be accessed, continue only with the evidence
   that is available, disclose the coverage limitation, and do not imply that the missing state was
   tested.
@@ -30,8 +31,8 @@ Use composite provider personas to evaluate an experience without impersonating 
 ## Choose the Mode
 
 1. Evaluate: Review an artifact using the current personas. Do not modify persona or evidence files.
-2. Learn: Extract anonymized observations from new provider evidence. Propose evidence records unless the user explicitly asks to incorporate them.
-3. Calibrate: Compare accumulated evidence with the current model and propose persona, overlay, rubric, or policy changes. Do not change foundational personas without explicit user approval.
+2. Learn: Extract anonymized observations from new provider evidence and return proposed evidence records by default.
+3. Calibrate: Compare accumulated evidence with the current model and return proposed persona, overlay, rubric, or policy changes by default.
 
 If the request combines modes, evaluate first and place learning or calibration proposals in a separate section.
 
@@ -61,7 +62,8 @@ Use applicable product, Figma, browser, document, Slack, Drive, or meeting-trans
 3. Record the source type, date or period, observation, inferred need, relevant persona or overlay, contradiction status, and confidence.
 4. Use the evidence lifecycle in [references/evolution-policy.md](references/evolution-policy.md).
 5. Never promote one unusual interaction directly into a foundational trait.
-6. If the user asks to incorporate evidence, append or update anonymized records in the registry. Otherwise return proposed records for approval.
+6. Return proposed records using the canonical change handoff. Apply them only when every canonical
+   write condition is satisfied.
 
 ## Calibrate the Model
 
@@ -73,7 +75,35 @@ Use applicable product, Figma, browser, document, Slack, Drive, or meeting-trans
    - usage contexts;
    - evaluation rubric.
 3. Present a concise before-and-after proposal with supporting evidence IDs, confidence, likely benefit, and risk of overgeneralization.
-4. Apply approved changes, update the version and calibration date in the persona reference, and revalidate the skill.
+4. Return approved changes using the canonical change handoff. Apply them, update the version and
+   calibration date in the persona reference, and revalidate the skill only when every canonical
+   write condition is satisfied.
+
+## Canonical Change Handoff
+
+Learn and Calibrate mode are proposal-only by default, including when the user says that a proposed
+change is approved. An installed copy under a user-level or host skill directory is a deployment
+artifact and must never be edited as the source of truth.
+
+Apply a Learn or Calibrate change only when all of these conditions are true:
+
+1. The user explicitly requests the exact repository write.
+2. The active workspace is the canonical `headstartHealthTeam/agent-platform` repository checkout.
+3. The current branch is a writable feature branch, not `main` or another protected stable branch.
+4. Repository instructions and the active worktree allow the change to be made safely and
+   validated.
+
+If any condition is false or cannot be verified, stop before writing and return a structured handoff
+containing:
+
+- target skill version, files, and sections;
+- proposed current and replacement content or record additions;
+- supporting and contradicting evidence IDs with source provenance;
+- confidence, privacy and data-minimization notes, and overgeneralization risk; and
+- required validation, including skill validation and forward tests.
+
+Do not redirect the write to an installed copy. Tell the user that application must continue from a
+canonical Agent Platform checkout on a feature branch.
 
 ## Default Evaluation Output
 

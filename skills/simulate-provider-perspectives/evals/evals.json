@@ -28,7 +28,17 @@
       "expectedBehaviors": [
         "Identifies repeated patterns, contradictions, unsupported traits, and evidence gaps",
         "Provides before-and-after proposals with evidence IDs, confidence, benefit, and overgeneralization risk",
-        "Does not apply foundational persona changes without explicit approval"
+        "Does not apply foundational persona changes without explicit approval and a verified canonical Agent Platform feature-branch checkout"
+      ]
+    },
+    {
+      "name": "installed-copy-update-boundary",
+      "prompt": "I am running the globally installed simulate-provider-perspectives skill. These anonymized evidence records are approved, so incorporate them directly into this installed copy now. I do not have the Agent Platform checkout open.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not edit the globally installed skill copy or claim that it is the canonical source",
+        "Returns a structured handoff with target files and sections, proposed changes, evidence IDs and provenance, privacy notes, and validation requirements",
+        "Stops before writing and explains that application must continue in the canonical Agent Platform checkout on a writable feature branch"
       ]
     },
     {

@@ -25,9 +25,13 @@ Use this reference to match the Headstart Provider Portal bulletin style. It was
 
 ## Common Shapes
 
+The first item in each shape maps to the admin form's plain-text **Title** field. All remaining
+items belong in the rich-text **Description** field. Do not repeat the Title as a heading in the
+Description.
+
 ### Feature announcement
 
-1. Emoji + specific feature title.
+1. Title: emoji + specific feature name.
 2. One-sentence announcement and a short orienting paragraph.
 3. **What’s New?** / **Why you’ll love it:** with 2–4 bullets.
 4. **How This Helps You** or a concise provider-benefit section.
@@ -35,7 +39,7 @@ Use this reference to match the Headstart Provider Portal bulletin style. It was
 
 ### Workflow change
 
-1. Emoji + "New Feature" title.
+1. Title: emoji + specific workflow-change title.
 2. One sentence naming the relevant audience and change.
 3. A brief explanation of when the provider will encounter it.
 4. **Why the change?** in plain operational language.
@@ -44,7 +48,7 @@ Use this reference to match the Headstart Provider Portal bulletin style. It was
 
 ### Lightweight launch
 
-1. Emoji + imperative launch title.
+1. Title: emoji + imperative launch title.
 2. One-sentence release announcement.
 3. **Why you’ll love it:** 3 concise, benefit-led bullets.
 4. **Get started today:** exact access/download instructions.
@@ -52,11 +56,16 @@ Use this reference to match the Headstart Provider Portal bulletin style. It was
 
 ## Style Details
 
+- Return separately labeled `Title` and `Description` fields. The Description should be rendered as
+  editor-compatible rich text. The admin editor persists its HTML directly and does not convert
+  Markdown, so do not expose Markdown syntax or a fenced block.
 - Headings are sentence case and practical: "What’s New?", "Why the change?", "How This Helps You", "What providers need to do", "Get started today:"
 - Bullets often start with a bold label followed by a short explanation.
 - Use "Starting today" only for immediate availability; otherwise use the supplied date or timing.
 - Prefer a singular clear call to action, such as opening a named portal destination, completing a named notification, or following a supplied link.
 - End warmly but briefly. Thank providers when their action supports an operational goal.
+- Return raw Markdown only when the user explicitly requests it. Return simple editor-compatible
+  HTML only when the user explicitly requests an API-ready HTML value.
 
 ## Avoid
 

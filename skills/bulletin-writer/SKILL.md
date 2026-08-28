@@ -17,9 +17,9 @@ Draft clear, warm, action-oriented portal copy for ABA providers. Before draftin
   as a meeting note, product requirement, or current portal workflow.
 - Treat source material as evidence for the bulletin, not as permission to publish it or change the
   underlying product. Use an authorized read capability only for the source the user identified.
-- Return portal-ready Markdown. This skill does not post, publish, schedule, or edit a portal
-  bulletin unless the user separately requests that exact write and an authorized capability is
-  available.
+- Return the bulletin as separately labeled `Title` and `Description` fields for the portal's admin
+  form. This skill does not post, publish, schedule, or edit a portal bulletin unless the user
+  separately requests that exact write and an authorized capability is available.
 - If audience, timing, provider action, scope, destination, or support path is materially missing,
   ask for the smallest clarification needed. Do not hide missing facts behind confident copy or
   invent a launch status, deadline, workflow behavior, or operational claim.
@@ -31,8 +31,23 @@ Draft clear, warm, action-oriented portal copy for ABA providers. Before draftin
    - **Feature or launch:** title, brief orientation, "What’s New?" or "Why you’ll love it," provider benefit, CTA.
    - **Required workflow change:** title, what changed, "Why the change?", "What providers need to do," CTA.
    - **Issue or correction:** title, what providers may notice, status/impact, what to do now, support path.
-3. Write the bulletin in final portal-ready Markdown. Use short paragraphs, descriptive headings, and bullets only where they improve scanning.
-4. Apply the review checklist below. Return only the finished bulletin unless the user asks for rationale or alternatives.
+3. Write a plain-text `Title` and an editor-compatible rich-text `Description`. Use short paragraphs,
+   descriptive headings, and bullets only where they improve scanning.
+4. Apply the review checklist below. Return only the two labeled fields unless the user asks for
+   rationale or alternatives.
+
+## Output Contract
+
+- **Title:** Return one plain-text title suitable for the admin form's Title field. Use an emoji when
+  it fits the source examples and subject. Do not repeat this title inside the Description.
+- **Description:** Return the body as rendered, editor-compatible rich text suitable for the admin
+  form's Description editor. Use paragraphs, bold lead-ins, headings, lists, and links as needed.
+  The editor persists its HTML directly and does not convert Markdown, so do not wrap the body in a
+  code fence or expose Markdown syntax by default.
+- Return raw Markdown only when the user explicitly requests raw Markdown.
+- Return an API-ready HTML value only when the user explicitly requests HTML or machine-ready
+  payload content. Limit it to simple editor-supported semantic markup and exclude scripts, styles,
+  embeds, and event-handler attributes; application-side sanitization remains required.
 
 ## Voice Rules
 
@@ -48,6 +63,8 @@ Draft clear, warm, action-oriented portal copy for ABA providers. Before draftin
 Confirm that the draft:
 
 - has an emoji-led, descriptive headline when the source examples use one;
+- labels the Title and Description separately and does not repeat the Title in the Description;
+- uses editor-compatible rich text without raw Markdown or HTML unless explicitly requested;
 - makes the relevant provider action and timing unambiguous;
 - explains why the change matters in provider terms;
 - scopes the change accurately (for example, who is affected and who is unchanged);
