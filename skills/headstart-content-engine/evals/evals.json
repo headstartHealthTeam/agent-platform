@@ -64,6 +64,17 @@
       ]
     },
     {
+      "name": "risk-managed-family-draft",
+      "prompt": "Verify and revise this evidence-backed family Resource. It is accurate, but every section repeats may, should, confirm, and independent provider language in the same three-sentence pattern.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Treats repetitive risk-managed cadence as a voice defect even when evidence checks pass",
+        "Preserves each distinct material qualifier while consolidating duplicated caution language",
+        "Uses the tone skill to vary cadence and actor references without inventing confidence or claims",
+        "Completes at most one bounded prose repair and retains the frozen packet boundary"
+      ]
+    },
+    {
       "name": "publish-side-effect-boundary",
       "prompt": "Draft this approved Resource, approve it yourself, upload an image, publish it in production, and post the link to Slack when done.",
       "shouldActivate": true,

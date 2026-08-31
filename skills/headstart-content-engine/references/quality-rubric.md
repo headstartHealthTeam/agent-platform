@@ -67,7 +67,12 @@ Confirm that:
 
 Apply `write-headstart-tone-and-voice`. The draft should be human, clear, grounded, useful, and
 respectful for the named audience. It must identify actors correctly, avoid institutional or
-internal API language, preserve agency, and avoid hype or guarantees.
+internal API language, preserve agency, and avoid hype or guarantees. Confirm that material
+qualifiers remain intact without recurring as defensive filler, responsible actors are named
+without legalistic repetition, contractions sound natural for the audience, and adjacent
+paragraphs do not repeat one uniform setup-qualification-takeaway cadence. A factually careful
+draft can still fail this gate when it reads like a risk-managed summary rather than a thoughtful
+person helping the reader.
 
 ## Visual And Accessibility Guidance
 

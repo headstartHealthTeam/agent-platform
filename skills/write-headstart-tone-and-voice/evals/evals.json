@@ -143,6 +143,17 @@
       ]
     },
     {
+      "name": "overqualified-family-resource",
+      "prompt": "Revise this accurate Headstart family resource without losing any material limits. Nearly every paragraph repeats that care may vary, families should confirm details, and an independent provider makes the decision. Make it sound natural and useful rather than legalistic.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves every distinct clinical, insurance, availability, and role qualification",
+        "Consolidates duplicate caveats at the decisions they affect instead of repeating defensive modal language",
+        "Uses natural contractions, varied cadence, and concrete family-facing examples where supported",
+        "Names responsible actors clearly without repeating legalistic labels after ownership is unambiguous"
+      ]
+    },
+    {
       "name": "audience-role-flex",
       "prompt": "Create three short Headstart versions of the same supplied service update: one for families, one for RBTs, and one for BCBAs. Keep the facts identical while adapting the relationship and emotional job for each audience.",
       "shouldActivate": true,

@@ -4,7 +4,7 @@ description: Write or revise Headstart Health audience-facing content for famili
 compatibility: Works with agents that can receive a content brief, draft, or factual source material.
 metadata:
   author: headstart-health
-  version: '1.0.0'
+  version: '1.0.1'
 ---
 
 # Write Headstart Tone And Voice
@@ -88,6 +88,18 @@ process.
 Headstart can be encouraging and energetic. Do not add guarantees, superlatives, universal claims,
 or unsupported specifics to make the writing more compelling. Preserve material qualifiers and
 variation supplied by the source.
+
+### Keep Qualification Proportional
+
+Accuracy does not require every paragraph to sound like a disclaimer. State a material limit where
+the reader needs it, explain its practical consequence, and then continue. Do not repeat the same
+`may`, `can`, `should`, `depends`, `recommend`, or `confirm` construction merely to make nearby
+sentences feel safer.
+
+Role clarity follows the same rule. Name the responsible actor when ownership could otherwise be
+misunderstood, then use a natural reference when the meaning remains clear. Repeating terms such as
+`independent provider`, `selected provider`, or the full organization name in adjacent paragraphs
+can make accurate copy sound contractual instead of human.
 
 ### Use Search Intent Without Writing For Search Engines
 
@@ -229,6 +241,13 @@ professional language.
 - Aim for one main idea per sentence.
 - Keep most digital paragraphs to one to three short sentences.
 - Use contractions and second person when they make the copy sound natural.
+- Vary sentence and paragraph length. A short direct sentence can carry an important point; do not
+  make every paragraph use the same polished explanatory cadence.
+- Vary how sections move. Do not make each paragraph follow an identical thesis, qualification,
+  and takeaway pattern.
+- Consolidate related caveats at the decision point they affect. Preserve every material limit, but
+  do not scatter repeated caution language across the page.
+- Use a concrete routine, question, decision, or example when several paragraphs stay abstract.
 - Give context before a condition, caveat, or action.
 - Define an acronym at first use unless the intended audience reliably knows it.
 - Use one stable term for the same concept within a communication.
@@ -261,6 +280,12 @@ Also avoid:
 
 - vague benefits with no concrete object;
 - repeated sentence openings or value propositions;
+- repeated `not X, but Y`, `it depends`, or `you should confirm` constructions when one clear
+  qualification would preserve the meaning;
+- uniformly polished paragraphs that repeatedly summarize, qualify, and conclude without a
+  concrete human detail;
+- disclaimer-like repetition of actor names or operational limits after responsibility is already
+  clear;
 - journey metaphors when the actual step or decision can be named;
 - internal system terminology when the audience only needs an action or status;
 - manufactured urgency, false scarcity, or pressure to convert;
@@ -314,6 +339,9 @@ Before accepting polished copy, challenge it with these questions:
   real action or reader benefit?
 - Does the paragraph summarize a category instead of saying something a person needs to know?
 - Does the section restate Headstart's value proposition instead of moving the reader forward?
+- Do several consecutive paragraphs use the same setup, caveat, and conclusion rhythm?
+- Are modal verbs, negations, or role labels carrying real meaning, or merely making the prose sound
+  cautious?
 - Would a real person say the sentence aloud?
 
 If several answers expose generic language, rewrite with a concrete person, action, concern,
@@ -326,6 +354,8 @@ Before returning the copy, confirm that:
 - the intended audience is obvious;
 - the opening makes the useful point clear;
 - the writing sounds natural when read aloud;
+- sentence and paragraph rhythm varies without forced fragments or artificial drama;
+- material qualifications remain intact but are not repeated as defensive filler;
 - concrete language has replaced vague brand language;
 - relevant people and roles remain distinct;
 - the audience's agency and expertise are respected;

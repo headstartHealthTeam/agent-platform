@@ -21,9 +21,12 @@ bundle should be exported to a private review artifact. Capability alone is not 
    public-page or CMS constraints, `write-headstart-tone-and-voice`, and the applicable public
    website design guidance. Do not supply competitor prose or the researcher's hidden reasoning.
 3. **Draft for the reader job.** Lead with the useful answer, use the packet's required subtopics in
-   a natural order, preserve role distinctions and qualifiers, and make the next action clear.
-   Supply one explicit visible H1 and a semantic H2/H3 outline whose levels reflect content
-   relationships. Search terms support relevance but do not determine voice or force headings.
+   a natural order, preserve role distinctions and every material qualifier, and make the next
+   action clear. Consolidate repeated caveats at the decision they affect, use natural references
+   after an actor's responsibility is clear, and vary sentence and paragraph cadence so accuracy
+   does not turn into disclaimer-like prose. Supply one explicit visible H1 and a semantic H2/H3
+   outline whose levels reflect content relationships. Search terms support relevance but do not
+   determine voice or force headings.
 4. **Use evidence deliberately.** Support material claims from packet claim IDs. Omit or label gaps
    rather than inventing transitions that make them sound resolved. Public citations are included
    only when the content format calls for them; internal traceability is always retained.
@@ -59,6 +62,8 @@ bundle should be exported to a private review artifact. Capability alone is not 
 - Do not pad toward a competitor word count.
 - Do not use unsupported superlatives, guarantees, availability, coverage, timing, or outcome
   claims.
+- Do not preserve accuracy by repeating the same modal qualifier, negation, actor label, or
+  setup-qualification-takeaway paragraph shape throughout the Resource.
 - Do not let SEO fields and the visible H1 collapse into one forced phrase when they have different
   reader and search jobs.
 - Do not impose a fixed character limit as a Google requirement. Record title-tag and
