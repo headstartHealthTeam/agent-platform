@@ -12,8 +12,13 @@ Confirm:
 - all required artifact fields and identifiers are present;
 - opportunity, packet, and draft versions agree;
 - every material claim maps to an existing packet claim ID;
-- required URLs and internal-link targets are syntactically valid;
-- title, slug, taxonomy, CTA, image, alt-text, and reviewer states are explicit;
+- required URLs and internal-link targets are syntactically valid and have a recorded live,
+  planned, unavailable, or failed-validation state;
+- title tag, meta description, canonical route, visible H1, semantic H2/H3 outline, slug, taxonomy,
+  CTA, outbound links, inbound opportunities, image, alt-text, and reviewer states are explicit;
+- every proposed link records target or source, page job, anchor, placement, reader rationale, and
+  validation result;
+- alt text was written from the exact inspected asset or an empty-alt decision is justified;
 - no placeholder, credential, PHI, raw private data, or unrestricted file URL appears;
 - no field claims a rendered, link, accessibility, or publication check that was not performed; and
 - the output states its proposal-only side-effect status.
@@ -46,8 +51,16 @@ Confirm that:
 - the primary query reflects the page job and appears naturally where useful;
 - supporting concepts are covered without keyword stacking;
 - separate-intent and excluded terms have not been forced into the page;
-- metadata, visible title, H1, and slug each serve their appropriate role;
-- internal links help the reader and fit the destination's intent; and
+- the title tag is unique, descriptive, concise, non-boilerplate, and not keyword-stuffed;
+- the meta description is a page-specific, accurate summary rather than a keyword list, with no
+  promise that Google will use it verbatim;
+- metadata, visible title, H1, heading hierarchy, and slug each serve their appropriate role;
+- headings describe reader-useful sections and reflect document relationships rather than an
+  exact-match keyword checklist;
+- outbound internal links help the reader and fit the destination's intent;
+- at least one defensible inbound opportunity helps prevent the proposed Resource from becoming
+  orphaned, or the lack of an eligible source is explicitly unresolved;
+- anchors are concise, descriptive, natural in context, and not generic or keyword-stuffed; and
 - length and heading count follow content need rather than competitor averages.
 
 ## Headstart Voice And Role Clarity
@@ -58,10 +71,16 @@ internal API language, preserve agency, and avoid hype or guarantees.
 
 ## Visual And Accessibility Guidance
 
-Apply `design-headstart-public-website` to the image brief and visible Resource presentation. Check
-that the visual idea supports the subject, uses approved human photography or another authorized
-asset class, preserves faces and interactions, anticipates responsive crops, and includes accurate
-alt-text requirements. An asset idea is not an approved asset.
+Apply `design-headstart-public-website` to the image brief, exact candidate when one exists, and
+visible Resource presentation. Check that the candidate is relevant and representative, uses an
+authorized asset class, is high quality, avoids baked-in text and extreme aspect ratios, preserves
+faces, hands, and interactions, and anticipates responsive crops. Confirm a descriptive filename
+and context-appropriate alt decision after inspecting the asset. An asset idea is not a candidate,
+and a candidate is not an approved publication asset.
+
+For an explicitly requested full review artifact, a brief-only image state cannot pass as complete.
+It remains `human_review` or `blocked` until a candidate is embedded or the reviewer explicitly
+accepts a no-image direction.
 
 Rendered visual, keyboard, link, responsive, structured-data, and performance checks remain
 `not_checked` until the real preview or implementation is available.

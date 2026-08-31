@@ -19,11 +19,11 @@ Approved Opportunity
 Versioned Research Packet
         |
         v
-Draft Bundle ----> Verification Report
-        |                  |
-        |             one repair pass
-        v                  v
-Review-Ready Draft Bundle + Human Handoff
+Draft Bundle + Candidate Image ----> Verification Report
+        |                                   |
+        |                              one repair pass
+        v                                   v
+Review-Ready Bundle + Optional Private Review Artifact + Human Handoff
         |
         v
 Application-Owned Review, Preview, Approval, And Publication
@@ -57,7 +57,9 @@ failure remains, or a repair would require new evidence or a strategy change, st
 item to a person.
 
 Infrastructure retry and quality repair are separate. Retrying a failed read does not consume the
-repair attempt; rewriting content does. No external write occurs inside either loop.
+repair attempt; rewriting content or regenerating a candidate asset does. No application write
+occurs inside either loop. A private review-artifact export may occur only after the bundle is
+verified and only with explicit user authorization.
 
 ## Application Handoff
 

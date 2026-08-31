@@ -1,10 +1,10 @@
 ---
 name: headstart-content-engine
 description: Create or revise a review-ready Headstart public Resource from an approved content opportunity by composing research, Headstart tone and voice, public-website aesthetics, evidence checks, and a bounded quality loop. Use for supervised Content Engine V1 runs that must return a traceable draft bundle without writing to the CMS, approving, scheduling, or publishing content.
-compatibility: Requires the three declared Headstart skills plus access to the approved opportunity and authorized read capabilities. A CMS write, preview, notification, approval, schedule, or publication requires a separately authorized application action.
+compatibility: Requires the three declared Headstart skills plus access to the approved opportunity and authorized read capabilities. Candidate-image creation and private review-artifact export also require explicit authority and suitable capabilities. A CMS write, preview, notification, approval, schedule, or publication requires a separately authorized application action.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.1.1'
   headstart-requires: 'headstart-content-research, write-headstart-tone-and-voice, design-headstart-public-website'
 ---
 
@@ -20,7 +20,8 @@ Read the supporting references before execution:
 - [workflow architecture](references/architecture.md);
 - [artifact contracts](references/artifact-contracts.md);
 - [initial-draft workflow](references/create-initial-draft.md);
-- [revision workflow](references/revise-draft.md); and
+- [revision workflow](references/revise-draft.md);
+- [search, links, headings, and image guidance](references/search-links-and-assets.md); and
 - [quality rubric](references/quality-rubric.md).
 
 ## Dependencies And Ownership
@@ -29,9 +30,9 @@ Read the supporting references before execution:
    information-gain analysis, the source ledger, and the frozen research packet. It does not draft.
 2. `write-headstart-tone-and-voice` owns audience-facing language, audience adaptation, role
    clarity, and fact-preserving Headstart voice. It does not select facts or research strategy.
-3. `design-headstart-public-website` owns the public Resource's visual direction, imagery brief,
-   component-aware presentation guidance, and rendered visual review. It does not authorize assets
-   or factual claims.
+3. `design-headstart-public-website` owns the public Resource's visual direction, image brief,
+   component-aware presentation guidance, candidate-image inspection, and rendered visual review.
+   It does not authorize asset generation, licensing, CMS upload, or factual claims.
 
 The workflow owns sequencing, handoffs, context boundaries, revision behavior, and completion. If a
 dependency is unavailable, name it and stop before claiming the workflow completed. Do not replace
@@ -54,7 +55,8 @@ idea, or an unapproved outline as an approved opportunity.
 ## Shared Workflow
 
 1. **Establish the boundary.** Record run mode, exact input identifiers and versions, target
-   audience, authorized read capabilities, write boundary, and expected output.
+   audience, authorized read capabilities, image-selection or generation authority, review-artifact
+   export authority, application-write boundary, and expected output.
 2. **Resolve inputs.** Retrieve only the named opportunity, packet, draft revision, feedback, and
    supporting sources. Preserve stable IDs and source revisions.
 3. **Execute the mode-specific procedure.** Follow
@@ -86,10 +88,15 @@ creates a new packet version. The verifier must not introduce new claims while c
 
 ## Side-Effect Boundary
 
-This skill produces proposals only. It does not:
+This skill produces proposals only. With explicit user intent, it may create a candidate image and
+export the exact proposal to a private review artifact. Those are review outputs, not application
+state or publication. Record the authorization, capability, destination, and resulting artifact
+identity.
+
+This skill does not:
 
 - create or update a Resource record;
-- upload or license an image;
+- upload an image to the CMS, assert licensing, or approve an image for publication;
 - generate a public or secure preview;
 - send Slack or email notifications;
 - request, record, or imply approval;
@@ -115,6 +122,8 @@ canonical skill and add only its typed trigger, identity, durable state, retry, 
   authoritative for the revision they produce.
 - Do not claim a rendered-page, accessibility, link, or responsive check passed unless the required
   implementation or preview capability was actually available and used.
+- Do not write alt text for an unseen candidate image. Inspect the exact asset first, then describe
+  its meaning or function in the Resource context.
 
 ## Completion Standard
 

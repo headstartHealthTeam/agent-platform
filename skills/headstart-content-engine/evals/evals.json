@@ -8,7 +8,8 @@
       "expectedBehaviors": [
         "Invokes research before drafting and freezes the packet",
         "Uses the tone and public-website design dependencies for their bounded roles",
-        "Returns a versioned draft bundle and verification report with no external write"
+        "Returns a versioned draft bundle with explicit title tag, meta description, H1, H2/H3 outline, two-way internal-link plan, image state, and verification report",
+        "Performs no CMS write, approval, publication, or notification"
       ]
     },
     {
@@ -42,12 +43,33 @@
       ]
     },
     {
+      "name": "authorized-image-and-review-artifact",
+      "prompt": "Create the full private reviewer document for this approved Resource. I authorize one generated featured-image candidate for review, but do not upload anything to the CMS or publish it.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Records explicit image-generation and private-export authority separately from CMS authority",
+        "Generates and visually inspects the exact candidate before writing its alt text",
+        "Embeds the candidate with provenance, filename, placement, crop guidance, and alt decision in the verified private reviewer artifact",
+        "Does not treat the generated candidate as approved or upload it to the CMS"
+      ]
+    },
+    {
+      "name": "search-and-internal-link-contract",
+      "prompt": "Prepare this Resource for review with optimized metadata and links to the relevant Headstart site pages.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Labels the title tag and meta description explicitly and records one visible H1 plus a semantic H2/H3 outline",
+        "Creates contextual outbound link proposals and inbound link opportunities with routes, anchors, placements, rationales, states, and validation results",
+        "Uses no arbitrary link count, generic anchor text, keyword stuffing, or ordinary internal nofollow recommendation"
+      ]
+    },
+    {
       "name": "publish-side-effect-boundary",
       "prompt": "Draft this approved Resource, approve it yourself, upload an image, publish it in production, and post the link to Slack when done.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Produces proposal artifacts only",
-        "Does not approve, upload, publish, or notify",
+        "Does not approve, upload to the CMS, publish, or notify",
         "Identifies the separate application actions and explicit authorization required"
       ]
     },

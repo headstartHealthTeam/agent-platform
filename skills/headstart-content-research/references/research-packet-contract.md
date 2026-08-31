@@ -25,8 +25,10 @@ interpretation.
 
 ### 2. Existing Headstart Coverage
 
-List relevant current URLs or planned Resources, their page jobs, overlap, internal-link role, and
-whether the opportunity should create, refresh, consolidate, or stop.
+List relevant current URLs or planned Resources, their page jobs, overlap, internal-link role,
+canonical or redirect state, and whether the opportunity should create, refresh, consolidate, or
+stop. Identify both destinations the new Resource should link to and current or planned pages that
+could link into it.
 
 ### 3. Search Opportunity
 
@@ -76,13 +78,17 @@ Provide:
 - working title and page job;
 - audience and emotional or practical need;
 - reader outcome;
-- recommended structure and required subtopics;
+- recommended semantic H1/H2/H3 structure and required subtopics;
 - claims to include, qualify, exclude, or escalate;
 - natural keyword and terminology guidance;
-- internal links and why each helps;
+- outbound internal links with exact target route, destination page job, proposed placement and
+  anchor direction, reader rationale, target state, and validation result;
+- inbound internal-link opportunities with source route, source page job, insertion context,
+  proposed anchor direction, reader rationale, source state, and validation result;
 - primary CTA and conversion context;
 - proposed slug and content type;
-- imagery or visual-asset brief;
+- imagery or visual-asset brief with purpose, placement, subject, exclusions, aspect and focal-point
+  needs, authorized asset class, and whether candidate generation or selection is still required;
 - accessibility considerations; and
 - success measures supplied by the approved opportunity.
 

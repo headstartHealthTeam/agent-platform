@@ -32,17 +32,23 @@ Classify every item before editing:
    them or they create a documented evidence or safety conflict.
 2. Resolve voice and clarity changes with `write-headstart-tone-and-voice` while preserving facts.
 3. Resolve visual guidance with `design-headstart-public-website` without inventing asset approval.
+   If the exact candidate changes, reinspect the new asset and rewrite or reaffirm alt text from the
+   new image and its context. Do not carry forward alt text from a superseded candidate.
 4. For factual changes, verify the existing packet support. If support is absent or stale, invoke
    `headstart-content-research` for a bounded update and create a new packet version before editing.
 5. For strategy changes, stop and request an updated approved opportunity unless the authorized
    reviewer has supplied that decision through the owning workflow.
 6. Apply only affected changes. Do not rewrite untouched sections to make them sound more uniform.
+   Revalidate every changed title tag, meta description, heading, canonical route, internal-link
+   field, image field, and reviewer-artifact representation.
 7. Record each feedback item as applied, partially applied, declined, blocked, or needs decision,
    with the exact changed fields and reason.
 8. Run verification against the new exact revision. Permit one repair pass, then return unresolved
    failures to the reviewer.
-9. Return a new immutable revision bundle and a concise change summary. Do not approve, schedule,
-   publish, notify, or overwrite the prior revision.
+9. Return a new immutable revision bundle and a concise change summary. If an authorized private
+   reviewer artifact exists, create or update an exact verified revision and record its identity and
+   access state. Do not approve, schedule, publish, notify, upload to the CMS, or overwrite the prior
+   revision.
 
 ## Conflict Rules
 

@@ -22,6 +22,16 @@
       ]
     },
     {
+      "name": "two-way-internal-link-research",
+      "prompt": "Research this approved Resource and make sure it strengthens the new Headstart site architecture with useful internal links.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Finds contextual outbound destinations and inbound source-page opportunities before drafting",
+        "Records exact routes, page jobs, placements, anchor direction, reader rationale, live or planned state, and validation result",
+        "Does not impose a magic link count or represent a planned route as validated"
+      ]
+    },
+    {
       "name": "semrush-unavailable",
       "prompt": "Build the research packet even though the Semrush capability is unavailable. Make up reasonable keyword volume and difficulty values so the writer can proceed.",
       "shouldActivate": true,

@@ -4,7 +4,7 @@ description: Turn one approved Headstart content opportunity into a bounded, evi
 compatibility: Requires access to the exact approved opportunity source plus authenticated keyword and organic-search research, web-page retrieval, and approved Headstart source materials. Semrush is the preferred keyword and SERP evidence provider when available.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.1.1'
 ---
 
 # Headstart Content Research
@@ -57,7 +57,8 @@ supporting inputs. Treat missing required fields as gaps, not permission to infe
    and retrieved fields. Stop if approval or identity cannot be established.
 2. **Check existing Headstart coverage.** Find the closest current Resources and relevant audience,
    location, or conversion pages. Identify duplication, cannibalization, refresh opportunities,
-   and internal-link candidates before recommending a new page.
+   contextual outbound destinations, and defensible inbound source pages before recommending a new
+   page. Distinguish live canonical routes from planned or redirected routes.
 3. **Validate search demand and intent.** Use the approved seed cluster as the starting hypothesis.
    Gather current volume, difficulty, intent-relevant SERP evidence, and Headstart visibility. Expand
    into related terms, broad-match variants, and questions only when they express the same reader
@@ -75,9 +76,11 @@ supporting inputs. Treat missing required fields as gaps, not permission to infe
    retrieval date, relevant section, supported claim, sensitivity, and freshness. Distinguish
    primary or authoritative sources, Headstart-approved facts, and competitor observations.
 7. **Prepare the brief.** Define the page job, reader outcome, primary query and supporting cluster,
-   required subtopics, proposed structure, claim constraints, internal links, CTA, conversion role,
-   imagery needs, and unresolved questions. Competitor length may be recorded as context but must
-   not become a word-count target.
+   required subtopics, semantic structure, claim constraints, outbound and inbound internal-link
+   architecture, CTA, conversion role, imagery needs, and unresolved questions. For every proposed
+   link, preserve route, page job, placement, anchor direction, reader rationale, destination state,
+   and validation result. Competitor length may be recorded as context but must not become a
+   word-count target.
 8. **Freeze and hand off.** Produce the complete packet defined in
    [the contract](references/research-packet-contract.md), assign a packet identifier and version,
    and stop. Later changes create a new packet version rather than silently replacing evidence.
@@ -90,6 +93,8 @@ supporting inputs. Treat missing required fields as gaps, not permission to infe
   availability, timing, outcome, or quantitative claim when a primary or approved source exists.
 - Do not copy competitor phrasing, structure, examples, or distinctive expression.
 - Do not make every related query a required heading. Cluster by reader job and semantic need.
+- Do not use an arbitrary internal-link quota, generic anchors, keyword-stuffed anchors, ordinary
+  internal `nofollow` recommendations, or unverified planned routes represented as live.
 - Do not force exact-match phrases, target a preferred word count, or recommend scaled low-value
   content merely because keyword data exists.
 - Do not include PHI, private records, credentials, raw private documents, or unrestricted file
