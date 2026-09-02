@@ -102,7 +102,11 @@ The outline is a reasoned brief, not a rigid competitor-derived template.
 
 List unresolved evidence, strategy conflicts, reviewer questions, unavailable capabilities, stale
 sources, and downstream decisions. State whether each blocks drafting or can remain an explicit
-review item.
+review item. Give each item a stable `itemId`, concise `summary`, `blocking` boolean, and
+`requiredReviewerRole`. The reviewer role must be `clinical`, `insurance_operations`,
+`legal_compliance`, `brand`, `website_product`, or `null`; it is an enforceable application code,
+not a free-text job title or assignee name. Use `null` when attestation by one of those qualified
+roles cannot resolve the item.
 
 ## Writer Handoff
 

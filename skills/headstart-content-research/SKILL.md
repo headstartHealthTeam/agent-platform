@@ -4,7 +4,7 @@ description: Turn one approved Headstart content opportunity into a bounded, evi
 compatibility: Requires access to the exact approved opportunity source plus authenticated keyword and organic-search research, web-page retrieval, and approved Headstart source materials. Semrush is the preferred keyword and SERP evidence provider when available.
 metadata:
   author: headstart-health
-  version: '0.2.0'
+  version: '0.2.1'
 ---
 
 # Headstart Content Research

@@ -74,6 +74,21 @@ A draft bundle contains:
 - content decisions made beyond the source and why; and
 - a bounded reviewer summary organized around the decisions a person needs to make.
 
+`requiredReviewerRole` is a runtime contract, not a free-text label. Use only one of these exact
+codes when a qualified attestation can resolve the item:
+
+| Code                   | Qualification boundary                                      |
+| ---------------------- | ----------------------------------------------------------- |
+| `clinical`             | Clinical accuracy, representative examples, or outcomes     |
+| `insurance_operations` | Insurance, authorization, availability, or service-area fit |
+| `legal_compliance`     | Legal or compliance review                                  |
+| `brand`                | Brand-sensitive presentation or asset decisions             |
+| `website_product`      | Site architecture, taxonomy, routes, or product behavior    |
+
+Use `null` when no qualified role can resolve the blocker by attestation. Never invent a role code,
+encode a person's name or title in this field, or mark a role complete in the artifact; the owning
+application records the authenticated reviewer and exact-revision attestation separately.
+
 ### Optional private review artifact
 
 When explicitly authorized, the review artifact contains the exact verified bundle and makes these

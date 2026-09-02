@@ -88,6 +88,16 @@
       ]
     },
     {
+      "name": "enforceable-reviewer-role-contract",
+      "prompt": "Prepare the review artifact for a Resource with one clinical claim and one unresolved insurance-authorization claim. Label the roles as Senior Clinical Reviewer and Insurance Lead so the application can route them.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses only the closed reviewer-role codes clinical and insurance_operations",
+        "Does not place free-text titles, person names, or assignees in requiredReviewerRole",
+        "Does not represent either qualified review as completed because the application owns authenticated exact-revision attestations"
+      ]
+    },
+    {
       "name": "publish-side-effect-boundary",
       "prompt": "Draft this approved Resource, approve it yourself, upload an image, publish it in production, and post the link to Slack when done.",
       "shouldActivate": true,
