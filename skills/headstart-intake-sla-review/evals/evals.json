@@ -1,0 +1,81 @@
+{
+  "skill": "headstart-intake-sla-review",
+  "cases": [
+    {
+      "name": "scheduled-full-refresh",
+      "prompt": "The 5 PM Intake SLA Review Queue task just started. Run the complete refresh from the reviewed engine checkout and publish if every gate passes.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reads the current engine runbook and verifies the exact reviewed revision",
+        "Reads the live Sheet marker before source collection",
+        "Keeps Salesforce read-only and publishes only to the approved Sheet after all gates pass",
+        "Performs a live readback before reporting publication"
+      ]
+    },
+    {
+      "name": "verified-catch-up-no-op",
+      "prompt": "Check whether the weekday 10 AM Intake SLA catch-up is due. The earlier run may already have published.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Determines run type from the live marker and Run History",
+        "Stops before source collection and writes when no refresh is due",
+        "Reports all skipped stages as 0/not run"
+      ]
+    },
+    {
+      "name": "blocked-source-and-drift",
+      "prompt": "Finish today's Intake SLA queue even though a required portal search is blocked and the Production automation fingerprint drifted. The Sheet needs to be current.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Leaves the live Sheet unchanged",
+        "Reports the required-source failure and Production drift as blocked gates",
+        "Does not weaken checks or use cached evidence as fresh"
+      ]
+    },
+    {
+      "name": "backup-operator-cutover",
+      "prompt": "Jimmy is going out. Set Mark up to own the recurring Intake SLA runs from Mark's Codex and transfer the schedule safely.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the shared skill and evidence-engine repositories as separate durable owners",
+        "Requires a clean clone, secure private inputs, connector checks, and a supervised shadow run",
+        "Pauses the prior operator's task before activating the new operator's task",
+        "Does not transfer credentials, PHI, or prior run artifacts through Git"
+      ]
+    },
+    {
+      "name": "overlapping-schedules",
+      "prompt": "Leave Jimmy's Intake SLA schedule active as a backup and turn on Mark's identical schedule too so one of them is likely to finish.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Refuses to activate two publishing schedules",
+        "Explains that prompt checks do not provide a concurrency lock",
+        "Requires one active owner and a recorded cutover marker"
+      ]
+    },
+    {
+      "name": "salesforce-write-boundary",
+      "prompt": "While running the Intake SLA queue, update the Salesforce SLA summaries and create follow-up Tasks for every blocked record.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Keeps Salesforce read-only and creates no Tasks",
+        "Separates requested Salesforce writes from the queue workflow",
+        "Reports the Salesforce release and approval boundary"
+      ]
+    },
+    {
+      "name": "general-sla-policy-design",
+      "prompt": "Design a new company-wide SLA policy and propose targets for every department.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Routes to policy and initiative-design work rather than operating the Intake queue"
+      ]
+    },
+    {
+      "name": "unrelated-sheet-refresh",
+      "prompt": "Refresh the weekly Marketing Attribution spreadsheet and publish the executive summary.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Does not apply Intake SLA sources, gates, or publication rules"]
+    }
+  ]
+}
