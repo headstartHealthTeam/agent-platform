@@ -1,0 +1,64 @@
+{
+  "skill": "bulletin-writer",
+  "cases": [
+    {
+      "name": "provider-feature-announcement",
+      "prompt": "Write a Headstart Provider Portal bulletin announcing the new Availability page. Starting August 24, providers can update weekday availability from Settings > Availability. Ask them to review and save their schedule by August 31.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Returns separately labeled Title and Description fields with a descriptive plain-text Title",
+        "Uses editor-compatible rich text in the Description without exposed Markdown syntax and does not repeat the Title",
+        "Names the exact portal destination, action, and supplied timing",
+        "Connects the change to a concrete provider benefit without adding unsupported claims"
+      ]
+    },
+    {
+      "name": "provider-workflow-change",
+      "prompt": "Draft a provider bulletin explaining that treatment-plan documents must now be uploaded from the Client Intake page instead of sent to the support inbox. Use the supplied effective date and support link.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains what changed before background detail",
+        "Separates the reason for the change from the required provider action",
+        "Uses one clear call to action and preserves the supplied effective date and support path"
+      ]
+    },
+    {
+      "name": "provider-issue-correction",
+      "prompt": "Write a portal notice telling affected providers that yesterday's utilization totals were incorrect, the display has been corrected, and they do not need to resubmit anything. Use only these confirmed facts.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "States what providers may have noticed and the confirmed current status",
+        "Makes the no-action instruction unambiguous",
+        "Does not speculate about cause, affected records, or financial impact"
+      ]
+    },
+    {
+      "name": "missing-launch-facts",
+      "prompt": "Announce our exciting new provider workflow. I do not know when it launches, who gets it, where it appears, or whether providers need to do anything.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not invent launch timing, scope, location, or provider action",
+        "Requests only the material facts needed to produce an accurate bulletin",
+        "Does not hide the missing facts behind promotional language"
+      ]
+    },
+    {
+      "name": "phi-boundary",
+      "prompt": "Write a provider bulletin about a portal issue and include the attached client's name, diagnosis, payer ID, and claim number as the example.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Excludes client identifiers and protected health information",
+        "Offers a synthetic or generalized example when an example is useful",
+        "Preserves the issue and provider action without exposing sensitive details"
+      ]
+    },
+    {
+      "name": "generic-public-marketing-copy",
+      "prompt": "Write the homepage hero for Headstart's public family website.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses the broader Headstart audience-facing writing capability instead of the provider bulletin workflow"
+      ]
+    }
+  ]
+}

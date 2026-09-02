@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Bulletin Writer'
+  short_description: 'Write Headstart provider portal bulletins'
+  default_prompt: 'Use $bulletin-writer to draft a provider portal bulletin about the following update.'
+policy:
+  allow_implicit_invocation: true
