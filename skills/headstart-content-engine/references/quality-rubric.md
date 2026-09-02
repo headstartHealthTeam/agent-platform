@@ -38,8 +38,13 @@ The draft passes only when:
 
 Evaluate whether the Resource:
 
-- answers the approved reader need in a useful order;
+- answers the approved reader need in a useful order and makes the topic's practical relevance clear
+  near the beginning;
 - gives the reader a practical decision, framework, example, checklist, or next step;
+- organizes questions and actions around the stage when the reader can use them instead of mixing
+  unrelated phases;
+- translates unfamiliar or clinical concepts into concrete reader questions, routines, or examples
+  and defines terms before relying on shorthand;
 - delivers the packet's information-gain thesis;
 - avoids generic summary sections that could be relabeled for any ABA company; and
 - earns its proposed existence rather than duplicating current Headstart coverage.
@@ -70,9 +75,11 @@ respectful for the named audience. It must identify actors correctly, avoid inst
 internal API language, preserve agency, and avoid hype or guarantees. Confirm that material
 qualifiers remain intact without recurring as defensive filler, responsible actors are named
 without legalistic repetition, contractions sound natural for the audience, and adjacent
-paragraphs do not repeat one uniform setup-qualification-takeaway cadence. A factually careful
-draft can still fail this gate when it reads like a risk-managed summary rather than a thoughtful
-person helping the reader.
+paragraphs do not repeat one uniform setup-qualification-takeaway cadence. For family content,
+confirm that care delivery, clinical oversight, and caregiver participation are distinct and that
+positive explanation replaces lecture-like strings of `should` wherever no direct instruction is
+required. A factually careful draft can still fail this gate when it reads like a risk-managed
+summary rather than a thoughtful person helping the reader.
 
 ## Visual And Accessibility Guidance
 

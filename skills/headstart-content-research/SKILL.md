@@ -4,7 +4,7 @@ description: Turn one approved Headstart content opportunity into a bounded, evi
 compatibility: Requires access to the exact approved opportunity source plus authenticated keyword and organic-search research, web-page retrieval, and approved Headstart source materials. Semrush is the preferred keyword and SERP evidence provider when available.
 metadata:
   author: headstart-health
-  version: '0.1.1'
+  version: '0.2.0'
 ---
 
 # Headstart Content Research
@@ -77,10 +77,12 @@ supporting inputs. Treat missing required fields as gaps, not permission to infe
    primary or authoritative sources, Headstart-approved facts, and competitor observations.
 7. **Prepare the brief.** Define the page job, reader outcome, primary query and supporting cluster,
    required subtopics, semantic structure, claim constraints, outbound and inbound internal-link
-   architecture, CTA, conversion role, imagery needs, and unresolved questions. For every proposed
-   link, preserve route, page job, placement, anchor direction, reader rationale, destination state,
-   and validation result. Competitor length may be recorded as context but must not become a
-   word-count target.
+   architecture, CTA, conversion role, imagery needs, and unresolved questions. For family
+   Resources, also identify the reader's likely entry question, the practical or emotional context
+   supported by evidence, the order in which decisions occur, terms that need introduction, and
+   concrete questions or examples for each stage. For every proposed link, preserve route, page
+   job, placement, anchor direction, reader rationale, destination state, and validation result.
+   Competitor length may be recorded as context but must not become a word-count target.
 8. **Freeze and hand off.** Produce the complete packet defined in
    [the contract](references/research-packet-contract.md), assign a packet identifier and version,
    and stop. Later changes create a new packet version rather than silently replacing evidence.

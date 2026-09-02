@@ -4,7 +4,7 @@ description: Create or revise a review-ready Headstart public Resource from an a
 compatibility: Requires the three declared Headstart skills plus access to the approved opportunity and authorized read capabilities. Candidate-image creation and private review-artifact export also require explicit authority and suitable capabilities. A CMS write, preview, notification, approval, schedule, or publication requires a separately authorized application action.
 metadata:
   author: headstart-health
-  version: '0.1.2'
+  version: '0.2.0'
   headstart-requires: 'headstart-content-research, write-headstart-tone-and-voice, design-headstart-public-website'
 ---
 
@@ -58,7 +58,8 @@ idea, or an unapproved outline as an approved opportunity.
    audience, authorized read capabilities, image-selection or generation authority, review-artifact
    export authority, application-write boundary, and expected output.
 2. **Resolve inputs.** Retrieve only the named opportunity, packet, draft revision, feedback, and
-   supporting sources. Preserve stable IDs and source revisions.
+   supporting sources. Preserve stable IDs, source revisions, direct human edits, and comment
+   rationale separately so a one-off replacement is not mistaken for a reusable rule.
 3. **Execute the mode-specific procedure.** Follow
    [initial drafting](references/create-initial-draft.md),
    [revision](references/revise-draft.md), or the verification section of

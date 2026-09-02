@@ -76,9 +76,13 @@ For each material claim or direction, record:
 Provide:
 
 - working title and page job;
-- audience and emotional or practical need;
+- audience, likely entry question, and emotional or practical need supported by the opportunity or
+  evidence rather than inferred as fact;
 - reader outcome;
+- decision sequence or journey stage showing when the reader can use each major section;
 - recommended semantic H1/H2/H3 structure and required subtopics;
+- clinical or industry terms that must be introduced before shorthand is used;
+- practical examples, questions, or preparation details mapped to the stage where they are useful;
 - claims to include, qualify, exclude, or escalate;
 - natural keyword and terminology guidance;
 - outbound internal links with exact target route, destination page job, proposed placement and

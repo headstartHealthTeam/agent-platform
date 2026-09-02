@@ -17,8 +17,21 @@
       "shouldActivate": true,
       "expectedBehaviors": [
         "Defines unfamiliar roles in plain language",
+        "Separates day-to-day RBT care from BCBA oversight and family participation",
         "Uses calm, respectful language that preserves family agency",
         "Uses a clear educational sequence and practical takeaway"
+      ]
+    },
+    {
+      "name": "family-setting-decision-guide",
+      "prompt": "Revise this clinical, matter-of-fact family article about choosing home, center, or hybrid ABA. The opening defines each setting before saying why the decision matters, the copy repeatedly tells families what they should do, and one long question list mixes provider selection, treatment planning, and first-session logistics.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Opens with the family's decision and its practical importance without inventing distress",
+        "Translates clinical factors into concrete skills, routines, and questions",
+        "Uses positive and supportive guidance instead of lecture-like should language",
+        "Groups questions and preparation details by the stage when a family can use them",
+        "Defines treatment-plan concepts before using shorthand"
       ]
     },
     {

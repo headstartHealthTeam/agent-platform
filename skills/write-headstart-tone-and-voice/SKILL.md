@@ -4,7 +4,7 @@ description: Write or revise Headstart Health audience-facing content for famili
 compatibility: Works with agents that can receive a content brief, draft, or factual source material.
 metadata:
   author: headstart-health
-  version: '1.0.1'
+  version: '1.1.0'
 ---
 
 # Write Headstart Tone And Voice
@@ -127,11 +127,27 @@ Headstart's role is a **calm guide**. The emotional job is to reduce uncertainty
 step clearer without making the family feel managed or talked down to.
 
 - Be calm, welcoming, and practical.
-- Briefly acknowledge uncertainty or stress when it is relevant, then move into useful guidance.
+- Open educational content with the question or decision bringing the family to the page. Briefly
+  recognize the situation or uncertainty when it is supported by the topic, explain why the
+  information matters, and then move into useful guidance. Do not invent an emotional state.
 - Put context before clinical or insurance detail.
-- Explain an unfamiliar term in the sentence where it first appears.
+- Explain an unfamiliar term in the sentence where it first appears. Introduce a treatment plan or
+  other clinical concept before referring to it as `the plan` or assuming the family knows how it
+  is used.
+- Translate abstract clinical factors into the practical question, routine, skill, or decision they
+  affect. Prefer examples a family can picture over lists of professional concepts.
+- Separate the people involved in care by role. Make it clear who delivers day-to-day sessions, who
+  provides clinical oversight and adjusts the plan, and how parents or caregivers participate.
 - Help the reader understand options, expectations, and next steps without implying that one path
   fits every child or family.
+- Describe what clear, collaborative care looks like in positive terms. Avoid strings of `should`,
+  warnings, or instructions that make educational copy sound like a lecture; reserve direct
+  commands for genuine safety, legal, or required-action guidance and explain their purpose.
+- Organize provider questions and decision aids around the stage when a family can use them, such
+  as choosing a provider, discussing a recommendation, or preparing for care. Do not mix unrelated
+  phases into one undifferentiated checklist.
+- Make preparation guidance answer practical questions: what happens, where it happens, who is
+  present, what may be needed, and what the family can clarify with the provider.
 - Present the child as a whole person with strengths, needs, relationships, routines, and a life
   beyond therapy.
 - Preserve the family's role in asking questions, sharing priorities, and making decisions.
@@ -195,7 +211,8 @@ professional language.
 ### Educational And Explanatory
 
 - Answer the main question early.
-- Organize related ideas into a sequence the reader can follow.
+- Organize related ideas into the sequence in which the reader will understand or use them. Group
+  questions and actions by decision stage when combining them would create confusion.
 - Define clinical or industry terms only when the reader needs them.
 - Distinguish examples from universal expectations.
 - End with a useful takeaway rather than a generic slogan.
@@ -343,6 +360,9 @@ Before accepting polished copy, challenge it with these questions:
 - Are modal verbs, negations, or role labels carrying real meaning, or merely making the prose sound
   cautious?
 - Would a real person say the sentence aloud?
+- For family content, does the opening show why this matters before defining the category?
+- Are questions, examples, and preparation details organized around when the family can use them?
+- Are clinical roles and terms explained before the copy relies on shorthand?
 
 If several answers expose generic language, rewrite with a concrete person, action, concern,
 example, or next step. Clean grammar is not enough when the writing feels impersonal or generated.
@@ -358,6 +378,7 @@ Before returning the copy, confirm that:
 - material qualifications remain intact but are not repeated as defensive filler;
 - concrete language has replaced vague brand language;
 - relevant people and roles remain distinct;
+- family-facing guidance is supportive and practical rather than directive or lecture-like;
 - the audience's agency and expertise are respected;
 - supplied facts, qualifiers, and attributed meaning remain intact;
 - no hype, guarantee, or unsupported specificity was added; and

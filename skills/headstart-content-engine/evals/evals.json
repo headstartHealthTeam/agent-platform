@@ -33,6 +33,18 @@
       ]
     },
     {
+      "name": "reviewer-feedback-learning-scope",
+      "prompt": "Revise this family Resource from reviewer feedback. One suggestion silently replaces a sentence, one comment explains that repeated 'should' language feels lecturing and asks for positive guidance, and one comment supplies a topic-specific example of a household routine. Update the canonical workflow skills only where the feedback establishes a reusable rule, then refresh the installed copies.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Applies the silent replacement and topic-specific example to the draft without treating either as a universal rule",
+        "Treats the explicit problem, rationale, and desired outcome as a reusable candidate",
+        "Routes the accepted voice behavior to the tone skill and the feedback-learning procedure to the revision workflow",
+        "Adds or strengthens behavior evaluations for every accepted reusable change",
+        "Updates installed copies only from the validated canonical repository change"
+      ]
+    },
+    {
       "name": "feedback-needs-research",
       "prompt": "The reviewer asked us to add a new insurance-coverage claim that is not in the packet. Revise the draft and make the claim sound appropriately qualified.",
       "shouldActivate": true,

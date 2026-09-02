@@ -20,13 +20,17 @@ bundle should be exported to a private review artifact. Capability alone is not 
 2. **Construct the writer context.** Supply only the packet, requested Resource contract, existing
    public-page or CMS constraints, `write-headstart-tone-and-voice`, and the applicable public
    website design guidance. Do not supply competitor prose or the researcher's hidden reasoning.
-3. **Draft for the reader job.** Lead with the useful answer, use the packet's required subtopics in
-   a natural order, preserve role distinctions and every material qualifier, and make the next
-   action clear. Consolidate repeated caveats at the decision they affect, use natural references
-   after an actor's responsibility is clear, and vary sentence and paragraph cadence so accuracy
-   does not turn into disclaimer-like prose. Supply one explicit visible H1 and a semantic H2/H3
-   outline whose levels reflect content relationships. Search terms support relevance but do not
-   determine voice or force headings.
+3. **Draft for the reader job.** Lead with the useful answer and why it matters to the named reader,
+   then use the packet's required subtopics in the order the reader will understand or use them.
+   For family Resources, translate clinical abstractions into practical skills, routines, examples,
+   and questions; introduce terms before relying on shorthand; separate day-to-day care delivery,
+   clinical oversight, and family participation; and group decision aids by the stage when they are
+   useful. Preserve every material qualifier and make the next action clear. Consolidate repeated
+   caveats at the decision they affect, use natural references after an actor's responsibility is
+   clear, and vary sentence and paragraph cadence so accuracy does not turn into disclaimer-like or
+   lecture-like prose. Supply one explicit visible H1 and a semantic H2/H3 outline whose levels
+   reflect content relationships. Search terms support relevance but do not determine voice or
+   force headings.
 4. **Use evidence deliberately.** Support material claims from packet claim IDs. Omit or label gaps
    rather than inventing transitions that make them sound resolved. Public citations are included
    only when the content format calls for them; internal traceability is always retained.

@@ -32,6 +32,17 @@
       ]
     },
     {
+      "name": "family-decision-sequence",
+      "prompt": "Build the writer brief for an approved family Resource about choosing an ABA care setting. Make it useful to a parent who does not yet know the clinical terminology or which questions belong at provider selection, treatment planning, and session preparation.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Records the family's likely entry question and supported practical or emotional context",
+        "Maps required sections and questions to the stage when the family can use them",
+        "Identifies clinical terms that need explanation before shorthand",
+        "Supplies concrete examples without treating them as universal expectations"
+      ]
+    },
+    {
       "name": "semrush-unavailable",
       "prompt": "Build the research packet even though the Semrush capability is unavailable. Make up reasonable keyword volume and difficulty values so the writer can proceed.",
       "shouldActivate": true,
