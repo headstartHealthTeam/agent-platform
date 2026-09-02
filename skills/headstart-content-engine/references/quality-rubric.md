@@ -18,6 +18,8 @@ Confirm:
   CTA, outbound links, inbound opportunities, image, alt-text, and reviewer states are explicit;
 - every proposed link records target or source, page job, anchor, placement, reader rationale, and
   validation result;
+- every reader-facing hyperlink in a private review artifact remains natively clickable and is
+  visually distinguishable from surrounding text without relying on color alone;
 - alt text was written from the exact inspected asset or an empty-alt decision is justified;
 - no placeholder, credential, PHI, raw private data, or unrestricted file URL appears;
 - no field claims a rendered, link, accessibility, or publication check that was not performed; and

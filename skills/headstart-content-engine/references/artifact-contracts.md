@@ -72,7 +72,7 @@ A draft bundle contains:
 - sensitive claims and required reviewer roles;
 - known limitations and unresolved questions;
 - content decisions made beyond the source and why; and
-- a concise reviewer summary.
+- a bounded reviewer summary organized around the decisions a person needs to make.
 
 ### Optional private review artifact
 
@@ -81,6 +81,8 @@ items easy to find rather than burying them in notes:
 
 - title tag, meta description, canonical route, visible H1, and marked H2/H3 outline;
 - outbound and inbound internal-link maps;
+- reader-facing hyperlinks preserved as native clickable links with clearly distinguishable,
+  non-color-only visual affordances such as underlining;
 - embedded candidate image, asset state, filename, placement, provenance, and exact alt text; and
 - reviewer decisions, unresolved items, verification status, and artifact identity.
 

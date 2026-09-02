@@ -4,7 +4,7 @@ description: Create or revise a review-ready Headstart public Resource from an a
 compatibility: Requires the three declared Headstart skills plus access to the approved opportunity and authorized read capabilities. Candidate-image creation and private review-artifact export also require explicit authority and suitable capabilities. A CMS write, preview, notification, approval, schedule, or publication requires a separately authorized application action.
 metadata:
   author: headstart-health
-  version: '0.2.0'
+  version: '0.2.1'
   headstart-requires: 'headstart-content-research, write-headstart-tone-and-voice, design-headstart-public-website'
 ---
 
@@ -69,8 +69,10 @@ idea, or an unapproved outline as an approved opportunity.
    Permit at most one repair pass for a new draft and one repair pass for a revision. A second
    substantive failure becomes a human-review item rather than another silent rewrite.
 5. **Return a traceable bundle.** Include artifact IDs, versions, source and claim references,
-   verifier results, unresolved items, and a concise human handoff. State explicitly that no CMS
-   write, approval, schedule, publication, or notification occurred.
+   verifier results, unresolved items, and a bounded, decision-oriented human handoff. Include the
+   information a reviewer needs to make the named decisions; do not optimize the handoff for an
+   arbitrary word count. State explicitly that no CMS write, approval, schedule, publication, or
+   notification occurred.
 
 ## Context And Tool Discipline
 

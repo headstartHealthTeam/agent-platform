@@ -62,6 +62,7 @@
         "Records explicit image-generation and private-export authority separately from CMS authority",
         "Generates and visually inspects the exact candidate before writing its alt text",
         "Embeds the candidate with provenance, filename, placement, crop guidance, and alt decision in the verified private reviewer artifact",
+        "Preserves article hyperlinks as native clickable links with a visible non-color-only affordance",
         "Does not treat the generated candidate as approved or upload it to the CMS"
       ]
     },
