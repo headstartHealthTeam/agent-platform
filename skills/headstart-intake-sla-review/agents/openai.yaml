@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Headstart Intake SLA Review'
+  short_description: 'Run and hand off the gated Intake SLA queue'
+  default_prompt: 'Use $headstart-intake-sla-review to evaluate the live run gate and safely operate the current Intake SLA Review Queue workflow.'

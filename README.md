@@ -105,6 +105,7 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 | [`headstart-knowledge-capture`](skills/headstart-knowledge-capture/SKILL.md)                         | Canonical placement for verified learnings and recurring agent corrections  |
 | [`headstart-knowledge-refresh`](skills/headstart-knowledge-refresh/SKILL.md)                         | Evidence-backed audits of knowledge and agent instruction hierarchies       |
 | [`headstart-discovery-to-decision`](skills/headstart-discovery-to-decision/SKILL.md)                 | Composed workflow from mixed discovery evidence to decision packet          |
+| [`headstart-intake-sla-review`](skills/headstart-intake-sla-review/SKILL.md)                         | Run and hand off the gated Intake SLA Review Queue workflow                 |
 | [`headstart-skills-update`](skills/headstart-skills-update/SKILL.md)                                 | Install, preview, apply, or schedule complete workstation skill refreshes   |
 | [`simulate-provider-perspectives`](skills/simulate-provider-perspectives/SKILL.md)                   | Evidence-backed provider persona evaluation and model calibration           |
 | [`write-headstart-tone-and-voice`](skills/write-headstart-tone-and-voice/SKILL.md)                   | Write clear audience-facing content in Headstart's voice                    |
