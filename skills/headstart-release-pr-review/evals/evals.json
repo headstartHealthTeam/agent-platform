@@ -1,0 +1,63 @@
+{
+  "skill": "headstart-release-pr-review",
+  "cases": [
+    {
+      "name": "review-dev-to-main-release",
+      "prompt": "Review backend release PR 1301 from dev to main. Keep the findings local and tell me whether it is safe to approve.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Loads headstart-dev-to-main-pr for exact release evidence and conventions",
+        "Keeps headstart-pr-review available for bounded investigation without re-reviewing every source PR",
+        "Verifies the net dev-to-main delta and maps it to merged source PRs",
+        "Checks source review evidence, release metadata, Linear semantics, required checks, and unresolved feedback",
+        "Distinguishes production-critical blockers from follow-up improvements",
+        "Does not post, approve, or merge because the request is read-only"
+      ]
+    },
+    {
+      "name": "authorized-release-approval",
+      "prompt": "Review this Headstart dev-to-main release PR and approve it if the exact current head is safe. Do not merge it.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Runs the complete release gate before approval",
+        "Confirms the live head SHA immediately before acting",
+        "Approves only when required checks, metadata, source review evidence, and release-critical risk pass",
+        "Does not merge the pull request"
+      ]
+    },
+    {
+      "name": "automated-maintainability-finding",
+      "prompt": "CodeRabbit left several maintainability and test-specificity comments on our dev-to-main release PR. Review the release and address whatever is necessary before approval.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Validates each automated finding instead of accepting its severity label",
+        "Classifies non-critical maintainability and test-quality findings as follow-up work",
+        "Does not patch implementation code in the release PR",
+        "Blocks only when evidence demonstrates a current production-critical risk"
+      ]
+    },
+    {
+      "name": "critical-migration-finding",
+      "prompt": "Review our backend production release PR. One source PR may run an irreversible migration that drops populated columns before the replacement data is backfilled.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Validates the migration risk against the actual release and source implementation",
+        "Treats demonstrated data loss or unsafe irreversibility as a release blocker",
+        "Requires a separate implementation PR into dev rather than patching the release PR",
+        "Requires the release PR to be refreshed after the fix merges"
+      ]
+    },
+    {
+      "name": "regular-implementation-pr",
+      "prompt": "Review frontend feature PR 884 for correctness, regressions, and missing tests.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Uses the normal Headstart implementation PR review workflow instead"]
+    },
+    {
+      "name": "create-release-pr",
+      "prompt": "Create the website dev-to-main release PR and summarize everything that will ship.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Uses headstart-dev-to-main-pr instead of the release review skill"]
+    }
+  ]
+}

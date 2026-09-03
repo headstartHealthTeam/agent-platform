@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Headstart Release PR Review'
+  short_description: 'Review Headstart production promotion pull requests'
+  default_prompt: 'Use $headstart-release-pr-review to determine whether this Headstart dev-to-main release pull request is ready to promote.'
+policy:
+  allow_implicit_invocation: true
