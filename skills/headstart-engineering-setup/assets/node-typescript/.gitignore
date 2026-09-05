@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+.turbo/
+*.tsbuildinfo
+.eslintcache
+.env
+.env.*
+!.env.example
+!.env.sample
+.DS_Store
+.bare/
+.husky/_/

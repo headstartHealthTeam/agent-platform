@@ -391,6 +391,15 @@ deterministic logic is warranted.
 
 The canonical commands and coverage policy live in [testing and release](../standards/testing-and-release.md).
 
+When creating a code repository or explicitly adopting the team baseline, compose
+[`headstart-engineering-setup`](../skills/headstart-engineering-setup/SKILL.md). Its
+[test-selection guidance](../skills/headstart-engineering-setup/references/integration-testing.md)
+distinguishes unit tests from real database, boundary, browser, and model evaluations. Database
+semantics require isolated Testcontainers integration tests in a required CI lane, not just mocked
+repositories. Its [package-design guidance](../skills/headstart-engineering-setup/references/monorepo-design.md)
+uses pnpm/Turborepo when actual consumers and package boundaries justify it. Neither database
+infrastructure nor a monorepo is a prerequisite for a simple helper or guidance-only workflow.
+
 ## Review Questions Before Building
 
 - What exact outcome tells the user or owner that the workflow succeeded?

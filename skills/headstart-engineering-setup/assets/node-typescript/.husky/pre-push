@@ -1,0 +1,9 @@
+set -eu
+. .husky/run-pnpm.sh
+
+if [ -n "$(git status --porcelain)" ]; then
+  printf '%s\n' 'Commit or stash unrelated working changes before full pre-push verification.' >&2
+  exit 1
+fi
+
+run_pnpm qa
