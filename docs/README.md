@@ -14,6 +14,7 @@ has not worked in this repository before.
 | Compose several skills for an interactive Codex workflow           | [Workflow authoring guide](workflow-authoring-guide.md)                                         | [`headstart-discovery-to-decision`](../skills/headstart-discovery-to-decision/SKILL.md), [workflow composition](../standards/workflow-composition.md)                      |
 | Choose one-pass, quality-loop, or graph execution                  | [Execution topology](workflow-authoring-guide.md#choose-execution-topology-separately)          | [Workflow composition](../standards/workflow-composition.md#control-flow-topology), [testing and release](../standards/testing-and-release.md)                             |
 | Add deterministic parsing, validation, or transformation           | [Workflow authoring guide](workflow-authoring-guide.md#choose-where-deterministic-code-belongs) | [`headstart-dev-to-main-pr`](../skills/headstart-dev-to-main-pr/SKILL.md), [testing and release](../standards/testing-and-release.md)                                      |
+| Maintain public-repository security controls                       | [Public repository security](public-repository-security.md)                                     | [Security policy](../SECURITY.md), [security and data handling](../standards/security-and-data-handling.md), [testing and release](../standards/testing-and-release.md)    |
 | Make a workflow scheduled, event-driven, or independently operated | [Managed workflow architecture](codex-managed-workflow-architecture.md)                         | [Workflow contracts](../packages/workflow-contracts/README.md), [workflow runtime](../packages/workflow-runtime/README.md), [Codex runner](../apps/codex-runner/README.md) |
 | Add a managed workflow package                                     | [Workflow authoring guide](workflow-authoring-guide.md#managed-workflow-package)                | [Synthetic reference workflow](../workflows/synthetic-read-only-reference/README.md), [managed workflow architecture](codex-managed-workflow-architecture.md)              |
 | Complete the managed runtime foundation                            | [Managed runtime completion roadmap](managed-runtime-completion-roadmap.md)                     | [Managed workflow architecture](codex-managed-workflow-architecture.md), [Codex runner](../apps/codex-runner/README.md)                                                    |
@@ -102,6 +103,8 @@ flowchart TD
   and write boundaries for Google Docs, Gmail, Linear, Notion, repositories, and meeting evidence.
 - [Security and data handling](../standards/security-and-data-handling.md) defines repository and
   runtime safety requirements.
+- [Public repository security](public-repository-security.md) defines the source-controlled and
+  GitHub-hosted controls required for public operation.
 - [Testing and release](../standards/testing-and-release.md) defines evaluations, deterministic
   tests, quality gates, and release evidence.
 

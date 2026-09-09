@@ -41,6 +41,7 @@ risk because agents cannot reliably infer these boundaries.
 ## Related Guidance
 
 - [Documentation hub](../docs/README.md)
+- [Public repository security](../docs/public-repository-security.md)
 - [Workflow authoring guide](../docs/workflow-authoring-guide.md)
 - [Managed workflow architecture](../docs/codex-managed-workflow-architecture.md)
 - [Tool capabilities](tool-capabilities.md)
