@@ -99,6 +99,7 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 | [`headstart-pr-review-context`](skills/headstart-pr-review-context/SKILL.md)                         | Headstart repository, Linear, integration, privacy, and side-effect context                          |
 | [`headstart-pr-review`](skills/headstart-pr-review/SKILL.md)                                         | Complete Headstart review workflow that composes the two review skills                               |
 | [`headstart-dev-to-main-pr`](skills/headstart-dev-to-main-pr/SKILL.md)                               | Explicit-only production promotion inventory and PR workflow                                         |
+| [`headstart-release-pr-review`](skills/headstart-release-pr-review/SKILL.md)                         | Production promotion review gate with critical-risk triage                                           |
 | [`headstart-skill-authoring`](skills/headstart-skill-authoring/SKILL.md)                             | Authoring and evaluation rules for shared Headstart skills                                           |
 | [`headstart-initiative-shaping`](skills/headstart-initiative-shaping/SKILL.md)                       | Evidence-backed scope, decisions, risks, and stakeholder questions                                   |
 | [`headstart-workflow-walkthrough-analysis`](skills/headstart-workflow-walkthrough-analysis/SKILL.md) | Cited current-state analysis from process demonstrations                                             |
