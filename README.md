@@ -277,7 +277,9 @@ CI runs for every same-repository feature-branch pull request targeting `main` a
 push or merge to `main`. The pnpm setup action reads the exact version from `packageManager`, so CI
 and workstation setup share one version source. CI runs the same complete QA suite on Linux, macOS,
 and Windows, and against both the minimum Node.js version and the current Node.js release. A separate
-job audits production and development dependencies at moderate severity or higher. The stable
+job audits production and development dependencies at moderate severity or higher. Complete QA also
+scans every non-ignored repository file for credential patterns, including documentation and
+configuration outside ESLint's scope. The stable
 `Required` check succeeds only when the full matrix and dependency audit pass and is the status
 enforced on `main`. Manual dispatch remains available for recovery and verification, but does not
 replace either automatic trigger.
@@ -296,4 +298,7 @@ record the exact repository commit, workflow version, skill revision, and runner
 
 Do not place credentials, PHI, production records, private downloaded files, or machine-local paths
 in skills, scripts, fixtures, evaluations, or documentation. A skill never grants permission to use
-a connector or perform a consequential write.
+a connector or perform a consequential write. Review the [security policy](SECURITY.md) before
+reporting a vulnerability and the
+[public repository security contract](docs/public-repository-security.md) before changing repository
+or GitHub security controls.
