@@ -4,7 +4,8 @@ description: 'Classify, design, scaffold, or evolve a Headstart agent-assisted w
 compatibility: Requires read access to the Headstart Agent Platform repository for canonical implementation guidance.
 metadata:
   author: headstart-health
-  version: '0.3.0'
+  version: '0.4.0'
+  headstart-requires: headstart-engineering-setup
 ---
 
 # Headstart Agent Workflow Authoring
@@ -70,6 +71,14 @@ Decide independently:
 All four combinations are valid: supervised without custom code, supervised with a tested helper,
 managed without workflow-specific code, and managed with deterministic adapters. Revisit the
 decision only when evidence or operating requirements change.
+
+When the selected design creates a code repository or explicitly adopts an engineering baseline,
+delegate that setup to `headstart-engineering-setup`. It owns typed tooling, risk-appropriate tests,
+conditional database integration and monorepo design, hooks, CI, and repository agent instructions.
+For code inside an existing repository, preserve and use its established checks; do not recreate
+them. For guidance-only workflows, do not invoke engineering setup. If the setup skill is missing,
+read its canonical source from Agent Platform or report that prerequisite rather than inventing
+its current standard.
 
 ## Choose One Pass, A Quality Loop, Or A Graph Separately
 

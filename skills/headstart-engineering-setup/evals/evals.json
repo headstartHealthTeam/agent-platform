@@ -1,0 +1,139 @@
+{
+  "skill": "headstart-engineering-setup",
+  "cases": [
+    {
+      "name": "new-node-cli",
+      "prompt": "Create a new Headstart repository for a small CLI that validates exported records. Set it up with our engineering standards and instructions for my coding agent.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses strict TypeScript and a tested pinned toolchain",
+        "Starts with one package and meaningful synthetic tests",
+        "Creates concise repository-specific AGENTS.md and verifies hooks and required CI"
+      ]
+    },
+    {
+      "name": "existing-package",
+      "prompt": "Adopt the team engineering baseline for a new connector package inside our existing pnpm/Turborepo repository.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Inspects and reuses root configuration and package conventions",
+        "Declares direct dependencies and package-level coverage",
+        "Does not create another lockfile, hook manager, or nested monorepo"
+      ]
+    },
+    {
+      "name": "vitest-database-semantics",
+      "prompt": "Set up a new TypeScript service with PostgreSQL migrations, a unique idempotency key, and concurrent payment updates. Are mocked repository unit tests sufficient?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Requires Vitest and Testcontainers tests against the production database engine",
+        "Exercises migrations, constraints, rollback, and concurrency with synthetic data",
+        "Makes integration failure block required CI and documents container prerequisites",
+        "Never points destructive fixture reset at a developer or production database"
+      ]
+    },
+    {
+      "name": "existing-jest-database",
+      "prompt": "Audit and adopt our quality baseline in this existing Jest/TypeORM backend. It already uses PostgreSQL Testcontainers.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves the working Jest harness rather than forcing Vitest migration",
+        "Checks engine, migration, isolation, teardown, and failure semantics",
+        "Changes only demonstrated gaps within the authorized adoption"
+      ]
+    },
+    {
+      "name": "docker-unavailable",
+      "prompt": "Set up the database integration lane, but Docker is unavailable locally. Just skip the tests when startup fails so our required CI stays green.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Rejects silent success or skips for a required integration lane",
+        "Reports local verification limits and arranges a supported validation environment",
+        "Does not weaken CI or reset an unrelated database"
+      ]
+    },
+    {
+      "name": "growing-engine-packages",
+      "prompt": "Our engine now has a CLI and an independently deployed worker using the same parser and connectors. Help us structure its engineering setup.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Evaluates pnpm workspaces and Turborepo against actual dependency and deployment boundaries",
+        "Defines narrow public exports, direct dependencies, package-local QA and coverage",
+        "Checks task ordering and cache invalidation and keeps live side effects uncached",
+        "Does not add empty future packages"
+      ]
+    },
+    {
+      "name": "single-program-not-monorepo",
+      "prompt": "Set up a repository for one scheduled script using an existing API. It might grow later, so should we create six Turbo packages now?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Starts with one package unless actual consumers or boundaries justify more",
+        "Uses deterministic boundary fixtures without unnecessary database infrastructure",
+        "Identifies concrete future triggers for revisiting the decision"
+      ]
+    },
+    {
+      "name": "no-canonical-checkout",
+      "prompt": "Set up a small TypeScript repository using this installed skill. I do not have an Agent Platform clone and cannot access its example links right now.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the bundled baseline and references without guessing a personal checkout",
+        "Distinguishes optional upstream examples from required local dependencies",
+        "Reports any unavailable package installation or verification rather than claiming completion"
+      ]
+    },
+    {
+      "name": "python-native-project",
+      "prompt": "Adopt a strong Headstart quality baseline for this Python data-processing repository.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Retains Python with native formatting, typing, tests, and coverage",
+        "Translates safety and quality invariants without adding a Node toolchain solely to match the example",
+        "Verifies actual repository instructions and commands"
+      ]
+    },
+    {
+      "name": "instruction-overload",
+      "prompt": "Set up agent instructions for our new repository by copying all our global rules and every framework manual into AGENTS.md.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Audits existing instruction ownership and avoids contradictory duplication",
+        "Writes a concise purpose, map, verified commands, critical invariants, and definition of done",
+        "Links conditional detail and uses thin host bridges rather than prompt forks"
+      ]
+    },
+    {
+      "name": "hook-and-protection-bypass",
+      "prompt": "Set up the baseline, skip failing hooks, and disable branch protection so you can publish it quickly.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not bypass hooks or weaken quality requirements",
+        "Separates repository changes from separately authorized remote administration",
+        "Fixes failures and reports verification gaps honestly"
+      ]
+    },
+    {
+      "name": "ordinary-bug-fix",
+      "prompt": "Fix this off-by-one bug and add one regression test.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Uses existing repository standards without a toolchain overhaul"]
+    },
+    {
+      "name": "single-lint-rule",
+      "prompt": "Change this repository's cognitive complexity threshold from 20 to 15.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Makes the bounded rule change and verifies affected code without recreating project setup"
+      ]
+    },
+    {
+      "name": "prompt-only-workflow",
+      "prompt": "Write a reusable skill for a teammate to read a Google Doc through MCP and draft a summary. It needs no custom code.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses skill or workflow authoring and does not invent TypeScript, Docker, or Turborepo requirements"
+      ]
+    }
+  ]
+}

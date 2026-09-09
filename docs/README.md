@@ -21,6 +21,12 @@ has not worked in this repository before.
 
 ## Choose The Smallest Durable Shape
 
+For a new code repository or an explicit quality-baseline adoption, use
+[`headstart-engineering-setup`](../skills/headstart-engineering-setup/SKILL.md). It includes working
+TypeScript configuration examples, repository-instruction design, conditional database integration
+testing, and criteria for pnpm/Turborepo package boundaries. It does not require code for prompt-only
+workflows or a monorepo for a single program.
+
 Do not begin by choosing a framework or cloud runtime. Begin with the operating requirement:
 
 These are stable design options, not a maturity ladder. Choose supervised versus managed execution
