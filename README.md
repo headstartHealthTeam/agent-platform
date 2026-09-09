@@ -90,27 +90,28 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 
 ## Included Skills
 
-| Skill                                                                                                | Purpose                                                                     |
-| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| [`bulletin-writer`](skills/bulletin-writer/SKILL.md)                                                 | Provider-portal bulletins with clear actions and grounded Headstart voice   |
-| [`deep-pr-review`](skills/deep-pr-review/SKILL.md)                                                   | Generic evidence-backed pull request review method                          |
-| [`headstart-agent-workflow-authoring`](skills/headstart-agent-workflow-authoring/SKILL.md)           | Select and design the smallest safe local or managed agent workflow         |
-| [`headstart-pr-review-context`](skills/headstart-pr-review-context/SKILL.md)                         | Headstart repository, Linear, integration, privacy, and side-effect context |
-| [`headstart-pr-review`](skills/headstart-pr-review/SKILL.md)                                         | Complete Headstart review workflow that composes the two review skills      |
-| [`headstart-dev-to-main-pr`](skills/headstart-dev-to-main-pr/SKILL.md)                               | Explicit-only production promotion inventory and PR workflow                |
-| [`headstart-release-pr-review`](skills/headstart-release-pr-review/SKILL.md)                         | Production promotion review gate with critical-risk triage                  |
-| [`headstart-skill-authoring`](skills/headstart-skill-authoring/SKILL.md)                             | Authoring and evaluation rules for shared Headstart skills                  |
-| [`headstart-initiative-shaping`](skills/headstart-initiative-shaping/SKILL.md)                       | Evidence-backed scope, decisions, risks, and stakeholder questions          |
-| [`headstart-workflow-walkthrough-analysis`](skills/headstart-workflow-walkthrough-analysis/SKILL.md) | Cited current-state analysis from process demonstrations                    |
-| [`headstart-document-review`](skills/headstart-document-review/SKILL.md)                             | Report-first substantive review of shared plans and procedures              |
-| [`headstart-knowledge-capture`](skills/headstart-knowledge-capture/SKILL.md)                         | Canonical placement for verified learnings and recurring agent corrections  |
-| [`headstart-knowledge-refresh`](skills/headstart-knowledge-refresh/SKILL.md)                         | Evidence-backed audits of knowledge and agent instruction hierarchies       |
-| [`headstart-discovery-to-decision`](skills/headstart-discovery-to-decision/SKILL.md)                 | Composed workflow from mixed discovery evidence to decision packet          |
-| [`headstart-intake-sla-review`](skills/headstart-intake-sla-review/SKILL.md)                         | Run and hand off the gated Intake SLA Review Queue workflow                 |
-| [`headstart-skills-update`](skills/headstart-skills-update/SKILL.md)                                 | Install, preview, apply, or schedule complete workstation skill refreshes   |
-| [`simulate-provider-perspectives`](skills/simulate-provider-perspectives/SKILL.md)                   | Evidence-backed provider persona evaluation and model calibration           |
-| [`write-headstart-tone-and-voice`](skills/write-headstart-tone-and-voice/SKILL.md)                   | Write clear audience-facing content in Headstart's voice                    |
-| [`design-headstart-public-website`](skills/design-headstart-public-website/SKILL.md)                 | Design and review Headstart's human, photographic public website            |
+| Skill                                                                                                | Purpose                                                                                              |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [`bulletin-writer`](skills/bulletin-writer/SKILL.md)                                                 | Provider-portal bulletins with clear actions and grounded Headstart voice                            |
+| [`deep-pr-review`](skills/deep-pr-review/SKILL.md)                                                   | Generic evidence-backed pull request review method                                                   |
+| [`headstart-agent-workflow-authoring`](skills/headstart-agent-workflow-authoring/SKILL.md)           | Select and design the smallest safe local or managed agent workflow                                  |
+| [`headstart-engineering-setup`](skills/headstart-engineering-setup/SKILL.md)                         | Establish typed quality checks, appropriate tests, package boundaries, and repository agent guidance |
+| [`headstart-pr-review-context`](skills/headstart-pr-review-context/SKILL.md)                         | Headstart repository, Linear, integration, privacy, and side-effect context                          |
+| [`headstart-pr-review`](skills/headstart-pr-review/SKILL.md)                                         | Complete Headstart review workflow that composes the two review skills                               |
+| [`headstart-dev-to-main-pr`](skills/headstart-dev-to-main-pr/SKILL.md)                               | Explicit-only production promotion inventory and PR workflow                                         |
+| [`headstart-release-pr-review`](skills/headstart-release-pr-review/SKILL.md)                         | Production promotion review gate with critical-risk triage                                           |
+| [`headstart-skill-authoring`](skills/headstart-skill-authoring/SKILL.md)                             | Authoring and evaluation rules for shared Headstart skills                                           |
+| [`headstart-initiative-shaping`](skills/headstart-initiative-shaping/SKILL.md)                       | Evidence-backed scope, decisions, risks, and stakeholder questions                                   |
+| [`headstart-workflow-walkthrough-analysis`](skills/headstart-workflow-walkthrough-analysis/SKILL.md) | Cited current-state analysis from process demonstrations                                             |
+| [`headstart-document-review`](skills/headstart-document-review/SKILL.md)                             | Report-first substantive review of shared plans and procedures                                       |
+| [`headstart-knowledge-capture`](skills/headstart-knowledge-capture/SKILL.md)                         | Canonical placement for verified learnings and recurring agent corrections                           |
+| [`headstart-knowledge-refresh`](skills/headstart-knowledge-refresh/SKILL.md)                         | Evidence-backed audits of knowledge and agent instruction hierarchies                                |
+| [`headstart-discovery-to-decision`](skills/headstart-discovery-to-decision/SKILL.md)                 | Composed workflow from mixed discovery evidence to decision packet                                   |
+| [`headstart-intake-sla-review`](skills/headstart-intake-sla-review/SKILL.md)                         | Run and hand off the gated Intake SLA Review Queue workflow                                          |
+| [`headstart-skills-update`](skills/headstart-skills-update/SKILL.md)                                 | Install, preview, apply, or schedule complete workstation skill refreshes                            |
+| [`simulate-provider-perspectives`](skills/simulate-provider-perspectives/SKILL.md)                   | Evidence-backed provider persona evaluation and model calibration                                    |
+| [`write-headstart-tone-and-voice`](skills/write-headstart-tone-and-voice/SKILL.md)                   | Write clear audience-facing content in Headstart's voice                                             |
+| [`design-headstart-public-website`](skills/design-headstart-public-website/SKILL.md)                 | Design and review Headstart's human, photographic public website                                     |
 
 ## Managed Workflows
 
@@ -275,7 +276,9 @@ CI runs for every same-repository feature-branch pull request targeting `main` a
 push or merge to `main`. The pnpm setup action reads the exact version from `packageManager`, so CI
 and workstation setup share one version source. CI runs the same complete QA suite on Linux, macOS,
 and Windows, and against both the minimum Node.js version and the current Node.js release. A separate
-job audits production and development dependencies at moderate severity or higher. The stable
+job audits production and development dependencies at moderate severity or higher. Complete QA also
+scans every non-ignored repository file for credential patterns, including documentation and
+configuration outside ESLint's scope. The stable
 `Required` check succeeds only when the full matrix and dependency audit pass and is the status
 enforced on `main`. Manual dispatch remains available for recovery and verification, but does not
 replace either automatic trigger.
@@ -294,4 +297,7 @@ record the exact repository commit, workflow version, skill revision, and runner
 
 Do not place credentials, PHI, production records, private downloaded files, or machine-local paths
 in skills, scripts, fixtures, evaluations, or documentation. A skill never grants permission to use
-a connector or perform a consequential write.
+a connector or perform a consequential write. Review the [security policy](SECURITY.md) before
+reporting a vulnerability and the
+[public repository security contract](docs/public-repository-security.md) before changing repository
+or GitHub security controls.

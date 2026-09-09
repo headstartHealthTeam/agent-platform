@@ -63,6 +63,8 @@ dependencies as defects. Equivalent behavior is required; identical prose is not
 
 Every pull request must pass the canonical `pnpm qa` command. It includes:
 
+- repository-wide secret detection across every non-ignored file, including documentation,
+  manifests, fixtures, and configuration;
 - strict typed ESLint with promise, import, security, secret-detection, and complexity rules;
 - strict TypeScript compilation without emitting artifacts;
 - deterministic Vitest execution with at least 80% statements, branches, functions, and lines;

@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Headstart Engineering Setup'
+  short_description: 'Set up quality checks and repository agent guidance'
+  default_prompt: 'Use $headstart-engineering-setup to establish the appropriate engineering baseline and repository-specific agent instructions for this project.'
+policy:
+  allow_implicit_invocation: true

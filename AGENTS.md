@@ -105,6 +105,9 @@ prompt behavior between the two artifacts.
 ## Authoring Rules
 
 - Load `headstart-skill-authoring` before creating or materially changing a shared skill.
+- Load `headstart-engineering-setup` when establishing a new code repository or explicitly adopting
+  the engineering baseline. Existing packages inherit their owning repository's checks; do not
+  turn an ordinary feature or prompt-only workflow into a tooling migration.
 - Load `headstart-agent-workflow-authoring` before classifying or designing a new recurring,
   persistent, scheduled, event-triggered, or cloud agent workflow.
 - Follow the open Agent Skills specification. Skill directory and frontmatter names must match.
