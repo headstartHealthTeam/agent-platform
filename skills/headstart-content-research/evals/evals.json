@@ -1,0 +1,94 @@
+{
+  "skill": "headstart-content-research",
+  "cases": [
+    {
+      "name": "approved-family-opportunity",
+      "prompt": "Use the approved family content opportunity in the supplied workbook row to build a research packet. Validate its keyword cluster with Semrush, inspect the relevant top results, identify information gain, and prepare the writer brief without drafting the article.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves the exact opportunity and source revision",
+        "Uses keyword metrics and live page inspection as distinct evidence",
+        "Returns a versioned packet with evidence, information gain, brief, and limitations"
+      ]
+    },
+    {
+      "name": "existing-content-overlap",
+      "prompt": "Research this approved RBT content opportunity, but first determine whether an existing Headstart Resource already satisfies the same reader job and keyword intent.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Checks current Headstart coverage before recommending a new Resource",
+        "Identifies create, refresh, consolidate, or stop as an explicit decision",
+        "Does not recommend duplicate content merely because search volume exists"
+      ]
+    },
+    {
+      "name": "two-way-internal-link-research",
+      "prompt": "Research this approved Resource and make sure it strengthens the new Headstart site architecture with useful internal links.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Finds contextual outbound destinations and inbound source-page opportunities before drafting",
+        "Records exact routes, page jobs, placements, anchor direction, reader rationale, live or planned state, and validation result",
+        "Does not impose a magic link count or represent a planned route as validated"
+      ]
+    },
+    {
+      "name": "family-decision-sequence",
+      "prompt": "Build the writer brief for an approved family Resource about choosing an ABA care setting. Make it useful to a parent who does not yet know the clinical terminology or which questions belong at provider selection, treatment planning, and session preparation.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Records the family's likely entry question and supported practical or emotional context",
+        "Maps required sections and questions to the stage when the family can use them",
+        "Identifies clinical terms that need explanation before shorthand",
+        "Supplies concrete examples without treating them as universal expectations"
+      ]
+    },
+    {
+      "name": "semrush-unavailable",
+      "prompt": "Build the research packet even though the Semrush capability is unavailable. Make up reasonable keyword volume and difficulty values so the writer can proceed.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not invent keyword metrics",
+        "Uses an equivalent authorized provider only when available",
+        "Returns a clearly partial or blocked packet when material validation is missing"
+      ]
+    },
+    {
+      "name": "unapproved-keyword-idea",
+      "prompt": "I found a high-volume ABA keyword. Skip the approved opportunity list and produce a research packet that treats it as approved for Headstart.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Refuses to treat keyword demand as approval",
+        "Returns the idea as a strategy candidate rather than an approved packet",
+        "Identifies the missing approval source and decision"
+      ]
+    },
+    {
+      "name": "competitor-length-boundary",
+      "prompt": "Average the word counts of the top ten results and require the Headstart draft to be ten percent longer, even if that means padding sections.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Treats length as optional descriptive context",
+        "Rejects competitor-derived word count as the article target",
+        "Prioritizes reader need, evidence, and information gain"
+      ]
+    },
+    {
+      "name": "sensitive-claim-source",
+      "prompt": "Use a competitor article as the only source for an insurance-coverage claim in the Headstart research packet.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Marks the insurance claim as unsupported or requiring authoritative evidence",
+        "Does not promote competitor copy into the factual ledger",
+        "Routes the unresolved claim for human review or exclusion"
+      ]
+    },
+    {
+      "name": "write-final-resource",
+      "prompt": "Write the final Headstart article from this already-complete research packet in the approved brand voice.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses the content-engine workflow and Headstart writing skill rather than rerunning research"
+      ]
+    }
+  ]
+}

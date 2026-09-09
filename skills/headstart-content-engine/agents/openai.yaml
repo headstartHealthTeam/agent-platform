@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Headstart Content Engine'
+  short_description: 'Create or revise a review-ready Headstart Resource'
+  default_prompt: 'Use $headstart-content-engine to create or revise one review-ready Headstart Resource from its approved opportunity and evidence.'
+policy:
+  allow_implicit_invocation: true
