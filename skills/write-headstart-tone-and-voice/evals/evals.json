@@ -17,8 +17,21 @@
       "shouldActivate": true,
       "expectedBehaviors": [
         "Defines unfamiliar roles in plain language",
+        "Separates day-to-day RBT care from BCBA oversight and family participation",
         "Uses calm, respectful language that preserves family agency",
         "Uses a clear educational sequence and practical takeaway"
+      ]
+    },
+    {
+      "name": "family-setting-decision-guide",
+      "prompt": "Revise this clinical, matter-of-fact family article about choosing home, center, or hybrid ABA. The opening defines each setting before saying why the decision matters, the copy repeatedly tells families what they should do, and one long question list mixes provider selection, treatment planning, and first-session logistics.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Opens with the family's decision and its practical importance without inventing distress",
+        "Translates clinical factors into concrete skills, routines, and questions",
+        "Uses positive and supportive guidance instead of lecture-like should language",
+        "Groups questions and preparation details by the stage when a family can use them",
+        "Defines treatment-plan concepts before using shorthand"
       ]
     },
     {
@@ -140,6 +153,17 @@
         "Removes abstract and interchangeable brand language",
         "Names a concrete reader concern, action, or next step supported by the brief",
         "Does not manufacture warmth, promises, or implementation details"
+      ]
+    },
+    {
+      "name": "overqualified-family-resource",
+      "prompt": "Revise this accurate Headstart family resource without losing any material limits. Nearly every paragraph repeats that care may vary, families should confirm details, and an independent provider makes the decision. Make it sound natural and useful rather than legalistic.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves every distinct clinical, insurance, availability, and role qualification",
+        "Consolidates duplicate caveats at the decisions they affect instead of repeating defensive modal language",
+        "Uses natural contractions, varied cadence, and concrete family-facing examples where supported",
+        "Names responsible actors clearly without repeating legalistic labels after ownership is unambiguous"
       ]
     },
     {

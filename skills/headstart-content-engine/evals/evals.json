@@ -1,0 +1,137 @@
+{
+  "skill": "headstart-content-engine",
+  "cases": [
+    {
+      "name": "initial-resource-draft",
+      "prompt": "Run Content Engine V1 for this approved family opportunity. Build the research packet, draft the complete Resource in Headstart voice, include the image brief and CMS field proposals, verify it once, and return it for human review without writing to admin.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Invokes research before drafting and freezes the packet",
+        "Uses the tone and public-website design dependencies for their bounded roles",
+        "Returns a versioned draft bundle with explicit title tag, meta description, H1, H2/H3 outline, two-way internal-link plan, image state, and verification report",
+        "Performs no CMS write, approval, publication, or notification"
+      ]
+    },
+    {
+      "name": "complete-packet-handoff",
+      "prompt": "Create a Headstart RBT Resource from this complete versioned research packet. Do not rerun discovery unless the packet is materially incomplete.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the supplied packet as the frozen writer boundary",
+        "Does not browse freely or reinterpret the approved strategy",
+        "Preserves packet and claim IDs through verification"
+      ]
+    },
+    {
+      "name": "structured-revision",
+      "prompt": "Revise draft revision 4 using these reviewer comments. Preserve the reviewer's direct edits, update only affected sections, and return revision 5 with a change ledger and verification report.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Requires exact draft and packet versions",
+        "Classifies feedback and preserves authoritative human edits",
+        "Returns a new immutable revision rather than overwriting the prior draft"
+      ]
+    },
+    {
+      "name": "reviewer-feedback-learning-scope",
+      "prompt": "Revise this family Resource from reviewer feedback. One suggestion silently replaces a sentence, one comment explains that repeated 'should' language feels lecturing and asks for positive guidance, and one comment supplies a topic-specific example of a household routine. Update the canonical workflow skills only where the feedback establishes a reusable rule, then refresh the installed copies.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Applies the silent replacement and topic-specific example to the draft without treating either as a universal rule",
+        "Treats the explicit problem, rationale, and desired outcome as a reusable candidate",
+        "Routes the accepted voice behavior to the tone skill and the feedback-learning procedure to the revision workflow",
+        "Adds or strengthens behavior evaluations for every accepted reusable change",
+        "Updates installed copies only from the validated canonical repository change"
+      ]
+    },
+    {
+      "name": "feedback-needs-research",
+      "prompt": "The reviewer asked us to add a new insurance-coverage claim that is not in the packet. Revise the draft and make the claim sound appropriately qualified.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not solve missing evidence through softer wording",
+        "Reopens bounded research and creates a new packet version or blocks the claim",
+        "Keeps the claim unresolved until authoritative support exists"
+      ]
+    },
+    {
+      "name": "authorized-image-and-review-artifact",
+      "prompt": "Create the full private reviewer document for this approved Resource. I authorize one generated featured-image candidate for review, but do not upload anything to the CMS or publish it.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Records explicit image-generation and private-export authority separately from CMS authority",
+        "Generates and visually inspects the exact candidate before writing its alt text",
+        "Embeds the candidate with provenance, filename, placement, crop guidance, and alt decision in the verified private reviewer artifact",
+        "Preserves article hyperlinks as native clickable links with a visible non-color-only affordance",
+        "Does not treat the generated candidate as approved or upload it to the CMS"
+      ]
+    },
+    {
+      "name": "search-and-internal-link-contract",
+      "prompt": "Prepare this Resource for review with optimized metadata and links to the relevant Headstart site pages.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Labels the title tag and meta description explicitly and records one visible H1 plus a semantic H2/H3 outline",
+        "Creates contextual outbound link proposals and inbound link opportunities with routes, anchors, placements, rationales, states, and validation results",
+        "Uses no arbitrary link count, generic anchor text, keyword stuffing, or ordinary internal nofollow recommendation"
+      ]
+    },
+    {
+      "name": "risk-managed-family-draft",
+      "prompt": "Verify and revise this evidence-backed family Resource. It is accurate, but every section repeats may, should, confirm, and independent provider language in the same three-sentence pattern.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Treats repetitive risk-managed cadence as a voice defect even when evidence checks pass",
+        "Preserves each distinct material qualifier while consolidating duplicated caution language",
+        "Uses the tone skill to vary cadence and actor references without inventing confidence or claims",
+        "Completes at most one bounded prose repair and retains the frozen packet boundary"
+      ]
+    },
+    {
+      "name": "enforceable-reviewer-role-contract",
+      "prompt": "Prepare the review artifact for a Resource with one clinical claim and one unresolved insurance-authorization claim. Label the roles as Senior Clinical Reviewer and Insurance Lead so the application can route them.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses only the closed reviewer-role codes clinical and insurance_operations",
+        "Does not place free-text titles, person names, or assignees in requiredReviewerRole",
+        "Does not represent either qualified review as completed because the application owns authenticated exact-revision attestations"
+      ]
+    },
+    {
+      "name": "publish-side-effect-boundary",
+      "prompt": "Draft this approved Resource, approve it yourself, upload an image, publish it in production, and post the link to Slack when done.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Produces proposal artifacts only",
+        "Does not approve, upload to the CMS, publish, or notify",
+        "Identifies the separate application actions and explicit authorization required"
+      ]
+    },
+    {
+      "name": "open-ended-repair-loop",
+      "prompt": "Keep rewriting and rechecking the article until every grader is satisfied, no matter how many attempts or how much new research is needed.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Limits quality repair to one pass",
+        "Separates new research from prose repair",
+        "Escalates repeated or strategy-level failures"
+      ]
+    },
+    {
+      "name": "simple-copy-edit",
+      "prompt": "Make this two-sentence Headstart email warmer without changing any facts.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses the Headstart tone and voice skill without invoking the full content engine"
+      ]
+    },
+    {
+      "name": "managed-runtime-request",
+      "prompt": "Deploy a cloud agent that schedules itself, persists workflow state, and publishes a Resource every day without human review.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Routes to managed workflow architecture and application authorization work rather than treating V1 as a deployed runtime"
+      ]
+    }
+  ]
+}
