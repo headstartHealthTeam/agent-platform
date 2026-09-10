@@ -27,6 +27,11 @@ pnpm 9's redundant engine self-link and rejects any other dependency link pointi
 artifact. Do not call a dirty-checkout artifact a reviewed release. A deployment without its final
 receipt is incomplete.
 
+The packaging script runs the repository-pinned Corepack JavaScript entrypoint directly with Node,
+then verifies the required pnpm version. This avoids Windows batch-file argument forwarding and
+keeps destination paths as arguments, not shell syntax. Corepack is a provisioning-only development
+dependency; it is not added to the standalone reporting artifact.
+
 The artifact can run without the source checkout or a TypeScript loader:
 
 ```bash

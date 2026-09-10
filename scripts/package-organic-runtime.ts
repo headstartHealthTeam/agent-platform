@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   chmod,
@@ -13,19 +14,20 @@ import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import spawn from 'cross-spawn';
-
 const ENGINE = '@headstart-health/organic-performance-engine';
+const COREPACK_ENTRYPOINT = fileURLToPath(
+  new URL('./dist/corepack.js', import.meta.resolve('corepack/package.json'))
+);
 export type RuntimeCommand = (
   command: string,
   args: readonly string[],
   cwd: string
 ) => Promise<string>;
 
-export const runRuntimeCommand: RuntimeCommand = (command, args, cwd) => {
-  // This is an isolated provisioning CLI. Keep arguments separate and let cross-spawn handle
-  // Windows .cmd shims; shell:true would disable its argument escaping.
-  const result = spawn.sync(command, [...args], {
+export const runRuntimeExecutable: RuntimeCommand = (command, args, cwd) => {
+  // Only native executables cross this boundary. In particular, never forward dynamic arguments
+  // through corepack.cmd: a batch shim's %* introduces another shell-parsing step on Windows.
+  const result = spawnSync(command, [...args], {
     cwd,
     timeout: 300_000,
     maxBuffer: 4_000_000,
@@ -45,12 +47,16 @@ export const runRuntimeCommand: RuntimeCommand = (command, args, cwd) => {
       ].join(',') || 'none';
     return Promise.reject(
       new Error(
-        `Runtime command failed (${command === 'corepack' ? 'corepack' : 'git'}; exit=${String(result.status)}; signal=${result.signal ?? 'none'}; stdout codes=${codes(result.stdout)}; stderr codes=${codes(result.stderr)}; launch codes=${codes(result.error?.message ?? '')})`
+        `Runtime command failed (${command === process.execPath ? 'node' : 'git'}; exit=${String(result.status)}; signal=${result.signal ?? 'none'}; stdout codes=${codes(result.stdout)}; stderr codes=${codes(result.stderr)}; launch codes=${codes(result.error?.message ?? '')})`
       )
     );
   }
   return Promise.resolve(result.stdout);
 };
+export const runRuntimeCommand: RuntimeCommand = (command, args, cwd) =>
+  command === 'corepack'
+    ? runRuntimeExecutable(process.execPath, [COREPACK_ENTRYPOINT, ...args], cwd)
+    : runRuntimeExecutable(command, args, cwd);
 function inside(root: string, candidate: string): boolean {
   return candidate === root || candidate.startsWith(`${root}${sep}`);
 }

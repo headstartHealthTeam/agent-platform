@@ -1,12 +1,14 @@
-import { chmod, mkdtemp, mkdir, readFile, realpath, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, realpath, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { delimiter, join } from 'node:path';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   packageOrganicRuntime,
   runRuntimeCommand,
+  runRuntimeExecutable,
   runtimeFingerprint,
   verifyPortableRuntime,
   type RuntimeCommand,
@@ -47,7 +49,30 @@ async function setup(): Promise<{ root: string; target: string; command: Runtime
 }
 describe('standalone organic runtime packaging', () => {
   afterEach(() => vi.unstubAllEnvs());
-  it('runs the concrete corepack shim with argument boundaries and private failure output', async () => {
+  it('runs the actual pinned Corepack entrypoint without a PATH shim or live provider', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'organic corepack shim space & fixture-'));
+    const marker = join(directory, 'shim-executed.txt');
+    // Deliberately unusable PATH shims must never be consulted by the production launcher.
+    await writeFile(
+      join(directory, 'corepack.cmd'),
+      `@echo shim-executed > "${marker}"\r\nexit /b 9\r\n`
+    );
+    await writeFile(join(directory, 'corepack'), '#!/bin/sh\nexit 9\n', { mode: 0o755 });
+    vi.stubEnv('PATH', directory);
+    const packageManifest = JSON.parse(
+      await readFile(fileURLToPath(import.meta.resolve('corepack/package.json')), 'utf8')
+    ) as { version: string; bin: { corepack: string } };
+    const rootManifest = JSON.parse(
+      await readFile(new URL('../../package.json', import.meta.url), 'utf8')
+    ) as { devDependencies: { corepack: string } };
+    expect(packageManifest.version).toBe(rootManifest.devDependencies.corepack);
+    expect(packageManifest.bin.corepack).toBe('./dist/corepack.js');
+    expect((await runRuntimeCommand('corepack', ['--version'], directory)).trim()).toBe(
+      packageManifest.version
+    );
+    await expect(readFile(marker, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+  it('preserves Node argv boundaries and private failure output without a command interpreter', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'organic launcher space & fixture-'));
     const script = join(directory, 'corepack-fixture.cjs');
     await writeFile(
@@ -60,16 +85,6 @@ if (process.argv[2] === 'fail') {
 } else process.stdout.write(JSON.stringify(process.argv.slice(2)));
 `
     );
-    if (process.platform === 'win32') {
-      await writeFile(
-        join(directory, 'corepack.cmd'),
-        `@"${process.execPath}" "%~dp0corepack-fixture.cjs" %*\r\n`
-      );
-    } else {
-      await symlink(script, join(directory, 'corepack'));
-      await chmod(script, 0o755);
-    }
-    vi.stubEnv('PATH', `${directory}${delimiter}${process.env['PATH'] ?? ''}`);
     const args = [
       'pnpm',
       '--filter',
@@ -80,13 +95,15 @@ if (process.argv[2] === 'fail') {
       'literal %PATH% !value! ^ caret',
       'quote" & echo not-a-command',
     ];
-    expect(JSON.parse(await runRuntimeCommand('corepack', args, directory))).toEqual(args);
-    await expect(runRuntimeCommand('corepack', ['fail'], directory)).rejects.toThrow(
-      /stdout codes=ERR_PNPM_FETCH_403; stderr codes=ENOTFOUND/
-    );
-    await expect(runRuntimeCommand('corepack', ['fail'], directory)).rejects.not.toThrow(
-      /private-/
-    );
+    expect(
+      JSON.parse(await runRuntimeExecutable(process.execPath, [script, ...args], directory))
+    ).toEqual(args);
+    await expect(
+      runRuntimeExecutable(process.execPath, [script, 'fail'], directory)
+    ).rejects.toThrow(/stdout codes=ERR_PNPM_FETCH_403; stderr codes=ENOTFOUND/);
+    await expect(
+      runRuntimeExecutable(process.execPath, [script, 'fail'], directory)
+    ).rejects.not.toThrow(/private-/);
     await expect(runRuntimeCommand('missing-organic-command', [], directory)).rejects.toThrow(
       /launch codes=ENOENT/
     );

@@ -24,9 +24,6 @@ importers:
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: ^13.0.5
         version: 13.0.5
-      '@types/cross-spawn':
-        specifier: 6.0.6
-        version: 6.0.6
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
@@ -36,9 +33,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.1.11
         version: 4.1.11(vitest@4.1.11)
-      cross-spawn:
-        specifier: 7.0.6
-        version: 7.0.6
+      corepack:
+        specifier: 0.34.6
+        version: 0.34.6
       eslint:
         specifier: ^10.9.1
         version: 10.9.1
@@ -1830,6 +1827,11 @@ packages:
   core-js-compat@3.50.0:
     resolution: {integrity: sha512-XGpFGbMLHwSt74YLTKho7Ib242qi6O8MSX+sRokV4oz7iKXvQWGYZthjIhjRGMxjzVkAubBO512dKGYcefmX3Q==}
     engines: {node: '>=6.4.0'}
+
+  corepack@0.34.6:
+    resolution: {integrity: sha512-gvylq9kzJB09mSsiOnKOnhg0YdCWNy2aGaeGbYF4HlyGd/v4moxEonQjJPYI45/K4zP7q1hW9qCVvaYYKK5nkA==}
+    engines: {node: ^20.10.0 || ^22.11.0 || >=24.0.0}
+    hasBin: true
 
   cors@2.8.6:
     resolution: {integrity: sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==}
@@ -4373,6 +4375,8 @@ snapshots:
   core-js-compat@3.50.0:
     dependencies:
       browserslist: 4.28.7
+
+  corepack@0.34.6: {}
 
   cors@2.8.6:
     dependencies:
