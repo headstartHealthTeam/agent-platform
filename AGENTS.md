@@ -125,6 +125,9 @@ prompt behavior between the two artifacts.
 - When one workflow supports both local and managed execution, keep shared guidance in canonical
   skills, make execution-context differences explicit, and test that both consumers honor the same
   behavioral contract. Do not maintain separate prompt forks.
+- When a skill must be selected proactively from a broader task, do not assume installation alone
+  guarantees invocation. Include a minimal persistent-routing reference, keep the detailed behavior
+  in the skill, and verify fresh-session discovery from representative launch locations.
 
 Read the standards before authoring:
 
@@ -151,8 +154,10 @@ skill is ready for review:
    body;
 5. add the skill and its purpose to the README `Included Skills` table;
 6. update standards or compatibility documentation only when the shared contract actually changes;
-7. test deterministic helpers and every affected operating-system path; and
-8. run `pnpm qa` and include the behavior and compatibility impact in the pull request.
+7. add and evaluate minimal persistent-routing guidance when future sessions must invoke the skill
+   proactively from broader work;
+8. test deterministic helpers and every affected operating-system path; and
+9. run `pnpm qa` and include the behavior and compatibility impact in the pull request.
 
 The repository validator enforces README inventory parity so a skill cannot silently ship without
 being discoverable. Do not add a second skill manifest to avoid this checklist.

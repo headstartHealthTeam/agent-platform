@@ -8,6 +8,7 @@
       "expectedBehaviors": [
         "Resolves the canonical checkout without assuming a machine-specific path",
         "Previews before installing every current shared skill",
+        "Offers minimal persistent routing for proactive workflows and verifies representative launch locations",
         "Asks separately whether to enable the opt-in daily refresh"
       ]
     },
@@ -56,6 +57,18 @@
       "expectedBehaviors": [
         "Directs managed runners to pin an approved tag or commit",
         "Does not apply the workstation scheduler to production runtime deployment"
+      ]
+    },
+    {
+      "name": "persistent-routing-without-braingraph",
+      "prompt": "Install the team skills and make sure future Codex sessions working in my separate Headstart repositories know when to use stacked delivery. I do not use Braingraph.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Installs the complete managed skill set",
+        "Uses the stacked-delivery skill's minimal routing guidance",
+        "Requests approval before changing standing instructions",
+        "Verifies more than one representative repository or worktree location",
+        "Does not require or initialize Braingraph"
       ]
     },
     {
