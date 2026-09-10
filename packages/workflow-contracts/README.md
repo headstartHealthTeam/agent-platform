@@ -1,7 +1,7 @@
 # Managed Workflow Contracts
 
 This package is the canonical typed boundary between locally developed agent workflows, the
-managed Codex runner, the Headstart backend control plane, and durable run records. It deliberately
+managed Codex runner, the selected operational control plane, and durable run records. It deliberately
 contains no business workflow behavior and performs no external operations.
 
 ## Responsibilities

@@ -38,6 +38,11 @@ triggers, service identities, versions, isolation, durable run state, approvals,
 observability, and operational responsibility. Business systems remain authoritative for their own
 records.
 
+The design and next implementation steps are workflow-independent. Platform capabilities can be
+proved with synthetic packages without selecting a first business workflow. A real workflow later
+needs its own acceptance evidence before activation; platform validation alone cannot establish
+business correctness.
+
 ## Codex Execution Is A Product Requirement
 
 The first managed runtime must execute the reviewed workflow through Codex, not merely use an OpenAI
@@ -50,22 +55,32 @@ instructions, skills, connections, schedules, and triggers, but it does not exec
 may deliberately target Workspace Agents when its owner accepts that runtime and validates it
 independently. Workspace Agents are not a hosting substitute for a workflow whose acceptance
 criteria require Codex behavior, and their configuration must not be presented as a deployment of
-the managed Codex runner. Their API trigger also does not currently return a run id or make the
-result retrievable through the API, so it cannot satisfy this architecture's durable run-correlation
-contract.
+the managed Codex runner. Any separate runtime assessment must verify both behavior and the required
+dispatch, durable run correlation, result retrieval, and recovery interfaces.
 
-This distinction separates two decisions that must not be conflated:
+### Three Independent Decisions
+
+Separate the execution engine, compute, and operational control plane:
 
 - **Execution engine:** the initial managed engine is the repository-owned Codex SDK runner.
 - **Compute substrate:** AgentCore Runtime, ECS/Fargate, or another approved host may run that exact
   engine without changing the workflow contract.
+- **Operational control plane:** a selected operations service or custom Headstart implementation
+  owns triggers, durable run state, cancellation, retries, approvals, and the operator interface.
+  Buying these capabilities does not require replacing Codex or translating skills into a visual
+  graph.
 
 Amazon Bedrock AgentCore Runtime is the preferred managed-hosting candidate because Runtime accepts
 customer-owned agent code and containers while supplying isolated sessions, identity integration,
 scaling, and observability. AgentCore Harness is not the selected path: Harness supplies its own
 agent loop, so using an OpenAI model there would not establish equivalence with Codex. Runtime must
 pass the compatibility gate in the
-[managed runtime completion roadmap](managed-runtime-completion-roadmap.md) before adoption.
+[managed runtime completion roadmap](managed-runtime-completion-roadmap.md) before adoption. The
+control-plane build-versus-buy gate is separate and must precede custom backend or admin work.
+
+The [Codex SDK](https://learn.chatgpt.com/docs/codex-sdk) controls Codex processes in a supplied
+execution environment; adopting the SDK does not itself provision managed hosting, credentials,
+storage, or an operator service.
 
 ## Repository Responsibilities
 
@@ -79,12 +94,16 @@ This monorepo has four internal layers:
    deterministic adapters shared by managed workflows and the runner.
 4. `apps/codex-runner/` contains the managed Codex execution worker.
 
-The existing Headstart application repositories retain their established responsibilities:
+Repository ownership does not preselect a control-plane product:
 
-- The backend owns control-plane APIs, durable database records, idempotency, approval execution,
-  Salesforce event intake, and business-system writes.
-- The admin panel owns workflow discovery, manual launch, run history, evidence review, approvals,
-  cancellation, and retry controls.
+- The selected control plane owns operational run records, trigger deduplication, leases, retry
+  policy, and operator controls. If custom implementation is justified, its APIs and persistence
+  belong in the backend and its UI belongs in the admin panel. Otherwise integrate an approved
+  operations service rather than recreating its scheduler, run database, and UI.
+- The backend or other owning service retains business records, permission checks, event intake,
+  and idempotent execution of approved business-system writes regardless of the control plane.
+- The admin panel retains application-specific interfaces. A custom workflow catalog or operations
+  UI is optional, not a prerequisite for managed execution.
 - Headstart MCP owns bounded permission-gated tools. It does not own schedules, workflow state, or
   retries.
 - This repository owns the executable workflow definition and worker code. It does not become the
@@ -148,6 +167,9 @@ The persistent unit is the workflow definition and durable run record. A Codex p
 AgentCore session, container, queue message, or worker lease is an execution detail. Compute can
 disappear and be replaced without losing the authoritative run status, approvals, or business
 outcome. Runtime-native session or memory state must never become the business system of record.
+The selected control plane is the single authority for operational run transitions. Provider job
+ids and Codex thread ids correlate to that run; they do not establish competing retry or approval
+histories in another application database.
 
 ## Local Development And Managed Packaging
 
@@ -231,6 +253,30 @@ since that could expose unrelated credentials to commands or MCP subprocesses. C
 MCP credentials, and AWS access are provisioned independently and delivered through the deployment
 environment's secret and identity systems.
 
+### Authentication And Capability Binding
+
+Use a reviewed execution profile to bind logical capabilities to environment-specific provider
+identities, targets, scopes, and delivery methods. A workstation CLI alias is configuration, not
+proof of a cloud target. Preflight must verify actual target identity and required access using
+bounded probes before business-data access. Required initialization failures stop the run; an
+expired credential and an authenticated-but-forbidden request require different remedies.
+
+For unattended Codex, evaluate
+[workload identity federation](https://learn.chatgpt.com/docs/enterprise/workload-identity) first
+where the workspace supports it. It exchanges an upstream workload identity for short-lived Codex
+access. It is beta, requires workspace enablement, and requires the trusted host to refresh and
+protect the upstream token file from model-controlled commands. Do not assume an AWS role alone
+completes that setup. Otherwise select an approved
+[Enterprise Codex access token](https://learn.chatgpt.com/docs/enterprise/access-tokens) or
+[API-key authentication](https://learn.chatgpt.com/docs/auth) under the organization's account and
+data-handling policy. Product availability and authorization must be verified at deployment time.
+
+AWS identity and Secrets Manager supply only their configured identity and secret-delivery roles.
+They do not grant Salesforce, Google, Fireflies, Headstart MCP, or OpenAI access automatically. Each
+provider keeps its own approved scopes, target, rotation owner, and revocation path. A native desktop
+plugin or a creator's interactive login is not evidence that an equivalent headless connection
+exists; declare and verify the managed MCP, CLI, or API binding explicitly.
+
 ## Skills And Version Pinning
 
 Workstation users may follow protected `main` or a reviewed semantic skill release through the
@@ -307,9 +353,23 @@ model includes:
 - failure classification; and
 - operational usage and cost metadata.
 
-Postgres is appropriate for structured run and approval state. Approved encrypted object storage is
+Postgres is appropriate for a custom control plane's structured run and approval state. An adopted
+operations service must demonstrate equivalent durability and exportable run evidence; do not
+automatically build a second run database. Approved encrypted object storage is
 appropriate for larger artifacts. Salesforce or another business system receives only the business
 record it owns. Runtime logs are not a second business database.
+
+Keep execution scratch space, reusable evidence or interpretation caches, and authoritative run
+receipts distinct. A replacement worker may restore compatible checkpoints and approved artifacts
+without inheriting another run's credentials. Workflow-owned freshness rules, source revisions or
+hashes, and prompt, model, and adapter versions determine reuse; a surviving file or recent timestamp
+alone does not prove validity. Record completed work before acknowledging it and reconcile uncertain
+external effects before retrying. Compute snapshots are an optimization, not the recovery contract.
+
+AgentCore offers different storage modes, including preview session storage with expiration and
+version-bound behavior. Choose and test retention, isolation, and recovery explicitly rather than
+assuming either permanent storage or an entirely ephemeral filesystem.
+[AgentCore filesystem configurations](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-filesystem-configurations.html)
 
 ## Data Handling
 
@@ -341,46 +401,89 @@ again immediately before execution. It must apply a stable idempotency key, reco
 receipt, and make replay behavior explicit. Human approval never converts arbitrary model text into
 authority.
 
-## Hosting Decision And AWS Deployment Progression
+## Hosting And Operations Decisions
 
-The code remains compute-neutral, but the first deployment decision is now explicit: evaluate
-AgentCore Runtime before implementing a custom long-lived VM or ECS worker fleet.
+The initial engine remains Codex. Hosting and the operational layer remain unselected until their
+gates pass. Research identifies candidates; it is not compatibility, compliance, cost, or deployment
+evidence. These gates use synthetic workloads and do not depend on a business-workflow pilot.
 
-### Compatibility Gate
+### Hosting Compatibility Gate
 
 A bounded dev spike must package the existing Codex SDK runner in an AgentCore Runtime custom
 container and prove that the exact execution contract survives the move. The spike must use a
 synthetic read-only workflow and verify pinned repository and skill materialization, approved Codex
 authentication, MCP and CLI startup, explicit environment delivery, structured output, timeout and
 cancellation behavior, PHI-safe observability, network restrictions, cold-start and run cost, and
-failure cleanup. AgentCore session state remains ephemeral; the Headstart control plane remains
-authoritative.
+failure cleanup. Verify the selected compute mode's architecture, sandbox support, quotas, session
+lifetime, persistence, and long-running invocation behavior. The selected control plane, not the
+compute session, remains authoritative for run state.
 
-Passing the gate means AgentCore Runtime becomes the initial managed compute target. Failing a
-material requirement means ECS/Fargate becomes the fallback without changing workflow packages,
-the Codex runner, or control-plane contracts. A controlled VM is reserved for a time-boxed
-demonstration or contingency, not the intended Operational V1 architecture.
+Passing the gate qualifies AgentCore Runtime as the preferred compute target; finalize its fit with
+the selected operational layer before deployment. If a material requirement fails, evaluate
+ECS/Fargate against the same criteria without changing workflow packages, the Codex runner, or
+control-plane contracts. A fallback is not exempt from verification. A controlled VM is reserved for
+a time-boxed demonstration or contingency, not the intended Operational V1 architecture.
 
-### Operational V1
+### Operations Build-Versus-Buy Gate
+
+Evaluate whether an existing operations service can satisfy the control-plane contract before
+building custom backend APIs and admin screens. Windmill is a concrete candidate because it
+documents running the actual Codex CLI or SDK in sandboxed jobs, alongside scheduling, approvals,
+and Git synchronization. Its built-in AI nodes are not the selected Codex runner, and its example
+scripts are not a replacement for this repository's typed executor and access controls.
+[Codex jobs](https://www.windmill.dev/docs/core_concepts/ai_sandbox),
+[scheduling](https://www.windmill.dev/docs/core_concepts/scheduling),
+[approvals](https://www.windmill.dev/docs/flows/flow_approval),
+[Git synchronization](https://www.windmill.dev/docs/advanced/git_sync)
+
+The gate must establish:
+
+- launch and supervision of the exact reviewed runner with durable run correlation;
+- authenticated operator roles, cancellation, bounded retries, recovery, and actionable failures;
+- Git-reviewed immutable deployment, not an independently editable production workflow in a UI;
+- a single authority for schedules, run transitions, and operational approvals, while business
+  authorization remains with its owning service;
+- data handling, artifact retention, tenant isolation, credential delivery, audit export, and exit
+  strategy; and
+- actual edition, licensing, hosting burden, security configuration, and total operating cost.
+
+An adopted service may invoke a separately hosted worker or host the worker itself. AgentCore and
+Windmill are therefore not mutually exclusive options, but combining them is justified only if the
+dispatch, cancellation, identity, and recovery integration passes the same gates. Do not deploy two
+platforms merely to keep both candidates. Windmill isolation must be configured and tested; a
+sandbox annotation alone does not establish an appropriate boundary.
+[Windmill security and isolation](https://www.windmill.dev/docs/advanced/security_isolation)
+
+If an operations service passes, integrate only missing capabilities. If it fails material
+requirements, document those gaps and build the minimum backend/admin implementation. Record the
+selection, authoritative state owner, acceptance evidence, and unresolved prerequisites in these
+canonical docs before production implementation. Do not support two control planes by default.
+
+### Deployment Progression
 
 - The exact reviewed Codex runner image is published to ECR.
-- The selected runtime adapter invokes AgentCore Runtime or dispatches to an ECS/Fargate worker.
+- The selected runtime adapter invokes the approved worker host, initially evaluating AgentCore
+  Runtime and ECS/Fargate. Direct hosting by an operations service must meet the same criteria.
 - AWS supplies isolated compute, narrowly scoped workload identity, secrets, network controls, and
   CloudWatch observability.
-- The backend provides durable run, approval, cancellation, retry, and idempotency APIs independent
-  of the selected compute target.
-- The admin panel provides the workflow catalog and operations UI required by the pilot.
+- The selected control plane supplies durable run, approval, cancellation, retry, and trigger
+  idempotency capabilities independent of the compute target.
+- Use its existing operator interface where sufficient; add admin-panel integration only for a
+  demonstrated application-specific requirement.
 - Deployment records the exact workflow commit, image digest, runtime configuration, and execution
   target.
 
 ### Later Evaluation
 
-AgentCore Gateway, AgentCore Memory, AgentCore Harness, Windmill, or another orchestration platform
-may be adopted only when a measured requirement justifies it. AgentCore Runtime adoption does not
-implicitly adopt those services. The workflow contract allows the compute adapter to change without
-rewriting business workflows. The platform should not acquire a visual graph builder, custom
-scheduler, or general-purpose agent memory system until a real operating requirement demonstrates
-their value.
+OpenAI's [Sandbox Agents](https://developers.openai.com/api/docs/guides/agents/sandboxes) offer
+workspace-oriented execution through the Agents SDK and are currently beta. They are a separate
+agent loop, not hosted Codex. Consider them only for an explicit runtime decision with behavioral
+acceptance evidence; shared model or skill support alone does not establish equivalence.
+
+AgentCore Gateway, Memory, or Harness and explicit graph frameworks are not implied by a hosting
+choice. Do not rewrite skills into graph nodes, add a multi-runtime abstraction, or introduce a
+visual builder or general-purpose memory without a measured requirement. Codex is the initial
+baseline, not a claim that alternatives can never meet a future workflow's needs.
 
 ## Failure And Recovery Model
 
@@ -388,7 +491,10 @@ Failures are classified rather than blindly retried:
 
 - invalid input: terminal until corrected;
 - missing required tool or identity: configuration failure and alert;
+- expired authentication: identity recovery, not an empty result or repeated blind login;
+- authenticated access denied: permission or target failure, not a successful zero-record query;
 - transient dependency failure: bounded retry with backoff;
+- missing or stale required evidence: explicit incomplete or blocked outcome under workflow policy;
 - schema-invalid model output: retry only when policy permits, then human escalation;
 - stale or duplicate trigger: idempotent no-op;
 - approval timeout: explicit expired or cancelled state;
@@ -397,6 +503,14 @@ Failures are classified rather than blindly retried:
 
 Retries must never duplicate an external action. A dead-letter queue is an operational signal, not a
 hidden backlog.
+
+Operational telemetry must distinguish execution health from workflow outcome. Correlate run,
+attempt, stage, and permitted tool events with immutable versions and approved artifact references.
+Track model and I/O time, retries, reuse, and resource or token usage so slow runs are diagnosable.
+A worker exit code, valid JSON, or a green infrastructure dashboard does not prove that the required
+evidence was complete or that an external action was confirmed. Record the validated business
+outcome separately. Provider telemetry does not automatically instrument every Codex subprocess or
+MCP call; test the sanitized event adapter and alert routing without retaining raw sensitive events.
 
 ## Current Implementation Slice
 
@@ -412,8 +526,8 @@ This repository currently establishes:
 - repository validation that enforces fixtures, evaluation definitions, draft-only lifecycle, and
   unit-test coverage for these boundaries.
 
-It does not yet provide a hosted runtime adapter, backend control-plane module, admin UI, service
-identity issuance, repository workspace materialization, skill installation into an isolated run,
+It does not yet provide a hosted runtime adapter, operational control plane or its integration,
+service identity issuance, repository workspace materialization, skill installation into an isolated run,
 approval executor, external writes, deployment pipeline, or live workflow. Those are subsequent
 reviewed slices. The
 [managed runtime completion roadmap](managed-runtime-completion-roadmap.md) defines their ownership,
@@ -421,26 +535,40 @@ sequence, exclusions, and verification requirements.
 
 ## Required Next Decisions
 
-Before promoting the first real workflow, Headstart must select:
+Platform implementation does not require selecting a business workflow. The next decisions are:
 
-1. the pilot workflow and named owners;
-2. the Codex authentication method approved for managed execution;
-3. the Headstart MCP service-identity and permission model;
-4. whether AgentCore Runtime passes the compatibility gate or ECS/Fargate is required;
-5. the control-plane database and API contract;
-6. the exact approval boundary for the pilot;
-7. PHI classification and observability policy; and
-8. measurable success, failure, and rollback criteria.
+1. the hosting target and operational control plane, with separate evidence for each gate;
+2. managed Codex authentication and the capability/profile binding contract;
+3. authoritative run state, artifact retention, recovery, and service-boundary ownership; and
+4. platform-level acceptance criteria for isolation, access, cancellation, recovery, telemetry,
+   operating cost, and support.
+
+Before activating each real workflow, separately select its owners, provider identities, data and
+write policies, outcome criteria, and rollback procedure. The
+[completion roadmap](managed-runtime-completion-roadmap.md) separates shared platform verification
+from that later adoption gate.
 
 ## Official References
 
+Provider capabilities were researched on 2026-09-10. Recheck availability, beta status, entitlement,
+limits, and security requirements at the relevant decision gate; these links are not evidence that
+Headstart has configured or validated a service.
+
 - [Codex SDK](https://learn.chatgpt.com/docs/codex-sdk)
 - [Codex access tokens](https://learn.chatgpt.com/docs/enterprise/access-tokens)
+- [Codex workload identity federation](https://learn.chatgpt.com/docs/enterprise/workload-identity)
+- [Codex authentication](https://learn.chatgpt.com/docs/auth)
+- [OpenAI Sandbox Agents](https://developers.openai.com/api/docs/guides/agents/sandboxes)
 - [Non-interactive Codex](https://learn.chatgpt.com/docs/non-interactive-mode)
 - [ChatGPT Workspace Agents](https://help.openai.com/en/articles/20001143)
 - [AgentCore Harness versus Runtime](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/harness-vs-runtime.html)
 - [AgentCore Runtime operation](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-how-it-works.html)
 - [AgentCore Runtime security practices](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-security-best-practices.html)
+- [AgentCore filesystem configurations](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-filesystem-configurations.html)
+- [Windmill Codex jobs](https://www.windmill.dev/docs/core_concepts/ai_sandbox)
+- [Windmill security and isolation](https://www.windmill.dev/docs/advanced/security_isolation)
+- [Windmill Git synchronization](https://www.windmill.dev/docs/advanced/git_sync)
+- [Windmill approvals](https://www.windmill.dev/docs/flows/flow_approval)
 
 ## Related Repository Documentation
 

@@ -89,7 +89,9 @@ flowchart TD
   referenced-file resolution, and JSON Schema validation used by both tests and managed execution.
 - [`apps/codex-runner/`](../apps/codex-runner/README.md) owns the managed Codex execution boundary.
 - Headstart application repositories retain triggers, durable business state, permissions,
-  idempotent writes, and user interfaces.
+  idempotent business writes, and application interfaces. The selected operational control plane
+  owns run scheduling/history and operator controls; custom backend/admin implementation is
+  conditional on the architecture's build-versus-buy decision.
 
 ## Standards
 
@@ -118,7 +120,8 @@ flowchart TD
 - [Managed workflow architecture](codex-managed-workflow-architecture.md) owns the managed runtime
   design and current implementation boundary.
 - [Managed runtime completion roadmap](managed-runtime-completion-roadmap.md) owns the ordered work
-  required to reach the first operational managed workflow.
+  required to prove the shared runtime foundation with synthetic packages, including hosting and
+  operations decisions, then separately admit real business workflows.
 - Package READMEs own package-level behavior and limitations.
 - Standards own cross-cutting rules; they do not own volatile project or deployment status.
 

@@ -128,9 +128,12 @@ control plane. Use the
 [workflow authoring guide](docs/workflow-authoring-guide.md) to decide whether one is needed, then
 read the [managed workflow architecture](docs/codex-managed-workflow-architecture.md) before adding
 or promoting it. The [managed runtime completion roadmap](docs/managed-runtime-completion-roadmap.md)
-defines the remaining implementation slices and names isolated workflow materialization as the
-immediate next step. A bounded compatibility gate then evaluates AgentCore Runtime as the preferred
-host for the existing Codex SDK runner, with ECS/Fargate retained as the fallback. The current
+defines the workflow-independent path through isolated materialization, hosting compatibility, and
+an operations build-versus-buy decision before deployment and operator tooling. AgentCore Runtime
+is the preferred hosting candidate, with ECS/Fargate as the fallback; an operations service such as
+Windmill may coordinate the actual Codex runner instead of requiring a custom backend/admin control
+plane. Neither service is selected yet. Synthetic platform acceptance is separate from later
+business-workflow adoption. The current
 implementation is intentionally draft-only: repository validation blocks active workflows until
 isolated workspace, skill, tool, and environment materialization is implemented and tested.
 
