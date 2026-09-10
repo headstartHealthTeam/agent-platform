@@ -19,5 +19,7 @@ export {
   SemrushProviderError,
   connectSemrushStdio,
   parseSemrushCsv,
+  parseSemrushTable,
+  type SemrushCsvTable,
   type SemrushToolReader,
 } from './mcp-provider.js';

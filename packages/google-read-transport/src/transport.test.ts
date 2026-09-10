@@ -1,9 +1,55 @@
+import { chmod, mkdtemp, symlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { delimiter, join } from 'node:path';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { GcloudReadTokenProvider, GoogleReadTransport } from './transport.js';
 
 describe('Google read transport', () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+  it('uses the real gcloud launcher, including .cmd on Windows, without live credentials', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'google token space & fixture-'));
+    const script = join(directory, 'gcloud-fixture.cjs');
+    await writeFile(
+      script,
+      `#!/usr/bin/env node
+if (JSON.stringify(process.argv.slice(2)) !== JSON.stringify(['auth', 'application-default', 'print-access-token'])) process.exit(3);
+const mode = process.env.HEADSTART_GCLOUD_TEST_MODE;
+if (mode === 'fail') {
+  process.stderr.write('private-provider-credential');
+  process.exitCode = 1;
+} else if (mode === 'large') process.stdout.write('x'.repeat(65_000));
+else process.stdout.write('synthetic-subprocess-token\\n');
+`
+    );
+    if (process.platform === 'win32') {
+      await writeFile(
+        join(directory, 'gcloud.cmd'),
+        `@"${process.execPath}" "%~dp0gcloud-fixture.cjs" %*\r\n`
+      );
+    } else {
+      await symlink(script, join(directory, 'gcloud'));
+      await chmod(script, 0o755);
+    }
+    vi.stubEnv('PATH', `${directory}${delimiter}${process.env['PATH'] ?? ''}`);
+    expect(await new GcloudReadTokenProvider().getAccessToken()).toBe('synthetic-subprocess-token');
+    vi.stubEnv('HEADSTART_GCLOUD_TEST_MODE', 'fail');
+    await expect(new GcloudReadTokenProvider().getAccessToken()).rejects.toThrow(/Google ADC/);
+    await expect(new GcloudReadTokenProvider().getAccessToken()).rejects.not.toThrow(
+      /private-provider/
+    );
+    vi.stubEnv('HEADSTART_GCLOUD_TEST_MODE', 'large');
+    await expect(new GcloudReadTokenProvider().getAccessToken()).rejects.toThrow(/Google ADC/);
+    // Removing the fixture command from PATH covers missing-launcher failure on both platforms.
+    vi.stubEnv('PATH', await mkdtemp(join(tmpdir(), 'missing-google-launcher-')));
+    await expect(new GcloudReadTokenProvider().getAccessToken()).rejects.toThrow(
+      /verify gcloud installation and PATH/
+    );
+  });
   it('caches successful ADC resolution and sanitizes failures', async () => {
     const run = vi.fn(async () => ' synthetic-token ');
     const provider = new GcloudReadTokenProvider(run);

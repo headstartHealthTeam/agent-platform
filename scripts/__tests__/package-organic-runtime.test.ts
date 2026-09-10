@@ -1,11 +1,12 @@
-import { mkdtemp, mkdir, readFile, realpath, symlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, mkdir, readFile, realpath, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   packageOrganicRuntime,
+  runRuntimeCommand,
   runtimeFingerprint,
   verifyPortableRuntime,
   type RuntimeCommand,
@@ -45,6 +46,51 @@ async function setup(): Promise<{ root: string; target: string; command: Runtime
   return { root, target, command };
 }
 describe('standalone organic runtime packaging', () => {
+  afterEach(() => vi.unstubAllEnvs());
+  it('runs the concrete corepack shim with argument boundaries and private failure output', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'organic launcher space & fixture-'));
+    const script = join(directory, 'corepack-fixture.cjs');
+    await writeFile(
+      script,
+      `#!/usr/bin/env node
+if (process.argv[2] === 'fail') {
+  process.stdout.write('ERR_PNPM_FETCH_403 private-registry-credential');
+  process.stderr.write('ENOTFOUND private-provider-credential');
+  process.exitCode = 1;
+} else process.stdout.write(JSON.stringify(process.argv.slice(2)));
+`
+    );
+    if (process.platform === 'win32') {
+      await writeFile(
+        join(directory, 'corepack.cmd'),
+        `@"${process.execPath}" "%~dp0corepack-fixture.cjs" %*\r\n`
+      );
+    } else {
+      await symlink(script, join(directory, 'corepack'));
+      await chmod(script, 0o755);
+    }
+    vi.stubEnv('PATH', `${directory}${delimiter}${process.env['PATH'] ?? ''}`);
+    const args = [
+      'pnpm',
+      '--filter',
+      '@headstart-health/organic-performance-engine',
+      'deploy',
+      '--prod',
+      'C:\\path with spaces & (parentheses)\\target',
+      'literal %PATH% !value! ^ caret',
+      'quote" & echo not-a-command',
+    ];
+    expect(JSON.parse(await runRuntimeCommand('corepack', args, directory))).toEqual(args);
+    await expect(runRuntimeCommand('corepack', ['fail'], directory)).rejects.toThrow(
+      /stdout codes=ERR_PNPM_FETCH_403; stderr codes=ENOTFOUND/
+    );
+    await expect(runRuntimeCommand('corepack', ['fail'], directory)).rejects.not.toThrow(
+      /private-/
+    );
+    await expect(runRuntimeCommand('missing-organic-command', [], directory)).rejects.toThrow(
+      /launch codes=ENOENT/
+    );
+  });
   it('repairs only the known pnpm self-link and records honest portable provenance', async () => {
     const x = await setup();
     const receipt = await packageOrganicRuntime({

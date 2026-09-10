@@ -1,6 +1,6 @@
 {
   "schemaVersion": "organic-workbook-template/v1",
-  "version": "headstart-report/v1",
+  "version": "headstart-report/v1.1",
   "sourceId": "1RvFPXWHu2Fq-QR9Mf83pwuDzNW0-NJOvsrRAtQcVXXE",
   "cleanTemplateId": "123-v30Wp3HVwqPEo1Y9SVG4_gwLv8EsQGPzuiWFo3m4",
   "sheets": [
@@ -2735,11 +2735,6 @@
           "text": "Semrush rank"
         },
         {
-          "row": 12,
-          "column": 0,
-          "text": "Top Semrush estimated-traffic keywords - Current period"
-        },
-        {
           "row": 13,
           "column": 0,
           "text": "Keyword"
@@ -2795,6 +2790,14 @@
             "rows": 3,
             "columns": 5
           },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "market.keywordSnapshot",
+          "owner": "facts",
+          "range": { "row": 12, "column": 0, "rows": 1, "columns": 1 },
           "numericColumns": [],
           "percentColumns": [],
           "decimalColumns": []

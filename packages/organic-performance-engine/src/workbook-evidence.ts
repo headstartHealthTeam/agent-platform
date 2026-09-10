@@ -2,6 +2,7 @@ import { normalizeGa4Report } from '@headstart-health/google-analytics-data';
 import { z } from 'zod';
 
 import { canonicalJson, normalizeKeyword, normalizePath, sha256Json } from './analysis.js';
+import { compareCanonicalText } from './canonical-order.js';
 import {
   organicPerformanceBundleSchema,
   periodIdSchema,
@@ -205,7 +206,8 @@ export function publicPages(evidence: WorkbookEvidence, id: PeriodId): SearchRow
     });
   }
   return [...rows.values()].sort(
-    (a, b) => b.clicks - a.clicks || b.impressions - a.impressions || a.key.localeCompare(b.key)
+    (a, b) =>
+      b.clicks - a.clicks || b.impressions - a.impressions || compareCanonicalText(a.key, b.key)
   );
 }
 export function landingPages(evidence: WorkbookEvidence, id: PeriodId): LandingRow[] {
@@ -234,7 +236,9 @@ export function landingPages(evidence: WorkbookEvidence, id: PeriodId): LandingR
           : numeric(row, 'activeUsers'),
     });
   }
-  return [...rows.values()].sort((a, b) => b.sessions - a.sessions || a.path.localeCompare(b.path));
+  return [...rows.values()].sort(
+    (a, b) => b.sessions - a.sessions || compareCanonicalText(a.path, b.path)
+  );
 }
 export function evidenceReferences(
   evidence: WorkbookEvidence
@@ -314,7 +318,7 @@ function reconcileRows(
         row.values.map((value, index) => value + (previous?.at(index) ?? 0))
       );
     }
-    return canonicalJson([...grouped].sort(([a], [b]) => a.localeCompare(b)));
+    return canonicalJson([...grouped].sort(([a], [b]) => compareCanonicalText(a, b)));
   };
   if (aggregate(retained) !== aggregate(bundled))
     throw new Error(`Retained ${label} rows differ from analysis bundle`);

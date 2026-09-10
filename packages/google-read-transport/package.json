@@ -31,9 +31,11 @@
     "clean": "rimraf dist .turbo coverage"
   },
   "dependencies": {
+    "cross-spawn": "7.0.6",
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@types/cross-spawn": "6.0.6",
     "@types/node": "^22.20.1",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.9.1",

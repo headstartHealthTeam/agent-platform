@@ -37,6 +37,19 @@ export class GoogleAnalyticsRestProvider implements GoogleAnalyticsReadProvider 
   }
 }
 
+function rememberDistinctRows(page: Ga4ReportResponse, seen: Set<string>): void {
+  for (const row of page.rows) {
+    if (row.dimensionValues.length !== page.dimensionHeaders.length)
+      throw new GoogleAnalyticsDataError('GA4 dimension header and value counts do not match');
+    // The complete returned tuple includes GA4's automatic dateRange column for
+    // multi-period requests. Distinct periods must never be mistaken for duplicate groups.
+    const key = JSON.stringify(row.dimensionValues.map(({ value }) => value));
+    if (seen.has(key))
+      throw new GoogleAnalyticsDataError('GA4 pagination returned duplicate dimension keys');
+    seen.add(key);
+  }
+}
+
 export async function collectGa4Report(
   provider: GoogleAnalyticsReadProvider,
   input: z.input<typeof ga4ReportRequestSchema>,
@@ -47,6 +60,7 @@ export async function collectGa4Report(
   if (!Number.isSafeInteger(maxRows) || maxRows < 1)
     throw new GoogleAnalyticsDataError('maxRows must be a positive integer');
   const rows: Ga4ReportResponse['rows'] = [];
+  const seen = new Set<string>();
   let first: Ga4ReportResponse | undefined;
   while (rows.length < maxRows) {
     const page = ga4ReportResponseSchema.parse(
@@ -70,6 +84,7 @@ export async function collectGa4Report(
       JSON.stringify([first.dimensionHeaders, first.metricHeaders, first.rowCount, first.metadata])
     )
       throw new GoogleAnalyticsDataError('GA4 report changed during pagination');
+    rememberDistinctRows(page, seen);
     rows.push(...page.rows);
     if (rows.length + request.offset === page.rowCount) return { ...first, rows };
     if (page.rows.length === 0 || rows.length + request.offset > page.rowCount)

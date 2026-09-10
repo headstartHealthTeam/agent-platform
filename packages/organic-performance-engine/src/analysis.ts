@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 
+import { compareCanonicalText } from './canonical-order.js';
 import { buildHistoricalContext } from './historical-context.js';
 import { buildLifecycle } from './lifecycle.js';
 import {
@@ -14,6 +15,7 @@ import {
   type PeriodId,
   type RouteRule,
 } from './schemas.js';
+import { exactPublicHostFilter } from './source-scope.js';
 
 /* eslint-disable security/detect-object-injection -- Dynamic report dimensions are schema-validated, reserved prototype keys are rejected, and this module never executes their values. */
 
@@ -66,7 +68,7 @@ function canonicalize(value: unknown): JsonValue {
     return Object.fromEntries(
       Object.entries(value)
         .filter((entry) => entry[1] !== undefined)
-        .sort(([left], [right]) => left.localeCompare(right))
+        .sort(([left], [right]) => compareCanonicalText(left, right))
         .map(([key, item]) => [key, canonicalize(item)])
     );
   }
@@ -130,8 +132,16 @@ export function normalizePath(value: string, hostname?: string): string {
     }
     pathname = parsed.pathname;
   }
-  const decoded = decodeURIComponent(pathname || '/').replace(/\/{2,}/gu, '/');
-  return decoded === '/' ? decoded : decoded.replace(/\/+$/u, '');
+  let decoded = pathname || '/';
+  try {
+    decoded = decodeURIComponent(decoded);
+  } catch (error: unknown) {
+    // Source systems can retain literal percent signs or malformed UTF-8 escapes. Keep
+    // the complete raw path (and its metrics), rather than partially decoding or dropping it.
+    if (!(error instanceof URIError)) throw error;
+  }
+  const normalized = decoded.replace(/\/{2,}/gu, '/');
+  return normalized === '/' ? normalized : normalized.replace(/\/+$/u, '');
 }
 
 type ComparisonMode = 'absolute' | 'count' | 'rate';
@@ -186,7 +196,7 @@ function validateRegistry(registry: readonly RouteRule[], name: string): void {
 }
 
 function validateBundleScope(bundle: OrganicPerformanceBundle): void {
-  const expectedFilter = `^https://${bundle.config.publicHostname.replaceAll('.', '\\.')}/`;
+  const expectedFilter = exactPublicHostFilter(bundle.config.publicHostname).expression;
   const found = bundle.sources.gsc.metadata.filters.some(
     (filter) =>
       filter.dimension === 'page' &&
@@ -312,7 +322,7 @@ function sortNestedSegments(input: SegmentMetrics): SegmentMetrics {
     for (const segment of Object.keys(periodInput).sort()) {
       const metrics = periodInput[segment] ?? {};
       periodOutput[segment] = Object.fromEntries(
-        Object.entries(metrics).sort(([left], [right]) => left.localeCompare(right))
+        Object.entries(metrics).sort(([left], [right]) => compareCanonicalText(left, right))
       );
     }
     output[period] = periodOutput;
@@ -399,7 +409,7 @@ function bestSemrushRankings(bundle: OrganicPerformanceBundle): {
   }
   return {
     rankings: Object.fromEntries(
-      [...best.entries()].sort(([left], [right]) => left.localeCompare(right))
+      [...best.entries()].sort(([left], [right]) => compareCanonicalText(left, right))
     ),
     excluded,
   };
@@ -425,7 +435,7 @@ function gscQueryMap(bundle: OrganicPerformanceBundle): QueryMetricsByPeriod {
   for (const period of Object.keys(totals).sort()) {
     const keywordRows = totals[period] ?? {};
     output[period] = Object.fromEntries(
-      Object.entries(keywordRows).sort(([left], [right]) => left.localeCompare(right))
+      Object.entries(keywordRows).sort(([left], [right]) => compareCanonicalText(left, right))
     );
   }
   return output;
@@ -550,7 +560,7 @@ function contentPillars(
   let confirmedVolume = 0;
   let confirmedTop10Volume = 0;
   for (const [pillar, summary] of [...pillars.entries()].sort(([left], [right]) =>
-    left.localeCompare(right)
+    compareCanonicalText(left, right)
   )) {
     output[pillar] = pillarOutput(
       summary,
@@ -692,7 +702,7 @@ function canonicalOutcomes(bundle: OrganicPerformanceBundle): Readonly<Record<st
     outcomes[row.audience] = measuredOutcome(row, value, bundle.report.periods);
   }
   return Object.fromEntries(
-    Object.entries(outcomes).sort(([left], [right]) => left.localeCompare(right))
+    Object.entries(outcomes).sort(([left], [right]) => compareCanonicalText(left, right))
   );
 }
 

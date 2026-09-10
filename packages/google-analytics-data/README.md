@@ -6,7 +6,11 @@ the same interface; engines consume normalized rows and exact-property preflight
 
 `GoogleAnalyticsRestProvider` supplies the concrete Analytics Admin property-read and Data API
 report binding. `collectGa4Report` paginates to the provider's `rowCount`, rejects changed headers or
-metadata, and enforces a row ceiling. Its default `require-unflagged` quality policy rejects
+metadata, rejects repeated full dimension keys within or across pages, and enforces a row ceiling.
+Duplicate checks include the returned `dateRange` dimension, so a group in different reporting
+periods remains distinct. Repeated rows fail collection rather than being silently deduplicated;
+row-count equality alone cannot prove that every group was retrieved. Its default
+`require-unflagged` quality policy rejects
 sampling, threshold flags, or other-row data loss. A caller may explicitly select
 `allow-with-caveats`; metadata and `ga4QualityFlags` remain available for the consuming report's
 quality disclosure. Neither mode permits pagination gaps or scales partial responses into totals.

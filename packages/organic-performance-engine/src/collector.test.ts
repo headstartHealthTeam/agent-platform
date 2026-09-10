@@ -209,6 +209,49 @@ async function setup(): Promise<{
   return { plan, providers, saved, sink, bundle };
 }
 describe('complete organic collector', () => {
+  it('uses one exact hyphenated-host filter through collection and analysis', async () => {
+    const x = await setup();
+    const hostname = 'head-start.health';
+    x.plan.config.publicHostname = hostname;
+    x.plan.gsc.siteUrl = `sc-domain:${hostname}`;
+    required(x.plan.semrush).domain = hostname;
+    for (const row of x.bundle.sources.gsc.pageRows) {
+      row.url = row.url.replace('headstart.health', hostname);
+    }
+    for (const row of required(x.bundle.sources.semrush).rankings) {
+      row.url = row.url.replace('headstart.health', hostname);
+    }
+    const result = await collectOrganicEvidence(
+      x.plan,
+      x.providers,
+      x.sink,
+      '2026-09-10T12:00:00Z'
+    );
+    const expression = '^https://head-start\\.health/';
+    expect(result.bundle.sources.gsc.metadata.filters).toContainEqual({
+      dimension: 'page',
+      operator: 'includingRegex',
+      expression,
+    });
+    expect(x.saved.get('gsc-current-pages')).toHaveProperty(
+      'request.dimensionFilterGroups.0.filters.0.expression',
+      expression
+    );
+    expect(result.analysis).toHaveProperty('segments.gscReconciliation.current', {
+      sourceTotal: 497,
+      classifiedTotal: 497,
+      delta: 0,
+    });
+    const exact = new RegExp(expression, 'u');
+    expect(exact.exec(`https://${hostname}/resources`)).not.toBeNull();
+    for (const url of [
+      'https://head-startXhealth/resources',
+      'https://head-start.health.evil.test/resources',
+      'https://app.head-start.health/resources',
+    ])
+      expect(exact.exec(url)).toBeNull();
+  });
+
   it('runs a declared first-party-only plan without requiring or reading optional providers', async () => {
     const x = await setup();
     delete x.plan.semrush;

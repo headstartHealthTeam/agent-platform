@@ -29,7 +29,13 @@ export class SemrushProviderError extends Error {
   }
 }
 
-export function parseSemrushCsv(input: unknown): readonly Readonly<Record<string, string>>[] {
+export interface SemrushCsvTable {
+  readonly headers: readonly string[];
+  readonly rows: readonly Readonly<Record<string, string>>[];
+}
+
+/** Preserve validated headers even when a successful extract contains no records. */
+export function parseSemrushTable(input: unknown): SemrushCsvTable {
   const result = z
     .object({
       isError: z.boolean().optional(),
@@ -50,15 +56,24 @@ export function parseSemrushCsv(input: unknown): readonly Readonly<Record<string
     throw new SemrushProviderError('Semrush API rejected the read');
   const records = csvRows(csv);
   const headers = records.shift();
-  if (headers?.length !== new Set(headers).size)
+  if (
+    !headers?.length ||
+    headers.some((header) => !header.trim()) ||
+    headers.length !== new Set(headers).size
+  )
     throw new SemrushProviderError('Invalid Semrush headers');
-  return records
+  const rows = records
     .filter((x) => x.some(Boolean))
     .map((values) => {
       if (values.length !== headers.length)
         throw new SemrushProviderError('Semrush CSV column count mismatch');
       return Object.fromEntries(headers.map((key, index) => [key, values.at(index) ?? '']));
     });
+  return { headers, rows };
+}
+
+export function parseSemrushCsv(input: unknown): readonly Readonly<Record<string, string>>[] {
+  return parseSemrushTable(input).rows;
 }
 function csvRows(csv: string): string[][] {
   const records: string[][] = [];
@@ -147,13 +162,20 @@ export class SemrushMcpProvider implements SemrushReadProvider {
       throw new SemrushProviderError(
         'This MCP binding supports current keyword rankings only; historical domain totals are separate'
       );
-    const rows = parseSemrushCsv(
+    const table = parseSemrushTable(
       await this.#tools.callTool('semrush_domain_organic_keywords', {
         domain: request.domain,
         database: request.database,
         limit: request.limit,
       })
     );
+    if (
+      ['Keyword', 'Position', 'Search Volume', 'Url'].some(
+        (header) => !table.headers.includes(header)
+      )
+    )
+      throw new SemrushProviderError('Semrush keyword extract is missing required headers');
+    const rows = table.rows;
     if (rows.length >= request.limit)
       throw new SemrushProviderError('Semrush rankings reached the configured row limit');
     return rows.map((row) =>

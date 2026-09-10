@@ -1,9 +1,40 @@
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
-
+import spawn from 'cross-spawn';
 import { z } from 'zod';
 
-const execute = promisify(execFile);
+class GoogleCommandUnavailableError extends Error {}
+
+function readGcloudToken(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // cross-spawn supports the normal Windows gcloud.cmd entrypoint while retaining an argv
+    // boundary. Never enable shell:true or interpolate credential commands into a shell string.
+    const child = spawn('gcloud', ['auth', 'application-default', 'print-access-token'], {
+      timeout: 60_000,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let output = '';
+    let bytes = 0;
+    const accept = (chunk: Buffer): boolean => {
+      bytes += chunk.byteLength;
+      if (bytes <= 64_000) return true;
+      child.kill();
+      reject(new Error('ADC command output exceeded its limit'));
+      return false;
+    };
+    child.stdout?.on('data', (chunk: Buffer) => {
+      if (accept(chunk)) output += chunk.toString('utf8');
+    });
+    child.stderr?.on('data', (chunk: Buffer) => {
+      accept(chunk);
+    });
+    child.on('error', () => {
+      reject(new GoogleCommandUnavailableError());
+    });
+    child.on('close', (code) => {
+      if (code === 0) resolve(output);
+      else reject(new Error('ADC command failed'));
+    });
+  });
+}
 
 export interface GoogleTokenProvider {
   getAccessToken(): Promise<string>;
@@ -20,16 +51,7 @@ export class GoogleReadError extends Error {
 export class GcloudReadTokenProvider implements GoogleTokenProvider {
   readonly #run: () => Promise<string>;
   #cached: { token: string; obtainedAt: number } | undefined;
-  public constructor(
-    run: () => Promise<string> = async () => {
-      const result = await execute(
-        'gcloud',
-        ['auth', 'application-default', 'print-access-token'],
-        { timeout: 60_000, maxBuffer: 64_000 }
-      );
-      return result.stdout;
-    }
-  ) {
+  public constructor(run: () => Promise<string> = readGcloudToken) {
     this.#run = run;
   }
   public async getAccessToken(): Promise<string> {
@@ -40,7 +62,12 @@ export class GcloudReadTokenProvider implements GoogleTokenProvider {
       if (token.length === 0) throw new Error('empty token');
       this.#cached = { token, obtainedAt: Date.now() };
       return token;
-    } catch {
+    } catch (error: unknown) {
+      if (error instanceof GoogleCommandUnavailableError) {
+        throw new GoogleReadError(
+          'Google ADC command could not start; verify gcloud installation and PATH before retrying'
+        );
+      }
       throw new GoogleReadError(
         'Google ADC is unavailable; follow the configured organization OAuth recovery procedure'
       );

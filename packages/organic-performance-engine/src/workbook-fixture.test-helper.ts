@@ -1,6 +1,8 @@
 import { readFile } from 'node:fs/promises';
 
+import { sha256Json } from './analysis.js';
 import { organicPerformanceBundleSchema } from './schemas.js';
+import { reportingSourcesSchema } from './source-config.js';
 import { workbookEvidenceSchema, type WorkbookEvidence } from './workbook-evidence.js';
 
 /** Sanitized aggregate regression fixture, with generated provider-shaped views. No network reads. */
@@ -10,6 +12,26 @@ export async function workbookFixture(): Promise<WorkbookEvidence> {
       await readFile(new URL('../fixtures/august-2026-regression.json', import.meta.url), 'utf8')
     )
   );
+  const sources = reportingSourcesSchema.parse(
+    JSON.parse(
+      await readFile(
+        new URL(
+          '../../../skills/organic-performance-reporting/references/headstart-sources.json',
+          import.meta.url
+        ),
+        'utf8'
+      )
+    )
+  );
+  bundle.report.sourceConfiguration = { version: sources.version, sha256: sha256Json(sources) };
+  if (bundle.sources.tam)
+    Object.assign(bundle.sources.tam.metadata, {
+      sourceId: sources.tam.id,
+      range: sources.tam.range,
+      approvedAt: sources.tam.approvedAt,
+      approvalScope: sources.tam.approvalScope,
+    });
+  if (bundle.sources.semrush) bundle.sources.semrush.metadata['keywordSnapshotDate'] = '2026-09-09';
   bundle.sources.gsc.metadata['brandRegex'] = 'head[ -]*start';
   for (const row of bundle.sources.ga4.periodTotals) {
     row['activeUsers'] = 100;
@@ -145,20 +167,23 @@ export async function workbookFixture(): Promise<WorkbookEvidence> {
   const csv =
     'Date;Organic Traffic;Organic Cost;Rank\n20260815;379;2139;2006889\n20260715;355;1871;2026637\n20250815;201;719;2688928';
   add('semrush-mcp-read-1', {
+    tool: 'semrush_domain_rank_history',
     arguments: args,
     response: { content: [{ type: 'text', text: csv }] },
   });
   add('semrush-mcp-read-2', {
+    tool: 'semrush_domain_rank_history',
     arguments: args,
     response: { content: [{ type: 'text', text: csv }] },
   });
   add('semrush-mcp-read-3', {
+    tool: 'semrush_domain_organic_keywords',
     arguments: args,
     response: {
       content: [
         {
           type: 'text',
-          text: 'Keyword;Traffic (%);Url\nheadstart;40;https://headstart.health/\nsynthetic service;20;https://headstart.health/families\nportal;30;https://app.headstart.health/',
+          text: 'Keyword;Position;Search Volume;Traffic (%);Url\nheadstart;1;100;40;https://headstart.health/\nsynthetic service;2;100;20;https://headstart.health/families\nportal;3;100;30;https://app.headstart.health/',
         },
       ],
     },

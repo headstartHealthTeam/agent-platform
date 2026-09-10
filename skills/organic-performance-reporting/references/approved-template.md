@@ -6,7 +6,7 @@ The clean template remains a derivative of the approved July workbook, not a new
 It is currently private to its creating owner; another operator must have authorized access.
 Never silently switch templates or broaden sharing to bypass that boundary.
 
-The engine ships `templates/headstart-report.v1.json`. Its semantic bindings distinguish calculated
+The engine ships `templates/headstart-report.v1.json` (contract revision `headstart-report/v1.1`). Its semantic bindings distinguish calculated
 facts from agent-authored narrative. The manifest fixes sheet names/order, labels, native style
 fingerprints, bounded regions, and ownership. Monthly conclusions are not template constants.
 
@@ -63,6 +63,13 @@ and `narrativeBindings`.
 use the identical selection in projection and population. Selection changes visibility, never source
 arithmetic or the complete raw evidence.
 
+Workbook composition also verifies the collected source-configuration version and canonical hash,
+the template identity/version, and the selected TAM file, bounded range and approval scope. Use the
+exact source contract recorded during collection. An older unstamped bundle remains valid for
+analysis, but workbook composition requires a fresh collection with `--sources`; do not add a stamp
+after the fact. A changed source registry similarly requires its original matching contract or fresh
+collection. There is no silent migration or reclassification switch.
+
 The generated `facts` packet has schema `organic-workbook-facts/v1`, the canonical SHA-256 of the exact
 analysis, a `blocks` object keyed by fact binding ID, and `evidence` entries containing `binding`,
 `source`, and `sourceSha256`. Values are typed two-dimensional rows of strings, finite numbers,
@@ -89,6 +96,10 @@ the full cohort inventory, consistent body formatting, and complete 14-column ra
 tabs use readable source-specific widths and merged title/scope rows. Pillar impression changes are
 signed absolute counts, not relative percentages. When Semrush is omitted, the report does not
 label TAM keywords as unranked: missing ranking evidence is not evidence of no ranking.
+Conversely, a successful header-only keyword extract is measured zero coverage, not missing data.
+The Market & Keywords heading binds the actual latest keyword snapshot date and explicitly separates
+it from reporting-period data; historical domain metrics keep their own period labels. Revision v1.1
+changes only this heading's ownership from static text to a deterministic fact, not the 14-tab layout.
 
 The population planner is not an independent fact checker: a provenance hash does not prove that
 a projection selected the right source field or that a narrative claim is true. Verify those

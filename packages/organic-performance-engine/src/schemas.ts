@@ -234,6 +234,13 @@ export const organicPerformanceBundleSchema = z
           .partialRecord(z.enum(['semrush', 'tam']), z.string().trim().min(1))
           .optional(),
         qualityPolicy: qualityPolicySchema.optional(),
+        sourceConfiguration: z
+          .object({
+            version: z.string().min(1),
+            sha256: z.string().regex(/^[a-f0-9]{64}$/),
+          })
+          .strict()
+          .optional(),
       })
       .catchall(z.unknown()),
     config: z

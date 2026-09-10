@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { sha256Json } from './analysis.js';
 import { collectionPlanSchema, type CollectionPlan } from './collector.js';
+import type { OrganicPerformanceBundle } from './schemas.js';
 
 const fileReference = z
   .object({
@@ -59,6 +60,31 @@ export const reportingSourcesSchema = z
       context.addIssue({ code: 'custom', message: 'TAM column mappings must be distinct' });
   });
 export type ReportingSources = z.infer<typeof reportingSourcesSchema>;
+
+/** Replays must use the source contract actually selected before collection. */
+export function validateCollectedSources(
+  bundle: OrganicPerformanceBundle,
+  sources: ReportingSources
+): void {
+  const stamp = bundle.report.sourceConfiguration;
+  if (!stamp)
+    throw new Error(
+      'Workbook evidence has no collected source configuration; recollect with --sources. Legacy bundles remain analysis-only.'
+    );
+  if (stamp.version !== sources.version || stamp.sha256 !== sha256Json(sources))
+    throw new Error(
+      'Collected source configuration differs from workbook sources; use the original contract or recollect. Silent migration is not supported.'
+    );
+  const tam = bundle.sources.tam?.metadata;
+  if (
+    tam &&
+    (tam.sourceId !== sources.tam.id ||
+      tam['range'] !== sources.tam.range ||
+      tam.approvedAt !== sources.tam.approvedAt ||
+      tam['approvalScope'] !== sources.tam.approvalScope)
+  )
+    throw new Error('Collected TAM identity, range or approval differs from source configuration');
+}
 
 /** Explicit opt-in resolution; a supplied plan scope is never silently replaced. */
 export function resolveReportingSources(input: unknown, sourcesInput: unknown): CollectionPlan {

@@ -42,6 +42,7 @@ import {
   type OrganicPerformanceBundle,
   type PeriodId,
 } from './schemas.js';
+import { exactPublicHostFilter } from './source-scope.js';
 
 export const collectionPlanSchema = z
   .object({
@@ -151,17 +152,6 @@ export function mapTamRows(
         .parse(member(row, plan.columns.serviceability).toLowerCase()),
     }));
 }
-function publicFilter(host: string): {
-  dimension: 'page';
-  operator: 'includingRegex';
-  expression: string;
-} {
-  return {
-    dimension: 'page',
-    operator: 'includingRegex',
-    expression: `^https://${host.replaceAll('.', '\\.').replaceAll('-', '\\-')}/`,
-  };
-}
 async function collectGsc(
   plan: CollectionPlan,
   provider: SearchConsoleClient,
@@ -172,7 +162,7 @@ async function collectGsc(
   nonBranded = false
 ): Promise<GscRows> {
   const filters: SearchAnalyticsRequest['dimensionFilterGroups'][number]['filters'] = [
-    publicFilter(plan.config.publicHostname),
+    exactPublicHostFilter(plan.config.publicHostname),
   ];
   if (nonBranded)
     filters.push({
@@ -353,7 +343,7 @@ export async function collectOrganicEvidence(
       extractedAt,
       complete: true,
       dataState: 'final',
-      filters: [publicFilter(plan.config.publicHostname)],
+      filters: [exactPublicHostFilter(plan.config.publicHostname)],
       brandRegex: plan.gsc.brandRegex,
     },
     periodTotals: [],

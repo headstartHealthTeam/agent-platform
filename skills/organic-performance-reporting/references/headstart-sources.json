@@ -1,6 +1,6 @@
 {
   "schemaVersion": "organic-reporting-sources/v1",
-  "version": "headstart-organic-sources/v1",
+  "version": "headstart-organic-sources/v1.1",
   "owner": "Headstart Growth / Mark Krasner",
   "verifiedAt": "2026-09-10",
   "approvedReport": {
@@ -12,7 +12,7 @@
     "id": "123-v30Wp3HVwqPEo1Y9SVG4_gwLv8EsQGPzuiWFo3m4",
     "title": "Headstart Organic Performance — Clean Template v1 (validation)",
     "url": "https://docs.google.com/spreadsheets/d/123-v30Wp3HVwqPEo1Y9SVG4_gwLv8EsQGPzuiWFo3m4/edit",
-    "version": "headstart-report/v1"
+    "version": "headstart-report/v1.1"
   },
   "strategy": {
     "id": "15tz0HOSXzOLAY91jOCHoM03tFXMVOoHS8aMMKVy-drs",

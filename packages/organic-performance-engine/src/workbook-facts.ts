@@ -1,8 +1,9 @@
 import { z } from 'zod';
 
 import { analyzeBundle, classifyPath, normalizeKeyword, sha256Json } from './analysis.js';
+import { compareCanonicalText } from './canonical-order.js';
 import { buildLifecycle } from './lifecycle.js';
-import { reportingSourcesSchema } from './source-config.js';
+import { reportingSourcesSchema, validateCollectedSources } from './source-config.js';
 import { workbookTemplateSchema, type ReportRows, type ReportValue } from './workbook-contract.js';
 import {
   evidenceReferences,
@@ -335,7 +336,7 @@ function search(blocks: Blocks, evidence: WorkbookEvidence, selection: Selection
   blocks.set(
     'search.daily',
     gscView(evidence, 'current', 'daily')
-      .sort((a, b) => a.key.localeCompare(b.key))
+      .sort((a, b) => compareCanonicalText(a.key, b.key))
       .map((row) => [
         (Date.parse(row.key + 'T00:00:00Z') - Date.UTC(1899, 11, 30)) / 86_400_000,
         row.clicks,
@@ -374,7 +375,8 @@ function search(blocks: Blocks, evidence: WorkbookEvidence, selection: Selection
     SEARCH_QUERIES,
     select(
       gscView(evidence, 'current', 'queries').sort(
-        (a, b) => b.clicks - a.clicks || b.impressions - a.impressions || a.key.localeCompare(b.key)
+        (a, b) =>
+          b.clicks - a.clicks || b.impressions - a.impressions || compareCanonicalText(a.key, b.key)
       ),
       (r) => r.key,
       20,
@@ -410,7 +412,7 @@ function acquisition(blocks: Blocks, evidence: WorkbookEvidence, selection: Sele
       evidence.bundle.sources.ga4.eventRows.find(
         (row) => row.period === 'current' && row.eventName === event
       )?.keyEvents ?? 0;
-    return count(b) - count(a) || a.localeCompare(b);
+    return count(b) - count(a) || compareCanonicalText(a, b);
   });
   const eventCount = (event: string, id: (typeof orderedPeriods)[number]): number | null =>
     period(evidence, id)
@@ -558,7 +560,7 @@ function pillars(blocks: Blocks, evidence: WorkbookEvidence, analysis: WorkbookA
     return positions?.length ? Math.min(...positions) : null;
   };
   const rows = Object.entries(analysis.contentPillars?.pillars ?? {}).sort(([a], [b]) =>
-    a.localeCompare(b)
+    compareCanonicalText(a, b)
   );
   blocks.set(
     'pillars.metrics',
@@ -599,7 +601,10 @@ function pillars(blocks: Blocks, evidence: WorkbookEvidence, analysis: WorkbookA
                 (r) =>
                   r.pillar === name && r.serviceability === 'confirmed' && best(r.keyword) === null
               )
-              .sort((a, b) => b.searchVolume - a.searchVolume || a.keyword.localeCompare(b.keyword))
+              .sort(
+                (a, b) =>
+                  b.searchVolume - a.searchVolume || compareCanonicalText(a.keyword, b.keyword)
+              )
               .slice(0, 3) ?? [];
           return [
             name,
@@ -642,6 +647,12 @@ export function buildWorkbookFacts(input: {
   validateWorkbookEvidence(evidence);
   const sources = reportingSourcesSchema.parse(input.sources);
   const template = workbookTemplateSchema.parse(input.template);
+  validateCollectedSources(evidence.bundle, sources);
+  if (
+    sources.template.id !== template.cleanTemplateId ||
+    sources.template.version !== template.version
+  )
+    throw new Error('Workbook template differs from collected source configuration');
   const selection = workbookSelectionSchema.parse(input.selection);
   const analysis = analyzeBundle(evidence.bundle);
   const typed = workbookAnalysisSchema.parse(analysis);

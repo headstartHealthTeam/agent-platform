@@ -1,8 +1,9 @@
 import { normalizeGa4Report } from '@headstart-health/google-analytics-data';
-import { parseSemrushCsv } from '@headstart-health/semrush-data';
+import { parseSemrushTable, type SemrushCsvTable } from '@headstart-health/semrush-data';
 import { z } from 'zod';
 
 import { canonicalJson } from './analysis.js';
+import { compareCanonicalText } from './canonical-order.js';
 import type { ReportingSources } from './source-config.js';
 import type { ReportRows } from './workbook-contract.js';
 import { numeric, orderedPeriods, period, type WorkbookEvidence } from './workbook-evidence.js';
@@ -13,12 +14,13 @@ const historicalContext = 'Historical domain context';
 const trafficShare = 'Traffic (%)';
 const extractedAtLabel = 'Extracted at';
 
-function semrushTables(evidence: WorkbookEvidence): Readonly<Record<string, string>>[][] {
+function semrushTables(evidence: WorkbookEvidence): (SemrushCsvTable & { tool: string })[] {
   return evidence.views
     .filter((v) => v.name.startsWith('semrush-mcp-read-'))
     .map((v) => {
       const value = z
         .object({
+          tool: z.string(),
           arguments: z.object({ domain: z.string().optional(), database: z.string().optional() }),
           response: z.unknown(),
         })
@@ -28,19 +30,25 @@ function semrushTables(evidence: WorkbookEvidence): Readonly<Record<string, stri
         value.arguments.database !== evidence.bundle.sources.semrush?.metadata.database
       )
         throw new Error('Semrush supplemental target differs from bundle');
-      return [...parseSemrushCsv(value.response)];
+      return { ...parseSemrushTable(value.response), tool: value.tool };
     });
 }
 function market(blocks: Map<string, ReportRows>, evidence: WorkbookEvidence): void {
-  if (!evidence.bundle.sources.semrush) {
+  const semrush = evidence.bundle.sources.semrush;
+  blocks.set('market.keywordSnapshot', [
+    [
+      semrush
+        ? `Latest keyword snapshot: ${z.iso.date().parse(semrush.metadata['keywordSnapshotDate'])} (not report-period data)`
+        : 'Latest keyword snapshot: unavailable (Semrush not selected)',
+    ],
+  ]);
+  if (!semrush) {
     blocks.set('market.overview', []);
     blocks.set('market.topKeywords', []);
     return;
   }
   const tables = semrushTables(evidence);
-  const history = tables.find(
-    (rows) => rows[0]?.['Date'] !== undefined && rows[0]['Organic Traffic'] !== undefined
-  );
+  const history = tables.find((table) => table.tool === 'semrush_domain_rank_history')?.rows;
   blocks.set(
     'market.overview',
     orderedPeriods.map((id) => {
@@ -57,10 +65,17 @@ function market(blocks: Map<string, ReportRows>, evidence: WorkbookEvidence): vo
       ];
     })
   );
-  const keywords = required(
-    tables.find((rows) => rows[0]?.['Traffic (%)'] !== undefined),
-    'Semrush keyword traffic-share extract'
-  );
+  const extracts = tables.filter((table) => table.tool === 'semrush_domain_organic_keywords');
+  if (extracts.length !== 1)
+    throw new Error('Exactly one retained Semrush keyword traffic-share extract is required');
+  const extract = required(extracts[0], 'Semrush keyword traffic-share extract');
+  if (
+    ['Keyword', 'Position', 'Search Volume', trafficShare, 'Url'].some(
+      (header) => !extract.headers.includes(header)
+    )
+  )
+    throw new Error('Semrush keyword traffic-share extract is missing required headers');
+  const keywords = extract.rows;
   // Approved source configuration, never a regex supplied by a ranking query.
   // eslint-disable-next-line security/detect-non-literal-regexp -- Pattern comes from the approved source contract, not a ranking query.
   const brand = new RegExp(
@@ -75,7 +90,12 @@ function market(blocks: Map<string, ReportRows>, evidence: WorkbookEvidence): vo
           new URL(required(row['Url'], 'ranking URL')).hostname ===
           evidence.bundle.config.publicHostname
       )
-      .sort((a, b) => numeric(b, trafficShare) - numeric(a, trafficShare))
+      .sort(
+        (a, b) =>
+          numeric(b, trafficShare) - numeric(a, trafficShare) ||
+          compareCanonicalText(a['Keyword'] ?? '', b['Keyword'] ?? '') ||
+          compareCanonicalText(a['Url'] ?? '', b['Url'] ?? '')
+      )
       .slice(0, 5)
       .map((row) => [
         z.string().parse(row['Keyword']),
@@ -211,8 +231,8 @@ function historicalRows(evidence: WorkbookEvidence): ReportRows {
   if (!semrush) return [];
   const unique = new Map(
     semrushTables(evidence)
-      .filter((table) => table[0]?.['Date'] !== undefined)
-      .flatMap((table) => table.map((row) => [canonicalJson(row), row] as const))
+      .filter((table) => table.tool === 'semrush_domain_rank_history')
+      .flatMap((table) => table.rows.map((row) => [canonicalJson(row), row] as const))
   );
   return [...unique.values()].map((row) => [
     historicalContext,

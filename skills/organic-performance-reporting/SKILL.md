@@ -4,7 +4,7 @@ description: Build decision-ready SEO and organic acquisition reports using Goog
 compatibility: Requires Node.js 22+, the headstart-organic-analyze TypeScript CLI, and authenticated read-only Search Console and GA4 capabilities; the full headstart-organic-collect profile also requires Google Cloud ADC, Google Sheets, and a separately provisioned Semrush provider.
 metadata:
   author: headstart-health
-  version: '0.7.0'
+  version: '0.7.1'
   deterministic_engine: '@headstart-health/organic-performance-engine@0.1.0'
 ---
 
@@ -207,8 +207,9 @@ planning dimension inside the same monthly report:
    range, and source content fingerprint, and materialize only the fields needed for reporting into an
    immutable period snapshot: market scope, primary pillar, keyword, search volume, and
    serviceability. Spreadsheet `VLOOKUP` formulas are presentation aids, not the join contract.
-2. Persist the complete read-only Semrush domain-keyword result for the reporting period. Record
-   database, device, extraction date, domain, and source method.
+2. Persist the complete read-only Semrush domain-keyword extract. Record database, device,
+   actual snapshot date, domain, and source method; latest rankings must not be labeled as historical
+   reporting-period evidence.
 3. Normalize keywords deterministically with Unicode NFKC normalization, lowercasing, trimming,
    and whitespace collapse. Join every approved Core TAM row to the best observed position for the
    exact normalized keyword on the configured public hostname. Fail when a normalized keyword has

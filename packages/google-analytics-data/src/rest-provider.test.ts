@@ -42,11 +42,59 @@ describe('GA4 REST and pagination', () => {
     await expect(client.getProperty('properties/../bad')).rejects.toThrow();
   });
   it('collects every page and retains source metadata', async () => {
-    const result = await collectGa4Report(provider([page, page]), request, 3);
+    const next = { ...row, dimensionValues: [{ value: '/next' }] };
+    const result = await collectGa4Report(provider([page, { ...page, rows: [next] }]), request, 3);
     expect(result.rows).toHaveLength(2);
     expect(result.metadata).toEqual(page.metadata);
     const empty = await collectGa4Report(provider([{ ...page, rows: [], rowCount: 0 }]), request);
     expect(empty.rows).toEqual([]);
+  });
+  it('rejects repeated keys across pages even when row counts and metrics appear valid', async () => {
+    const changedMetric = { ...row, metricValues: [{ value: '99' }] };
+    await expect(
+      collectGa4Report(provider([page, { ...page, rows: [changedMetric] }]), request)
+    ).rejects.toThrow(/duplicate dimension keys/);
+    await expect(
+      collectGa4Report(provider([{ ...page, rows: [row, row] }]), { ...request, limit: 2 })
+    ).rejects.toThrow(/duplicate dimension keys/);
+  });
+  it('compares the complete dimension tuple without delimiter collisions', async () => {
+    const headers = [{ name: 'firstUserSource' }, { name: 'firstUserMedium' }];
+    const rows = [
+      { ...row, dimensionValues: [{ value: 'a|b' }, { value: 'c' }] },
+      { ...row, dimensionValues: [{ value: 'a' }, { value: 'b|c' }] },
+    ];
+    const result = await collectGa4Report(
+      provider(rows.map((item) => ({ ...page, dimensionHeaders: headers, rows: [item] }))),
+      { ...request, dimensions: headers }
+    );
+    expect(result.rows).toEqual(rows);
+  });
+  it('preserves the same dimension group in distinct date ranges', async () => {
+    const headers = [...page.dimensionHeaders, { name: 'dateRange' }];
+    const rows = ['date_range_0', 'date_range_1'].map((value) => ({
+      ...row,
+      dimensionValues: [...row.dimensionValues, { value }],
+    }));
+    const result = await collectGa4Report(
+      provider(rows.map((item) => ({ ...page, dimensionHeaders: headers, rows: [item] }))),
+      {
+        ...request,
+        dateRanges: [...request.dateRanges, { startDate: '2026-07-01', endDate: '2026-07-31' }],
+      }
+    );
+    expect(result.rows).toEqual(rows);
+  });
+  it('retains a no-dimension total and rejects malformed dimension widths', async () => {
+    const total = { ...row, dimensionValues: [] };
+    const result = await collectGa4Report(
+      provider([{ ...page, rows: [total], dimensionHeaders: [], rowCount: 1 }]),
+      { ...request, dimensions: [] }
+    );
+    expect(result.rows).toEqual([total]);
+    await expect(
+      collectGa4Report(provider([{ ...page, rows: [total], rowCount: 1 }]), request)
+    ).rejects.toThrow(/header and value counts/);
   });
   it('fails on pagination gaps, changed source shape, and limits', async () => {
     await expect(collectGa4Report(provider([]), request, 0)).rejects.toThrow(/positive/);

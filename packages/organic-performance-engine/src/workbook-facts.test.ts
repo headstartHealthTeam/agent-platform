@@ -2,6 +2,9 @@ import { readFile } from 'node:fs/promises';
 
 import { describe, expect, it } from 'vitest';
 
+import { sha256Json } from './analysis.js';
+import { reportingSourcesSchema } from './source-config.js';
+import { workbookTemplateSchema } from './workbook-contract.js';
 import {
   numeric,
   ratio,
@@ -33,6 +36,108 @@ async function setup(): Promise<Parameters<typeof buildWorkbookFacts>[0]> {
   return { template, sources, evidence };
 }
 describe('deterministic full-workbook projection', () => {
+  it('requires the collected source identity and rejects silent source/template/TAM drift', async () => {
+    const input = await setup();
+    const evidence = await workbookFixture();
+    const sources = reportingSourcesSchema.parse(input.sources);
+    expect(() => buildWorkbookFacts({ ...input, evidence })).not.toThrow();
+    const template = workbookTemplateSchema.parse(input.template);
+    expect(() =>
+      buildWorkbookFacts({
+        ...input,
+        evidence,
+        template: { ...template, version: 'unapproved/v99' },
+      })
+    ).toThrow('Workbook template differs');
+    delete evidence.bundle.report.sourceConfiguration;
+    expect(() => buildWorkbookFacts({ ...input, evidence })).toThrow(
+      'Legacy bundles remain analysis-only'
+    );
+    evidence.bundle.report.sourceConfiguration = {
+      version: sources.version,
+      sha256: sha256Json(sources),
+    };
+    expect(() =>
+      buildWorkbookFacts({ ...input, evidence, sources: { ...sources, version: 'changed/v99' } })
+    ).toThrow('differs');
+    evidence.bundle.report.sourceConfiguration.sha256 = 'a'.repeat(64);
+    expect(() => buildWorkbookFacts({ ...input, evidence })).toThrow('differs');
+    evidence.bundle.report.sourceConfiguration.sha256 = sha256Json(sources);
+    expect(() =>
+      buildWorkbookFacts({
+        ...input,
+        evidence,
+        sources: { ...sources, tam: { ...sources.tam, range: "'Other TAM'!A1:T200" } },
+      })
+    ).toThrow('differs');
+    expect(() =>
+      buildWorkbookFacts({
+        ...input,
+        evidence,
+        sources: {
+          ...sources,
+          strategy: { ...sources.strategy, title: 'Changed role provenance' },
+        },
+      })
+    ).toThrow('differs');
+    const tam = required(evidence.bundle.sources.tam, 'TAM');
+    tam.metadata.sourceId = 'different-source';
+    expect(() => buildWorkbookFacts({ ...input, evidence })).toThrow('TAM identity');
+    tam.metadata.sourceId = sources.tam.id;
+    tam.metadata['range'] = "'Other TAM'!A1:T200";
+    expect(() => buildWorkbookFacts({ ...input, evidence })).toThrow('TAM identity');
+  });
+  it('projects verified zero rankings while retaining TAM denominators and a dated snapshot heading', async () => {
+    const input = await setup();
+    const evidence = await workbookFixture();
+    required(evidence.bundle.sources.semrush, 'Semrush').rankings = [];
+    const extract = view(evidence, 'semrush-mcp-read-3');
+    extract.data = {
+      tool: 'semrush_domain_organic_keywords',
+      arguments: { domain: evidence.bundle.config.publicHostname, database: 'us' },
+      response: {
+        content: [{ type: 'text', text: 'Keyword;Position;Search Volume;Traffic (%);Url' }],
+      },
+    };
+    const result = buildWorkbookFacts({ ...input, evidence });
+    expect(result.facts.blocks['market.topKeywords']).toEqual([]);
+    expect(result.facts.blocks['market.keywordSnapshot']).toEqual([
+      ['Latest keyword snapshot: 2026-09-09 (not report-period data)'],
+    ]);
+    expect(result.facts.blocks['market.overview']?.[0]?.slice(0, 2)).toEqual(['Aug 2026', 711]);
+    const pillars = required(result.facts.blocks['pillars.metrics'], 'pillar metrics');
+    expect(pillars.length).toBeGreaterThan(0);
+    expect(pillars.some((row) => Number(row[1]) > 0)).toBe(true);
+    expect(pillars.every((row) => row[5] === 0 && row[6] === 0)).toBe(true);
+    evidence.views = evidence.views.filter((row) => row !== extract);
+    expect(() => buildWorkbookFacts({ ...input, evidence })).toThrow(
+      'Exactly one retained Semrush'
+    );
+  });
+  it('rejects failed, duplicate and wrong-header Semrush extracts rather than manufacturing zero', async () => {
+    const input = await setup();
+    const evidence = await workbookFixture();
+    const extract = view(evidence, 'semrush-mcp-read-3');
+    const data = {
+      tool: 'semrush_domain_organic_keywords',
+      arguments: { domain: evidence.bundle.config.publicHostname, database: 'us' },
+      response: { content: [{ type: 'text', text: 'Keyword;Position;Search Volume;Url' }] },
+    };
+    extract.data = data;
+    expect(() => buildWorkbookFacts({ ...input, evidence })).toThrow('required headers');
+    extract.data = { ...data, response: { isError: true, content: [] } };
+    expect(() => buildWorkbookFacts({ ...input, evidence })).toThrow('MCP returned an error');
+    extract.data = {
+      ...data,
+      response: {
+        content: [{ type: 'text', text: 'Keyword;Position;Search Volume;Traffic (%);Url' }],
+      },
+    };
+    evidence.views.push({ ...extract, name: 'semrush-mcp-read-4' });
+    expect(() => buildWorkbookFacts({ ...input, evidence })).toThrow(
+      'Exactly one retained Semrush'
+    );
+  });
   it('projects every approved factual binding with complete raw rows, rates and provenance', async () => {
     const input = await setup();
     const result = buildWorkbookFacts(input);

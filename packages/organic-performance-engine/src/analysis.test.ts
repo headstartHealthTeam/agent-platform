@@ -88,6 +88,60 @@ describe('organic performance analysis', () => {
     expect(() => normalizeKeyword('  ')).toThrow(/non-empty/);
     expect(() => canonicalJson(Number.POSITIVE_INFINITY)).toThrow(/non-finite/);
     expect(canonicalJson({ b: 2, a: [true, null] })).toBe('{"a":[true,null],"b":2}');
+    expect(canonicalJson({ ärzte: 1, zoo: 2, Z: 3, a: 4 })).toBe('{"Z":3,"a":4,"zoo":2,"ärzte":1}');
+  });
+
+  it.each(['/resources/100%-effective', '/resources/%E0%A4%A', '/resources/%FF'])(
+    'retains undecodable path %s without losing its source metrics',
+    async (path) => {
+      expect(normalizePath(`${path}/?ignored=true`)).toBe(path);
+      expect(normalizePath(`https://headstart.health${path}`, 'headstart.health')).toBe(path);
+      const bundle = organicPerformanceBundleSchema.parse(
+        await fixture('august-2026-regression.json')
+      );
+      bundle.config.routeRegistry.push({ id: 'raw_path', prefixes: [], exactPaths: [path] });
+      bundle.config.audienceRegistry.push({ id: 'raw_path', prefixes: [], exactPaths: [path] });
+      bundle.sources.ga4.landingPageRows.push({
+        period: 'current',
+        landingPage: path,
+        sessions: 7,
+        engagedSessions: 5,
+        keyEvents: 2,
+      });
+      bundle.sources.gsc.pageRows.push({
+        period: 'current',
+        url: `https://headstart.health${path}`,
+        clicks: 4,
+        impressions: 8,
+      });
+      const analysis = analyzeBundle(bundle);
+      for (const scope of ['segments', 'audiences']) {
+        expect(analysis).toHaveProperty(`${scope}.ga4.current.raw_path`, {
+          sessions: 7,
+          engagedSessions: 5,
+          keyEvents: 2,
+        });
+        expect(analysis).toHaveProperty(`${scope}.gsc.current.raw_path`, {
+          clicks: 4,
+          impressions: 8,
+        });
+        expect(analysis).toHaveProperty(`${scope}.ga4Reconciliation.current`, {
+          sourceTotal: 510,
+          classifiedTotal: 516,
+          delta: -6,
+        });
+        expect(analysis).toHaveProperty(`${scope}.gscReconciliation.current`, {
+          sourceTotal: 497,
+          classifiedTotal: 501,
+          delta: -4,
+        });
+      }
+    }
+  );
+
+  it('continues decoding valid percent escapes without partially decoding invalid paths', () => {
+    expect(normalizePath('/resources/caf%C3%A9/')).toBe('/resources/café');
+    expect(normalizePath('/resources/caf%C3%A9-%FF/')).toBe('/resources/caf%C3%A9-%FF');
   });
 
   it('applies exact and prefix route rules before the unmatched fallback', () => {

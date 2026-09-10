@@ -1,4 +1,3 @@
-import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   chmod,
@@ -12,9 +11,10 @@ import {
 } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseArgs, promisify } from 'node:util';
+import { parseArgs } from 'node:util';
 
-const execute = promisify(execFile);
+import spawn from 'cross-spawn';
+
 const ENGINE = '@headstart-health/organic-performance-engine';
 export type RuntimeCommand = (
   command: string,
@@ -22,10 +22,35 @@ export type RuntimeCommand = (
   cwd: string
 ) => Promise<string>;
 
-async function run(command: string, args: readonly string[], cwd: string): Promise<string> {
-  const result = await execute(command, [...args], { cwd, timeout: 300_000, maxBuffer: 4_000_000 });
-  return result.stdout;
-}
+export const runRuntimeCommand: RuntimeCommand = (command, args, cwd) => {
+  // This is an isolated provisioning CLI. Keep arguments separate and let cross-spawn handle
+  // Windows .cmd shims; shell:true would disable its argument escaping.
+  const result = spawn.sync(command, [...args], {
+    cwd,
+    timeout: 300_000,
+    maxBuffer: 4_000_000,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  if (result.error || result.status !== 0) {
+    // Child output may contain private registry URLs or credentials. Retain only recognized
+    // diagnostic codes, separately by stream, instead of printing arbitrary stdout/stderr.
+    const codes = (value: unknown): string =>
+      [
+        ...new Set(
+          (typeof value === 'string' ? value : '').match(
+            /\b(?:ERR_[A-Z0-9_]+|ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|ENOENT|EACCES)\b/g
+          ) ?? []
+        ),
+      ].join(',') || 'none';
+    return Promise.reject(
+      new Error(
+        `Runtime command failed (${command === 'corepack' ? 'corepack' : 'git'}; exit=${String(result.status)}; signal=${result.signal ?? 'none'}; stdout codes=${codes(result.stdout)}; stderr codes=${codes(result.stderr)}; launch codes=${codes(result.error?.message ?? '')})`
+      )
+    );
+  }
+  return Promise.resolve(result.stdout);
+};
 function inside(root: string, candidate: string): boolean {
   return candidate === root || candidate.startsWith(`${root}${sep}`);
 }
@@ -99,7 +124,7 @@ export async function packageOrganicRuntime(input: {
   const sourcePackage = resolve(root, 'packages/organic-performance-engine');
   for (const entrypoint of ['cli.js', 'collect-cli.js', 'workbook-cli.js'])
     await readFile(resolve(sourcePackage, 'dist', entrypoint));
-  const command = input.command ?? run;
+  const command = input.command ?? runRuntimeCommand;
   const version = (await command('corepack', ['pnpm', '--version'], root)).trim();
   if (version !== '9.15.0') throw new Error('Packaging requires the repository-pinned pnpm 9.15.0');
   const sourceRevision = (await command('git', ['rev-parse', 'HEAD'], root)).trim();

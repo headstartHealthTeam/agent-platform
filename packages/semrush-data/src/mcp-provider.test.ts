@@ -2,7 +2,12 @@ import { createHash } from 'node:crypto';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { connectSemrushStdio, parseSemrushCsv, SemrushMcpProvider } from './mcp-provider.js';
+import {
+  connectSemrushStdio,
+  parseSemrushCsv,
+  parseSemrushTable,
+  SemrushMcpProvider,
+} from './mcp-provider.js';
 import { semrushDomainRequestSchema } from './semrush.js';
 
 const mocks = vi.hoisted(() => ({
@@ -33,6 +38,20 @@ const overview = 'Database;Domain;Organic Keywords\r\nus;example.test;2\r\n';
 
 describe('Semrush concrete MCP binding', () => {
   afterEach(() => vi.clearAllMocks());
+  it('retains headers for a successful zero-ranking response and rejects malformed empty evidence', async () => {
+    const header = 'Keyword;Position;Search Volume;Traffic (%);Url';
+    expect(parseSemrushTable(result(header))).toEqual({ headers: header.split(';'), rows: [] });
+    expect(parseSemrushCsv(result(header))).toEqual([]);
+    const provider = new SemrushMcpProvider({
+      callTool: async (): Promise<unknown> => result(header),
+    });
+    expect(await provider.domainOrganicKeywords(request)).toEqual([]);
+    const malformed = new SemrushMcpProvider({
+      callTool: async (): Promise<unknown> => result('Keyword;Traffic (%)'),
+    });
+    await expect(malformed.domainOrganicKeywords(request)).rejects.toThrow('required headers');
+    expect(() => parseSemrushTable(result('Keyword;;Url'))).toThrow('Invalid Semrush headers');
+  });
   it('parses CSV escapes and rejects malformed/error payloads', () => {
     expect(parseSemrushCsv(result('Keyword;Volume\n"a; b";10\n"a ""quote""";0'))).toEqual([
       { Keyword: 'a; b', Volume: '10' },
