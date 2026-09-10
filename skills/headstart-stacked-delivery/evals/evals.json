@@ -18,6 +18,7 @@
       "prompt": "My current PR is waiting for review, but the next assigned issue touches an unrelated backend module and does not need anything from the open branch. Should I stack it?",
       "shouldActivate": true,
       "expectedBehaviors": [
+        "Confirms implementation and write authorization before classifying the issue or selecting a branch or worktree",
         "Classifies the work as independent rather than stacked",
         "Uses a separate worktree and branch from the integration baseline",
         "Does not create a false PR or Linear dependency"

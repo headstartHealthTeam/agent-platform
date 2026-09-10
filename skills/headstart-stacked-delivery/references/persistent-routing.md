@@ -36,8 +36,10 @@ different term:
 ## Headstart Parallel Delivery
 
 For Headstart work, a review-ready PR is not automatically a stopping point. Before waiting, inspect
-the next assigned or approved Linear issue. If it can proceed independently, use a separate branch
-and worktree from the integration baseline. If it needs code from the open PR, load the installed
+the next assigned or approved Linear issue. Before classifying it or selecting a branch or worktree,
+confirm the user has authorized implementation and any GitHub or Linear writes; otherwise ask and
+stop. Once authorized, use a separate branch and worktree from the integration baseline when the
+issue is independent. If it needs code from the open PR, load the installed
 `headstart-stacked-delivery` skill and follow its separate stacked worktree, branch, PR, handoff, and
 unstacking workflow. Never merge a child into its parent branch. Keep application issues `In Review`
 after merge to `dev`; `Ready For Release` is a deliberate team decision and `Done` requires the final
