@@ -32,6 +32,22 @@ Before relying on a capability:
 Never convert an unavailable connector into guessed output. Never infer authorization from successful
 authentication.
 
+## Reusable Provider Bindings
+
+When multiple engines need the same external read, define the provider-neutral contract in a shared
+package and keep provider selection in a private execution profile. The profile pins the adapter
+revision, references credentials without containing them, and declares the exact target. A bounded
+preflight read must verify target identity, permission scope, and response visibility before the
+engine runs.
+
+Engines consume normalized source snapshots rather than MCP-specific tool payloads. Provider
+substitution requires conformance tests against the same request, response, completeness, and
+preflight contract. Do not install an unpinned dependency during a workflow run or expose a
+provider's write surface when the declared capability is read-only.
+
+See [reusable data capabilities](../docs/reusable-data-capabilities.md) for the reference package
+boundary and content-pillar/TAM join example.
+
 ## Related Guidance
 
 - [Documentation hub](../docs/README.md)

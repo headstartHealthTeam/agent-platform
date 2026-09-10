@@ -1,0 +1,3417 @@
+{
+  "schemaVersion": "organic-workbook-template/v1",
+  "version": "headstart-report/v1",
+  "sourceId": "1RvFPXWHu2Fq-QR9Mf83pwuDzNW0-NJOvsrRAtQcVXXE",
+  "cleanTemplateId": "123-v30Wp3HVwqPEo1Y9SVG4_gwLv8EsQGPzuiWFo3m4",
+  "sheets": [
+    {
+      "title": "Executive Summary",
+      "rows": 100,
+      "columns": 13,
+      "staticCells": [
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Google Search clicks"
+        },
+        {
+          "row": 4,
+          "column": 4,
+          "text": "Google Search impressions"
+        },
+        {
+          "row": 4,
+          "column": 8,
+          "text": "Organic sessions"
+        },
+        {
+          "row": 9,
+          "column": 0,
+          "text": "Organic engagement rate"
+        },
+        {
+          "row": 9,
+          "column": 4,
+          "text": "BCBA interest submissions"
+        },
+        {
+          "row": 9,
+          "column": 8,
+          "text": "Semrush ranking keywords"
+        },
+        {
+          "row": 15,
+          "column": 0,
+          "text": "What leadership should know"
+        },
+        {
+          "row": 15,
+          "column": 6,
+          "text": "Priority decisions and actions"
+        },
+        {
+          "row": 30,
+          "column": 0,
+          "text": "Report boundary and freshness"
+        },
+        {
+          "row": 35,
+          "column": 0,
+          "text": "How the reporting period connects to organic initiatives"
+        },
+        {
+          "row": 36,
+          "column": 0,
+          "text": "Initiative"
+        },
+        {
+          "row": 36,
+          "column": 3,
+          "text": "Current period status"
+        },
+        {
+          "row": 36,
+          "column": 6,
+          "text": "What the period establishes"
+        },
+        {
+          "row": 36,
+          "column": 9,
+          "text": "Next proof point"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "report.title",
+          "owner": "facts",
+          "range": {
+            "row": 0,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "report.summary",
+          "owner": "narrative",
+          "range": {
+            "row": 2,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "cards.values1",
+          "owner": "facts",
+          "range": {
+            "row": 5,
+            "column": 0,
+            "rows": 1,
+            "columns": 12
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": [],
+          "preserveAlignment": true
+        },
+        {
+          "id": "cards.changes1",
+          "owner": "facts",
+          "range": {
+            "row": 7,
+            "column": 0,
+            "rows": 1,
+            "columns": 12
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": [],
+          "preserveAlignment": true
+        },
+        {
+          "id": "cards.values2",
+          "owner": "facts",
+          "range": {
+            "row": 10,
+            "column": 0,
+            "rows": 1,
+            "columns": 12
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": [],
+          "preserveAlignment": true
+        },
+        {
+          "id": "cards.changes2",
+          "owner": "facts",
+          "range": {
+            "row": 12,
+            "column": 0,
+            "rows": 1,
+            "columns": 12
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": [],
+          "preserveAlignment": true
+        },
+        {
+          "id": "executive.findings",
+          "owner": "narrative",
+          "range": {
+            "row": 16,
+            "column": 0,
+            "rows": 11,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "executive.actions",
+          "owner": "narrative",
+          "range": {
+            "row": 16,
+            "column": 6,
+            "rows": 11,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "report.boundary",
+          "owner": "facts",
+          "range": {
+            "row": 31,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "executive.initiatives",
+          "owner": "narrative",
+          "range": {
+            "row": 37,
+            "column": 0,
+            "rows": 4,
+            "columns": 12
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "6d24bf4e3b2202f6f0db95c1215876f90de1cc0ad8ecf8900666e500c2b398c2",
+      "chartSpecs": []
+    },
+    {
+      "title": "KPI Scorecard",
+      "rows": 100,
+      "columns": 13,
+      "staticCells": [
+        {
+          "row": 2,
+          "column": 0,
+          "text": "Primary leadership check-in view. Sitewide context appears first, followed by Families, BCBAs, and RBTs. Supporting tabs are drilldowns."
+        },
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Sitewide leadership context"
+        },
+        {
+          "row": 5,
+          "column": 0,
+          "text": "Metric"
+        },
+        {
+          "row": 5,
+          "column": 1,
+          "text": "Source"
+        },
+        {
+          "row": 5,
+          "column": 2,
+          "text": "Current period"
+        },
+        {
+          "row": 5,
+          "column": 3,
+          "text": "Previous period"
+        },
+        {
+          "row": 5,
+          "column": 4,
+          "text": "MoM change"
+        },
+        {
+          "row": 5,
+          "column": 5,
+          "text": "Year ago"
+        },
+        {
+          "row": 5,
+          "column": 6,
+          "text": "YoY change"
+        },
+        {
+          "row": 5,
+          "column": 7,
+          "text": "Leadership read"
+        },
+        {
+          "row": 5,
+          "column": 8,
+          "text": "Comparison note"
+        },
+        {
+          "row": 6,
+          "column": 0,
+          "text": "Search clicks",
+          "note": "Google Search Console clicks from web search to the public headstart.health website."
+        },
+        {
+          "row": 6,
+          "column": 1,
+          "text": "GSC"
+        },
+        {
+          "row": 7,
+          "column": 0,
+          "text": "Search impressions",
+          "note": "How often public headstart.health URLs appeared in Google web search results."
+        },
+        {
+          "row": 7,
+          "column": 1,
+          "text": "GSC"
+        },
+        {
+          "row": 8,
+          "column": 0,
+          "text": "Search CTR",
+          "note": "Google Search clicks divided by impressions. Period changes are shown in percentage points."
+        },
+        {
+          "row": 8,
+          "column": 1,
+          "text": "GSC"
+        },
+        {
+          "row": 9,
+          "column": 0,
+          "text": "Organic sessions",
+          "note": "GA4 sessions whose session default channel group is Organic Search and whose host is headstart.health."
+        },
+        {
+          "row": 9,
+          "column": 1,
+          "text": "GA4"
+        },
+        {
+          "row": 10,
+          "column": 0,
+          "text": "Engagement rate",
+          "note": "GA4 engaged sessions divided by sessions. An engaged session lasts longer than 10 seconds, has a key event, or has at least two page or screen views."
+        },
+        {
+          "row": 10,
+          "column": 1,
+          "text": "GA4"
+        },
+        {
+          "row": 11,
+          "column": 0,
+          "text": "Semrush ranking keywords",
+          "note": "Estimated number of keywords for which Semrush observed headstart.health ranking in the US desktop database. This is modeled market context, not first-party traffic."
+        },
+        {
+          "row": 11,
+          "column": 1,
+          "text": "Semrush"
+        },
+        {
+          "row": 12,
+          "column": 0,
+          "text": "Public-site non-branded impressions",
+          "note": "Google Search impressions for public headstart.health pages after excluding queries matching the approved Headstart brand regex. Source-filtered totals can differ from summed query rows because Search Console omits anonymized queries."
+        },
+        {
+          "row": 12,
+          "column": 1,
+          "text": "GSC"
+        },
+        {
+          "row": 16,
+          "column": 0,
+          "text": "Families audience scorecard"
+        },
+        {
+          "row": 17,
+          "column": 0,
+          "text": "Metric"
+        },
+        {
+          "row": 17,
+          "column": 1,
+          "text": "Source"
+        },
+        {
+          "row": 17,
+          "column": 2,
+          "text": "Current period"
+        },
+        {
+          "row": 17,
+          "column": 3,
+          "text": "Previous period"
+        },
+        {
+          "row": 17,
+          "column": 4,
+          "text": "MoM change"
+        },
+        {
+          "row": 17,
+          "column": 5,
+          "text": "Year ago"
+        },
+        {
+          "row": 17,
+          "column": 6,
+          "text": "YoY change"
+        },
+        {
+          "row": 17,
+          "column": 7,
+          "text": "Leadership read"
+        },
+        {
+          "row": 17,
+          "column": 8,
+          "text": "Comparison note"
+        },
+        {
+          "row": 18,
+          "column": 0,
+          "text": "Search clicks",
+          "note": "Google Search clicks for pages explicitly assigned to the Families audience."
+        },
+        {
+          "row": 18,
+          "column": 1,
+          "text": "GSC"
+        },
+        {
+          "row": 19,
+          "column": 0,
+          "text": "Search impressions",
+          "note": "Google Search impressions for pages explicitly assigned to the Families audience."
+        },
+        {
+          "row": 19,
+          "column": 1,
+          "text": "GSC"
+        },
+        {
+          "row": 20,
+          "column": 0,
+          "text": "Organic landing sessions",
+          "note": "GA4 Organic Search sessions whose first page is explicitly assigned to the Families audience."
+        },
+        {
+          "row": 20,
+          "column": 1,
+          "text": "GA4"
+        },
+        {
+          "row": 21,
+          "column": 0,
+          "text": "Engagement rate",
+          "note": "Engagement rate for Organic Search landing sessions assigned to Families."
+        },
+        {
+          "row": 21,
+          "column": 1,
+          "text": "GA4"
+        },
+        {
+          "row": 22,
+          "column": 0,
+          "text": "Canonical conversion",
+          "note": "Families canonical outcome: completion of the partial family lead form at app.headstart.health/register. Check the selected period's verified event contract for measurement availability."
+        },
+        {
+          "row": 26,
+          "column": 0,
+          "text": "BCBAs audience scorecard"
+        },
+        {
+          "row": 27,
+          "column": 0,
+          "text": "Metric"
+        },
+        {
+          "row": 27,
+          "column": 1,
+          "text": "Source"
+        },
+        {
+          "row": 27,
+          "column": 2,
+          "text": "Current period"
+        },
+        {
+          "row": 27,
+          "column": 3,
+          "text": "Previous period"
+        },
+        {
+          "row": 27,
+          "column": 4,
+          "text": "MoM change"
+        },
+        {
+          "row": 27,
+          "column": 5,
+          "text": "Year ago"
+        },
+        {
+          "row": 27,
+          "column": 6,
+          "text": "YoY change"
+        },
+        {
+          "row": 27,
+          "column": 7,
+          "text": "Leadership read"
+        },
+        {
+          "row": 27,
+          "column": 8,
+          "text": "Comparison note"
+        },
+        {
+          "row": 28,
+          "column": 0,
+          "text": "Search clicks",
+          "note": "Google Search clicks for pages explicitly assigned to the BCBA audience."
+        },
+        {
+          "row": 28,
+          "column": 1,
+          "text": "GSC"
+        },
+        {
+          "row": 29,
+          "column": 0,
+          "text": "Search impressions",
+          "note": "Google Search impressions for pages explicitly assigned to the BCBA audience."
+        },
+        {
+          "row": 29,
+          "column": 1,
+          "text": "GSC"
+        },
+        {
+          "row": 30,
+          "column": 0,
+          "text": "Organic landing sessions",
+          "note": "GA4 Organic Search sessions whose first page is explicitly assigned to the BCBA audience."
+        },
+        {
+          "row": 30,
+          "column": 1,
+          "text": "GA4"
+        },
+        {
+          "row": 31,
+          "column": 0,
+          "text": "Engagement rate",
+          "note": "Engagement rate for Organic Search landing sessions assigned to BCBAs."
+        },
+        {
+          "row": 31,
+          "column": 1,
+          "text": "GA4"
+        },
+        {
+          "row": 32,
+          "column": 0,
+          "text": "Canonical conversion",
+          "note": "BCBA canonical outcome: provider-interest form submission reached from the BCBA journey."
+        },
+        {
+          "row": 36,
+          "column": 0,
+          "text": "RBTs audience scorecard"
+        },
+        {
+          "row": 37,
+          "column": 0,
+          "text": "Metric"
+        },
+        {
+          "row": 37,
+          "column": 1,
+          "text": "Source"
+        },
+        {
+          "row": 37,
+          "column": 2,
+          "text": "Current period"
+        },
+        {
+          "row": 37,
+          "column": 3,
+          "text": "Previous period"
+        },
+        {
+          "row": 37,
+          "column": 4,
+          "text": "MoM change"
+        },
+        {
+          "row": 37,
+          "column": 5,
+          "text": "Year ago"
+        },
+        {
+          "row": 37,
+          "column": 6,
+          "text": "YoY change"
+        },
+        {
+          "row": 37,
+          "column": 7,
+          "text": "Leadership read"
+        },
+        {
+          "row": 37,
+          "column": 8,
+          "text": "Comparison note"
+        },
+        {
+          "row": 38,
+          "column": 0,
+          "text": "Search clicks",
+          "note": "Google Search clicks for pages explicitly assigned to the RBT audience."
+        },
+        {
+          "row": 38,
+          "column": 1,
+          "text": "GSC"
+        },
+        {
+          "row": 39,
+          "column": 0,
+          "text": "Search impressions",
+          "note": "Google Search impressions for pages explicitly assigned to the RBT audience."
+        },
+        {
+          "row": 39,
+          "column": 1,
+          "text": "GSC"
+        },
+        {
+          "row": 40,
+          "column": 0,
+          "text": "Organic landing sessions",
+          "note": "GA4 Organic Search sessions whose first page is explicitly assigned to the RBT audience."
+        },
+        {
+          "row": 40,
+          "column": 1,
+          "text": "GA4"
+        },
+        {
+          "row": 41,
+          "column": 0,
+          "text": "Engagement rate",
+          "note": "Engagement rate for Organic Search landing sessions assigned to RBTs."
+        },
+        {
+          "row": 41,
+          "column": 1,
+          "text": "GA4"
+        },
+        {
+          "row": 42,
+          "column": 0,
+          "text": "Canonical conversion",
+          "note": "RBT canonical outcome: click on any listed RBT job opening. Check the selected period's verified event contract for measurement availability."
+        },
+        {
+          "row": 46,
+          "column": 0,
+          "text": "Patient content-pillar performance"
+        },
+        {
+          "row": 47,
+          "column": 0,
+          "text": "Metric"
+        },
+        {
+          "row": 47,
+          "column": 1,
+          "text": "Source"
+        },
+        {
+          "row": 47,
+          "column": 2,
+          "text": "Current period"
+        },
+        {
+          "row": 47,
+          "column": 3,
+          "text": "Prior snapshot"
+        },
+        {
+          "row": 47,
+          "column": 4,
+          "text": "Change"
+        },
+        {
+          "row": 47,
+          "column": 5,
+          "text": "Reference universe"
+        },
+        {
+          "row": 47,
+          "column": 6,
+          "text": "Leadership read"
+        },
+        {
+          "row": 47,
+          "column": 7,
+          "text": "Comparison note"
+        },
+        {
+          "row": 47,
+          "column": 8,
+          "text": "Drilldown"
+        },
+        {
+          "row": 48,
+          "column": 0,
+          "text": "Core patient Search TAM",
+          "note": "Estimated monthly US search demand across the approved Core patient keyword universe. This is a planning estimate, not observed traffic."
+        },
+        {
+          "row": 48,
+          "column": 1,
+          "text": "Approved TAM"
+        },
+        {
+          "row": 49,
+          "column": 0,
+          "text": "Confirmed TAM visible in Top 10",
+          "note": "Confirmed serviceable search demand attached to approved TAM keywords where the public headstart.health host has an exact Semrush Top-10 ranking."
+        },
+        {
+          "row": 49,
+          "column": 1,
+          "text": "TAM + Semrush"
+        },
+        {
+          "row": 50,
+          "column": 0,
+          "text": "Patient pillars with Top-20 visibility",
+          "note": "Count of approved patient content pillars with at least one exact TAM keyword ranking in Semrush positions 1-20 on the public headstart.health host."
+        },
+        {
+          "row": 50,
+          "column": 1,
+          "text": "TAM + Semrush"
+        },
+        {
+          "row": 53,
+          "column": 0,
+          "text": "How to use this scorecard"
+        },
+        {
+          "row": 56,
+          "column": 0,
+          "text": "Audience routes are intentionally explicit; shared and unmapped pages remain outside the audience sections until classified."
+        }
+      ],
+      "bindings": [
+        {
+          "id": "scorecard.title",
+          "owner": "facts",
+          "range": {
+            "row": 0,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.sitewide",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 2,
+            "rows": 7,
+            "columns": 5
+          },
+          "numericColumns": [0, 1, 2, 3, 4],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.sitewide.read",
+          "owner": "narrative",
+          "range": {
+            "row": 6,
+            "column": 7,
+            "rows": 7,
+            "columns": 2
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.families",
+          "owner": "facts",
+          "range": {
+            "row": 18,
+            "column": 2,
+            "rows": 5,
+            "columns": 5
+          },
+          "numericColumns": [0, 1, 2, 3, 4],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.families.read",
+          "owner": "narrative",
+          "range": {
+            "row": 18,
+            "column": 7,
+            "rows": 5,
+            "columns": 2
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.bcbas",
+          "owner": "facts",
+          "range": {
+            "row": 28,
+            "column": 2,
+            "rows": 5,
+            "columns": 5
+          },
+          "numericColumns": [0, 1, 2, 3, 4],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.bcbas.read",
+          "owner": "narrative",
+          "range": {
+            "row": 28,
+            "column": 7,
+            "rows": 5,
+            "columns": 2
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.rbts",
+          "owner": "facts",
+          "range": {
+            "row": 38,
+            "column": 2,
+            "rows": 5,
+            "columns": 5
+          },
+          "numericColumns": [0, 1, 2, 3, 4],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.rbts.read",
+          "owner": "narrative",
+          "range": {
+            "row": 38,
+            "column": 7,
+            "rows": 5,
+            "columns": 2
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.tam",
+          "owner": "facts",
+          "range": {
+            "row": 48,
+            "column": 2,
+            "rows": 3,
+            "columns": 4
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "scorecard.usage",
+          "owner": "facts",
+          "range": {
+            "row": 55,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.families.source",
+          "owner": "facts",
+          "range": {
+            "row": 22,
+            "column": 1,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.bcbas.source",
+          "owner": "facts",
+          "range": {
+            "row": 32,
+            "column": 1,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.rbts.source",
+          "owner": "facts",
+          "range": {
+            "row": 42,
+            "column": 1,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "kpi.tam.read",
+          "owner": "narrative",
+          "range": {
+            "row": 48,
+            "column": 6,
+            "rows": 3,
+            "columns": 3
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "5767ccc1ba9405548bfa1e6601edddf76b083808c283f8b692aee7684f28a5d6",
+      "chartSpecs": []
+    },
+    {
+      "title": "Initiative Impact",
+      "rows": 106,
+      "columns": 10,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Initiative Impact"
+        },
+        {
+          "row": 2,
+          "column": 0,
+          "text": "Connects organic performance to the work Headstart is funding while separating observed baselines, pre-launch initiatives, measurement prerequisites, and diagnostics."
+        },
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Initiative portfolio: status, evidence, and next proof point"
+        },
+        {
+          "row": 5,
+          "column": 0,
+          "text": "Initiative"
+        },
+        {
+          "row": 5,
+          "column": 1,
+          "text": "Leadership objective"
+        },
+        {
+          "row": 5,
+          "column": 2,
+          "text": "Measured surface"
+        },
+        {
+          "row": 5,
+          "column": 3,
+          "text": "Current period status"
+        },
+        {
+          "row": 5,
+          "column": 4,
+          "text": "Period evidence"
+        },
+        {
+          "row": 5,
+          "column": 5,
+          "text": "Primary success signal"
+        },
+        {
+          "row": 5,
+          "column": 6,
+          "text": "Earliest credible read"
+        },
+        {
+          "row": 5,
+          "column": 7,
+          "text": "Next action"
+        },
+        {
+          "row": 14,
+          "column": 0,
+          "text": "Launch and comparison contract"
+        },
+        {
+          "row": 15,
+          "column": 0,
+          "text": "Initiative"
+        },
+        {
+          "row": 15,
+          "column": 1,
+          "text": "Production launch / change date"
+        },
+        {
+          "row": 15,
+          "column": 2,
+          "text": "Baseline period"
+        },
+        {
+          "row": 15,
+          "column": 3,
+          "text": "MoM begins"
+        },
+        {
+          "row": 15,
+          "column": 4,
+          "text": "YoY begins"
+        },
+        {
+          "row": 15,
+          "column": 5,
+          "text": "Required report annotation"
+        },
+        {
+          "row": 30,
+          "column": 0,
+          "text": "How each performance layer answers a different leadership question"
+        },
+        {
+          "row": 31,
+          "column": 0,
+          "text": "Performance layer"
+        },
+        {
+          "row": 31,
+          "column": 1,
+          "text": "Primary source"
+        },
+        {
+          "row": 31,
+          "column": 2,
+          "text": "Leadership question"
+        },
+        {
+          "row": 31,
+          "column": 3,
+          "text": "Current-period signal"
+        },
+        {
+          "row": 31,
+          "column": 4,
+          "text": "Initiative linkage"
+        },
+        {
+          "row": 31,
+          "column": 5,
+          "text": "Primary drilldown"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "initiatives.portfolio",
+          "owner": "narrative",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 6,
+            "columns": 8
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "initiatives.lifecycle",
+          "owner": "facts",
+          "range": {
+            "row": 16,
+            "column": 0,
+            "rows": 12,
+            "columns": 5
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "initiatives.layers",
+          "owner": "narrative",
+          "range": {
+            "row": 32,
+            "column": 0,
+            "rows": 6,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "initiatives.boundary",
+          "owner": "facts",
+          "range": {
+            "row": 40,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "initiatives.lifecycle.read",
+          "owner": "narrative",
+          "range": {
+            "row": 16,
+            "column": 5,
+            "rows": 12,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "68dca88d03b87717707afa16537ae6c3083c0685b35eb92fd8ebb8eedcba3bd6",
+      "chartSpecs": []
+    },
+    {
+      "title": "Organic Growth by Segment",
+      "rows": 108,
+      "columns": 13,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Organic Growth by Segment"
+        },
+        {
+          "row": 2,
+          "column": 0,
+          "text": "Tracks whether visibility and outcomes are growing in the public-site areas Headstart is intentionally building. Public website and provider marketplace remain separate."
+        },
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Public-site search growth by URL segment (GSC)"
+        },
+        {
+          "row": 5,
+          "column": 0,
+          "text": "Segment"
+        },
+        {
+          "row": 5,
+          "column": 1,
+          "text": "URL rule"
+        },
+        {
+          "row": 5,
+          "column": 2,
+          "text": "Current clicks"
+        },
+        {
+          "row": 5,
+          "column": 3,
+          "text": "Previous clicks"
+        },
+        {
+          "row": 5,
+          "column": 4,
+          "text": "MoM change"
+        },
+        {
+          "row": 5,
+          "column": 5,
+          "text": "Year ago clicks"
+        },
+        {
+          "row": 5,
+          "column": 6,
+          "text": "YoY change"
+        },
+        {
+          "row": 5,
+          "column": 7,
+          "text": "Current impressions"
+        },
+        {
+          "row": 5,
+          "column": 8,
+          "text": "Previous impressions"
+        },
+        {
+          "row": 5,
+          "column": 9,
+          "text": "MoM change"
+        },
+        {
+          "row": 5,
+          "column": 10,
+          "text": "Year ago impressions"
+        },
+        {
+          "row": 5,
+          "column": 11,
+          "text": "YoY change"
+        },
+        {
+          "row": 5,
+          "column": 12,
+          "text": "Baseline status"
+        },
+        {
+          "row": 20,
+          "column": 0,
+          "text": "Organic sessions by landing-page segment (GA4)",
+          "note": "Each Organic Search session is assigned to the segment containing its first page. This is not a count of every page viewed during the session."
+        },
+        {
+          "row": 21,
+          "column": 0,
+          "text": "Segment"
+        },
+        {
+          "row": 21,
+          "column": 1,
+          "text": "Current sessions"
+        },
+        {
+          "row": 21,
+          "column": 2,
+          "text": "Previous sessions"
+        },
+        {
+          "row": 21,
+          "column": 3,
+          "text": "MoM change"
+        },
+        {
+          "row": 21,
+          "column": 4,
+          "text": "Year ago sessions"
+        },
+        {
+          "row": 21,
+          "column": 5,
+          "text": "YoY change"
+        },
+        {
+          "row": 21,
+          "column": 6,
+          "text": "Current engagement rate"
+        },
+        {
+          "row": 21,
+          "column": 7,
+          "text": "Current key events"
+        },
+        {
+          "row": 21,
+          "column": 8,
+          "text": "Current session key-event rate"
+        },
+        {
+          "row": 21,
+          "column": 9,
+          "text": "Measurement note"
+        },
+        {
+          "row": 36,
+          "column": 0,
+          "text": "Public-site non-branded search performance"
+        },
+        {
+          "row": 37,
+          "column": 0,
+          "text": "Metric"
+        },
+        {
+          "row": 37,
+          "column": 1,
+          "text": "Current period"
+        },
+        {
+          "row": 37,
+          "column": 2,
+          "text": "Previous period"
+        },
+        {
+          "row": 37,
+          "column": 3,
+          "text": "MoM change"
+        },
+        {
+          "row": 37,
+          "column": 4,
+          "text": "Year ago"
+        },
+        {
+          "row": 37,
+          "column": 5,
+          "text": "YoY change"
+        },
+        {
+          "row": 37,
+          "column": 6,
+          "text": "Leadership read"
+        },
+        {
+          "row": 37,
+          "column": 7,
+          "text": "Source / coverage"
+        },
+        {
+          "row": 44,
+          "column": 0,
+          "text": "Non-branded ranking distribution (returned GSC query rows)"
+        },
+        {
+          "row": 45,
+          "column": 0,
+          "text": "Period"
+        },
+        {
+          "row": 45,
+          "column": 1,
+          "text": "Returned queries"
+        },
+        {
+          "row": 45,
+          "column": 2,
+          "text": "Positions 1-3"
+        },
+        {
+          "row": 45,
+          "column": 3,
+          "text": "Positions 4-10"
+        },
+        {
+          "row": 45,
+          "column": 4,
+          "text": "Positions 11-20"
+        },
+        {
+          "row": 45,
+          "column": 5,
+          "text": "Positions 21+"
+        },
+        {
+          "row": 45,
+          "column": 6,
+          "text": "Interpretation"
+        },
+        {
+          "row": 50,
+          "column": 0,
+          "text": "Ranking-band counts describe the non-branded query rows Search Console returned. They are useful for direction and prioritization, but privacy-protected queries may be omitted. Main clicks, impressions, CTR, and position above come from source-level filtered totals rather than summing query rows."
+        },
+        {
+          "row": 55,
+          "column": 0,
+          "text": "Provider marketplace visibility (reported separately)"
+        },
+        {
+          "row": 56,
+          "column": 0,
+          "text": "Period"
+        },
+        {
+          "row": 56,
+          "column": 1,
+          "text": "Non-branded clicks"
+        },
+        {
+          "row": 56,
+          "column": 2,
+          "text": "Non-branded impressions"
+        },
+        {
+          "row": 56,
+          "column": 3,
+          "text": "CTR"
+        },
+        {
+          "row": 56,
+          "column": 4,
+          "text": "Average position"
+        },
+        {
+          "row": 56,
+          "column": 5,
+          "text": "Reporting boundary"
+        },
+        {
+          "row": 62,
+          "column": 0,
+          "text": "Measurement lifecycle contract"
+        },
+        {
+          "row": 63,
+          "column": 0,
+          "text": "Surface"
+        },
+        {
+          "row": 63,
+          "column": 1,
+          "text": "Start condition"
+        },
+        {
+          "row": 63,
+          "column": 2,
+          "text": "MoM policy"
+        },
+        {
+          "row": 63,
+          "column": 3,
+          "text": "YoY policy"
+        },
+        {
+          "row": 63,
+          "column": 4,
+          "text": "Drilldown"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "segments.gsc",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 12,
+            "columns": 13
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "segments.ga4",
+          "owner": "facts",
+          "range": {
+            "row": 22,
+            "column": 0,
+            "rows": 12,
+            "columns": 9
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "segments.nonbrand",
+          "owner": "facts",
+          "range": {
+            "row": 38,
+            "column": 0,
+            "rows": 4,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "segments.rankingBands",
+          "owner": "facts",
+          "range": {
+            "row": 46,
+            "column": 0,
+            "rows": 3,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "segments.marketplace",
+          "owner": "facts",
+          "range": {
+            "row": 57,
+            "column": 0,
+            "rows": 3,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "segments.policy",
+          "owner": "facts",
+          "range": {
+            "row": 64,
+            "column": 0,
+            "rows": 3,
+            "columns": 5
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "segments.ga4.read",
+          "owner": "narrative",
+          "range": {
+            "row": 22,
+            "column": 9,
+            "rows": 12,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "segments.nonbrand.read",
+          "owner": "narrative",
+          "range": {
+            "row": 38,
+            "column": 6,
+            "rows": 4,
+            "columns": 2
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "segments.rankingBands.read",
+          "owner": "narrative",
+          "range": {
+            "row": 46,
+            "column": 6,
+            "rows": 3,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "577e80322f23f8eba29a46ac655b935a311ff0f0c26d60d895103a15392301d6",
+      "chartSpecs": []
+    },
+    {
+      "title": "Search Visibility",
+      "rows": 100,
+      "columns": 13,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Search Visibility"
+        },
+        {
+          "row": 2,
+          "column": 0,
+          "text": "First-party Google Search Console performance for public headstart.health pages. Position is diagnostic context, not the primary success KPI."
+        },
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Period comparison"
+        },
+        {
+          "row": 5,
+          "column": 0,
+          "text": "Period"
+        },
+        {
+          "row": 5,
+          "column": 1,
+          "text": "Clicks"
+        },
+        {
+          "row": 5,
+          "column": 2,
+          "text": "Impressions"
+        },
+        {
+          "row": 5,
+          "column": 3,
+          "text": "CTR"
+        },
+        {
+          "row": 5,
+          "column": 4,
+          "text": "Average position"
+        },
+        {
+          "row": 5,
+          "column": 7,
+          "text": "Period"
+        },
+        {
+          "row": 5,
+          "column": 8,
+          "text": "Non-branded clicks"
+        },
+        {
+          "row": 5,
+          "column": 9,
+          "text": "Non-branded impressions"
+        },
+        {
+          "row": 5,
+          "column": 10,
+          "text": "CTR"
+        },
+        {
+          "row": 5,
+          "column": 11,
+          "text": "Average position"
+        },
+        {
+          "row": 10,
+          "column": 7,
+          "text": "Important query caveat"
+        },
+        {
+          "row": 11,
+          "column": 0,
+          "text": "Current period daily clicks"
+        },
+        {
+          "row": 11,
+          "column": 7,
+          "text": "Totals use a source-level query exclusion for Headstart, Head Start, Head-Start, and Head Stat variants, scoped to https://headstart.health/. Ranking-band counts use returned query rows and may exclude privacy-protected queries."
+        },
+        {
+          "row": 12,
+          "column": 0,
+          "text": "Date"
+        },
+        {
+          "row": 12,
+          "column": 1,
+          "text": "Clicks"
+        },
+        {
+          "row": 46,
+          "column": 0,
+          "text": "Top public pages - Current period"
+        },
+        {
+          "row": 47,
+          "column": 0,
+          "text": "Page"
+        },
+        {
+          "row": 47,
+          "column": 1,
+          "text": "Clicks"
+        },
+        {
+          "row": 47,
+          "column": 2,
+          "text": "Impressions"
+        },
+        {
+          "row": 47,
+          "column": 3,
+          "text": "CTR"
+        },
+        {
+          "row": 47,
+          "column": 4,
+          "text": "Position"
+        },
+        {
+          "row": 47,
+          "column": 5,
+          "text": "MoM click change"
+        },
+        {
+          "row": 47,
+          "column": 6,
+          "text": "YoY click change"
+        },
+        {
+          "row": 47,
+          "column": 7,
+          "text": "SEO read"
+        },
+        {
+          "row": 65,
+          "column": 0,
+          "text": "Top known queries - Current period"
+        },
+        {
+          "row": 66,
+          "column": 0,
+          "text": "Query"
+        },
+        {
+          "row": 66,
+          "column": 1,
+          "text": "Class"
+        },
+        {
+          "row": 66,
+          "column": 2,
+          "text": "Clicks"
+        },
+        {
+          "row": 66,
+          "column": 3,
+          "text": "Impressions"
+        },
+        {
+          "row": 66,
+          "column": 4,
+          "text": "CTR"
+        },
+        {
+          "row": 66,
+          "column": 5,
+          "text": "Position"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "search.totals",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 3,
+            "columns": 5
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "search.nonbrand",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 7,
+            "rows": 3,
+            "columns": 5
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "search.daily",
+          "owner": "facts",
+          "range": {
+            "row": 13,
+            "column": 0,
+            "rows": 31,
+            "columns": 2
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "search.pages",
+          "owner": "facts",
+          "range": {
+            "row": 48,
+            "column": 0,
+            "rows": 15,
+            "columns": 7
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "search.queries",
+          "owner": "facts",
+          "range": {
+            "row": 67,
+            "column": 0,
+            "rows": 20,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "search.caveats",
+          "owner": "narrative",
+          "range": {
+            "row": 90,
+            "column": 0,
+            "rows": 2,
+            "columns": 8
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "search.pages.read",
+          "owner": "narrative",
+          "range": {
+            "row": 48,
+            "column": 7,
+            "rows": 15,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "431ccb13fc4f1e2f056d21e6540d5318be4b96108ef435cb9920172240be6ba4",
+      "chartSpecs": [
+        {
+          "title": "Daily Google Search clicks",
+          "basicChart": {
+            "chartType": "LINE",
+            "legendPosition": "NO_LEGEND",
+            "axis": [
+              {
+                "position": "BOTTOM_AXIS",
+                "viewWindowOptions": {}
+              },
+              {
+                "position": "LEFT_AXIS",
+                "viewWindowOptions": {}
+              }
+            ],
+            "domains": [
+              {
+                "domain": {
+                  "sourceRange": {
+                    "sources": [
+                      {
+                        "sheetId": 542256201,
+                        "startRowIndex": 12,
+                        "endRowIndex": 44,
+                        "startColumnIndex": 0,
+                        "endColumnIndex": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "series": [
+              {
+                "series": {
+                  "sourceRange": {
+                    "sources": [
+                      {
+                        "sheetId": 542256201,
+                        "startRowIndex": 12,
+                        "endRowIndex": 44,
+                        "startColumnIndex": 1,
+                        "endColumnIndex": 2
+                      }
+                    ]
+                  }
+                },
+                "targetAxis": "LEFT_AXIS"
+              }
+            ],
+            "headerCount": 1
+          },
+          "hiddenDimensionStrategy": "SKIP_HIDDEN_ROWS_AND_COLUMNS",
+          "titleTextFormat": {
+            "fontFamily": "Roboto"
+          },
+          "fontName": "Roboto"
+        }
+      ]
+    },
+    {
+      "title": "Organic Acquisition",
+      "rows": 100,
+      "columns": 13,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Organic Acquisition & Outcomes"
+        },
+        {
+          "row": 2,
+          "column": 0,
+          "text": "GA4 public hostname performance. Current-visit acquisition uses sessionDefaultChannelGroup=Organic Search."
+        },
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Organic Search period comparison"
+        },
+        {
+          "row": 5,
+          "column": 0,
+          "text": "Period"
+        },
+        {
+          "row": 5,
+          "column": 1,
+          "text": "Sessions"
+        },
+        {
+          "row": 5,
+          "column": 2,
+          "text": "Active users"
+        },
+        {
+          "row": 5,
+          "column": 3,
+          "text": "Engagement rate"
+        },
+        {
+          "row": 5,
+          "column": 4,
+          "text": "Key events"
+        },
+        {
+          "row": 5,
+          "column": 5,
+          "text": "Session key-event rate"
+        },
+        {
+          "row": 12,
+          "column": 0,
+          "text": "Current period key events"
+        },
+        {
+          "row": 13,
+          "column": 0,
+          "text": "Event"
+        },
+        {
+          "row": 13,
+          "column": 1,
+          "text": "Current period"
+        },
+        {
+          "row": 13,
+          "column": 2,
+          "text": "Previous period"
+        },
+        {
+          "row": 13,
+          "column": 3,
+          "text": "MoM change"
+        },
+        {
+          "row": 13,
+          "column": 4,
+          "text": "Year ago"
+        },
+        {
+          "row": 13,
+          "column": 5,
+          "text": "Comparability"
+        },
+        {
+          "row": 25,
+          "column": 0,
+          "text": "Current period all-channel context"
+        },
+        {
+          "row": 26,
+          "column": 0,
+          "text": "Channel"
+        },
+        {
+          "row": 26,
+          "column": 1,
+          "text": "Sessions"
+        },
+        {
+          "row": 26,
+          "column": 2,
+          "text": "Share of sessions"
+        },
+        {
+          "row": 26,
+          "column": 3,
+          "text": "Engagement rate"
+        },
+        {
+          "row": 26,
+          "column": 4,
+          "text": "Key events"
+        },
+        {
+          "row": 46,
+          "column": 0,
+          "text": "Top Current period Organic Search landing pages"
+        },
+        {
+          "row": 47,
+          "column": 0,
+          "text": "Landing page"
+        },
+        {
+          "row": 47,
+          "column": 1,
+          "text": "Sessions"
+        },
+        {
+          "row": 47,
+          "column": 2,
+          "text": "Active users"
+        },
+        {
+          "row": 47,
+          "column": 3,
+          "text": "Engagement rate"
+        },
+        {
+          "row": 47,
+          "column": 4,
+          "text": "Key events"
+        },
+        {
+          "row": 47,
+          "column": 5,
+          "text": "Session key-event rate"
+        },
+        {
+          "row": 47,
+          "column": 6,
+          "text": "Read"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "acquisition.totals",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 3,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "acquisition.events",
+          "owner": "facts",
+          "range": {
+            "row": 14,
+            "column": 0,
+            "rows": 4,
+            "columns": 5
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "acquisition.boundary",
+          "owner": "facts",
+          "range": {
+            "row": 19,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "acquisition.channels",
+          "owner": "facts",
+          "range": {
+            "row": 27,
+            "column": 0,
+            "rows": 10,
+            "columns": 5
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "acquisition.pages",
+          "owner": "facts",
+          "range": {
+            "row": 48,
+            "column": 0,
+            "rows": 20,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "acquisition.events.read",
+          "owner": "narrative",
+          "range": {
+            "row": 14,
+            "column": 5,
+            "rows": 4,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "acquisition.pages.read",
+          "owner": "narrative",
+          "range": {
+            "row": 48,
+            "column": 6,
+            "rows": 20,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "f0f870ed1cc305939f0db196bc11443d2d3936666f8379b0927859da481238a8",
+      "chartSpecs": [
+        {
+          "title": "Organic sessions and active users by period",
+          "basicChart": {
+            "chartType": "COLUMN",
+            "legendPosition": "BOTTOM_LEGEND",
+            "axis": [
+              {
+                "position": "BOTTOM_AXIS",
+                "viewWindowOptions": {}
+              },
+              {
+                "position": "LEFT_AXIS",
+                "viewWindowOptions": {}
+              }
+            ],
+            "domains": [
+              {
+                "domain": {
+                  "sourceRange": {
+                    "sources": [
+                      {
+                        "sheetId": 1181234765,
+                        "startRowIndex": 5,
+                        "endRowIndex": 9,
+                        "startColumnIndex": 0,
+                        "endColumnIndex": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "series": [
+              {
+                "series": {
+                  "sourceRange": {
+                    "sources": [
+                      {
+                        "sheetId": 1181234765,
+                        "startRowIndex": 5,
+                        "endRowIndex": 9,
+                        "startColumnIndex": 1,
+                        "endColumnIndex": 2
+                      }
+                    ]
+                  }
+                },
+                "targetAxis": "LEFT_AXIS"
+              },
+              {
+                "series": {
+                  "sourceRange": {
+                    "sources": [
+                      {
+                        "sheetId": 1181234765,
+                        "startRowIndex": 5,
+                        "endRowIndex": 9,
+                        "startColumnIndex": 2,
+                        "endColumnIndex": 3
+                      }
+                    ]
+                  }
+                },
+                "targetAxis": "LEFT_AXIS"
+              }
+            ],
+            "headerCount": 1
+          },
+          "hiddenDimensionStrategy": "SKIP_HIDDEN_ROWS_AND_COLUMNS",
+          "titleTextFormat": {
+            "fontFamily": "Roboto"
+          },
+          "fontName": "Roboto"
+        },
+        {
+          "title": "Public-site sessions by channel",
+          "basicChart": {
+            "chartType": "COLUMN",
+            "legendPosition": "NO_LEGEND",
+            "axis": [
+              {
+                "position": "BOTTOM_AXIS",
+                "viewWindowOptions": {}
+              },
+              {
+                "position": "LEFT_AXIS",
+                "viewWindowOptions": {}
+              }
+            ],
+            "domains": [
+              {
+                "domain": {
+                  "sourceRange": {
+                    "sources": [
+                      {
+                        "sheetId": 1181234765,
+                        "startRowIndex": 26,
+                        "endRowIndex": 37,
+                        "startColumnIndex": 0,
+                        "endColumnIndex": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "series": [
+              {
+                "series": {
+                  "sourceRange": {
+                    "sources": [
+                      {
+                        "sheetId": 1181234765,
+                        "startRowIndex": 26,
+                        "endRowIndex": 37,
+                        "startColumnIndex": 1,
+                        "endColumnIndex": 2
+                      }
+                    ]
+                  }
+                },
+                "targetAxis": "LEFT_AXIS"
+              }
+            ],
+            "headerCount": 1
+          },
+          "hiddenDimensionStrategy": "SKIP_HIDDEN_ROWS_AND_COLUMNS",
+          "titleTextFormat": {
+            "fontFamily": "Roboto"
+          },
+          "fontName": "Roboto"
+        }
+      ]
+    },
+    {
+      "title": "Content & Landing Pages",
+      "rows": 106,
+      "columns": 13,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Content & Landing-Page Performance"
+        },
+        {
+          "row": 2,
+          "column": 0,
+          "text": "A normalized page-level view combining GSC visibility with GA4 Organic Search behavior where an exact public path match exists."
+        },
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Current period joined page view"
+        },
+        {
+          "row": 5,
+          "column": 0,
+          "text": "Page"
+        },
+        {
+          "row": 5,
+          "column": 1,
+          "text": "Type"
+        },
+        {
+          "row": 5,
+          "column": 2,
+          "text": "GSC clicks"
+        },
+        {
+          "row": 5,
+          "column": 3,
+          "text": "Impressions"
+        },
+        {
+          "row": 5,
+          "column": 4,
+          "text": "CTR"
+        },
+        {
+          "row": 5,
+          "column": 5,
+          "text": "Position"
+        },
+        {
+          "row": 5,
+          "column": 6,
+          "text": "MoM clicks"
+        },
+        {
+          "row": 5,
+          "column": 7,
+          "text": "YoY clicks"
+        },
+        {
+          "row": 5,
+          "column": 8,
+          "text": "GA sessions"
+        },
+        {
+          "row": 5,
+          "column": 9,
+          "text": "Engagement rate"
+        },
+        {
+          "row": 5,
+          "column": 10,
+          "text": "Key events"
+        },
+        {
+          "row": 5,
+          "column": 11,
+          "text": "Session key-event rate"
+        },
+        {
+          "row": 48,
+          "column": 0,
+          "text": "Content and page-type rollup"
+        },
+        {
+          "row": 49,
+          "column": 0,
+          "text": "Page type"
+        },
+        {
+          "row": 49,
+          "column": 1,
+          "text": "Pages"
+        },
+        {
+          "row": 49,
+          "column": 2,
+          "text": "GSC clicks"
+        },
+        {
+          "row": 49,
+          "column": 3,
+          "text": "Impressions"
+        },
+        {
+          "row": 49,
+          "column": 4,
+          "text": "CTR"
+        },
+        {
+          "row": 49,
+          "column": 5,
+          "text": "GA sessions"
+        },
+        {
+          "row": 49,
+          "column": 6,
+          "text": "Engagement rate"
+        },
+        {
+          "row": 49,
+          "column": 7,
+          "text": "Key events"
+        },
+        {
+          "row": 49,
+          "column": 8,
+          "text": "Session key-event rate"
+        },
+        {
+          "row": 64,
+          "column": 0,
+          "text": "Page-level actions"
+        },
+        {
+          "row": 65,
+          "column": 0,
+          "text": "Priority"
+        },
+        {
+          "row": 65,
+          "column": 1,
+          "text": "Page / group"
+        },
+        {
+          "row": 65,
+          "column": 2,
+          "text": "Observed evidence"
+        },
+        {
+          "row": 65,
+          "column": 3,
+          "text": "Recommended action"
+        },
+        {
+          "row": 65,
+          "column": 4,
+          "text": "Confidence"
+        },
+        {
+          "row": 65,
+          "column": 5,
+          "text": "Measurement signal"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "content.pages",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 40,
+            "columns": 12
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "content.rollup",
+          "owner": "facts",
+          "range": {
+            "row": 50,
+            "column": 0,
+            "rows": 12,
+            "columns": 9
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "content.actions",
+          "owner": "narrative",
+          "range": {
+            "row": 66,
+            "column": 0,
+            "rows": 5,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "ed9a8d37c83ecc236d847f4aae2f3209f351de7a96556e0cfb97039d2f246e8a",
+      "chartSpecs": []
+    },
+    {
+      "title": "Content Pillar Performance",
+      "rows": 100,
+      "columns": 13,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Patient Content-Pillar Performance"
+        },
+        {
+          "row": 2,
+          "column": 0,
+          "text": "One bounded view of the approved patient Search TAM, modeled public-site rankings, and exact-query Search Console evidence. Snapshot dates and comparison eligibility are recorded below."
+        },
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Approved patient pillar performance"
+        },
+        {
+          "row": 5,
+          "column": 0,
+          "text": "Content pillar"
+        },
+        {
+          "row": 5,
+          "column": 1,
+          "text": "Core keyword rows"
+        },
+        {
+          "row": 5,
+          "column": 2,
+          "text": "Core Search TAM"
+        },
+        {
+          "row": 5,
+          "column": 3,
+          "text": "Confirmed serviceable TAM"
+        },
+        {
+          "row": 5,
+          "column": 4,
+          "text": "Conditional TAM"
+        },
+        {
+          "row": 5,
+          "column": 5,
+          "text": "Ranking keywords"
+        },
+        {
+          "row": 5,
+          "column": 6,
+          "text": "Top 10"
+        },
+        {
+          "row": 5,
+          "column": 7,
+          "text": "Top 20"
+        },
+        {
+          "row": 5,
+          "column": 8,
+          "text": "Top-10 TAM coverage"
+        },
+        {
+          "row": 5,
+          "column": 9,
+          "text": "Best position"
+        },
+        {
+          "row": 5,
+          "column": 10,
+          "text": "Current exact-match GSC impressions"
+        },
+        {
+          "row": 5,
+          "column": 11,
+          "text": "Previous impressions"
+        },
+        {
+          "row": 5,
+          "column": 12,
+          "text": "MoM impression change"
+        },
+        {
+          "row": 15,
+          "column": 0,
+          "text": "Leadership interpretation"
+        },
+        {
+          "row": 16,
+          "column": 0,
+          "text": "Signal"
+        },
+        {
+          "row": 16,
+          "column": 2,
+          "text": "Current period evidence"
+        },
+        {
+          "row": 16,
+          "column": 4,
+          "text": "Interpretation"
+        },
+        {
+          "row": 16,
+          "column": 8,
+          "text": "How to use it next month"
+        },
+        {
+          "row": 23,
+          "column": 0,
+          "text": "Highest-volume confirmed opportunities without a public-site ranking"
+        },
+        {
+          "row": 24,
+          "column": 0,
+          "text": "Content pillar"
+        },
+        {
+          "row": 24,
+          "column": 3,
+          "text": "Top confirmed opportunities"
+        },
+        {
+          "row": 24,
+          "column": 8,
+          "text": "Interpretation boundary"
+        },
+        {
+          "row": 34,
+          "column": 0,
+          "text": "Measurement boundary"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "pillars.metrics",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 7,
+            "columns": 13
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "pillars.interpretation",
+          "owner": "narrative",
+          "range": {
+            "row": 17,
+            "column": 0,
+            "rows": 4,
+            "columns": 13
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "pillars.opportunities",
+          "owner": "facts",
+          "range": {
+            "row": 25,
+            "column": 0,
+            "rows": 7,
+            "columns": 13
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "pillars.boundary",
+          "owner": "facts",
+          "range": {
+            "row": 35,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "d1e13cf066e027ccb4f00f894775d5693a7e217b90d3421e967e764904150178",
+      "chartSpecs": []
+    },
+    {
+      "title": "Market & Keywords",
+      "rows": 100,
+      "columns": 13,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Market & Keyword Context"
+        },
+        {
+          "row": 2,
+          "column": 0,
+          "text": "Semrush is directional third-party context. Search Console remains the first-party source for actual Google visibility and clicks."
+        },
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Semrush domain overview"
+        },
+        {
+          "row": 5,
+          "column": 0,
+          "text": "Period"
+        },
+        {
+          "row": 5,
+          "column": 1,
+          "text": "Ranking keywords"
+        },
+        {
+          "row": 5,
+          "column": 2,
+          "text": "Estimated traffic"
+        },
+        {
+          "row": 5,
+          "column": 3,
+          "text": "Estimated traffic cost"
+        },
+        {
+          "row": 5,
+          "column": 4,
+          "text": "Semrush rank"
+        },
+        {
+          "row": 12,
+          "column": 0,
+          "text": "Top Semrush estimated-traffic keywords - Current period"
+        },
+        {
+          "row": 13,
+          "column": 0,
+          "text": "Keyword"
+        },
+        {
+          "row": 13,
+          "column": 1,
+          "text": "Class"
+        },
+        {
+          "row": 13,
+          "column": 2,
+          "text": "Estimated traffic share"
+        },
+        {
+          "row": 13,
+          "column": 3,
+          "text": "Implication"
+        },
+        {
+          "row": 21,
+          "column": 0,
+          "text": "Strategic read"
+        },
+        {
+          "row": 22,
+          "column": 0,
+          "text": "Evidence"
+        },
+        {
+          "row": 22,
+          "column": 1,
+          "text": "What it means"
+        },
+        {
+          "row": 22,
+          "column": 2,
+          "text": "What to do next"
+        },
+        {
+          "row": 22,
+          "column": 3,
+          "text": "Confidence"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "market.overview",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 3,
+            "columns": 5
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "market.topKeywords",
+          "owner": "facts",
+          "range": {
+            "row": 14,
+            "column": 0,
+            "rows": 5,
+            "columns": 3
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "market.read",
+          "owner": "narrative",
+          "range": {
+            "row": 23,
+            "column": 0,
+            "rows": 5,
+            "columns": 4
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "market.topKeywords.read",
+          "owner": "narrative",
+          "range": {
+            "row": 14,
+            "column": 3,
+            "rows": 5,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "cd41b641659b83a0561586cdb0fcedbbdb39e2a6e4bcd5b3e6be5d99f9f556be",
+      "chartSpecs": [
+        {
+          "title": "Estimated ranking keyword footprint",
+          "basicChart": {
+            "chartType": "COLUMN",
+            "legendPosition": "NO_LEGEND",
+            "axis": [
+              {
+                "position": "BOTTOM_AXIS",
+                "viewWindowOptions": {}
+              },
+              {
+                "position": "LEFT_AXIS",
+                "viewWindowOptions": {}
+              }
+            ],
+            "domains": [
+              {
+                "domain": {
+                  "sourceRange": {
+                    "sources": [
+                      {
+                        "sheetId": 2007613143,
+                        "startRowIndex": 5,
+                        "endRowIndex": 9,
+                        "startColumnIndex": 0,
+                        "endColumnIndex": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "series": [
+              {
+                "series": {
+                  "sourceRange": {
+                    "sources": [
+                      {
+                        "sheetId": 2007613143,
+                        "startRowIndex": 5,
+                        "endRowIndex": 9,
+                        "startColumnIndex": 1,
+                        "endColumnIndex": 2
+                      }
+                    ]
+                  }
+                },
+                "targetAxis": "LEFT_AXIS"
+              }
+            ],
+            "headerCount": 1
+          },
+          "hiddenDimensionStrategy": "SKIP_HIDDEN_ROWS_AND_COLUMNS",
+          "titleTextFormat": {
+            "fontFamily": "Roboto"
+          },
+          "fontName": "Roboto"
+        }
+      ]
+    },
+    {
+      "title": "Work & Actions",
+      "rows": 100,
+      "columns": 13,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Work Completed & Action Queue"
+        },
+        {
+          "row": 2,
+          "column": 0,
+          "text": "Project context explains what changed; performance movements are observations and are not attributed causally without controlled evidence."
+        },
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Current period project context"
+        },
+        {
+          "row": 5,
+          "column": 0,
+          "text": "Workstream"
+        },
+        {
+          "row": 5,
+          "column": 1,
+          "text": "Current period progress"
+        },
+        {
+          "row": 5,
+          "column": 2,
+          "text": "Why it matters"
+        },
+        {
+          "row": 5,
+          "column": 3,
+          "text": "Status / evidence boundary"
+        },
+        {
+          "row": 12,
+          "column": 0,
+          "text": "Prioritized action queue"
+        },
+        {
+          "row": 13,
+          "column": 0,
+          "text": "Priority"
+        },
+        {
+          "row": 13,
+          "column": 1,
+          "text": "Action"
+        },
+        {
+          "row": 13,
+          "column": 2,
+          "text": "Owner / decision"
+        },
+        {
+          "row": 13,
+          "column": 3,
+          "text": "Evidence"
+        },
+        {
+          "row": 13,
+          "column": 4,
+          "text": "Expected signal"
+        },
+        {
+          "row": 13,
+          "column": 5,
+          "text": "Timing"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "work.completed",
+          "owner": "narrative",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 4,
+            "columns": 4
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "work.actions",
+          "owner": "narrative",
+          "range": {
+            "row": 14,
+            "column": 0,
+            "rows": 6,
+            "columns": 6
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "1a8162e7e7069fb5ffe0682e0ccd6fc1ace70801c7fea5703272d15a38ca7ad9",
+      "chartSpecs": []
+    },
+    {
+      "title": "Methodology",
+      "rows": 100,
+      "columns": 13,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Methodology, Scope & Limitations"
+        },
+        {
+          "row": 2,
+          "column": 0,
+          "text": "Use this tab to reproduce the report and understand where comparisons are or are not valid."
+        },
+        {
+          "row": 4,
+          "column": 0,
+          "text": "Reporting contract"
+        },
+        {
+          "row": 5,
+          "column": 0,
+          "text": "Item"
+        },
+        {
+          "row": 5,
+          "column": 1,
+          "text": "Definition"
+        },
+        {
+          "row": 5,
+          "column": 2,
+          "text": "Why it matters"
+        },
+        {
+          "row": 17,
+          "column": 0,
+          "text": "Source responsibilities and caveats"
+        },
+        {
+          "row": 18,
+          "column": 0,
+          "text": "Source"
+        },
+        {
+          "row": 18,
+          "column": 1,
+          "text": "Use in this report"
+        },
+        {
+          "row": 18,
+          "column": 2,
+          "text": "Do not interpret as"
+        },
+        {
+          "row": 18,
+          "column": 3,
+          "text": "Freshness / limitation"
+        },
+        {
+          "row": 18,
+          "column": 4,
+          "text": "Source URL"
+        },
+        {
+          "row": 25,
+          "column": 0,
+          "text": "Data-quality notes"
+        },
+        {
+          "row": 26,
+          "column": 0,
+          "text": "Issue"
+        },
+        {
+          "row": 26,
+          "column": 1,
+          "text": "Treatment in report"
+        },
+        {
+          "row": 26,
+          "column": 2,
+          "text": "Follow-up"
+        },
+        {
+          "row": 34,
+          "column": 0,
+          "text": "Authoritative methodology references"
+        },
+        {
+          "row": 35,
+          "column": 0,
+          "text": "Topic"
+        },
+        {
+          "row": 35,
+          "column": 1,
+          "text": "URL"
+        },
+        {
+          "row": 43,
+          "column": 0,
+          "text": "Audience and conversion registry"
+        },
+        {
+          "row": 44,
+          "column": 0,
+          "text": "Audience"
+        },
+        {
+          "row": 44,
+          "column": 1,
+          "text": "Route assignment"
+        },
+        {
+          "row": 44,
+          "column": 2,
+          "text": "Canonical conversion"
+        },
+        {
+          "row": 44,
+          "column": 3,
+          "text": "Current period measurement status"
+        },
+        {
+          "row": 44,
+          "column": 4,
+          "text": "Interpretation boundary"
+        },
+        {
+          "row": 51,
+          "column": 0,
+          "text": "Driver and legacy-route evidence"
+        },
+        {
+          "row": 52,
+          "column": 0,
+          "text": "Item"
+        },
+        {
+          "row": 52,
+          "column": 1,
+          "text": "Method / evidence"
+        },
+        {
+          "row": 52,
+          "column": 2,
+          "text": "Use in leadership discussion"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "method.contract",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 10,
+            "columns": 3
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "method.sources",
+          "owner": "facts",
+          "range": {
+            "row": 19,
+            "column": 0,
+            "rows": 4,
+            "columns": 5
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "method.quality",
+          "owner": "narrative",
+          "range": {
+            "row": 27,
+            "column": 0,
+            "rows": 7,
+            "columns": 3
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "method.references",
+          "owner": "facts",
+          "range": {
+            "row": 36,
+            "column": 0,
+            "rows": 5,
+            "columns": 2
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "method.audiences",
+          "owner": "facts",
+          "range": {
+            "row": 45,
+            "column": 0,
+            "rows": 4,
+            "columns": 5
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "method.drivers",
+          "owner": "narrative",
+          "range": {
+            "row": 53,
+            "column": 0,
+            "rows": 3,
+            "columns": 3
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        }
+      ],
+      "styleSha256": "d28632ca44e2641849375cdddb6cf04ae005ca7549102eda7add0950f1cc22b6",
+      "chartSpecs": []
+    },
+    {
+      "title": "Raw - GSC",
+      "rows": 100,
+      "columns": 14,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Raw - Google Search Console"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "raw.gsc.scope",
+          "owner": "facts",
+          "range": {
+            "row": 2,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "raw.gsc.headers",
+          "owner": "facts",
+          "range": {
+            "row": 5,
+            "column": 0,
+            "rows": 1,
+            "columns": 14
+          },
+          "numericColumns": [4, 5, 6, 7, 8],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "raw.gsc",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 94,
+            "columns": 14
+          },
+          "expandRows": 20000,
+          "numericColumns": [8],
+          "percentColumns": [],
+          "decimalColumns": [],
+          "resetNumberFormat": true
+        }
+      ],
+      "styleSha256": "1ef6b70e3b9529339f26e90c39988a6b4924c37696c1d793ec8224b94526ac04",
+      "chartSpecs": []
+    },
+    {
+      "title": "Raw - GA4",
+      "rows": 100,
+      "columns": 14,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Raw - Google Analytics 4"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "raw.ga4.scope",
+          "owner": "facts",
+          "range": {
+            "row": 2,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "raw.ga4.headers",
+          "owner": "facts",
+          "range": {
+            "row": 5,
+            "column": 0,
+            "rows": 1,
+            "columns": 14
+          },
+          "numericColumns": [3, 4],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "raw.ga4",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 94,
+            "columns": 14
+          },
+          "expandRows": 20000,
+          "numericColumns": [4],
+          "percentColumns": [],
+          "decimalColumns": [],
+          "resetNumberFormat": true
+        }
+      ],
+      "styleSha256": "6ff1f29268634fc5683fce8bd1725e21fa32450bf857b9c041259e77b0198ec0",
+      "chartSpecs": []
+    },
+    {
+      "title": "Raw - Semrush",
+      "rows": 100,
+      "columns": 14,
+      "staticCells": [
+        {
+          "row": 0,
+          "column": 0,
+          "text": "Raw - Semrush"
+        }
+      ],
+      "bindings": [
+        {
+          "id": "raw.semrush.scope",
+          "owner": "facts",
+          "range": {
+            "row": 2,
+            "column": 0,
+            "rows": 1,
+            "columns": 1
+          },
+          "numericColumns": [],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "raw.semrush.headers",
+          "owner": "facts",
+          "range": {
+            "row": 5,
+            "column": 0,
+            "rows": 1,
+            "columns": 14
+          },
+          "numericColumns": [2, 4, 5, 8],
+          "percentColumns": [],
+          "decimalColumns": []
+        },
+        {
+          "id": "raw.semrush",
+          "owner": "facts",
+          "range": {
+            "row": 6,
+            "column": 0,
+            "rows": 94,
+            "columns": 14
+          },
+          "expandRows": 20000,
+          "numericColumns": [2, 8],
+          "percentColumns": [],
+          "decimalColumns": [],
+          "resetNumberFormat": true
+        }
+      ],
+      "styleSha256": "e0694666b70c798974c3f33939b0e0a329f685c999d9af8a5cd939cb074d3024",
+      "chartSpecs": []
+    }
+  ]
+}

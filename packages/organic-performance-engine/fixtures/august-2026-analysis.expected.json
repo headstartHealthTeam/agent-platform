@@ -1,0 +1,660 @@
+{
+  "canonicalOutcomes": {
+    "bcbas": {
+      "current": 10,
+      "eventName": "interest_form_submit",
+      "mom": {
+        "absoluteChange": 4.0,
+        "relativeChange": 0.6666666666666666,
+        "status": "comparable"
+      },
+      "previous": 6,
+      "status": "measured",
+      "yearAgo": null,
+      "yoy": {
+        "absoluteChange": null,
+        "relativeChange": null,
+        "status": "missing"
+      }
+    },
+    "families": {
+      "current": null,
+      "eventName": null,
+      "mom": {
+        "absoluteChange": null,
+        "relativeChange": null,
+        "status": "missing"
+      },
+      "previous": null,
+      "status": "measurement_pending",
+      "yearAgo": null,
+      "yoy": {
+        "absoluteChange": null,
+        "relativeChange": null,
+        "status": "missing"
+      }
+    },
+    "rbts": {
+      "current": null,
+      "eventName": null,
+      "mom": {
+        "absoluteChange": null,
+        "relativeChange": null,
+        "status": "missing"
+      },
+      "previous": null,
+      "status": "measurement_pending",
+      "yearAgo": null,
+      "yoy": {
+        "absoluteChange": null,
+        "relativeChange": null,
+        "status": "missing"
+      }
+    }
+  },
+  "contentPillars": {
+    "pillars": {
+      "ABA basics, evidence, and ethical-care foundation": {
+        "conditionalSearchVolume": 23310,
+        "confirmedSearchVolume": 222790,
+        "confirmedTop10Coverage": 0.0,
+        "currentExactGscImpressions": 0,
+        "keywordRows": 2,
+        "previousExactGscImpressions": 0,
+        "rankingKeywords": 0,
+        "searchVolume": 246100,
+        "top10Keywords": 0
+      },
+      "Caregiver partnership, progress, and transition": {
+        "conditionalSearchVolume": 330,
+        "confirmedSearchVolume": 4280,
+        "confirmedTop10Coverage": 0.0,
+        "currentExactGscImpressions": 0,
+        "keywordRows": 2,
+        "previousExactGscImpressions": 0,
+        "rankingKeywords": 0,
+        "searchVolume": 4610,
+        "top10Keywords": 0
+      },
+      "Finding and choosing local ABA care": {
+        "conditionalSearchVolume": 44450,
+        "confirmedSearchVolume": 0,
+        "confirmedTop10Coverage": null,
+        "currentExactGscImpressions": 1,
+        "keywordRows": 1,
+        "previousExactGscImpressions": 4,
+        "rankingKeywords": 0,
+        "searchVolume": 44450,
+        "top10Keywords": 0
+      },
+      "Insurance, cost, and authorization": {
+        "conditionalSearchVolume": 7430,
+        "confirmedSearchVolume": 9480,
+        "confirmedTop10Coverage": 0.0,
+        "currentExactGscImpressions": 8,
+        "keywordRows": 2,
+        "previousExactGscImpressions": 0,
+        "rankingKeywords": 0,
+        "searchVolume": 16910,
+        "top10Keywords": 0
+      },
+      "Starting ABA after a diagnosis": {
+        "conditionalSearchVolume": 0,
+        "confirmedSearchVolume": 490,
+        "confirmedTop10Coverage": 0.0,
+        "currentExactGscImpressions": 3,
+        "keywordRows": 1,
+        "previousExactGscImpressions": 0,
+        "rankingKeywords": 0,
+        "searchVolume": 490,
+        "top10Keywords": 0
+      },
+      "Therapy fit and care model": {
+        "conditionalSearchVolume": 28380,
+        "confirmedSearchVolume": 15040,
+        "confirmedTop10Coverage": 0.0,
+        "currentExactGscImpressions": 0,
+        "keywordRows": 2,
+        "previousExactGscImpressions": 12,
+        "rankingKeywords": 0,
+        "searchVolume": 43420,
+        "top10Keywords": 0
+      },
+      "What to expect from assessment, team, and first sessions": {
+        "conditionalSearchVolume": 20,
+        "confirmedSearchVolume": 2150,
+        "confirmedTop10Coverage": 0.0,
+        "currentExactGscImpressions": 0,
+        "keywordRows": 2,
+        "previousExactGscImpressions": 0,
+        "rankingKeywords": 0,
+        "searchVolume": 2170,
+        "top10Keywords": 0
+      }
+    },
+    "summary": {
+      "confirmedSearchVolume": 254230,
+      "confirmedTop10Coverage": 0.0,
+      "keywordRows": 12,
+      "searchVolume": 358150,
+      "semrushExactMatches": 0
+    }
+  },
+  "inputSha256": "be3dcd0310c1ae1896962ab39279becb03988b02e037015092508506252be45e",
+  "interpretationContract": {
+    "agentMustClassifyClaimsAs": ["observed", "inferred", "recommended"],
+    "causalClaimsRequireIndependentEvidence": true,
+    "deterministicOutputEndsHere": true,
+    "historicalContext": {
+      "policyVersion": "organic-historical-context/v1",
+      "policyBasis": "approved_operating_policy_not_industry_standard",
+      "evidenceStatus": "requires_agent_collection_and_coverage_verification",
+      "changeHistory": {
+        "months": 12,
+        "startDate": "2025-09-01",
+        "endDate": "2026-08-31"
+      },
+      "metricHistory": {
+        "months": 16,
+        "startDate": "2025-05-01",
+        "endDate": "2026-08-31"
+      },
+      "retainOlderMaterialInitiatives": true,
+      "performanceEvidenceCutoff": "2026-08-31",
+      "sameMonthReleaseRequired": false,
+      "observationWindowOwner": "agent_per_initiative",
+      "evidencePacketRequired": true
+    }
+  },
+  "kpis": {
+    "ga4.engagement_rate": {
+      "current": 0.6019607843137255,
+      "mom": {
+        "percentagePointChange": -14.803921568627453,
+        "relativeChange": null,
+        "status": "comparable"
+      },
+      "previous": 0.75,
+      "yearAgo": 0.5983379501385041,
+      "yoy": {
+        "percentagePointChange": 0.36228341752213566,
+        "relativeChange": null,
+        "status": "comparable"
+      }
+    },
+    "ga4.key_events": {
+      "current": 55,
+      "mom": {
+        "absoluteChange": 29.0,
+        "relativeChange": 1.1153846153846154,
+        "status": "comparable"
+      },
+      "previous": 26,
+      "yearAgo": 21,
+      "yoy": {
+        "absoluteChange": 34.0,
+        "relativeChange": 1.619047619047619,
+        "status": "comparable"
+      }
+    },
+    "ga4.organic_sessions": {
+      "current": 510,
+      "mom": {
+        "absoluteChange": -26.0,
+        "relativeChange": -0.048507462686567165,
+        "status": "comparable"
+      },
+      "previous": 536,
+      "yearAgo": 722,
+      "yoy": {
+        "absoluteChange": -212.0,
+        "relativeChange": -0.29362880886426596,
+        "status": "comparable"
+      }
+    },
+    "gsc.average_position": {
+      "current": 12.262663006177076,
+      "mom": {
+        "absoluteChange": 1.3524181511372682,
+        "relativeChange": null,
+        "status": "comparable"
+      },
+      "previous": 10.910244855039808,
+      "yearAgo": 7.67006200177148,
+      "yoy": {
+        "absoluteChange": 4.592601004405597,
+        "relativeChange": null,
+        "status": "comparable"
+      }
+    },
+    "gsc.clicks": {
+      "current": 497,
+      "mom": {
+        "absoluteChange": -136.0,
+        "relativeChange": -0.21484992101105846,
+        "status": "comparable"
+      },
+      "previous": 633,
+      "yearAgo": 433,
+      "yoy": {
+        "absoluteChange": 64.0,
+        "relativeChange": 0.14780600461893764,
+        "status": "comparable"
+      }
+    },
+    "gsc.ctr": {
+      "current": 0.034111187371310914,
+      "mom": {
+        "percentagePointChange": -1.3432751339820228,
+        "relativeChange": null,
+        "status": "comparable"
+      },
+      "previous": 0.04754393871113114,
+      "yearAgo": 0.06392087392973132,
+      "yoy": {
+        "percentagePointChange": -2.980968655842041,
+        "relativeChange": null,
+        "status": "comparable"
+      }
+    },
+    "gsc.impressions": {
+      "current": 14570,
+      "mom": {
+        "absoluteChange": 1256.0,
+        "relativeChange": 0.09433678834309749,
+        "status": "comparable"
+      },
+      "previous": 13314,
+      "yearAgo": 6774,
+      "yoy": {
+        "absoluteChange": 7796.0,
+        "relativeChange": 1.150870977266017,
+        "status": "comparable"
+      }
+    },
+    "gsc.nonbranded_clicks": {
+      "current": 2,
+      "mom": {
+        "absoluteChange": -1.0,
+        "relativeChange": -0.3333333333333333,
+        "status": "comparable"
+      },
+      "previous": 3,
+      "yearAgo": 0,
+      "yoy": {
+        "absoluteChange": 2.0,
+        "relativeChange": null,
+        "status": "not_meaningful_zero_baseline"
+      }
+    },
+    "gsc.nonbranded_impressions": {
+      "current": 1156,
+      "mom": {
+        "absoluteChange": -55.0,
+        "relativeChange": -0.04541701073492981,
+        "status": "comparable"
+      },
+      "previous": 1211,
+      "yearAgo": 131,
+      "yoy": {
+        "absoluteChange": 1025.0,
+        "relativeChange": 7.824427480916031,
+        "status": "comparable"
+      }
+    },
+    "semrush.ranking_keywords": {
+      "current": 711,
+      "mom": {
+        "absoluteChange": 204.0,
+        "relativeChange": 0.40236686390532544,
+        "status": "comparable"
+      },
+      "previous": 507,
+      "yearAgo": 69,
+      "yoy": {
+        "absoluteChange": 642.0,
+        "relativeChange": 9.304347826086957,
+        "status": "comparable"
+      }
+    }
+  },
+  "performanceLayers": [
+    {
+      "id": "technical_health",
+      "interpretationOwner": "agent",
+      "metricRefs": []
+    },
+    {
+      "id": "visibility",
+      "interpretationOwner": "agent_from_evidence",
+      "metricRefs": ["gsc.impressions", "gsc.nonbranded_impressions"]
+    },
+    {
+      "id": "acquisition",
+      "interpretationOwner": "agent_from_evidence",
+      "metricRefs": ["gsc.clicks", "ga4.organic_sessions"]
+    },
+    {
+      "id": "engagement",
+      "interpretationOwner": "agent_from_evidence",
+      "metricRefs": ["ga4.engagement_rate"]
+    },
+    {
+      "id": "business_outcomes",
+      "interpretationOwner": "agent_from_evidence",
+      "metricRefs": ["ga4.canonical_outcomes"]
+    },
+    {
+      "id": "market_context",
+      "interpretationOwner": "agent_from_evidence",
+      "metricRefs": ["semrush.ranking_keywords"]
+    }
+  ],
+  "registries": {
+    "audienceIds": ["families", "bcbas", "rbts"],
+    "configVersion": "headstart-organic-2026-09-09",
+    "routeIds": [
+      "homepage",
+      "audience_hubs",
+      "location_content",
+      "editorial_legacy",
+      "conversion_utility"
+    ],
+    "unmatchedAudience": "shared_unassigned",
+    "unmatchedSegment": "other_unmapped"
+  },
+  "report": {
+    "fixtureBoundary": "Headline totals and segment behavior reproduce the approved August workbook. Row-level source records are sanitized representatives because the complete historical exports were not retained.",
+    "periods": [
+      {
+        "endDate": "2026-08-31",
+        "id": "current",
+        "label": "Aug 2026",
+        "startDate": "2026-08-01"
+      },
+      {
+        "endDate": "2026-07-31",
+        "id": "previous",
+        "label": "Jul 2026",
+        "startDate": "2026-07-01"
+      },
+      {
+        "endDate": "2025-08-31",
+        "id": "year_ago",
+        "label": "Aug 2025",
+        "startDate": "2025-08-01"
+      }
+    ],
+    "title": "Headstart Organic Performance - August 2026 regression"
+  },
+  "schemaVersion": "organic-performance-analysis/v1",
+  "segments": {
+    "ga4": {
+      "current": {
+        "audience_hubs": {
+          "engagedSessions": 35,
+          "keyEvents": 10,
+          "sessions": 77
+        },
+        "conversion_utility": {
+          "engagedSessions": 30,
+          "keyEvents": 18,
+          "sessions": 58
+        },
+        "editorial_legacy": {
+          "engagedSessions": 8,
+          "keyEvents": 2,
+          "sessions": 9
+        },
+        "homepage": {
+          "engagedSessions": 207,
+          "keyEvents": 24,
+          "sessions": 290
+        },
+        "location_content": {
+          "engagedSessions": 21,
+          "keyEvents": 1,
+          "sessions": 24
+        },
+        "other_unmapped": {
+          "engagedSessions": 6,
+          "keyEvents": 0,
+          "sessions": 51
+        }
+      },
+      "previous": {
+        "audience_hubs": {
+          "engagedSessions": 45,
+          "keyEvents": 5,
+          "sessions": 73
+        },
+        "conversion_utility": {
+          "engagedSessions": 50,
+          "keyEvents": 7,
+          "sessions": 68
+        },
+        "editorial_legacy": {
+          "engagedSessions": 6,
+          "keyEvents": 1,
+          "sessions": 7
+        },
+        "homepage": {
+          "engagedSessions": 260,
+          "keyEvents": 10,
+          "sessions": 332
+        },
+        "location_content": {
+          "engagedSessions": 12,
+          "keyEvents": 1,
+          "sessions": 15
+        },
+        "other_unmapped": {
+          "engagedSessions": 29,
+          "keyEvents": 2,
+          "sessions": 40
+        }
+      },
+      "year_ago": {
+        "audience_hubs": {
+          "engagedSessions": 28,
+          "keyEvents": 4,
+          "sessions": 52
+        },
+        "conversion_utility": {
+          "engagedSessions": 20,
+          "keyEvents": 5,
+          "sessions": 25
+        },
+        "editorial_legacy": {
+          "engagedSessions": 0,
+          "keyEvents": 0,
+          "sessions": 0
+        },
+        "homepage": {
+          "engagedSessions": 330,
+          "keyEvents": 10,
+          "sessions": 560
+        },
+        "location_content": {
+          "engagedSessions": 0,
+          "keyEvents": 0,
+          "sessions": 0
+        },
+        "other_unmapped": {
+          "engagedSessions": 54,
+          "keyEvents": 2,
+          "sessions": 85
+        }
+      }
+    },
+    "ga4Reconciliation": {
+      "current": {
+        "classifiedTotal": 509,
+        "delta": 1,
+        "sourceTotal": 510
+      },
+      "previous": {
+        "classifiedTotal": 535,
+        "delta": 1,
+        "sourceTotal": 536
+      },
+      "year_ago": {
+        "classifiedTotal": 722,
+        "delta": 0,
+        "sourceTotal": 722
+      }
+    },
+    "gsc": {
+      "current": {
+        "audience_hubs": {
+          "clicks": 87,
+          "impressions": 2097
+        },
+        "conversion_utility": {
+          "clicks": 38,
+          "impressions": 1764
+        },
+        "editorial_legacy": {
+          "clicks": 32,
+          "impressions": 3921
+        },
+        "homepage": {
+          "clicks": 312,
+          "impressions": 3063
+        },
+        "location_content": {
+          "clicks": 25,
+          "impressions": 3375
+        },
+        "other_unmapped": {
+          "clicks": 3,
+          "impressions": 350
+        }
+      },
+      "previous": {
+        "audience_hubs": {
+          "clicks": 102,
+          "impressions": 2271
+        },
+        "conversion_utility": {
+          "clicks": 37,
+          "impressions": 1808
+        },
+        "editorial_legacy": {
+          "clicks": 28,
+          "impressions": 2788
+        },
+        "homepage": {
+          "clicks": 439,
+          "impressions": 3423
+        },
+        "location_content": {
+          "clicks": 27,
+          "impressions": 2671
+        },
+        "other_unmapped": {
+          "clicks": 0,
+          "impressions": 353
+        }
+      },
+      "year_ago": {
+        "audience_hubs": {
+          "clicks": 28,
+          "impressions": 1943
+        },
+        "conversion_utility": {
+          "clicks": 2,
+          "impressions": 1956
+        },
+        "editorial_legacy": {
+          "clicks": 0,
+          "impressions": 0
+        },
+        "homepage": {
+          "clicks": 402,
+          "impressions": 2704
+        },
+        "location_content": {
+          "clicks": 0,
+          "impressions": 0
+        },
+        "other_unmapped": {
+          "clicks": 1,
+          "impressions": 171
+        }
+      }
+    },
+    "gscExcludedHostRows": 0,
+    "gscReconciliation": {
+      "current": {
+        "classifiedTotal": 497,
+        "delta": 0,
+        "sourceTotal": 497
+      },
+      "previous": {
+        "classifiedTotal": 633,
+        "delta": 0,
+        "sourceTotal": 633
+      },
+      "year_ago": {
+        "classifiedTotal": 433,
+        "delta": 0,
+        "sourceTotal": 433
+      }
+    }
+  },
+  "semrush": {
+    "bestPublicHostRankings": {
+      "bcba private practice": {
+        "keyword": "bcba private practice",
+        "position": 21,
+        "searchVolume": 40,
+        "url": "https://headstart.health/blogs/example-one"
+      },
+      "headstart health": {
+        "keyword": "headstart health",
+        "position": 1,
+        "searchVolume": 170,
+        "url": "https://headstart.health/"
+      }
+    },
+    "excludedHostRows": 1
+  },
+  "sourceManifest": {
+    "ga4": {
+      "channelFilter": "sessionDefaultChannelGroup=Organic Search",
+      "complete": true,
+      "extractedAt": "2026-09-09T14:05:00Z",
+      "sourceId": "properties/454799172",
+      "timeZone": "America/Chicago"
+    },
+    "gsc": {
+      "complete": true,
+      "dataState": "final",
+      "extractedAt": "2026-09-09T14:00:00Z",
+      "filters": [
+        {
+          "dimension": "page",
+          "expression": "^https://headstart\\.health/",
+          "operator": "includingRegex"
+        }
+      ],
+      "sourceId": "sc-domain:headstart.health"
+    },
+    "semrush": {
+      "complete": true,
+      "database": "us",
+      "device": "desktop",
+      "extractedAt": "2026-09-09T14:10:00Z",
+      "sourceId": "domain-organic-keywords:headstart.health:us:desktop"
+    },
+    "tam": {
+      "approvedAt": "2026-07-24",
+      "complete": true,
+      "extractedAt": "2026-09-09T14:15:00Z",
+      "fixtureNote": "Sanitized compact universe preserving August aggregate volumes, not the historical 1,525 source rows.",
+      "sourceId": "approved-patient-search-tam:2026-07-24:sanitized-regression",
+      "sourceRevision": "sanitized-august-regression-v1"
+    }
+  }
+}

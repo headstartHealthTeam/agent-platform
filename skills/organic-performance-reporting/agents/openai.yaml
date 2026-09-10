@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Organic Performance Reporting'
+  short_description: 'Report SEO outcomes from GA4, Search Console, and Semrush'
+  default_prompt: 'Use $organic-performance-reporting to produce an evidence-backed organic performance report with Google Search Console visibility, GA4 engagement and outcomes, and Semrush market context.'

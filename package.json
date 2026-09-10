@@ -29,6 +29,7 @@
     "skills:auto-update": "node --import tsx scripts/configure-auto-update.ts",
     "skills:install": "node --import tsx scripts/install-skills.ts",
     "skills:update": "node --import tsx scripts/update-skills.ts",
+    "reporting:package": "node --import tsx scripts/package-organic-runtime.ts",
     "validate:docs": "node --import tsx scripts/validate-documentation.ts",
     "validate:skills": "node --import tsx scripts/validate-skills.ts",
     "validate:workflows": "node --conditions=development --import tsx scripts/validate-workflows.ts",

@@ -1,0 +1,104 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { GcloudReadTokenProvider, GoogleReadTransport } from './transport.js';
+
+describe('Google read transport', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it('caches successful ADC resolution and sanitizes failures', async () => {
+    const run = vi.fn(async () => ' synthetic-token ');
+    const provider = new GcloudReadTokenProvider(run);
+    expect(await provider.getAccessToken()).toBe('synthetic-token');
+    expect(await provider.getAccessToken()).toBe('synthetic-token');
+    expect(run).toHaveBeenCalledTimes(1);
+    await expect(new GcloudReadTokenProvider(async () => '').getAccessToken()).rejects.toThrow(
+      /ADC/
+    );
+    await expect(
+      new GcloudReadTokenProvider(async () => {
+        throw new Error('secret contents');
+      }).getAccessToken()
+    ).rejects.not.toThrow(/secret contents/);
+  });
+  it('uses credentials only on allowed origins and rejects redirects', async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    vi.stubGlobal('fetch', fetcher);
+    const transport = new GoogleReadTransport({
+      getAccessToken: async (): Promise<string> => 'synthetic-token',
+    });
+    await expect(
+      transport.request('https://sheets.googleapis.com/v4/spreadsheets/test')
+    ).resolves.toEqual({
+      ok: true,
+    });
+    await transport.request('https://analyticsdata.googleapis.com/v1beta/properties/1:runReport', {
+      metrics: [],
+    });
+    expect(fetcher.mock.calls).toHaveLength(2);
+    expect(fetcher).toHaveBeenLastCalledWith(
+      expect.any(String),
+      expect.objectContaining({ method: 'POST', redirect: 'error', body: '{"metrics":[]}' })
+    );
+    await expect(transport.request('https://attacker.test/')).rejects.toThrow(/origin/);
+    await expect(transport.request('http://sheets.googleapis.com/')).rejects.toThrow(/origin/);
+    await expect(transport.request('https://user@sheets.googleapis.com/')).rejects.toThrow(
+      /origin/
+    );
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    await expect(
+      transport.request('https://sheets.googleapis.com/v4/spreadsheets/test:batchUpdate', {})
+    ).rejects.toThrow(/allowlist/);
+    await expect(
+      transport.request('https://sheets.googleapis.com/v4/spreadsheets/test', {})
+    ).rejects.toThrow(/allowlist/);
+    await expect(
+      transport.request('https://analyticsdata.googleapis.com/v1beta/properties/1:runReport')
+    ).rejects.toThrow(/allowlist/);
+    await transport.request('https://analyticsadmin.googleapis.com/v1beta/properties/1');
+    await transport.request('https://sheets.googleapis.com/v4/spreadsheets/test/values/range');
+    await transport.request('https://www.googleapis.com/webmasters/v3/sites');
+    await transport.request('https://www.googleapis.com/webmasters/v3/sites/example/sitemaps');
+    await transport.request(
+      'https://www.googleapis.com/webmasters/v3/sites/example/searchAnalytics/query',
+      {}
+    );
+    await expect(
+      transport.request('https://www.googleapis.com/webmasters/v3/sites/example/sitemaps', {})
+    ).rejects.toThrow(/allowlist/);
+  });
+  it('reports structured permission reasons without provider messages', async () => {
+    const transport = new GoogleReadTransport({
+      getAccessToken: async (): Promise<string> => 'synthetic-token',
+    });
+    vi.stubGlobal(
+      'fetch',
+      async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              status: 'PERMISSION_DENIED',
+              message: 'secret contents',
+              details: [{ reason: 'ACCESS_TOKEN_SCOPE_INSUFFICIENT' }],
+            },
+          }),
+          { status: 403 }
+        )
+    );
+    await expect(
+      transport.request('https://sheets.googleapis.com/v4/spreadsheets/test')
+    ).rejects.toThrow(/ACCESS_TOKEN_SCOPE_INSUFFICIENT/);
+    vi.stubGlobal('fetch', async () => new Response('invalid', { status: 500 }));
+    await expect(
+      transport.request('https://sheets.googleapis.com/v4/spreadsheets/test')
+    ).rejects.toThrow(/HTTP 500/);
+    vi.stubGlobal('fetch', async () => new Response('invalid', { status: 200 }));
+    await expect(
+      transport.request('https://sheets.googleapis.com/v4/spreadsheets/test')
+    ).rejects.toThrow(/invalid JSON/);
+    vi.stubGlobal('fetch', async () => {
+      throw new Error('secret contents');
+    });
+    await expect(
+      transport.request('https://sheets.googleapis.com/v4/spreadsheets/test')
+    ).rejects.toThrow(/before a response/);
+  });
+});

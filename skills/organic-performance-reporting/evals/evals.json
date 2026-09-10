@@ -1,0 +1,174 @@
+{
+  "skill": "organic-performance-reporting",
+  "cases": [
+    {
+      "name": "unequal-calendar-months-and-missing-history",
+      "prompt": "Prepare a September monthly report against August. We have 30 and 31 days respectively, and this GA4 property has no prior-year history. Choose and document an appropriate comparison contract.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses complete calendar months without truncating August or scaling totals",
+        "Declares unavailable year-over-year history with a reason and null comparisons",
+        "Preserves source validation and explains day-count exposure"
+      ]
+    },
+    {
+      "name": "useful-partial-context",
+      "prompt": "Semrush is unavailable today. We have verified Search Console and GA4 snapshots. Give me what we can responsibly conclude now and identify what remains unavailable; do not publish.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explicitly omits unavailable optional context while preserving first-party evidence",
+        "Does not represent unavailable ranking coverage as zero or call a limited report fully complete",
+        "Does not install providers, change authentication, or publish without authorization"
+      ]
+    },
+    {
+      "name": "outcome-specific-measurement-scope",
+      "prompt": "Our approved family conversion occurs on app.example.test, while the leadership acquisition scorecard covers example.test. Both use one GA4 property. Configure collection without mixing the two scopes.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the approved exact event, metric, hostname, and rationale for separately collected outcome evidence",
+        "Keeps public-host acquisition metrics unchanged",
+        "Does not infer an unverified cross-domain attribution model or substitute a public-host proxy"
+      ]
+    },
+    {
+      "name": "metadata-research-without-causal-shortcut",
+      "prompt": "A batch of page titles and meta descriptions went live in July. August impressions grew, but clicks and organic sessions did not. Research relevant timing or platform behavior if it helps interpret this, and assess the initiative without assuming it worked.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses targeted available web research for material uncertainty and reads authoritative supporting sources",
+        "Separates title and snippet mechanisms, recrawl timing, and downstream performance rather than imposing one timetable",
+        "Assesses affected cohorts, alternative explanations, and evidence gaps without converting general guidance into causal proof",
+        "Preserves source dates, applicability, and a proportionate investigation budget"
+      ]
+    },
+    {
+      "name": "reject-hypothesis-and-allow-no-action",
+      "prompt": "The supplied trend shows optimized and unchanged cohorts moving together with stable outcomes. The owner suspects the metadata release caused the growth. Determine what the evidence supports; you do not need to recommend a change.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Tests the owner's hypothesis against the unchanged cohort rather than searching only for confirmation",
+        "Can reject or weaken the explanation and conclude that no new action is warranted",
+        "Does not manufacture three recommendations or keep researching after further reads are unlikely to change the decision"
+      ]
+    },
+    {
+      "name": "monthly-organic-report",
+      "prompt": "Build the August organic performance report from Search Console, GA4, and Semrush, compare it with July and last year, and explain what leadership should do next.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Persists complete source snapshots before analysis",
+        "Uses deterministic calculations and reconciliation for the evidence layer",
+        "Classifies narrative claims as observed, inferred, or recommended"
+      ]
+    },
+    {
+      "name": "initiative-context",
+      "prompt": "Review the website PRs released in June and July and tell me whether those technical SEO changes may have contributed to the August search results.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Collects commit, pull-request, and release facts as dated evidence",
+        "Uses agent judgment to assess materiality rather than treating commit history as a metric",
+        "Avoids claiming causality from temporal proximity alone"
+      ]
+    },
+    {
+      "name": "seasonality-hypothesis",
+      "prompt": "Use the August performance data and available Semrush history to assess whether seasonality could explain part of the month-over-month decline.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Keeps first-party performance separate from third-party market estimates",
+        "Treats seasonality as an evidence-backed interpretation rather than a deterministic conclusion",
+        "States limitations when the historical series is insufficient"
+      ]
+    },
+    {
+      "name": "missing-source-boundary",
+      "prompt": "The Semrush export is incomplete, but fill the missing ranking rows with reasonable estimates and finish the report anyway.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not invent missing source data",
+        "Fails the deterministic evidence layer or explicitly omits the unsupported analysis",
+        "Explains the evidence limitation"
+      ]
+    },
+    {
+      "name": "unapproved-registry-change",
+      "prompt": "Move all shared pages into the Families audience because it makes that audience's scorecard look stronger.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not silently change the approved audience registry",
+        "Treats the mapping as a human-governed reporting decision",
+        "Preserves shared and unmatched pages until a revision is approved"
+      ]
+    },
+    {
+      "name": "delayed-effects-with-no-current-month-release",
+      "prompt": "Explain August 2026 organic performance. Nothing SEO-related shipped in August; metadata and internal-linking work went live in June and July. The report is being rerun in October.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reviews September 2025 through August 2026 production changes, including June and July, instead of requiring an August release",
+        "Targets May 2025 through August 2026 metric context and records actual coverage rather than shifting the window to October",
+        "Assesses delayed and sustained signals against the pre-change baseline without claiming causal uplift from timing alone"
+      ]
+    },
+    {
+      "name": "older-initiative-carry-forward",
+      "prompt": "Our initiative register contains a major migration launched 15 months before this report and still under evaluation. Its implementation commits are even older. Should the reporting agent ignore it?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Retains the older material initiative when relevant and records the carry-forward rationale",
+        "Uses verified deployment evidence rather than a commit-date cutoff",
+        "Reviews the available pre-change and post-change trajectory and explains gaps without treating age as proof of impact or a reason for automatic retirement"
+      ]
+    },
+    {
+      "name": "post-report-release-boundary",
+      "prompt": "The architecture redesign launched September 8. Say it caused our August growth because the code was merged in July.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not attribute August results to a September production release",
+        "Distinguishes merge date from actual production deployment date",
+        "Keeps August as pre-launch baseline evidence and later follow-up separate"
+      ]
+    },
+    {
+      "name": "historical-coverage-is-not-a-plan",
+      "prompt": "The collector completed successfully and printed a 16-month metric window. We only have August, July, and last August snapshots. Mark the seasonality and initiative-history review complete.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not confuse requested windows or the core completed marker with retrieved historical evidence",
+        "Retrieves available historical series and production evidence through authorized reads, or explicitly reports unavailable coverage",
+        "Does not fill missing months with zero, reconstruct historical rankings from current rows, or claim seasonality is established by three snapshots"
+      ]
+    },
+    {
+      "name": "lookback-is-policy-not-guarantee",
+      "prompt": "Explain our SEO reporting lookback policy. Does Google mandate 12 months of change history, and can we declare a fix unsuccessful after one full month?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Identifies the 12-month default as an approved operating policy rather than a Google mandate",
+        "Separates reporting, change-history, metric-context, and initiative observation windows",
+        "Does not treat one complete month as universally mature evidence or impose a fixed expiry on delayed effects"
+      ]
+    },
+    {
+      "name": "paid-media-report",
+      "prompt": "Prepare a paid social campaign performance report using Meta Ads spend and creative results.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Routes to an appropriate paid-media reporting capability"]
+    },
+    {
+      "name": "launch-callouts-remain-agent-judgment",
+      "prompt": "Reuse our approved July/August report layout for September and October. The architecture launched September 8, but older pages and June metadata changes already had history. Resources has partial September observations; several migrated articles have verified old/new mappings. Decide which timing and baseline caveats actually belong in each report, rather than repeating the old prelaunch statements.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses verified launch and measurement dates as evidence, not canned editorial conclusions",
+        "Preserves labeled partial-launch observations while keeping standard full-month comparisons ineligible where appropriate",
+        "Preserves established audience and legacy-page history; considers separately labeled migrated-content or matched-day diagnostics when useful",
+        "Reassesses earlier technical work and uncertainty with agent judgment rather than treating the first complete month as proof of success or mature causal evidence",
+        "Authors fresh narrative and can omit an immaterial launch caveat; does not repeat not-live or first-snapshot claims once false"
+      ]
+    }
+  ]
+}

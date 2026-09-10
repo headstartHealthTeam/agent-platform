@@ -14,6 +14,7 @@ has not worked in this repository before.
 | Compose several skills for an interactive Codex workflow           | [Workflow authoring guide](workflow-authoring-guide.md)                                         | [`headstart-discovery-to-decision`](../skills/headstart-discovery-to-decision/SKILL.md), [workflow composition](../standards/workflow-composition.md)                      |
 | Choose one-pass, quality-loop, or graph execution                  | [Execution topology](workflow-authoring-guide.md#choose-execution-topology-separately)          | [Workflow composition](../standards/workflow-composition.md#control-flow-topology), [testing and release](../standards/testing-and-release.md)                             |
 | Add deterministic parsing, validation, or transformation           | [Workflow authoring guide](workflow-authoring-guide.md#choose-where-deterministic-code-belongs) | [`headstart-dev-to-main-pr`](../skills/headstart-dev-to-main-pr/SKILL.md), [testing and release](../standards/testing-and-release.md)                                      |
+| Reuse an external data provider across engines                     | [Reusable data capabilities](reusable-data-capabilities.md)                                     | [Tool capabilities](../standards/tool-capabilities.md), [workflow composition](../standards/workflow-composition.md)                                                       |
 | Maintain public-repository security controls                       | [Public repository security](public-repository-security.md)                                     | [Security policy](../SECURITY.md), [security and data handling](../standards/security-and-data-handling.md), [testing and release](../standards/testing-and-release.md)    |
 | Make a workflow scheduled, event-driven, or independently operated | [Managed workflow architecture](codex-managed-workflow-architecture.md)                         | [Workflow contracts](../packages/workflow-contracts/README.md), [workflow runtime](../packages/workflow-runtime/README.md), [Codex runner](../apps/codex-runner/README.md) |
 | Add a managed workflow package                                     | [Workflow authoring guide](workflow-authoring-guide.md#managed-workflow-package)                | [Synthetic reference workflow](../workflows/synthetic-read-only-reference/README.md), [managed workflow architecture](codex-managed-workflow-architecture.md)              |
@@ -87,6 +88,23 @@ flowchart TD
   workflow and durable-run contracts.
 - [`packages/workflow-runtime/`](../packages/workflow-runtime/README.md) owns safe package loading,
   referenced-file resolution, and JSON Schema validation used by both tests and managed execution.
+- [`packages/capability-contracts/`](../packages/capability-contracts/README.md) and
+  [`packages/capability-runtime/`](../packages/capability-runtime/README.md) own provider-neutral
+  requirements, private profile bindings, and sanitized readiness verification.
+- Provider packages own bounded read contracts and normalization; workflow-specific deterministic
+  analysis remains in its engine package. See
+  [reusable data capabilities](reusable-data-capabilities.md).
+- [Organic reporting runtime](organic-reporting-runtime.md) documents standalone deployment,
+  private provider profiles, and synthetic/live end-to-end verification.
+- [`packages/google-read-transport/`](../packages/google-read-transport/README.md) owns sanitized
+  ADC resolution and the explicit read-only Google HTTP operation allowlist.
+- [`packages/google-search-console/`](../packages/google-search-console/README.md),
+  [`packages/google-analytics-data/`](../packages/google-analytics-data/README.md),
+  [`packages/google-sheets-data/`](../packages/google-sheets-data/README.md), and
+  [`packages/semrush-data/`](../packages/semrush-data/README.md) are the first reusable read-provider
+  packages.
+- [`packages/organic-performance-engine/`](../packages/organic-performance-engine/README.md) owns
+  live organic evidence collection, deterministic analysis, and the August regression contract.
 - [`apps/codex-runner/`](../apps/codex-runner/README.md) owns the managed Codex execution boundary.
 - Headstart application repositories retain triggers, durable business state, permissions,
   idempotent writes, and user interfaces.
