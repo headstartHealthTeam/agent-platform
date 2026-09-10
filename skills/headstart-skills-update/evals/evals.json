@@ -60,15 +60,15 @@
       ]
     },
     {
-      "name": "persistent-routing-without-braingraph",
-      "prompt": "Install the team skills and make sure future Codex sessions working in my separate Headstart repositories know when to use stacked delivery. I do not use Braingraph.",
+      "name": "persistent-routing-across-repositories",
+      "prompt": "Install the team skills and make sure future Codex sessions working in my separate Headstart repositories know when to use stacked delivery.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Installs the complete managed skill set",
         "Uses the stacked-delivery skill's minimal routing guidance",
         "Requests approval before changing standing instructions",
         "Verifies more than one representative repository or worktree location",
-        "Does not require or initialize Braingraph"
+        "Does not initialize unrelated repositories or workspace systems"
       ]
     },
     {

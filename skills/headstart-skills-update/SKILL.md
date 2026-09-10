@@ -55,7 +55,6 @@ future session will invoke a workflow proactively from a broader task. During in
 
 For parallel and dependent PR work, use
 [`../headstart-stacked-delivery/references/persistent-routing.md`](../headstart-stacked-delivery/references/persistent-routing.md).
-This routing setup is independent of Braingraph and must not create a competing knowledge workspace.
 
 ## Preview A Manual Refresh
 

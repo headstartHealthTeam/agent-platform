@@ -7,9 +7,9 @@ will proactively select it after opening an unrelated implementation PR. Add one
 rule to the narrowest durable instruction layer that reaches every intended Headstart working
 location. Keep the full procedure in the installed skill.
 
-This setup does not require Braingraph. If the user already uses Braingraph, preserve its canonical
-instruction and adapter model; do not create a competing global brain or duplicate this skill into
-the knowledge vault.
+Keep this setup self-contained within the Agent Platform installation and the user-approved Headstart
+instruction hierarchy. Do not initialize unrelated repositories, workspace systems, or knowledge
+stores.
 
 ## Choose The Instruction Scope
 

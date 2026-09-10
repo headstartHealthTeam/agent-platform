@@ -290,9 +290,8 @@ corepack pnpm qa
 - Tests and subprocesses that create temporary Git repositories must remove inherited
   repository-local Git environment variables before invoking Git. They must never write fixture
   identities or other test configuration into this repository's common or bare Git configuration.
-- Preserve LF line endings through the root `.gitattributes`, as in the established Braingraph
-  cross-platform pattern. Do not solve Windows formatting failures by weakening Prettier or removing
-  a Windows validation lane.
+- Preserve LF line endings through the root `.gitattributes` across every supported platform. Do not
+  solve Windows formatting failures by weakening Prettier or removing a Windows validation lane.
 
 ## Testing
 

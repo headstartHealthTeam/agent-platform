@@ -44,7 +44,7 @@
         "Separates global skill installation from persistent routing",
         "Adds only a concise Headstart-scoped routing rule with user approval",
         "Verifies discovery from representative repository and worktree locations",
-        "Does not require Braingraph or copy the full skill into standing instructions"
+        "Keeps setup self-contained and does not copy the full skill into standing instructions"
       ]
     },
     {
