@@ -48,7 +48,7 @@ describe('canonical reporting sources', () => {
     const { tam, ...withoutTam } = plan;
     const result = resolveReportingSources(withoutTam, sources);
     expect(result.tam).toEqual(tam);
-    expect(result.report['sourceConfiguration']).toMatchObject({ version: 'synthetic/v1' });
+    expect(result.report.sourceConfiguration).toMatchObject({ version: 'synthetic/v1' });
     expect(result).toEqual(resolveReportingSources(withoutTam, sources));
     expect(resolveReportingSources(plan, sources)).toEqual(result);
   });
