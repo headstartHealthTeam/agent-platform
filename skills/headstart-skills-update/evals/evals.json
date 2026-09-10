@@ -8,7 +8,7 @@
       "expectedBehaviors": [
         "Resolves the canonical checkout without assuming a machine-specific path",
         "Previews before installing every current shared skill",
-        "Offers minimal persistent routing for proactive workflows and verifies representative launch locations",
+        "Offers minimal persistent routing and requests separate approval before changing standing instructions",
         "Asks separately whether to enable the opt-in daily refresh"
       ]
     },
@@ -60,15 +60,15 @@
       ]
     },
     {
-      "name": "persistent-routing-across-repositories",
-      "prompt": "Install the team skills and make sure future Codex sessions working in my separate Headstart repositories know when to use stacked delivery.",
+      "name": "approved-persistent-routing-across-repositories",
+      "prompt": "I approve adding the minimal Headstart-scoped stacked-delivery routing rule. Install the team skills and make sure future Codex sessions working in my separate Headstart repositories use it.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Installs the complete managed skill set",
         "Uses the stacked-delivery skill's minimal routing guidance",
-        "Requests approval before changing standing instructions",
-        "Verifies more than one representative repository or worktree location",
-        "Does not initialize unrelated repositories or workspace systems"
+        "Treats the prompt as explicit approval for the minimal Headstart-scoped routing change",
+        "Verifies fresh sessions from both a representative Headstart repository location and a representative sibling worktree location",
+        "Does not initialize unrelated repositories, workspace systems, or knowledge stores"
       ]
     },
     {
