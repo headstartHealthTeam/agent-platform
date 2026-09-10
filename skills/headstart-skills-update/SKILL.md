@@ -4,7 +4,7 @@ description: Safely install, preview, manually refresh, or configure opt-in dail
 compatibility: Requires Git, Node.js 22 or newer, pnpm 9.15, and read access to the Headstart Agent Platform repository at headstartHealthTeam/agent-platform. Scheduled refresh uses user cron on macOS/Linux or Task Scheduler on Windows.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.1.1'
 ---
 
 # Headstart Skills Update
@@ -39,6 +39,22 @@ not establish managed ownership for retirement cleanup.
 After installation, explicitly ask whether the user wants automatic daily refreshes. Explain that
 opting in authorizes future local fast-forwards from protected `main` and replacement of all skills
 managed by this repository. Do not enable the schedule merely because installation was approved.
+
+## Preserve Proactive Workflow Routing
+
+Installation makes a skill available to the host, but availability alone does not guarantee that a
+future session will invoke a workflow proactively from a broader task. During initial setup:
+
+1. inspect the user's actual instruction hierarchy and normal launch locations;
+2. identify installed skills that include persistent-routing guidance;
+3. offer to add each minimal routing rule to the narrowest durable instruction layer that covers the
+   intended Headstart work;
+4. edit standing instructions only with the user's approval and never duplicate the full skill body;
+5. verify the route from representative fresh repository and worktree sessions; and
+6. report any clone, worktree, or agent host that does not reach the instruction and installed skill.
+
+For parallel and dependent PR work, use
+[`../headstart-stacked-delivery/references/persistent-routing.md`](../headstart-stacked-delivery/references/persistent-routing.md).
 
 ## Preview A Manual Refresh
 

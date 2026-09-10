@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Headstart Stacked Delivery'
+  short_description: 'Continue dependent work through review safely'
+  default_prompt: 'Use $headstart-stacked-delivery to decide whether the next approved Headstart issue should proceed independently or as a stacked PR, then preserve a reviewable handoff.'
+policy:
+  allow_implicit_invocation: true
