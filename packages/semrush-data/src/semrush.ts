@@ -22,11 +22,16 @@ const domainSchema = z
 const databaseSchema = z.string().regex(/^[a-z]{2,5}$/);
 const deviceSchema = z.enum(['desktop', 'mobile']);
 
-export const semrushDomainRequestSchema = z
+const semrushDomainScopeSchema = z
   .object({
     domain: domainSchema,
     database: databaseSchema,
     device: deviceSchema.default('desktop'),
+  })
+  .strict();
+
+export const semrushDomainRequestSchema = semrushDomainScopeSchema
+  .extend({
     snapshotDate: z
       .string()
       .regex(/^\d{8}$/)
@@ -79,20 +84,24 @@ export async function readSemrushRankings(
   return normalizeSemrushRankings(await provider.domainOrganicKeywords(request));
 }
 
-export function semrushDomainRequirement(input: {
-  readonly domain: string;
-  readonly database: string;
-  readonly device: 'desktop' | 'mobile';
-}): CapabilityRequirement {
-  const normalizedDomain = domainSchema.parse(input.domain);
+export function semrushDomainRequirement(
+  input: z.input<typeof semrushDomainScopeSchema>
+): CapabilityRequirement {
+  // Callers may pass a larger planning object structurally. Validate only this requirement's
+  // scope fields; the complete read-request schema remains strict at its own boundary.
+  const scope = semrushDomainScopeSchema.parse({
+    domain: input.domain,
+    database: input.database,
+    device: input.device,
+  });
   return capabilityRequirementSchema.parse({
     id: SEMRUSH_DOMAIN_ORGANIC_READ,
     sideEffect: 'read',
     requiredPermissions: ['domain-overview:read', 'domain-organic:read'],
     targetAssertions: [
-      { key: 'domain', expected: normalizedDomain },
-      { key: 'database', expected: input.database },
-      { key: 'device', expected: input.device },
+      { key: 'domain', expected: scope.domain },
+      { key: 'database', expected: scope.database },
+      { key: 'device', expected: scope.device },
     ],
   });
 }
@@ -125,7 +134,7 @@ export async function preflightSemrush(
       },
       message: ready ? 'verified Semrush domain scope' : 'provider returned another domain scope',
     });
-  } catch (error: unknown) {
+  } catch {
     return capabilityPreflightResultSchema.parse({
       capabilityId: SEMRUSH_DOMAIN_ORGANIC_READ,
       providerId: input.providerId,
@@ -137,7 +146,7 @@ export async function preflightSemrush(
         database: request.database,
         device: request.device,
       },
-      message: error instanceof Error ? error.message : 'Semrush preflight failed',
+      message: 'Semrush preflight failed; verify the configured provider and requested read access',
     });
   }
 }

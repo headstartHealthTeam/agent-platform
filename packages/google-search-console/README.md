@@ -13,3 +13,8 @@ Search Analytics pagination exhausts the declared API query up to its configured
 returns top rows and does not guarantee that every query is exposed, so a completed snapshot means
 the extraction contract finished successfully; it does not claim an exhaustive census of all
 search activity.
+
+Each request respects both its selected `rowLimit` and the remaining `maxRows` budget. Oversized
+provider pages fail rather than being appended or silently trimmed. A failed property preflight
+returns `provider-unavailable` with a fixed diagnostic; without a typed authentication diagnosis,
+network, quota, or malformed-response failures are not reported as confirmed login failures.

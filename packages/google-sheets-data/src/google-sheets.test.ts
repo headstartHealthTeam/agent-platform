@@ -53,6 +53,29 @@ describe('Google Sheets data adapter', () => {
     expect(() => rowsFromHeaderRange({ ...range, values: [['']] })).toThrow(/non-empty/);
   });
 
+  it('validates required headers independently of whether any data rows exist', () => {
+    const headers = ['Keyword', 'Pillar'];
+    expect(rowsFromHeaderRange({ ...range, values: [headers] }, headers)).toEqual([]);
+    expect(() => rowsFromHeaderRange({ ...range, values: [['Keyword']] }, headers)).toThrow(
+      /header is missing required column Pillar/
+    );
+    expect(() =>
+      rowsFromHeaderRange({ ...range, values: [['Keyword'], ['aba basics']] }, headers)
+    ).toThrow(/header is missing required column Pillar/);
+    expect(() => {
+      requireColumns([], headers, headers);
+    }).not.toThrow();
+    expect(() => {
+      requireColumns([], headers, ['Keyword']);
+    }).toThrow(/missing required column Pillar/);
+    expect(() => {
+      requireColumns([], headers);
+    }).toThrow(/require header evidence/);
+    expect(() => {
+      requireColumns([], []);
+    }).not.toThrow();
+  });
+
   it('declares and preflights the exact sheet range', async () => {
     const requirement = googleSheetsRangeRequirement({
       spreadsheetId: 'sheet-123',
@@ -95,6 +118,38 @@ describe('Google Sheets data adapter', () => {
         providerId: 'google-drive-connector',
         adapterVersion: 'fixture-v1',
       })
-    ).resolves.toMatchObject({ status: 'provider-unavailable' });
+    ).resolves.toMatchObject({
+      status: 'provider-unavailable',
+      message:
+        'Google Sheets provider readiness could not be verified; inspect provider access and response validity',
+    });
+  });
+
+  it('does not persist raw range-read errors or malformed metadata', async () => {
+    const providers: GoogleSheetsReadProvider[] = [
+      {
+        getSpreadsheet: async () => ({ spreadsheetId: 'sheet-123' }),
+        readRange: async (): Promise<never> => {
+          throw new Error('private provider diagnostic');
+        },
+      },
+      {
+        getSpreadsheet: async () => ({ spreadsheetId: null, privateDetail: 'private diagnostic' }),
+        readRange: async () => range,
+      },
+    ];
+    for (const provider of providers) {
+      const result = await preflightGoogleSheets(provider, {
+        spreadsheetId: 'sheet-123',
+        range: 'Pillars!A1:D3',
+        providerId: 'google-drive-connector',
+        adapterVersion: 'v1',
+      });
+      expect(result.status).toBe('provider-unavailable');
+      expect(result.permissions).toEqual([]);
+      expect(result.message).toBe(
+        'Google Sheets provider readiness could not be verified; inspect provider access and response validity'
+      );
+    }
   });
 });

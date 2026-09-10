@@ -16,12 +16,18 @@ import {
 
 class FixtureTransport implements SearchConsoleTransport {
   readonly #responses: unknown[];
+  public readonly requests: Readonly<Record<string, unknown>>[] = [];
 
   public constructor(responses: unknown[]) {
     this.#responses = [...responses];
   }
 
-  public async request(): Promise<unknown> {
+  public async request(
+    _method: 'GET' | 'POST',
+    _path: string,
+    body?: Readonly<Record<string, unknown>>
+  ): Promise<unknown> {
+    if (body !== undefined) this.requests.push(body);
     const response = this.#responses.shift();
     if (response === undefined) {
       throw new Error('fixture exhausted');
@@ -42,20 +48,25 @@ describe('Search Console adapter', () => {
       dimensions: ['query'],
       rowLimit: 2,
     });
-    const client = new SearchConsoleClient(
-      new FixtureTransport([
-        {
-          rows: [{ keys: ['a'] }, { keys: ['b'] }, { keys: ['c'] }],
-          responseAggregationType: 'byProperty',
-        },
-      ])
-    );
+    const transport = new FixtureTransport([
+      {
+        rows: [{ keys: ['a'] }, { keys: ['b'] }],
+        responseAggregationType: 'byProperty',
+      },
+      { rows: [{ keys: ['c'] }] },
+    ]);
+    const client = new SearchConsoleClient(transport);
     const result = await runPaginatedSearch(client, 'sc-domain:example.test', request, {
       allPages: true,
       maxRows: 3,
     });
     expect(result['rowCount']).toBe(3);
-    expect(result['pagination']).toEqual({ pagesRequested: 1, truncatedAtMaxRows: true });
+    expect(result['pagination']).toEqual({ pagesRequested: 2, truncatedAtMaxRows: true });
+    expect(transport.requests.map(({ rowLimit, startRow }) => ({ rowLimit, startRow }))).toEqual([
+      { rowLimit: 2, startRow: 0 },
+      { rowLimit: 1, startRow: 2 },
+    ]);
+    expect(request.rowLimit).toBe(2);
     expect(request.startRow).toBe(0);
 
     const exhausted = await runPaginatedSearch(
@@ -68,6 +79,33 @@ describe('Search Console adapter', () => {
       pagesRequested: 1,
       truncatedAtMaxRows: false,
     });
+  });
+
+  it('bounds single-page reads and rejects any provider page exceeding its requested limit', async () => {
+    const request = buildSearchAnalyticsRequest({
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+      rowLimit: 5,
+    });
+    const transport = new FixtureTransport([{ rows: [{ clicks: 1 }] }]);
+    const result = await runPaginatedSearch(
+      new SearchConsoleClient(transport),
+      'sc-domain:example.test',
+      request,
+      { allPages: false, maxRows: 1 }
+    );
+    expect(transport.requests[0]).toHaveProperty('rowLimit', 1);
+    expect(result['request']).toHaveProperty('rowLimit', 1);
+    for (const allPages of [false, true]) {
+      await expect(
+        runPaginatedSearch(
+          new SearchConsoleClient(new FixtureTransport([{ rows: [{ clicks: 1 }, { clicks: 2 }] }])),
+          'sc-domain:example.test',
+          request,
+          { allPages, maxRows: 1 }
+        )
+      ).rejects.toThrow(/exceeds the requested rowLimit/);
+    }
   });
 
   it('selects one verified site and rejects ambiguous properties', async () => {
@@ -194,7 +232,35 @@ describe('Search Console adapter', () => {
       providerId: 'gsc-api',
       adapterVersion: 'fixture-v1',
     });
-    expect(failed.status).toBe('unauthenticated');
+    expect(failed.status).toBe('provider-unavailable');
+    expect(failed.message).not.toContain('fixture exhausted');
+  });
+
+  it('does not label network or malformed-provider failures as confirmed authentication errors', async () => {
+    const input = {
+      siteUrl: 'sc-domain:example.test',
+      providerId: 'gsc-api',
+      adapterVersion: 'v1',
+    };
+    const network: SearchConsoleTransport = {
+      request: async () => {
+        throw new Error('private diagnostic should not escape');
+      },
+    };
+    const results = await Promise.all([
+      preflightSearchConsole(new SearchConsoleClient(network), input),
+      preflightSearchConsole(
+        new SearchConsoleClient(new FixtureTransport([{ siteEntry: 'bad' }])),
+        input
+      ),
+    ]);
+    for (const result of results) {
+      expect(result.status).toBe('provider-unavailable');
+      expect(result.permissions).toEqual([]);
+      expect(result.message).toBe(
+        'Search Console provider readiness could not be verified; authentication failure is not established'
+      );
+    }
   });
 
   it('uses injected ADC token commands and handles empty or failed tokens', async () => {

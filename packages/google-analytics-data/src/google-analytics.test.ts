@@ -82,6 +82,37 @@ describe('GA4 data adapter', () => {
         providerId: 'google-analytics-mcp',
         adapterVersion: 'fixture-v1',
       })
-    ).resolves.toMatchObject({ status: 'unauthenticated', message: 'not authenticated' });
+    ).resolves.toMatchObject({
+      status: 'provider-unavailable',
+      message:
+        'GA4 provider readiness could not be verified; authentication failure is not established',
+    });
+  });
+
+  it('does not persist raw exceptions or diagnose malformed metadata as an authentication failure', async () => {
+    const providers: GoogleAnalyticsReadProvider[] = [
+      {
+        getProperty: async (): Promise<never> => {
+          throw new Error('private provider diagnostic');
+        },
+        runReport: async () => ({}),
+      },
+      {
+        getProperty: async () => ({ name: null, privateDetail: 'private provider diagnostic' }),
+        runReport: async () => ({}),
+      },
+    ];
+    for (const provider of providers) {
+      const result = await preflightGa4(provider, {
+        property: 'properties/123',
+        providerId: 'google-analytics-mcp',
+        adapterVersion: 'v1',
+      });
+      expect(result.status).toBe('provider-unavailable');
+      expect(result.permissions).toEqual([]);
+      expect(result.message).toBe(
+        'GA4 provider readiness could not be verified; authentication failure is not established'
+      );
+    }
   });
 });

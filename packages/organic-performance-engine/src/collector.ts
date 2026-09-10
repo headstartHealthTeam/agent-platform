@@ -139,7 +139,7 @@ export function mapTamRows(
   input: unknown,
   plan: NonNullable<CollectionPlan['tam']>
 ): NonNullable<OrganicPerformanceBundle['sources']['tam']>['keywords'] {
-  const rows = rowsFromHeaderRange(input);
+  const rows = rowsFromHeaderRange(input, Object.values(plan.columns));
   return rows
     .filter((row) => Object.values(row).some((value) => value !== ''))
     .filter((row) => member(row, plan.columns.marketScope) === plan.coreValue)
@@ -192,12 +192,12 @@ function gscTotals(
 ): OrganicPerformanceBundle['sources']['gsc']['periodTotals'][number] {
   if (rows.length > 1) throw new Error('GSC totals returned multiple rows');
   const row = rows[0];
+  const impressions = row?.impressions ?? 0;
   return {
     period,
     clicks: row?.clicks ?? 0,
-    impressions: row?.impressions ?? 0,
-    ctr: row?.ctr ?? 0,
-    averagePosition: row?.position ?? 0,
+    impressions,
+    ...(row && impressions > 0 ? { ctr: row.ctr, averagePosition: row.position } : {}),
   };
 }
 function dimension(row: GscRows[number]): string {

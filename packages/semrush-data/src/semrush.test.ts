@@ -6,6 +6,7 @@ import {
   preflightSemrush,
   readSemrushRankings,
   semrushDomainRequirement,
+  semrushDomainRequestSchema,
   type SemrushDomainRequest,
   type SemrushReadProvider,
 } from './semrush.js';
@@ -65,6 +66,33 @@ describe('Semrush data adapter', () => {
     });
     expect(result.status).toBe('ready');
   });
+  it('validates requirement scope with the same normalization and defaults as requests', () => {
+    const input = { domain: 'www.Example.test', database: 'us' };
+    const request = semrushDomainRequestSchema.parse(input);
+    expect(semrushDomainRequirement(input).targetAssertions).toEqual([
+      { key: 'domain', expected: request.domain },
+      { key: 'database', expected: request.database },
+      { key: 'device', expected: request.device },
+    ]);
+    const planningInput = {
+      ...input,
+      limit: 1000,
+      snapshotDates: { current: '20260815', previous: '20260715' },
+    };
+    expect(semrushDomainRequirement(planningInput)).toEqual(semrushDomainRequirement(input));
+    expect(() => semrushDomainRequestSchema.parse(planningInput)).toThrow();
+    for (const database of ['', 'US', 'us;', 'too-long']) {
+      expect(() => semrushDomainRequirement({ ...input, database })).toThrow();
+      expect(() => semrushDomainRequestSchema.parse({ ...input, database })).toThrow();
+    }
+    // Exercise the public runtime boundary without weakening its compile-time device union.
+    expect(() => {
+      Reflect.apply(semrushDomainRequirement, undefined, [{ ...input, device: 'tablet' }]);
+    }).toThrow();
+    expect(
+      semrushDomainRequirement({ ...input, device: 'mobile' }).targetAssertions
+    ).toContainEqual({ key: 'device', expected: 'mobile' });
+  });
 
   it('fails closed for malformed rankings and mismatched provider scope', async () => {
     expect(() => normalizeSemrushRankings([{ keyword: '', position: 0 }])).toThrow();
@@ -96,17 +124,35 @@ describe('Semrush data adapter', () => {
   it('classifies provider failures without leaking credentials', async () => {
     const unavailable: SemrushReadProvider = {
       domainOverview: async () => {
-        throw new Error('provider unavailable');
+        throw new Error('private provider credential and response contents');
       },
       domainOrganicKeywords: async () => [],
       keywordOverview: async () => [],
     };
-    await expect(
-      preflightSemrush(unavailable, {
-        request: { domain: 'example.test', database: 'us' },
-        providerId: 'semrush-mcp',
-        adapterVersion: 'pinned-revision',
-      })
-    ).resolves.toMatchObject({ status: 'provider-unavailable', message: 'provider unavailable' });
+    const result = await preflightSemrush(unavailable, {
+      request: { domain: 'example.test', database: 'us' },
+      providerId: 'semrush-mcp',
+      adapterVersion: 'pinned-revision',
+    });
+    expect(result).toMatchObject({
+      status: 'provider-unavailable',
+      permissions: [],
+      message: 'Semrush preflight failed; verify the configured provider and requested read access',
+    });
+    expect(JSON.stringify(result)).not.toContain('private provider');
+    const malformed: SemrushReadProvider = {
+      ...unavailable,
+      domainOverview: async () => ({
+        domain: 'private provider credential',
+        rankingKeywords: 'private response contents',
+      }),
+    };
+    const malformedResult = await preflightSemrush(malformed, {
+      request: { domain: 'example.test', database: 'us' },
+      providerId: 'semrush-mcp',
+      adapterVersion: 'pinned-revision',
+    });
+    expect(malformedResult).toEqual(result);
+    expect(JSON.stringify(malformedResult)).not.toContain('private');
   });
 });

@@ -261,6 +261,10 @@ interface AggregateRow {
   readonly [key: string]: number | string;
 }
 
+function ownValue<T>(record: Readonly<Record<string, T>>, key: string): T | undefined {
+  return Object.hasOwn(record, key) ? record[key] : undefined;
+}
+
 function incrementSegment(
   aggregate: SegmentMetrics,
   period: PeriodId,
@@ -271,11 +275,11 @@ function incrementSegment(
   assertSafeDynamicKey(period, 'period');
   assertSafeDynamicKey(segment, 'segment');
   assertSafeDynamicKey(metric, 'metric');
-  const periods = aggregate[period] ?? {};
+  const periods = ownValue(aggregate, period) ?? {};
   aggregate[period] = periods;
-  const segments = periods[segment] ?? {};
+  const segments = ownValue(periods, segment) ?? {};
   periods[segment] = segments;
-  segments[metric] = (segments[metric] ?? 0) + value;
+  segments[metric] = (ownValue(segments, metric) ?? 0) + value;
 }
 
 function aggregateRows(input: {
@@ -342,11 +346,18 @@ function metricValue(row: object | undefined, metric: string, context: string): 
 function kpi(
   rows: Readonly<Partial<Record<PeriodId, object>>>,
   metric: string,
-  mode: ComparisonMode
+  mode: ComparisonMode,
+  denominator?: string
 ): Readonly<Record<string, unknown>> {
-  const current = metricValue(rows.current, metric, 'periodTotals.current');
-  const previous = metricValue(rows.previous, metric, 'periodTotals.previous');
-  const yearAgo = metricValue(rows.year_ago, metric, 'periodTotals.year_ago');
+  const value = (period: PeriodId): number | null => {
+    const row = rows[period];
+    const context = `periodTotals.${period}`;
+    if (denominator && metricValue(row, denominator, context) === 0) return null;
+    return metricValue(row, metric, context);
+  };
+  const current = value('current');
+  const previous = value('previous');
+  const yearAgo = value('year_ago');
   return {
     current,
     previous,
@@ -422,11 +433,11 @@ type QueryMetricsByPeriod = Readonly<
 function gscQueryMap(bundle: OrganicPerformanceBundle): QueryMetricsByPeriod {
   const totals: Record<string, Record<string, NumericRecord>> = {};
   for (const row of bundle.sources.gsc.queryRows) {
-    const period = totals[row.period] ?? {};
+    const period = ownValue(totals, row.period) ?? {};
     totals[row.period] = period;
     const keyword = normalizeKeyword(row.query);
     assertSafeDynamicKey(keyword, 'normalized GSC query');
-    const metrics = period[keyword] ?? {};
+    const metrics = ownValue(period, keyword) ?? {};
     period[keyword] = metrics;
     metrics['clicks'] = (metrics['clicks'] ?? 0) + row.clicks;
     metrics['impressions'] = (metrics['impressions'] ?? 0) + row.impressions;
@@ -548,7 +559,7 @@ function contentPillars(
     seen.set(normalized, row.pillar);
     const summary = pillars.get(row.pillar) ?? emptyPillar();
     pillars.set(row.pillar, summary);
-    const ranking = rankings[normalized];
+    const ranking = ownValue(rankings, normalized);
     if (ranking !== undefined) {
       matches += 1;
     }
@@ -730,8 +741,8 @@ function buildKpis(
   return {
     'gsc.clicks': kpi(gscTotals, 'clicks', 'count'),
     'gsc.impressions': kpi(gscTotals, 'impressions', 'count'),
-    'gsc.ctr': kpi(gscTotals, 'ctr', 'rate'),
-    'gsc.average_position': kpi(gscTotals, 'averagePosition', 'absolute'),
+    'gsc.ctr': kpi(gscTotals, 'ctr', 'rate', 'impressions'),
+    'gsc.average_position': kpi(gscTotals, 'averagePosition', 'absolute', 'impressions'),
     'gsc.nonbranded_clicks': kpi(nonbrandedTotals, 'clicks', 'count'),
     'gsc.nonbranded_impressions': kpi(nonbrandedTotals, 'impressions', 'count'),
     'ga4.organic_sessions': kpi(ga4Totals, 'sessions', 'count'),

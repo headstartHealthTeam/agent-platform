@@ -140,15 +140,16 @@ export async function preflightGa4(
         ? 'verified accessible GA4 property'
         : 'provider returned another GA4 property',
     });
-  } catch (error: unknown) {
+  } catch {
     return capabilityPreflightResultSchema.parse({
       capabilityId: GA4_REPORT_READ,
       providerId: input.providerId,
       adapterVersion: input.adapterVersion,
-      status: 'unauthenticated',
+      status: 'provider-unavailable',
       permissions: [],
       targetIdentity: { property: input.property },
-      message: error instanceof Error ? error.message : 'GA4 preflight failed',
+      message:
+        'GA4 provider readiness could not be verified; authentication failure is not established',
     });
   }
 }

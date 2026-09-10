@@ -209,6 +209,51 @@ async function setup(): Promise<{
   return { plan, providers, saved, sink, bundle };
 }
 describe('complete organic collector', () => {
+  it.each(['empty', 'zero-row'])(
+    'preserves measured-zero counts and unavailable rates for %s GSC totals',
+    async (response) => {
+      const x = await setup();
+      const transport: SearchConsoleTransport = {
+        request: async (method, path, body): Promise<unknown> => {
+          if (method === 'GET' && path === '/sites')
+            return {
+              siteEntry: [{ siteUrl: x.plan.gsc.siteUrl, permissionLevel: 'siteFullUser' }],
+            };
+          const dimensions = body?.['dimensions'];
+          return {
+            rows:
+              response === 'zero-row' && Array.isArray(dimensions) && dimensions.length === 0
+                ? [{ clicks: 0, impressions: 0, ctr: 0, position: 0 }]
+                : [],
+          };
+        },
+      };
+      const result = await collectOrganicEvidence(
+        x.plan,
+        { ...x.providers, gsc: new SearchConsoleClient(transport) },
+        x.sink,
+        '2026-09-10T12:00:00Z'
+      );
+      for (const rows of [
+        result.bundle.sources.gsc.periodTotals,
+        result.bundle.sources.gsc.nonBrandedTotals,
+      ]) {
+        expect(rows).toHaveLength(3);
+        for (const row of rows) {
+          expect(row).toMatchObject({ clicks: 0, impressions: 0 });
+          expect(row).not.toHaveProperty('ctr');
+          expect(row).not.toHaveProperty('averagePosition');
+        }
+      }
+      expect(result.analysis['kpis']).toMatchObject({
+        'gsc.clicks': { current: 0 },
+        'gsc.impressions': { current: 0 },
+        'gsc.ctr': { current: null, mom: { status: 'missing' } },
+        'gsc.average_position': { current: null, mom: { status: 'missing' } },
+      });
+      expect(x.saved.has('report-analysis')).toBe(true);
+    }
+  );
   it('uses one exact hyphenated-host filter through collection and analysis', async () => {
     const x = await setup();
     const hostname = 'head-start.health';
@@ -471,6 +516,10 @@ describe('complete organic collector', () => {
       searchVolume: 0,
       serviceability: 'confirmed',
     });
+    expect(mapTamRows({ ...range, values: [range.values[0]] }, tam)).toEqual([]);
+    expect(() => mapTamRows({ ...range, values: [['K', 'P', 'V', 'S']] }, tam)).toThrow(
+      /required.*column|missing.*column/i
+    );
     expect(() =>
       mapTamRows(
         { ...range, values: [range.values[0], ['word', 'pillar', 'bad', 'Confirmed', 'Core']] },

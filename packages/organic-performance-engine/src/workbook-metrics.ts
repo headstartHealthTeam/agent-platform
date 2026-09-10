@@ -145,5 +145,6 @@ export function total(
         : bundle.sources.ga4.periodTotals;
   const row = rows.find((value) => value.period === id);
   if (!row) return null;
-  return z.number().parse(item(row, metric));
+  const value = item(row, metric);
+  return value === undefined ? null : z.number().parse(value);
 }

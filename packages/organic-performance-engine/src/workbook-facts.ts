@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { analyzeBundle, classifyPath, normalizeKeyword, sha256Json } from './analysis.js';
 import { compareCanonicalText } from './canonical-order.js';
 import { buildLifecycle } from './lifecycle.js';
+import { keywordSnapshotDate } from './semrush-snapshot.js';
 import { reportingSourcesSchema, validateCollectedSources } from './source-config.js';
 import { workbookTemplateSchema, type ReportRows, type ReportValue } from './workbook-contract.js';
 import {
@@ -624,7 +625,7 @@ function pillars(blocks: Blocks, evidence: WorkbookEvidence, analysis: WorkbookA
   );
   blocks.set('pillars.boundary', [
     [
-      `TAM ${tam?.metadata.sourceId ?? 'not selected'}; ${tam?.metadata.sourceRevision ?? ''}. Ranking extract: ${z.string().parse(evidence.bundle.sources.semrush?.metadata['keywordSnapshotDate'] ?? evidence.bundle.sources.semrush?.metadata.extractedAt ?? 'not selected')}. Historical keyword comparisons require separate comparable snapshots; domain totals do not reconstruct them. Exact-query GSC rows omit protected queries. Coverage is not competitive share of voice or a traffic forecast.`,
+      `TAM ${tam?.metadata.sourceId ?? 'not selected'}; ${tam?.metadata.sourceRevision ?? ''}. Ranking extract: ${keywordSnapshotDate(evidence.bundle.sources.semrush) ?? 'unavailable'}. Historical keyword comparisons require separate comparable snapshots; domain totals do not reconstruct them. Exact-query GSC rows omit protected queries. Coverage is not competitive share of voice or a traffic forecast.`,
     ],
   ]);
 }

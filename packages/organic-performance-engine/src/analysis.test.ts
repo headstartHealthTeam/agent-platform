@@ -43,6 +43,31 @@ describe('organic performance analysis', () => {
     expect(second).toBe(first);
   });
 
+  it.each(['toString', 'valueOf', 'hasOwnProperty'])(
+    'aggregates inherited object-name ID %s as an own data key',
+    async (id) => {
+      const bundle = organicPerformanceBundleSchema.parse(
+        await fixture('august-2026-regression.json')
+      );
+      bundle.config.routeRegistry = [{ id, exactPaths: [], prefixes: ['/'] }];
+      bundle.config.unmatchedSegment = id;
+      bundle.config.audienceRegistry = [];
+      bundle.config.unmatchedAudience = id;
+      const analysis = analyzeBundle(bundle);
+      for (const scope of ['segments', 'audiences']) {
+        expect(analysis).toHaveProperty([scope, 'gsc', 'current', id], {
+          clicks: 497,
+          impressions: 14570,
+        });
+        expect(analysis).toHaveProperty([scope, 'ga4', 'current', id, 'sessions'], 509);
+        expect(analysis).toHaveProperty([scope, 'gscReconciliation', 'current', 'delta'], 0);
+      }
+      expect(Object.prototype).not.toHaveProperty(['toString', 'clicks']);
+      expect(Object.prototype).not.toHaveProperty(['valueOf', 'sessions']);
+      expect(() => canonicalJson(analysis)).not.toThrow();
+    }
+  );
+
   it('anchors historical context to the current report period, not extraction or array order', async () => {
     const bundle = organicPerformanceBundleSchema.parse(
       await fixture('august-2026-regression.json')

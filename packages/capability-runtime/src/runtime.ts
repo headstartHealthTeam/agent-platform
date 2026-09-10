@@ -92,7 +92,14 @@ export function verifyExecutionReadiness(
 ): readonly CapabilityPreflightResult[] {
   const profile = executionProfileSchema.parse(profileInput);
   const results = resultsInput.map((result) => capabilityPreflightResultSchema.parse(result));
-  const resultsByCapability = new Map(results.map((result) => [result.capabilityId, result]));
+  const resultsByCapability = new Map<string, CapabilityPreflightResult>();
+  for (const result of results) {
+    if (resultsByCapability.has(result.capabilityId))
+      throw new CapabilityRuntimeError(
+        `duplicate preflight evidence for capability ${result.capabilityId}`
+      );
+    resultsByCapability.set(result.capabilityId, result);
+  }
   const verified: CapabilityPreflightResult[] = [];
 
   for (const requirementInput of requirementsInput) {

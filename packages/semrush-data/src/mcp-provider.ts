@@ -49,8 +49,13 @@ export function parseSemrushTable(input: unknown): SemrushCsvTable {
     .join('\n');
   let csv = text;
   if (text.startsWith('"')) {
-    const decoded: unknown = JSON.parse(text);
-    csv = z.string().parse(decoded);
+    try {
+      const decoded: unknown = JSON.parse(text);
+      csv = z.string().parse(decoded);
+    } catch {
+      // A plain CSV table may begin with a quoted header. If this is not a JSON-string
+      // wrapper, keep the original text and let CSV validation reject malformed payloads.
+    }
   }
   if (/^(ERROR|Error:)/.test(csv.trim()))
     throw new SemrushProviderError('Semrush API rejected the read');

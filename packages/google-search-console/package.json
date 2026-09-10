@@ -37,7 +37,6 @@
   "dependencies": {
     "@headstart-health/google-read-transport": "workspace:*",
     "@headstart-health/capability-contracts": "workspace:*",
-    "@headstart-health/capability-runtime": "workspace:*",
     "zod": "^4.5.4"
   },
   "devDependencies": {

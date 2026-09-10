@@ -112,6 +112,22 @@ describe('GA4 REST and pagination', () => {
       /reconcile/
     );
   });
+  it('rejects oversized pages before a matching rowCount can bypass request or total limits', async () => {
+    const next = { ...row, dimensionValues: [{ value: '/next' }] };
+    await expect(
+      collectGa4Report(provider([{ ...page, rows: [row, next] }]), request, 10)
+    ).rejects.toThrow(/requested page limit/);
+    const third = { ...row, dimensionValues: [{ value: '/third' }] };
+    const fourth = { ...row, dimensionValues: [{ value: '/fourth' }] };
+    const runReport = vi
+      .fn()
+      .mockResolvedValueOnce({ ...page, rows: [row, next], rowCount: 4 })
+      .mockResolvedValueOnce({ ...page, rows: [third, fourth], rowCount: 4 });
+    await expect(
+      collectGa4Report({ getProperty: async () => ({}), runReport }, { ...request, limit: 2 }, 3)
+    ).rejects.toThrow(/requested page limit/);
+    expect(runReport).toHaveBeenLastCalledWith(expect.objectContaining({ offset: 2, limit: 1 }));
+  });
   it.each([
     { subjectToThresholding: true },
     { dataLossFromOtherRow: true },

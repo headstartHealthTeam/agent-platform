@@ -4,7 +4,7 @@ import { delimiter, join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { GcloudReadTokenProvider, GoogleReadTransport } from './transport.js';
+import { GcloudReadTokenProvider, GoogleReadError, GoogleReadTransport } from './transport.js';
 
 describe('Google read transport', () => {
   afterEach(() => {
@@ -49,6 +49,55 @@ else process.stdout.write('synthetic-subprocess-token\\n');
     await expect(new GcloudReadTokenProvider().getAccessToken()).rejects.toThrow(
       /verify gcloud installation and PATH/
     );
+    const fetcher = vi.fn();
+    vi.stubGlobal('fetch', fetcher);
+    await expect(
+      new GoogleReadTransport(new GcloudReadTokenProvider()).request(
+        'https://sheets.googleapis.com/v4/spreadsheets/test'
+      )
+    ).rejects.toThrow(/verify gcloud installation and PATH/);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+  it('preserves fixed ADC guidance through the transport but sanitizes arbitrary token-provider errors', async () => {
+    const fetcher = vi.fn();
+    vi.stubGlobal('fetch', fetcher);
+    const url = 'https://sheets.googleapis.com/v4/spreadsheets/test';
+    await expect(
+      new GoogleReadTransport(
+        new GcloudReadTokenProvider(async () => {
+          throw new Error('private ADC contents');
+        })
+      ).request(url)
+    ).rejects.toThrow(
+      'Google ADC is unavailable; follow the configured organization OAuth recovery procedure'
+    );
+    for (const error of [
+      new Error('private provider contents'),
+      new GoogleReadError('private provider contents'),
+    ]) {
+      const transport = new GoogleReadTransport({
+        getAccessToken: async (): Promise<string> => {
+          throw error;
+        },
+      });
+      await expect(transport.request(url)).rejects.toThrow(
+        'Google token provider failed; verify the configured provider and recovery procedure'
+      );
+      await expect(transport.request(url)).rejects.not.toThrow(/private provider contents/);
+    }
+    const contaminated = Object.assign(
+      new GoogleReadError(
+        'Google ADC is unavailable; follow the configured organization OAuth recovery procedure'
+      ),
+      { providerResponse: 'private provider contents' }
+    );
+    const transport = new GoogleReadTransport({
+      getAccessToken: async (): Promise<string> => {
+        throw contaminated;
+      },
+    });
+    await expect(transport.request(url)).rejects.not.toHaveProperty('providerResponse');
+    expect(fetcher).not.toHaveBeenCalled();
   });
   it('caches successful ADC resolution and sanitizes failures', async () => {
     const run = vi.fn(async () => ' synthetic-token ');

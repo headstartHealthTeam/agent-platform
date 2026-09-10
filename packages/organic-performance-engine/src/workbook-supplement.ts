@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { canonicalJson } from './analysis.js';
 import { compareCanonicalText } from './canonical-order.js';
+import { keywordSnapshotDate } from './semrush-snapshot.js';
 import type { ReportingSources } from './source-config.js';
 import type { ReportRows } from './workbook-contract.js';
 import { numeric, orderedPeriods, period, type WorkbookEvidence } from './workbook-evidence.js';
@@ -35,10 +36,11 @@ function semrushTables(evidence: WorkbookEvidence): (SemrushCsvTable & { tool: s
 }
 function market(blocks: Map<string, ReportRows>, evidence: WorkbookEvidence): void {
   const semrush = evidence.bundle.sources.semrush;
+  const snapshotDate = keywordSnapshotDate(semrush);
   blocks.set('market.keywordSnapshot', [
     [
       semrush
-        ? `Latest keyword snapshot: ${z.iso.date().parse(semrush.metadata['keywordSnapshotDate'])} (not report-period data)`
+        ? `Latest keyword snapshot: ${snapshotDate ?? 'unavailable'} (not report-period data)`
         : 'Latest keyword snapshot: unavailable (Semrush not selected)',
     ],
   ]);
@@ -55,7 +57,9 @@ function market(blocks: Map<string, ReportRows>, evidence: WorkbookEvidence): vo
       const snapshot = evidence.bundle.sources.semrush?.domainSnapshots.find(
         (r) => r.period === id
       );
-      const row = history?.find((r) => r['Date'] === snapshot?.snapshotDate.replaceAll('-', ''));
+      const row = snapshot
+        ? history?.find((r) => r['Date'] === snapshot.snapshotDate.replaceAll('-', ''))
+        : undefined;
       return [
         period(evidence, id)?.label ?? 'Unavailable',
         snapshot?.rankingKeywords ?? null,
@@ -174,6 +178,7 @@ function rawGoogle(blocks: Map<string, ReportRows>, evidence: WorkbookEvidence):
 function rawSemrush(blocks: Map<string, ReportRows>, evidence: WorkbookEvidence): void {
   const rows: ReportRows = [];
   const semrush = evidence.bundle.sources.semrush;
+  const snapshotDate = keywordSnapshotDate(semrush);
   for (const row of semrush?.domainSnapshots ?? [])
     rows.push([
       'Domain overview',
@@ -190,7 +195,7 @@ function rawSemrush(blocks: Map<string, ReportRows>, evidence: WorkbookEvidence)
     rows.push([
       'Keyword ranking',
       'snapshot',
-      z.string().parse(semrush?.metadata['keywordSnapshotDate'] ?? ''),
+      snapshotDate,
       row.keyword,
       row.searchVolume,
       row.position,

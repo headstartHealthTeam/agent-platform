@@ -75,6 +75,28 @@ describe('capability runtime', () => {
     ).toThrow(CapabilityRuntimeError);
   });
 
+  it('rejects duplicate capability evidence instead of hiding failures by input order', () => {
+    const ready = {
+      capabilityId: requirement.id,
+      providerId: 'gsc-api',
+      adapterVersion: 'v1.0.0',
+      status: 'ready' as const,
+      permissions: ['webmasters.readonly'],
+      targetIdentity: { siteUrl: 'sc-domain:example.test' },
+      message: 'verified',
+    };
+    const failed = { ...ready, status: 'provider-unavailable' as const, permissions: [] };
+    for (const results of [
+      [failed, ready],
+      [ready, failed],
+      [ready, ready],
+    ]) {
+      expect(() => verifyExecutionReadiness(profile, [requirement], results)).toThrow(
+        /duplicate preflight evidence/
+      );
+    }
+  });
+
   it('fails closed for binding, revision, readiness, side-effect, and permission mismatches', () => {
     const binding = profile.bindings[0];
     if (binding === undefined) {

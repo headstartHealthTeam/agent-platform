@@ -7,6 +7,7 @@ import {
   parseSemrushCsv,
   parseSemrushTable,
   SemrushMcpProvider,
+  SemrushProviderError,
 } from './mcp-provider.js';
 import { semrushDomainRequestSchema } from './semrush.js';
 
@@ -66,6 +67,28 @@ describe('Semrush concrete MCP binding', () => {
     expect(() => parseSemrushCsv(result('A;B\n1'))).toThrow(/column/);
     expect(() => parseSemrushCsv(result('A\n"unterminated'))).toThrow(/Unterminated/);
     expect(() => parseSemrushCsv(result(''))).toThrow(/headers/);
+  });
+  it('accepts plain quoted CSV headers as well as JSON-wrapped CSV without raw JSON errors', () => {
+    const csv = '"Keyword";"Search Volume"\n"a; b";10\n"a ""quote""";0';
+    const plain = { content: [{ type: 'text', text: csv }] };
+    const expected = {
+      headers: ['Keyword', 'Search Volume'],
+      rows: [
+        { Keyword: 'a; b', 'Search Volume': '10' },
+        { Keyword: 'a "quote"', 'Search Volume': '0' },
+      ],
+    };
+    expect(parseSemrushTable(plain)).toEqual(expected);
+    expect(parseSemrushTable(result(csv))).toEqual(expected);
+    for (const text of [
+      '"Keyword";"Volume"\n"unterminated',
+      '"Keyword";"Volume"\n1',
+      '"Keyword";"Keyword"',
+    ]) {
+      const parse = (): unknown => parseSemrushTable({ content: [{ type: 'text', text }] });
+      expect(parse).toThrow(SemrushProviderError);
+      expect(parse).not.toThrow(SyntaxError);
+    }
   });
   it('reads current and exact historical domain snapshots', async () => {
     const tools = {

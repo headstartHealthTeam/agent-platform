@@ -40,7 +40,17 @@ function normalizeHeader(value: z.infer<typeof cellSchema>): string {
   return normalized;
 }
 
-export function rowsFromHeaderRange(input: unknown): readonly Readonly<Record<string, string>>[] {
+function requireHeaders(headers: readonly string[], columns: readonly string[]): void {
+  for (const column of columns) {
+    if (!headers.includes(column))
+      throw new GoogleSheetsDataError(`sheet header is missing required column ${column}`);
+  }
+}
+
+export function rowsFromHeaderRange(
+  input: unknown,
+  requiredHeaders: readonly string[] = []
+): readonly Readonly<Record<string, string>>[] {
   const range = sheetRangeSchema.parse(input);
   const headerRow = range.values[0];
   if (headerRow === undefined) {
@@ -50,6 +60,7 @@ export function rowsFromHeaderRange(input: unknown): readonly Readonly<Record<st
   if (new Set(headers).size !== headers.length) {
     throw new GoogleSheetsDataError('sheet headers must be unique');
   }
+  requireHeaders(headers, requiredHeaders);
   return range.values
     .slice(1)
     .map((row) =>
@@ -65,8 +76,14 @@ function columnValue(row: Readonly<Record<string, string>>, column: string): str
 
 export function requireColumns(
   rows: readonly Readonly<Record<string, string>>[],
-  columns: readonly string[]
+  columns: readonly string[],
+  headers?: readonly string[]
 ): void {
+  if (headers !== undefined) requireHeaders(headers, columns);
+  else if (rows.length === 0 && columns.length > 0)
+    throw new GoogleSheetsDataError(
+      'empty rows require header evidence to validate required columns'
+    );
   for (const [index, row] of rows.entries()) {
     for (const column of columns) {
       const value = columnValue(row, column);
@@ -124,7 +141,7 @@ export async function preflightGoogleSheets(
       targetIdentity: { spreadsheetId: snapshot.spreadsheetId, range: snapshot.range },
       message: ready ? 'verified readable spreadsheet range' : 'provider returned another range',
     });
-  } catch (error: unknown) {
+  } catch {
     return capabilityPreflightResultSchema.parse({
       capabilityId: GOOGLE_SHEETS_RANGE_READ,
       providerId: input.providerId,
@@ -132,7 +149,8 @@ export async function preflightGoogleSheets(
       status: 'provider-unavailable',
       permissions: [],
       targetIdentity: { spreadsheetId: input.spreadsheetId, range: input.range },
-      message: error instanceof Error ? error.message : 'Google Sheets preflight failed',
+      message:
+        'Google Sheets provider readiness could not be verified; inspect provider access and response validity',
     });
   }
 }

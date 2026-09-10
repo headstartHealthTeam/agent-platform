@@ -63,13 +63,16 @@ export async function collectGa4Report(
   const seen = new Set<string>();
   let first: Ga4ReportResponse | undefined;
   while (rows.length < maxRows) {
+    const pageLimit = Math.min(request.limit, maxRows - rows.length);
     const page = ga4ReportResponseSchema.parse(
       await provider.runReport({
         ...request,
         offset: request.offset + rows.length,
-        limit: Math.min(request.limit, maxRows - rows.length),
+        limit: pageLimit,
       })
     );
+    if (page.rows.length > pageLimit)
+      throw new GoogleAnalyticsDataError('GA4 response exceeds the requested page limit');
     if (page.rowCount === undefined)
       throw new GoogleAnalyticsDataError(
         'GA4 rowCount is required to verify extraction completeness'

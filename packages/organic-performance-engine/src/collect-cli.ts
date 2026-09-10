@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { parseArgs, promisify } from 'node:util';
+import { parseArgs } from 'node:util';
 
 import { GoogleAnalyticsRestProvider } from '@headstart-health/google-analytics-data';
 import {
@@ -25,55 +24,22 @@ import {
   validateOptionalSources,
   validateReportPeriods,
 } from './report-contract.js';
+import { resolveSemrushCredential, semrushCredentialSchema } from './semrush-credential.js';
 import { resolveReportingSources } from './source-config.js';
 import type { EvidenceView } from './workbook-evidence.js';
 
-const execute = promisify(execFile);
 const profileSchema = z
   .object({
     semrush: z
       .object({
         entrypoint: z.string(),
         sha256: z.string(),
-        credential: z.discriminatedUnion('type', [
-          z
-            .object({
-              type: z.literal('environment'),
-              variable: z.string().regex(/^[A-Z][A-Z0-9_]+$/),
-            })
-            .strict(),
-          z.object({ type: z.literal('codex-mcp'), server: z.literal('semrush-mcp') }).strict(),
-        ]),
+        credential: semrushCredentialSchema,
       })
       .strict()
       .optional(),
   })
   .strict();
-
-async function credential(
-  input: NonNullable<z.infer<typeof profileSchema>['semrush']>['credential']
-): Promise<string> {
-  if (input.type === 'environment') {
-    const value = Object.entries(process.env).find(([key]) => key === input.variable)?.[1];
-    if (!value) throw new Error('Configured Semrush credential environment variable is absent');
-    return value;
-  }
-  try {
-    const result = await execute('codex', ['mcp', 'get', input.server, '--json'], {
-      timeout: 30_000,
-      maxBuffer: 1_000_000,
-    });
-    const parsed = z
-      .object({
-        enabled: z.literal(true),
-        transport: z.object({ env: z.object({ SEMRUSH_API_KEY: z.string().min(1) }) }),
-      })
-      .parse(JSON.parse(result.stdout));
-    return parsed.transport.env.SEMRUSH_API_KEY;
-  } catch {
-    throw new Error('The configured Semrush MCP credential could not be resolved');
-  }
-}
 
 async function main(): Promise<void> {
   const parsed = parseArgs({
@@ -136,7 +102,7 @@ async function main(): Promise<void> {
           entrypoint: profile.semrush.entrypoint,
           sha256: profile.semrush.sha256,
           env: {
-            SEMRUSH_API_KEY: await credential(profile.semrush.credential),
+            SEMRUSH_API_KEY: await resolveSemrushCredential(profile.semrush.credential),
             LOG_LEVEL: 'error',
           },
           onRead: async (evidence): Promise<void> => {

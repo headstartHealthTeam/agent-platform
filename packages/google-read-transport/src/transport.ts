@@ -2,6 +2,11 @@ import spawn from 'cross-spawn';
 import { z } from 'zod';
 
 class GoogleCommandUnavailableError extends Error {}
+const ADC_COMMAND_UNAVAILABLE =
+  'Google ADC command could not start; verify gcloud installation and PATH before retrying';
+const ADC_UNAVAILABLE =
+  'Google ADC is unavailable; follow the configured organization OAuth recovery procedure';
+const SAFE_TOKEN_GUIDANCE = new Set([ADC_COMMAND_UNAVAILABLE, ADC_UNAVAILABLE]);
 
 function readGcloudToken(): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -64,13 +69,9 @@ export class GcloudReadTokenProvider implements GoogleTokenProvider {
       return token;
     } catch (error: unknown) {
       if (error instanceof GoogleCommandUnavailableError) {
-        throw new GoogleReadError(
-          'Google ADC command could not start; verify gcloud installation and PATH before retrying'
-        );
+        throw new GoogleReadError(ADC_COMMAND_UNAVAILABLE);
       }
-      throw new GoogleReadError(
-        'Google ADC is unavailable; follow the configured organization OAuth recovery procedure'
-      );
+      throw new GoogleReadError(ADC_UNAVAILABLE);
     }
   }
 }
@@ -84,6 +85,20 @@ export class GoogleReadTransport implements GoogleJsonReader {
   readonly #tokens: GoogleTokenProvider;
   public constructor(tokens: GoogleTokenProvider) {
     this.#tokens = tokens;
+  }
+  async #accessToken(): Promise<string> {
+    try {
+      return await this.#tokens.getAccessToken();
+    } catch (error: unknown) {
+      // Public token-provider implementations can throw arbitrary errors, including our public
+      // error class. Preserve only fixed adapter-owned guidance, never arbitrary messages/causes.
+      if (error instanceof GoogleReadError && SAFE_TOKEN_GUIDANCE.has(error.message)) {
+        throw new GoogleReadError(error.message);
+      }
+      throw new GoogleReadError(
+        'Google token provider failed; verify the configured provider and recovery procedure'
+      );
+    }
   }
   public async request(url: string, body?: Readonly<Record<string, unknown>>): Promise<unknown> {
     const parsed = new URL(url);
@@ -109,12 +124,13 @@ export class GoogleReadTransport implements GoogleJsonReader {
         (/^\/v4\/spreadsheets\/[A-Za-z0-9_-]+$/.test(parsed.pathname) ||
           /^\/v4\/spreadsheets\/[A-Za-z0-9_-]+\/values\/[^/]+$/.test(parsed.pathname)));
     if (!allowedRead) throw new GoogleReadError('Google operation is outside the read allowlist');
+    const token = await this.#accessToken();
     let response: Response;
     try {
       response = await fetch(url, {
         method: body === undefined ? 'GET' : 'POST',
         headers: {
-          Authorization: `Bearer ${await this.#tokens.getAccessToken()}`,
+          Authorization: `Bearer ${token}`,
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },

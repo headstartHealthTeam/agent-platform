@@ -184,13 +184,16 @@ export class SearchConsoleClient {
     requestInput: SearchAnalyticsRequest
   ): Promise<SearchAnalyticsResponse> {
     const request = searchAnalyticsRequestSchema.parse(requestInput);
-    return searchAnalyticsResponseSchema.parse(
+    const response = searchAnalyticsResponseSchema.parse(
       await this.#transport.request(
         'POST',
         `/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`,
         request
       )
     );
+    if (response.rows.length > request.rowLimit)
+      throw new SearchConsoleError('Search Console response exceeds the requested rowLimit');
+    return response;
   }
 }
 
@@ -239,8 +242,9 @@ export async function runPaginatedSearch(
   }
   const request = searchAnalyticsRequestSchema.parse(requestInput);
   if (!options.allPages) {
-    const response = await client.searchAnalytics(siteUrl, request);
-    return { ...response, rowCount: response.rows.length, siteUrl, request };
+    const boundedRequest = { ...request, rowLimit: Math.min(request.rowLimit, options.maxRows) };
+    const response = await client.searchAnalytics(siteUrl, boundedRequest);
+    return { ...response, rowCount: response.rows.length, siteUrl, request: boundedRequest };
   }
 
   const rows: z.infer<typeof searchAnalyticsRowSchema>[] = [];
@@ -248,7 +252,7 @@ export async function runPaginatedSearch(
   let pagesRequested = 0;
   let responseMetadata: Readonly<Record<string, unknown>> = {};
   while (rows.length < options.maxRows) {
-    const batchLimit = Math.min(MAX_PAGE_SIZE, options.maxRows - rows.length);
+    const batchLimit = Math.min(request.rowLimit, options.maxRows - rows.length);
     const pageRequest = { ...request, rowLimit: batchLimit, startRow };
     const response = await client.searchAnalytics(siteUrl, pageRequest);
     pagesRequested += 1;
@@ -308,15 +312,16 @@ export async function preflightSearchConsole(
         ? 'verified accessible Search Console property'
         : 'property is not verified or accessible',
     });
-  } catch (error: unknown) {
+  } catch {
     return capabilityPreflightResultSchema.parse({
       capabilityId: SEARCH_CONSOLE_PERFORMANCE_READ,
       providerId: input.providerId,
       adapterVersion: input.adapterVersion,
-      status: 'unauthenticated',
+      status: 'provider-unavailable',
       permissions: [],
       targetIdentity: { siteUrl: input.siteUrl },
-      message: error instanceof Error ? error.message : 'Search Console preflight failed',
+      message:
+        'Search Console provider readiness could not be verified; authentication failure is not established',
     });
   }
 }

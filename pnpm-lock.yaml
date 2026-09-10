@@ -302,9 +302,6 @@ importers:
       '@headstart-health/capability-contracts':
         specifier: workspace:*
         version: link:../capability-contracts
-      '@headstart-health/capability-runtime':
-        specifier: workspace:*
-        version: link:../capability-runtime
       '@headstart-health/google-read-transport':
         specifier: workspace:*
         version: link:../google-read-transport
@@ -397,10 +394,16 @@ importers:
       '@headstart-health/semrush-data':
         specifier: workspace:*
         version: link:../semrush-data
+      cross-spawn:
+        specifier: 7.0.6
+        version: 7.0.6
       zod:
         specifier: ^4.5.4
         version: 4.5.4
     devDependencies:
+      '@types/cross-spawn':
+        specifier: 6.0.6
+        version: 6.0.6
       '@types/node':
         specifier: ^22.20.1
         version: 22.20.1
