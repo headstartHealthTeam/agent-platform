@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean --target node22",
     "check-types": "tsc --noEmit",
-    "lint": "eslint --quiet --cache --cache-location node_modules/.cache/eslint/ --cache-strategy content src vitest.config.ts",
+    "lint": "eslint --quiet --no-cache src vitest.config.ts",
     "test": "vitest run --silent",
     "test:coverage": "vitest run --coverage --silent",
     "format": "prettier --write --ignore-path ../../.prettierignore .",

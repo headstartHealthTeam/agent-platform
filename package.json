@@ -20,7 +20,7 @@
     "check:secrets": "secretlint \"**/*\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint --quiet --cache --cache-location node_modules/.cache/eslint/ --cache-strategy content --no-error-on-unmatched-pattern scripts skills vitest.config.ts eslint.config.mjs lint-staged.config.mjs && turbo run lint --output-logs=errors-only",
+    "lint": "eslint --quiet --no-cache --no-error-on-unmatched-pattern scripts skills vitest.config.ts eslint.config.mjs lint-staged.config.mjs && turbo run lint --output-logs=errors-only",
     "check-types": "tsc --noEmit && turbo run check-types --output-logs=errors-only",
     "typecheck": "npm run check-types",
     "test": "vitest run --silent && turbo run test --output-logs=errors-only",

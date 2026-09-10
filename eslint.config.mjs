@@ -10,6 +10,8 @@ import unicornPlugin from 'eslint-plugin-unicorn';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+// Typed rules depend on imported files. Canonical lint scripts disable ESLint's per-file cache;
+// Turbo retains whole-task caching with package/dependency inputs for hooks and CI alike.
 export default tseslint.config(
   {
     ignores: ['**/.turbo/**', '**/coverage/**', '**/dist/**', 'node_modules/**', '**/*.snap'],
