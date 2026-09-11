@@ -6,6 +6,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { withoutRepositoryLocalGitEnvironment } from '../run-python-tests.js';
+import { GIT_COMMAND_TIMEOUT, gitWorkflowTestTimeoutForPlatform } from '../test-timeouts.js';
 import {
   inspectUpdate,
   isExpectedRemote,
@@ -16,13 +17,20 @@ import {
 } from '../update-skills.js';
 
 const temporaryDirectories: string[] = [];
+const gitWorkflowTestTimeout = gitWorkflowTestTimeoutForPlatform(process.platform);
 
 const runGit = (cwd: string, arguments_: string[]): string => {
   const result = spawnSync('git', arguments_, {
     cwd,
     encoding: 'utf8',
     env: withoutRepositoryLocalGitEnvironment(process.env),
+    timeout: GIT_COMMAND_TIMEOUT,
   });
+  if (result.error) {
+    throw new Error(
+      `Fixture Git command failed: git ${arguments_.join(' ')}\n${result.error.message}`
+    );
+  }
   if (result.status !== 0) {
     throw new Error(
       `Fixture Git command failed: git ${arguments_.join(' ')}\n${result.stderr.trim()}`
@@ -228,7 +236,7 @@ describe('update plan output', () => {
   });
 });
 
-describe('skills update workflow', () => {
+describe('skills update workflow', { timeout: gitWorkflowTestTimeout }, () => {
   it('previews and applies a fast-forward update without touching unrelated skills', () => {
     const fixture = makeGitFixture();
     writeSkill(fixture.seed, '2');

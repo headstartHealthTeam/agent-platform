@@ -1,0 +1,522 @@
+{
+  "schemaVersion": "organic-performance-bundle/v1",
+  "report": {
+    "title": "Headstart Organic Performance - August 2026 regression",
+    "fixtureBoundary": "Headline totals and segment behavior reproduce the approved August workbook. Row-level source records are sanitized representatives because the complete historical exports were not retained.",
+    "periods": [
+      { "id": "current", "label": "Aug 2026", "startDate": "2026-08-01", "endDate": "2026-08-31" },
+      { "id": "previous", "label": "Jul 2026", "startDate": "2026-07-01", "endDate": "2026-07-31" },
+      { "id": "year_ago", "label": "Aug 2025", "startDate": "2025-08-01", "endDate": "2025-08-31" }
+    ]
+  },
+  "config": {
+    "configVersion": "headstart-organic-2026-09-09",
+    "publicHostname": "headstart.health",
+    "unmatchedSegment": "other_unmapped",
+    "unmatchedAudience": "shared_unassigned",
+    "routeRegistry": [
+      { "id": "homepage", "exactPaths": ["/"], "prefixes": [] },
+      {
+        "id": "audience_hubs",
+        "exactPaths": ["/bcba", "/rbt", "/families", "/for-providers"],
+        "prefixes": []
+      },
+      {
+        "id": "location_content",
+        "exactPaths": [],
+        "prefixes": ["/location", "/locations", "/aba-therapy"]
+      },
+      { "id": "editorial_legacy", "exactPaths": ["/blogs"], "prefixes": ["/blogs"] },
+      {
+        "id": "conversion_utility",
+        "exactPaths": [
+          "/earnings-calculator",
+          "/contact-us",
+          "/aba-therapy-providers",
+          "/autism-therapy-providers",
+          "/get-started-with-autism-therapy",
+          "/interest-form-thank-you",
+          "/refer-client"
+        ],
+        "prefixes": ["/provider", "/intake"]
+      }
+    ],
+    "audienceRegistry": [
+      {
+        "id": "families",
+        "exactPaths": [
+          "/families",
+          "/get-started-with-autism-therapy",
+          "/aba-therapy-providers",
+          "/autism-therapy-providers"
+        ],
+        "prefixes": ["/location", "/locations", "/aba-therapy"]
+      },
+      {
+        "id": "bcbas",
+        "exactPaths": [
+          "/bcba",
+          "/for-providers",
+          "/earnings-calculator",
+          "/interest-form-thank-you"
+        ],
+        "prefixes": []
+      },
+      { "id": "rbts", "exactPaths": ["/rbt"], "prefixes": [] }
+    ],
+    "outcomeRegistry": [
+      { "audience": "families", "eventName": null },
+      { "audience": "bcbas", "eventName": "interest_form_submit" },
+      { "audience": "rbts", "eventName": null }
+    ]
+  },
+  "sources": {
+    "gsc": {
+      "metadata": {
+        "sourceId": "sc-domain:headstart.health",
+        "extractedAt": "2026-09-09T14:00:00Z",
+        "complete": true,
+        "dataState": "final",
+        "filters": [
+          {
+            "dimension": "page",
+            "operator": "includingRegex",
+            "expression": "^https://headstart\\.health/"
+          }
+        ]
+      },
+      "periodTotals": [
+        {
+          "period": "current",
+          "clicks": 497,
+          "impressions": 14570,
+          "ctr": 0.034111187371310914,
+          "averagePosition": 12.262663006177076
+        },
+        {
+          "period": "previous",
+          "clicks": 633,
+          "impressions": 13314,
+          "ctr": 0.04754393871113114,
+          "averagePosition": 10.910244855039808
+        },
+        {
+          "period": "year_ago",
+          "clicks": 433,
+          "impressions": 6774,
+          "ctr": 0.06392087392973132,
+          "averagePosition": 7.67006200177148
+        }
+      ],
+      "nonBrandedTotals": [
+        { "period": "current", "clicks": 2, "impressions": 1156 },
+        { "period": "previous", "clicks": 3, "impressions": 1211 },
+        { "period": "year_ago", "clicks": 0, "impressions": 131 }
+      ],
+      "pageRows": [
+        {
+          "period": "current",
+          "url": "https://headstart.health/",
+          "clicks": 312,
+          "impressions": 3063
+        },
+        {
+          "period": "current",
+          "url": "https://headstart.health/bcba",
+          "clicks": 87,
+          "impressions": 2097
+        },
+        {
+          "period": "current",
+          "url": "https://headstart.health/aba-therapy/atlanta-ga",
+          "clicks": 25,
+          "impressions": 3375
+        },
+        {
+          "period": "current",
+          "url": "https://headstart.health/blogs/legacy-aggregate",
+          "clicks": 32,
+          "impressions": 3921
+        },
+        {
+          "period": "current",
+          "url": "https://headstart.health/earnings-calculator",
+          "clicks": 38,
+          "impressions": 1764
+        },
+        {
+          "period": "current",
+          "url": "https://headstart.health/privacy-policy",
+          "clicks": 3,
+          "impressions": 350
+        },
+        {
+          "period": "previous",
+          "url": "https://headstart.health/",
+          "clicks": 439,
+          "impressions": 3423
+        },
+        {
+          "period": "previous",
+          "url": "https://headstart.health/bcba",
+          "clicks": 102,
+          "impressions": 2271
+        },
+        {
+          "period": "previous",
+          "url": "https://headstart.health/aba-therapy/atlanta-ga",
+          "clicks": 27,
+          "impressions": 2671
+        },
+        {
+          "period": "previous",
+          "url": "https://headstart.health/blogs/legacy-aggregate",
+          "clicks": 28,
+          "impressions": 2788
+        },
+        {
+          "period": "previous",
+          "url": "https://headstart.health/earnings-calculator",
+          "clicks": 37,
+          "impressions": 1808
+        },
+        {
+          "period": "previous",
+          "url": "https://headstart.health/privacy-policy",
+          "clicks": 0,
+          "impressions": 353
+        },
+        {
+          "period": "year_ago",
+          "url": "https://headstart.health/",
+          "clicks": 402,
+          "impressions": 2704
+        },
+        {
+          "period": "year_ago",
+          "url": "https://headstart.health/bcba",
+          "clicks": 28,
+          "impressions": 1943
+        },
+        {
+          "period": "year_ago",
+          "url": "https://headstart.health/aba-therapy/atlanta-ga",
+          "clicks": 0,
+          "impressions": 0
+        },
+        {
+          "period": "year_ago",
+          "url": "https://headstart.health/blogs/legacy-aggregate",
+          "clicks": 0,
+          "impressions": 0
+        },
+        {
+          "period": "year_ago",
+          "url": "https://headstart.health/earnings-calculator",
+          "clicks": 2,
+          "impressions": 1956
+        },
+        {
+          "period": "year_ago",
+          "url": "https://headstart.health/privacy-policy",
+          "clicks": 1,
+          "impressions": 171
+        }
+      ],
+      "queryRows": [
+        { "period": "current", "query": "find aba care", "clicks": 0, "impressions": 1 },
+        { "period": "current", "query": "aba therapy insurance", "clicks": 0, "impressions": 8 },
+        {
+          "period": "current",
+          "query": "starting aba after diagnosis",
+          "clicks": 0,
+          "impressions": 3
+        },
+        { "period": "previous", "query": "find aba care", "clicks": 0, "impressions": 4 },
+        { "period": "previous", "query": "therapy fit", "clicks": 0, "impressions": 12 }
+      ]
+    },
+    "ga4": {
+      "metadata": {
+        "sourceId": "properties/454799172",
+        "extractedAt": "2026-09-09T14:05:00Z",
+        "complete": true,
+        "timeZone": "America/Chicago",
+        "channelFilter": "sessionDefaultChannelGroup=Organic Search"
+      },
+      "periodTotals": [
+        {
+          "period": "current",
+          "sessions": 510,
+          "engagementRate": 0.6019607843137255,
+          "keyEvents": 55
+        },
+        { "period": "previous", "sessions": 536, "engagementRate": 0.75, "keyEvents": 26 },
+        {
+          "period": "year_ago",
+          "sessions": 722,
+          "engagementRate": 0.5983379501385041,
+          "keyEvents": 21
+        }
+      ],
+      "landingPageRows": [
+        {
+          "period": "current",
+          "landingPage": "/",
+          "sessions": 290,
+          "engagedSessions": 207,
+          "keyEvents": 24
+        },
+        {
+          "period": "current",
+          "landingPage": "/bcba",
+          "sessions": 77,
+          "engagedSessions": 35,
+          "keyEvents": 10
+        },
+        {
+          "period": "current",
+          "landingPage": "/aba-therapy/atlanta-ga",
+          "sessions": 24,
+          "engagedSessions": 21,
+          "keyEvents": 1
+        },
+        {
+          "period": "current",
+          "landingPage": "/blogs/legacy-aggregate",
+          "sessions": 9,
+          "engagedSessions": 8,
+          "keyEvents": 2
+        },
+        {
+          "period": "current",
+          "landingPage": "/earnings-calculator",
+          "sessions": 58,
+          "engagedSessions": 30,
+          "keyEvents": 18
+        },
+        {
+          "period": "current",
+          "landingPage": "(not set)",
+          "sessions": 51,
+          "engagedSessions": 6,
+          "keyEvents": 0
+        },
+        {
+          "period": "previous",
+          "landingPage": "/",
+          "sessions": 332,
+          "engagedSessions": 260,
+          "keyEvents": 10
+        },
+        {
+          "period": "previous",
+          "landingPage": "/bcba",
+          "sessions": 73,
+          "engagedSessions": 45,
+          "keyEvents": 5
+        },
+        {
+          "period": "previous",
+          "landingPage": "/aba-therapy/atlanta-ga",
+          "sessions": 15,
+          "engagedSessions": 12,
+          "keyEvents": 1
+        },
+        {
+          "period": "previous",
+          "landingPage": "/blogs/legacy-aggregate",
+          "sessions": 7,
+          "engagedSessions": 6,
+          "keyEvents": 1
+        },
+        {
+          "period": "previous",
+          "landingPage": "/earnings-calculator",
+          "sessions": 68,
+          "engagedSessions": 50,
+          "keyEvents": 7
+        },
+        {
+          "period": "previous",
+          "landingPage": "(not set)",
+          "sessions": 40,
+          "engagedSessions": 29,
+          "keyEvents": 2
+        },
+        {
+          "period": "year_ago",
+          "landingPage": "/",
+          "sessions": 560,
+          "engagedSessions": 330,
+          "keyEvents": 10
+        },
+        {
+          "period": "year_ago",
+          "landingPage": "/bcba",
+          "sessions": 52,
+          "engagedSessions": 28,
+          "keyEvents": 4
+        },
+        {
+          "period": "year_ago",
+          "landingPage": "/aba-therapy/atlanta-ga",
+          "sessions": 0,
+          "engagedSessions": 0,
+          "keyEvents": 0
+        },
+        {
+          "period": "year_ago",
+          "landingPage": "/blogs/legacy-aggregate",
+          "sessions": 0,
+          "engagedSessions": 0,
+          "keyEvents": 0
+        },
+        {
+          "period": "year_ago",
+          "landingPage": "/earnings-calculator",
+          "sessions": 25,
+          "engagedSessions": 20,
+          "keyEvents": 5
+        },
+        {
+          "period": "year_ago",
+          "landingPage": "(not set)",
+          "sessions": 85,
+          "engagedSessions": 54,
+          "keyEvents": 2
+        }
+      ],
+      "eventRows": [
+        { "period": "current", "eventName": "interest_form_submit", "keyEvents": 10 },
+        { "period": "previous", "eventName": "interest_form_submit", "keyEvents": 6 },
+        { "period": "current", "eventName": "earnings_calculator_form_submit", "keyEvents": 45 },
+        { "period": "previous", "eventName": "earnings_calculator_form_submit", "keyEvents": 20 }
+      ]
+    },
+    "semrush": {
+      "metadata": {
+        "sourceId": "domain-organic-keywords:headstart.health:us:desktop",
+        "extractedAt": "2026-09-09T14:10:00Z",
+        "complete": true,
+        "database": "us",
+        "device": "desktop"
+      },
+      "domainSnapshots": [
+        { "period": "current", "snapshotDate": "2026-08-15", "rankingKeywords": 711 },
+        { "period": "previous", "snapshotDate": "2026-07-15", "rankingKeywords": 507 },
+        { "period": "year_ago", "snapshotDate": "2025-08-15", "rankingKeywords": 69 }
+      ],
+      "rankings": [
+        {
+          "keyword": "headstart health",
+          "position": 1,
+          "searchVolume": 170,
+          "url": "https://headstart.health/"
+        },
+        {
+          "keyword": "bcba private practice",
+          "position": 23,
+          "searchVolume": 40,
+          "url": "https://headstart.health/blogs/example-two"
+        },
+        {
+          "keyword": "bcba private practice",
+          "position": 21,
+          "searchVolume": 40,
+          "url": "https://headstart.health/blogs/example-one"
+        },
+        {
+          "keyword": "aba basics",
+          "position": 3,
+          "searchVolume": 222790,
+          "url": "https://app.headstart.health/provider/search"
+        }
+      ]
+    },
+    "tam": {
+      "metadata": {
+        "sourceId": "approved-patient-search-tam:2026-07-24:sanitized-regression",
+        "sourceRevision": "sanitized-august-regression-v1",
+        "approvedAt": "2026-07-24",
+        "extractedAt": "2026-09-09T14:15:00Z",
+        "complete": true,
+        "fixtureNote": "Sanitized compact universe preserving August aggregate volumes, not the historical 1,525 source rows."
+      },
+      "keywords": [
+        {
+          "keyword": "find aba care",
+          "pillar": "Finding and choosing local ABA care",
+          "searchVolume": 44450,
+          "serviceability": "conditional"
+        },
+        {
+          "keyword": "aba therapy insurance",
+          "pillar": "Insurance, cost, and authorization",
+          "searchVolume": 9480,
+          "serviceability": "confirmed"
+        },
+        {
+          "keyword": "aba authorization",
+          "pillar": "Insurance, cost, and authorization",
+          "searchVolume": 7430,
+          "serviceability": "conditional"
+        },
+        {
+          "keyword": "starting aba after diagnosis",
+          "pillar": "Starting ABA after a diagnosis",
+          "searchVolume": 490,
+          "serviceability": "confirmed"
+        },
+        {
+          "keyword": "therapy fit",
+          "pillar": "Therapy fit and care model",
+          "searchVolume": 15040,
+          "serviceability": "confirmed"
+        },
+        {
+          "keyword": "care model",
+          "pillar": "Therapy fit and care model",
+          "searchVolume": 28380,
+          "serviceability": "conditional"
+        },
+        {
+          "keyword": "what to expect first session",
+          "pillar": "What to expect from assessment, team, and first sessions",
+          "searchVolume": 2150,
+          "serviceability": "confirmed"
+        },
+        {
+          "keyword": "assessment timing",
+          "pillar": "What to expect from assessment, team, and first sessions",
+          "searchVolume": 20,
+          "serviceability": "conditional"
+        },
+        {
+          "keyword": "caregiver aba partnership",
+          "pillar": "Caregiver partnership, progress, and transition",
+          "searchVolume": 4280,
+          "serviceability": "confirmed"
+        },
+        {
+          "keyword": "transition from aba",
+          "pillar": "Caregiver partnership, progress, and transition",
+          "searchVolume": 330,
+          "serviceability": "conditional"
+        },
+        {
+          "keyword": "aba basics",
+          "pillar": "ABA basics, evidence, and ethical-care foundation",
+          "searchVolume": 222790,
+          "serviceability": "confirmed"
+        },
+        {
+          "keyword": "ethical aba care",
+          "pillar": "ABA basics, evidence, and ethical-care foundation",
+          "searchVolume": 23310,
+          "serviceability": "conditional"
+        }
+      ]
+    }
+  }
+}

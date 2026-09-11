@@ -94,6 +94,12 @@ This monorepo has four internal layers:
    deterministic adapters shared by managed workflows and the runner.
 4. `apps/codex-runner/` contains the managed Codex execution worker.
 
+Together these layers own the complete workflow implementation. A managed workflow must not keep
+its canonical instructions in Agent Platform while loading workflow-owned deterministic code from a
+separate workflow repository. External application repositories are declared dependencies only when
+they own a capability independently of the workflow; they are not a second source of prompts,
+workflow rules, adapters, or engines.
+
 Repository ownership does not preselect a control-plane product:
 
 - The selected control plane owns operational run records, trigger deduplication, leases, retry

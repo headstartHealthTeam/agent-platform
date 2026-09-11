@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "organic-performance-collection/v1",
+  "report": {
+    "title": "Example organic report - August 2026",
+    "comparisonPolicy": {
+      "method": "calendar-months",
+      "rationale": "Monthly leadership reporting uses complete calendar months"
+    },
+    "periods": [
+      {
+        "id": "current",
+        "label": "August 2026",
+        "startDate": "2026-08-01",
+        "endDate": "2026-08-31"
+      },
+      {
+        "id": "previous",
+        "label": "July 2026",
+        "startDate": "2026-07-01",
+        "endDate": "2026-07-31"
+      },
+      {
+        "id": "year_ago",
+        "label": "August 2025",
+        "startDate": "2025-08-01",
+        "endDate": "2025-08-31"
+      }
+    ]
+  },
+  "config": {
+    "configVersion": "example-v1",
+    "publicHostname": "example.test",
+    "unmatchedSegment": "other",
+    "unmatchedAudience": "shared",
+    "routeRegistry": [{ "id": "home", "exactPaths": ["/"], "prefixes": [] }],
+    "audienceRegistry": [],
+    "outcomeRegistry": []
+  },
+  "executionProfile": {
+    "schemaVersion": "headstart-capability-profile/v1",
+    "id": "supervised-example",
+    "revision": "v1",
+    "bindings": [
+      {
+        "capabilityId": "google-search-console.performance.read",
+        "providerId": "google-search-console-rest",
+        "adapterVersion": "0.1.0"
+      },
+      {
+        "capabilityId": "google-analytics.ga4-report.read",
+        "providerId": "google-analytics-rest",
+        "adapterVersion": "0.1.0"
+      },
+      {
+        "capabilityId": "google-sheets.range.read",
+        "providerId": "google-sheets-rest",
+        "adapterVersion": "0.1.0"
+      },
+      {
+        "capabilityId": "semrush.domain-organic.read",
+        "providerId": "semrush-mcp",
+        "adapterVersion": "0.1.0"
+      }
+    ]
+  },
+  "gsc": { "siteUrl": "sc-domain:example.test", "brandRegex": "example", "maxRows": 100000 },
+  "ga4": { "property": "properties/123", "expectedTimeZone": "America/Chicago", "maxRows": 100000 },
+  "semrush": {
+    "domain": "example.test",
+    "database": "us",
+    "device": "desktop",
+    "limit": 10000,
+    "snapshotDates": { "current": "2026-08-15", "previous": "2026-07-15", "year_ago": "2025-08-15" }
+  },
+  "tam": {
+    "spreadsheetId": "synthetic-workbook",
+    "range": "'Search TAM'!A1:E2000",
+    "approvedAt": "2026-07-24",
+    "approvalScope": "pillar-direction",
+    "columns": {
+      "keyword": "Keyword",
+      "pillar": "Pillar",
+      "searchVolume": "Volume",
+      "serviceability": "Serviceability",
+      "marketScope": "Scope"
+    },
+    "coreValue": "Core"
+  }
+}

@@ -52,6 +52,26 @@
       ]
     },
     {
+      "name": "reuse-existing-provider-packages",
+      "prompt": "Build an unrelated Agent Platform workflow that reads GA4, Search Console, and Google Sheets. Start fresh provider packages inside its engine so it can stay self-contained.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Inspects the current Agent Platform package inventory and public contracts before creating code",
+        "Reuses compatible Google provider and transport packages instead of duplicating them inside the engine",
+        "Keeps workflow-specific calculations in the consuming engine and extends shared packages only with independently reusable behavior"
+      ]
+    },
+    {
+      "name": "reject-split-workflow-repository",
+      "prompt": "Put a new managed workflow's instructions and skills in Agent Platform, but create a separate repository for all of its parsing, calculations, and workflow adapters.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Rejects splitting workflow-owned instructions and deterministic implementation across repositories",
+        "Places workflow-specific code, engines, and reusable libraries in the appropriate Agent Platform locations",
+        "Leaves only independently owned application behavior such as durable state, authorization, idempotent writes, and user interfaces in external repositories"
+      ]
+    },
+    {
       "name": "one-off-near-miss",
       "prompt": "Summarize this one document for me once.",
       "shouldActivate": false,

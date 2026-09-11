@@ -13,6 +13,12 @@ updates:
           - minor
           - patch
     ignore:
+      # These releases require newer Node patches than the current workstation baseline.
+      # Reassess with an explicit Node baseline update; retain other Corepack updates.
+      - dependency-name: corepack
+        versions:
+          - '0.35.x'
+          - '0.36.x'
       - dependency-name: '*'
         update-types:
           - version-update:semver-major

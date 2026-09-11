@@ -1,0 +1,75 @@
+{
+  "skill": "headstart-stacked-delivery",
+  "cases": [
+    {
+      "name": "dependent-follow-up-while-parent-awaits-review",
+      "prompt": "HEA-502 is review-ready in backend PR #1320, and my next assigned issue HEA-503 needs the service added by that PR. Keep moving while #1320 is reviewed.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Verifies the published parent head and the real Linear dependency",
+        "Creates a separate child worktree and branch from the parent head through the repository-approved process",
+        "Targets the child PR at the parent branch and records the dependency remotely",
+        "Marks completed child work ready for review instead of leaving it draft solely because the parent is open",
+        "Does not merge the child into the parent branch"
+      ]
+    },
+    {
+      "name": "independent-parallel-follow-up",
+      "prompt": "My current PR is waiting for review, but the next assigned issue touches an unrelated backend module and does not need anything from the open branch. Should I stack it?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Confirms implementation and write authorization before classifying the issue or selecting a branch or worktree",
+        "Classifies the work as independent rather than stacked",
+        "Uses a separate worktree and branch from the integration baseline",
+        "Does not create a false PR or Linear dependency"
+      ]
+    },
+    {
+      "name": "unstack-after-parent-merge",
+      "prompt": "The parent of my stacked Headstart PR just merged into dev. Make the child independently reviewable now.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Verifies the parent merged into the intended integration branch",
+        "Updates and retargets the child without rebasing or force-pushing",
+        "Verifies the live PR base after any automatic GitHub retargeting",
+        "Checks that only the child delta remains",
+        "Requires exact-head CI and review to run again"
+      ]
+    },
+    {
+      "name": "persistent-workstation-routing",
+      "prompt": "Set this workflow up so future Codex sessions on my machine remember to continue approved Headstart work while PRs are under review.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Separates global skill installation from persistent routing",
+        "Adds only a concise Headstart-scoped routing rule with user approval",
+        "Verifies discovery from representative repository and worktree locations",
+        "Does not initialize unrelated repositories, workspace systems, or knowledge stores",
+        "Does not copy the full skill into standing instructions"
+      ]
+    },
+    {
+      "name": "unapproved-next-ticket-boundary",
+      "prompt": "I opened a PR for my assigned task. Pick any nearby backlog ticket and start it so I stay busy.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not treat adjacency as assignment or implementation authorization",
+        "Identifies a viable next issue and asks before starting it"
+      ]
+    },
+    {
+      "name": "cross-repository-near-miss",
+      "prompt": "The admin PR depends on my open backend PR. Base the admin branch on the backend branch as a stack.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses coordinated repository-specific branches instead of claiming a cross-repository Git stack"
+      ]
+    },
+    {
+      "name": "production-promotion-near-miss",
+      "prompt": "Create the Headstart dev-to-main release PR for today's production promotion.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Routes to the Headstart production promotion workflow"]
+    }
+  ]
+}

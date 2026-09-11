@@ -82,6 +82,13 @@ complete QA on Linux, macOS, and Windows; local hooks improve feedback time but 
 protection. The stable `Required` status check aggregates the matrix and dependency audit and is the
 branch-protection contract; it must never stop depending on either job.
 
+Cross-platform tests that launch child processes, Git, package managers, or filesystem-heavy
+repository fixtures are integration tests even when they use only local synthetic data. Bound each
+spawned command so a real hang terminates, and give the test an explicit timeout based on observed
+behavior on the slowest supported CI host. Keep ordinary unit defaults strict. A timeout after the
+synchronous work completed is not evidence of a product defect, but repeatedly rerunning it is not a
+fix; correct the test boundary without dropping assertions, coverage, or an operating-system lane.
+
 Dependency audits run separately in CI so network or registry availability does not make local Git
 commits unreliable. Moderate-or-higher production and development findings are blocking until they
 are fixed, shown to be non-applicable, or intentionally accepted through the repository's review

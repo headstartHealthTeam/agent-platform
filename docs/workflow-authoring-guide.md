@@ -51,6 +51,21 @@ skill and static supporting material in references. Do not wrap existing tool de
 skill or rely on prompt prose to enforce an application invariant. See
 [workflow composition](../standards/workflow-composition.md).
 
+### Keep Workflow-Owned Artifacts Together
+
+Agent Platform is the canonical implementation boundary for a Headstart agent workflow. Keep its
+instructions, composed skills, prompts, schemas, evaluations, fixtures, workflow-specific code,
+engines, and reusable provider or utility packages in this repository. Do not place the workflow's
+instructions here while keeping its deterministic implementation in a separate workflow repository
+or an incidental application checkout.
+
+An external repository is a valid dependency only when the artifact has an owner and purpose that
+remain valid without the workflow. Backend control-plane state, business authorization,
+idempotency, application user interfaces, and permission-aware APIs are examples. Treat those as
+versioned capabilities consumed by the workflow, not as a second source of workflow behavior. When
+ownership is unclear, keep the proposed artifact in Agent Platform until an independent application
+responsibility is established.
+
 ## Shapes Are Steady States, Not Maturity Levels
 
 The shapes in this guide are alternatives and composable elements, not stages that every workflow
@@ -223,8 +238,9 @@ calculation, validation, file transformation, schema enforcement, or fragile API
 be reproducible and directly tested.
 
 Custom code does not automatically require a managed workflow. Put it in the narrowest owning
-location described below, expose a clear typed boundary to the agent, and retain human approval for
-consequential actions.
+Agent Platform location described below, expose a clear typed boundary to the agent, and retain
+human approval for consequential actions. Do not create a second repository merely because a
+supervised workflow has more deterministic support than fits comfortably in one skill script.
 
 ### Managed Workflow Package
 
@@ -304,14 +320,13 @@ operator controls. Those shared capabilities do not automatically require new ba
 
 - Put a portable helper under `skills/<name>/scripts/` when it supports only that skill, can run in
   each declared host environment, and owns no durable or consequential business behavior.
-- Put a repository-specific helper for a supervised workflow in the owning repository's normal
-  source or script location when it operates on that repository's artifacts or domain contracts.
-  Follow that repository's instructions and expose a bounded CLI or API to the skill; do not create a
-  managed package solely to give the helper a home.
+- Put a supervised workflow's larger workflow-specific engine under a narrowly named Agent Platform
+  package when it needs a typed public boundary, package-level tests, or reuse by more than one skill
+  or execution context. Keeping code in a package does not make the workflow managed.
 - Put workflow-specific adapters under `workflows/<id>/src/` after the workflow has a managed
   package.
-- Put runtime-neutral logic under a narrowly named `packages/` workspace when multiple workflows or
-  the runner reuse it.
+- Put runtime-neutral logic under a narrowly named `packages/` workspace when multiple workflows,
+  engines, skills, execution contexts, or the runner reuse it.
 - Put trigger intake, durable state, permissions, idempotency, business-system writes, and business
   invariants in the owning backend or service.
 - Put workflow discovery, manual launch, review, approvals, history, retry, and cancellation views in
@@ -319,8 +334,19 @@ operator controls. Those shared capabilities do not automatically require new ba
 - Expose a bounded MCP tool or CLI when agents need a stable, permission-aware operation that more
   than one workflow can use.
 
-Do not hide a fragile business write inside a skill script or make a prompt responsible for an
-invariant that code can enforce.
+Before creating or extending code, inspect the package inventory and public interfaces linked from
+the [documentation hub](README.md). Decide explicitly whether to reuse, extend, or create:
+
+1. Reuse an existing package when its contract already fits.
+2. Extend it when the new behavior remains provider-, engine-, or workflow-neutral and existing
+   consumers can preserve their contract.
+3. Create a shared provider, transport, utility, or contract package only when it has a coherent
+   independently reusable boundary.
+4. Keep business-specific calculations and transformations in the consuming engine rather than
+   making a shared adapter absorb workflow fields.
+
+Do not hide a fragile business write inside a skill script, make a prompt responsible for an
+invariant that code can enforce, or split workflow-owned code into another repository.
 
 ## MCP, CLI, Browser, And Native Connector Choices
 

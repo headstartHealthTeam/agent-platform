@@ -2,12 +2,24 @@
   "skill": "headstart-skills-update",
   "cases": [
     {
+      "name": "engine-workflow-readiness",
+      "prompt": "Install the shared Headstart skills so I can run organic reporting locally. Does enabling daily refresh also keep its engine ready to run?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains that skill installation and daily refresh do not provision or rebuild separate runtime packages",
+        "Reads the requested workflow skill's runtime requirements and follows its local setup guide",
+        "Reports skill installation, verified runtime readiness, and provider access separately",
+        "Requires runtime compatibility to be rechecked after skill refreshes without claiming an automatic runtime updater exists"
+      ]
+    },
+    {
       "name": "initial-workstation-setup",
       "prompt": "Set up the shared Headstart skills globally for Codex on this workstation.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Resolves the canonical checkout without assuming a machine-specific path",
         "Previews before installing every current shared skill",
+        "Offers minimal persistent routing and requests separate approval before changing standing instructions",
         "Asks separately whether to enable the opt-in daily refresh"
       ]
     },
@@ -56,6 +68,18 @@
       "expectedBehaviors": [
         "Directs managed runners to pin an approved tag or commit",
         "Does not apply the workstation scheduler to production runtime deployment"
+      ]
+    },
+    {
+      "name": "approved-persistent-routing-across-repositories",
+      "prompt": "I approve adding the minimal Headstart-scoped stacked-delivery routing rule. Install the team skills and make sure future Codex sessions working in my separate Headstart repositories use it.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Installs the complete managed skill set",
+        "Uses the stacked-delivery skill's minimal routing guidance",
+        "Treats the prompt as explicit approval for the minimal Headstart-scoped routing change",
+        "Verifies fresh sessions from both a representative Headstart repository location and a representative sibling worktree location",
+        "Does not initialize unrelated repositories, workspace systems, or knowledge stores"
       ]
     },
     {
