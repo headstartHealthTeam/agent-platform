@@ -48,7 +48,10 @@ business correctness.
 The first managed runtime must execute the reviewed workflow through Codex, not merely use an OpenAI
 model inside another agent loop. This requirement preserves the behavior employees already rely on:
 repository navigation, instruction discovery, skill composition, MCP and CLI use, iterative tool
-reasoning, and structured completion through the Codex SDK.
+reasoning, and structured completion. The existing local implementation uses the Codex SDK;
+preserving that subprocess is not itself a product requirement. OpenAI's Agents API now supplies a
+managed Codex harness and is the first candidate for hosted execution, subject to behavioral and
+policy conformance. See the [code-level compatibility assessment](agents-api-compatibility.md).
 
 ChatGPT Workspace Agents are a separate product and execution runtime. Codex can configure their
 instructions, skills, connections, schedules, and triggers, but it does not execute them. A workflow
@@ -62,21 +65,24 @@ dispatch, durable run correlation, result retrieval, and recovery interfaces.
 
 Separate the execution engine, compute, and operational control plane:
 
-- **Execution engine:** the initial managed engine is the repository-owned Codex SDK runner.
-- **Compute substrate:** AgentCore Runtime, ECS/Fargate, or another approved host may run that exact
-  engine without changing the workflow contract.
+- **Execution engine:** Codex, reached through the existing SDK or a proposed Agents API adapter.
+  Both must preserve the reviewed workflow behavior and access/outcome contracts.
+- **Execution environment:** evaluate OpenAI-hosted execution first. A self-hosted Agents API
+  executor or a hosted SDK worker is conditional on concrete compatibility or data-policy needs.
 - **Operational control plane:** a selected operations service or custom Headstart implementation
   owns triggers, durable run state, cancellation, retries, approvals, and the operator interface.
   Buying these capabilities does not require replacing Codex or translating skills into a visual
   graph.
 
-Amazon Bedrock AgentCore Runtime is the preferred managed-hosting candidate because Runtime accepts
-customer-owned agent code and containers while supplying isolated sessions, identity integration,
-scaling, and observability. AgentCore Harness is not the selected path: Harness supplies its own
-agent loop, so using an OpenAI model there would not establish equivalence with Codex. Runtime must
-pass the compatibility gate in the
-[managed runtime completion roadmap](managed-runtime-completion-roadmap.md) before adoption. The
-control-plane build-versus-buy gate is separate and must precede custom backend or admin work.
+The Agents API can supply both the harness and its Linux environment, reducing the infrastructure
+Headstart needs to operate. Its saved sessions do not replace authoritative business-run state,
+source checkpoints, scheduling or write authorization. The
+[managed runtime completion roadmap](managed-runtime-completion-roadmap.md) evaluates this path
+before committing to a worker image or AWS compute. AgentCore Runtime and ECS/Fargate remain
+conditional SDK-hosting candidates, not mandatory stages. A self-hosted Agents executor is another
+option when the API is acceptable but its hosted environment is insufficient; its compute must be
+verified independently. AgentCore Harness supplies a different agent loop and remains a separate
+runtime decision. The operations gate evaluates only responsibilities left outside the chosen path.
 
 The [Codex SDK](https://learn.chatgpt.com/docs/codex-sdk) controls Codex processes in a supplied
 execution environment; adopting the SDK does not itself provision managed hosting, credentials,
@@ -92,7 +98,8 @@ This monorepo has four internal layers:
    ownership, and operating configuration.
 3. `packages/` contains reusable contracts, runtime-safe package loading and validation, and
    deterministic adapters shared by managed workflows and the runner.
-4. `apps/codex-runner/` contains the managed Codex execution worker.
+4. `apps/codex-runner/` contains the execution boundary and current SDK adapter. The proposed Agents
+   API integration belongs at this boundary, not in each workflow.
 
 Together these layers own the complete workflow implementation. A managed workflow must not keep
 its canonical instructions in Agent Platform while loading workflow-owned deterministic code from a
@@ -104,8 +111,9 @@ Repository ownership does not preselect a control-plane product:
 
 - The selected control plane owns operational run records, trigger deduplication, leases, retry
   policy, and operator controls. If custom implementation is justified, its APIs and persistence
-  belong in the backend and its UI belongs in the admin panel. Otherwise integrate an approved
-  operations service rather than recreating its scheduler, run database, and UI.
+  belong in the backend and its UI belongs in the admin panel. A thin launcher/webhook integration
+  with existing services may suffice; otherwise integrate an approved operations service. Do not
+  recreate agent session orchestration already supplied by the chosen execution path.
 - The backend or other owning service retains business records, permission checks, event intake,
   and idempotent execution of approved business-system writes regardless of the control plane.
 - The admin panel retains application-specific interfaces. A custom workflow catalog or operations
@@ -153,14 +161,14 @@ difference must be expressed as a reviewed input, policy, adapter, or separate w
 Salesforce event, EventBridge schedule, or manual request
   -> control plane validates trigger and creates durable run record
   -> control plane dispatches immutable request through the selected runtime adapter
-  -> isolated Codex runner receives exact workflow version and idempotency key
-  -> runner resolves pinned skills and approved workspace
-  -> runner validates input schema and policy
+  -> trusted preparation validates exact source, input schema, policy and provider bindings
+  -> execution adapter prepares a hosted environment or isolated local/self-hosted workspace
+  -> adapter launches Codex and persists provider session/turn or thread correlation
   -> Codex executes prompt using allowed skills, MCPs, CLIs, and any declared adapters
-  -> runner validates structured output schema
+  -> trusted result handler validates structured output and workflow outcome
   -> control plane persists result, checkpoint, usage, and audit evidence
   -> configured destination delivers read-only output when appropriate
-  -> if review or operations are required, the admin UI presents the run or requests a decision
+  -> if review or operations are required, the selected operator surface requests a decision
   -> if an approved external action is required, a deterministic backend executor performs it
 ```
 
@@ -170,11 +178,12 @@ capability, with no workflow-specific backend, admin-panel, or adapter code. The
 and runner still provide identity, versioning, policy, durable state, and operational evidence.
 
 The persistent unit is the workflow definition and durable run record. A Codex process, thread,
-AgentCore session, container, queue message, or worker lease is an execution detail. Compute can
+Agents API session/turn, AgentCore session, container, queue message, or worker lease is an execution
+detail. Compute can
 disappear and be replaced without losing the authoritative run status, approvals, or business
 outcome. Runtime-native session or memory state must never become the business system of record.
 The selected control plane is the single authority for operational run transitions. Provider job
-ids and Codex thread ids correlate to that run; they do not establish competing retry or approval
+ids, Agents session/turn ids and Codex thread ids correlate to that run; they do not establish competing retry or approval
 histories in another application database.
 
 ## Local Development And Managed Packaging
@@ -203,6 +212,14 @@ may substitute synthetic inputs and an explicitly authorized user identity, but 
 silently relax package rules. Distribution remains separate: `skills:update` installs portable
 skills for local agents, while workflow packages are consumed from a checkout or immutable managed
 artifact.
+
+Promotion to Agents API preserves this loop. Generate hosted skill/plugin archives, dependency
+bundles and effective configuration from the reviewed source. Keep API agent/template identifiers
+in deployment receipts or profiles rather than workflow instructions. Local provider bindings may
+need managed equivalents; a working Desktop connector does not establish one. The
+[compatibility assessment](agents-api-compatibility.md#code-level-impact-and-reuse-decisions)
+identifies concrete reuse and extension points. It does not require every local workflow to adopt
+the API, fork its skills or acquire workflow-specific code.
 
 ## Runner Coordination
 
@@ -235,6 +252,8 @@ limitation.
 
 ## Codex Integration
 
+### Existing SDK Path
+
 The TypeScript runner uses the supported `@openai/codex-sdk`. The SDK wraps the Codex CLI and exposes
 structured thread events plus output-schema enforcement.
 
@@ -259,6 +278,21 @@ since that could expose unrelated credentials to commands or MCP subprocesses. C
 MCP credentials, and AWS access are provisioned independently and delivered through the deployment
 environment's secret and identity systems.
 
+### Proposed Agents API Path
+
+The adapter creates a session with the reviewed model, instructions, JSON Schema output, required
+tools and prepared environment. It normalizes API events/results at the runner boundary rather
+than importing SDK `ThreadEvent` or `Usage` assumptions into the shared contract. Keep provenance,
+input validation and final outcome checks on trusted compute outside agent-editable scratch.
+
+The current `execute()` interface is a useful separation but is not a complete asynchronous
+protocol. Persist run/attempt/session/turn correlation, recover saved items after disconnects,
+explicitly cancel remote turns and reconcile uncertain outcomes before retry. Parent completion
+must not be inferred from subagent events, session idleness or stream closure. Required tool and
+target preflight, filesystem/executable policy and data retention must pass the
+[compatibility gate](agents-api-compatibility.md#acceptance-questions-that-still-require-execution).
+No API adapter or durable session recovery is implemented by the current library.
+
 ### Authentication And Capability Binding
 
 Use a reviewed execution profile to bind logical capabilities to environment-specific provider
@@ -267,7 +301,7 @@ proof of a cloud target. Preflight must verify actual target identity and requir
 bounded probes before business-data access. Required initialization failures stop the run; an
 expired credential and an authenticated-but-forbidden request require different remedies.
 
-For unattended Codex, evaluate
+For the existing SDK path, evaluate
 [workload identity federation](https://learn.chatgpt.com/docs/enterprise/workload-identity) first
 where the workspace supports it. It exchanges an upstream workload identity for short-lived Codex
 access. It is beta, requires workspace enablement, and requires the trusted host to refresh and
@@ -276,6 +310,14 @@ completes that setup. Otherwise select an approved
 [Codex access token](https://learn.chatgpt.com/docs/enterprise/access-tokens) or
 [API-key authentication](https://learn.chatgpt.com/docs/auth) under the organization's account and
 data-handling policy. Product availability and authorization must be verified at deployment time.
+
+Agents API uses a Platform API project credential with the documented permissions, kept outside
+the sandbox. Do not assume Codex workspace tokens or workload federation authenticate this API.
+Self-hosted API execution uses a separate restricted environment key. Service-origin HTTP MCP may
+use API credential vaults; environment-origin connections require their own approved delivery.
+The [API identity assessment](agents-api-compatibility.md#tools-identity-and-permissions) documents
+these distinct boundaries. An API vault can be a credential delivery mechanism without replacing
+provider consent, target verification, rotation or revocation ownership.
 
 AWS identity and Secrets Manager supply only their configured identity and secret-delivery roles.
 They do not grant Salesforce, Google, Fireflies, Headstart MCP, or OpenAI access automatically. Each
@@ -298,13 +340,17 @@ Every run record should preserve:
 - workflow id and version;
 - repository commit;
 - skill source revision;
-- runner image digest;
+- execution adapter and client version, artifact digest and effective configuration fingerprint;
+- customer-controlled image digest when applicable, plus provider session/turn/environment ids;
 - model identifier;
 - input and output schema fingerprints;
 - MCP server versions where available; and
 - deterministic adapter versions.
 
 This makes a past result explainable even after skills or runtime code change.
+Hosted provider internals may not expose immutable image/harness pins. Record that limitation and
+the exact model identifier and available revision metadata; repeated evaluations establish
+behavioral compatibility, not bit-for-bit deterministic model output.
 
 ## MCP, CLI, And Custom Code
 
@@ -324,8 +370,10 @@ the operation.
 ### CLI
 
 Use a CLI when it is the supported interface for a platform or deterministic repository operation.
-The runner image must pin the CLI version. A workflow declares the command family it needs, and OS
-or container controls constrain executable availability and network egress.
+The prepared artifact/environment must pin the CLI version. A workflow declares the command family
+it needs, and the selected environment or broker must enforce executable/subcommand authority and
+network egress. An installed CLI inventory alone is not enforcement; reject an unsupported hosted
+policy rather than treating shell instructions as a security boundary.
 
 Shell access is not a substitute for a missing permission model. Credentials must be scoped to the
 workflow identity and never passed as prompt text or command-line arguments that can enter logs.
@@ -377,6 +425,12 @@ version-bound behavior. Choose and test retention, isolation, and recovery expli
 assuming either permanent storage or an entirely ephemeral filesystem.
 [AgentCore filesystem configurations](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-filesystem-configurations.html)
 
+Agents API separates saved conversation, live sandbox files and exported artifacts. Hosted sandbox
+expiry must not lose required evidence: retrieve and acknowledge artifacts before session deletion,
+and recover approved checkpoints from their durable owner. Neither a reusable environment template
+nor a retained conversation is a cross-run evidence cache. See
+[API persistence constraints](agents-api-compatibility.md#persistence-and-data-policy).
+
 ## Data Handling
 
 The manifest classifies each workflow as public, internal, confidential, or PHI. That declaration
@@ -387,6 +441,13 @@ arguments, command output, or model responses. They require minimum-necessary in
 workspace and API data handling, PHI-safe operational events, encrypted storage, retention policy,
 and audit records. Secrets and raw credentials never appear in prompts, workflow packages, fixtures,
 logs, or generated review artifacts.
+
+Agents API currently has US-only residency, retains application state until deletion and is not
+Zero Data Retention eligible, including with self-hosted execution. Disabling event emission does
+not disable that provider state. Endpoint-specific BAA eligibility and Headstart's approved account
+and retention posture must be established before PHI adoption; they are not established by this
+architecture. Data-policy failure may require the SDK route even when the hosted environment is
+technically compatible. See [data-policy evidence](agents-api-compatibility.md#persistence-and-data-policy).
 
 All committed tests use synthetic data. Live read-only validation is separately authorized and is
 never a dependency of local hooks or ordinary CI.
@@ -415,20 +476,19 @@ evidence. These gates use synthetic workloads and do not depend on a business-wo
 
 ### Hosting Compatibility Gate
 
-A bounded dev spike must package the existing Codex SDK runner in an AgentCore Runtime custom
-container and prove that the exact execution contract survives the move. The spike must use a
-synthetic read-only workflow and verify pinned repository and skill materialization, approved Codex
-authentication, MCP and CLI startup, explicit environment delivery, structured output, timeout and
-cancellation behavior, PHI-safe observability, network restrictions, cold-start and run cost, and
-failure cleanup. Verify the selected compute mode's architecture, sandbox support, quotas, session
-lifetime, persistence, and long-running invocation behavior. The selected control plane, not the
-compute session, remains authoritative for run state.
+Evaluate the Agents API's OpenAI-hosted path first with a bounded synthetic prompt/skill-only case
+and a case using an existing deterministic helper. Compare preserved behavior and policies with the
+local SDK reference. The [compatibility assessment](agents-api-compatibility.md) contains inspected
+code impact, documented support and unresolved acceptance evidence. Test complete packaging,
+identity/target preflight, tools, filesystem and egress restrictions, structured results, remote
+cancellation/recovery, artifacts, data policy, latency, quotas and cost.
 
-Passing the gate qualifies AgentCore Runtime as the preferred compute target; finalize its fit with
-the selected operational layer before deployment. If a material requirement fails, evaluate
-ECS/Fargate against the same criteria without changing workflow packages, the Codex runner, or
-control-plane contracts. A fallback is not exempt from verification. A controlled VM is reserved for
-a time-boxed demonstration or contingency, not the intended Operational V1 architecture.
+If the API is suitable but its hosted environment fails a requirement, evaluate a self-hosted
+executor against the same contract. If API behavior or retention fails the workflow's requirements,
+evaluate SDK hosting, including AgentCore Runtime or ECS/Fargate. Do not assume either supports the
+API executor unchanged. Record the failed requirement and measured fallback evidence; no automatic
+runtime switch is allowed after an uncertain launch or partial execution. Finalize the operations
+pairing before deployment. A controlled VM remains a time-boxed contingency.
 
 ### Operations Build-Versus-Buy Gate
 
@@ -436,9 +496,10 @@ Evaluate whether an existing operations service can satisfy the control-plane co
 building custom backend APIs and admin screens. Windmill is a concrete candidate because it
 documents a Codex CLI subprocess example in sandboxed jobs, alongside scheduling, approvals,
 and Git synchronization. Its sandbox documentation also describes SDK invocation generically;
-compatibility with this repository's exact `@openai/codex-sdk` runner still requires the gate below.
-Its built-in AI nodes are not the selected Codex runner, and its example scripts are not a
-replacement for this repository's typed executor and access controls.
+compatibility with this repository's exact SDK runner or proposed Agents API adapter still requires
+the gate below. Assess the smaller remaining schedule, approval, recovery and operator needs after
+accounting for API-managed sessions. Its built-in AI nodes and example scripts do not replace this
+repository's typed execution boundary and access controls.
 [Codex jobs](https://www.windmill.dev/docs/core_concepts/ai_sandbox),
 [scheduling](https://www.windmill.dev/docs/core_concepts/scheduling),
 [approvals](https://www.windmill.dev/docs/flows/flow_approval),
@@ -446,7 +507,7 @@ replacement for this repository's typed executor and access controls.
 
 The gate must establish:
 
-- launch and supervision of the exact reviewed runner with durable run correlation;
+- launch and supervision of the reviewed execution adapter with durable run/attempt correlation;
 - authenticated operator roles, cancellation, bounded retries, recovery, and actionable failures;
 - Git-reviewed immutable deployment, not an independently editable production workflow in a UI;
 - a single authority for schedules, run transitions, and operational approvals, while business
@@ -455,10 +516,10 @@ The gate must establish:
   strategy; and
 - actual edition, licensing, hosting burden, security configuration, and total operating cost.
 
-An adopted service may invoke a separately hosted worker or host the worker itself. AgentCore and
-Windmill are therefore not mutually exclusive options, but combining them is justified only if the
-dispatch, cancellation, identity, and recovery integration passes the same gates. Do not deploy two
-platforms merely to keep both candidates. Windmill isolation must be configured and tested; a
+An adopted service may invoke Agents API, invoke a separately hosted SDK worker, or host a required
+executor itself. A thin integration using existing scheduling/state/operator services is also a
+candidate. Combining platforms is justified only if dispatch, cancellation, identity and recovery
+pass the same gates and each platform supplies a needed responsibility. Windmill isolation must be configured and tested; a
 sandbox annotation alone does not establish an appropriate boundary.
 [Windmill security and isolation](https://www.windmill.dev/docs/advanced/security_isolation)
 
@@ -469,24 +530,23 @@ canonical docs before production implementation. Do not support two control plan
 
 ### Deployment Progression
 
-- The exact reviewed Codex runner image is published to ECR.
-- The selected runtime adapter invokes the approved worker host, initially evaluating AgentCore
-  Runtime and ECS/Fargate. Direct hosting by an operations service must meet the same criteria.
-- AWS supplies isolated compute, narrowly scoped workload identity, secrets, network controls, and
-  CloudWatch observability.
+- Build an immutable workflow/dependency artifact and generated configuration for the chosen path.
+- For OpenAI-hosted execution, publish reviewed skill/plugin inputs and configure the API adapter;
+  a Headstart worker image, ECR or AgentCore deployment is not required for that environment.
+- For self-hosted execution, build/publish the required image and provision only the selected
+  compute, identity, secret delivery, network and telemetry resources. AWS is conditional.
 - The selected control plane supplies durable run, approval, cancellation, retry, and trigger
   idempotency capabilities independent of the compute target.
 - Use its existing operator interface where sufficient; add admin-panel integration only for a
   demonstrated application-specific requirement.
-- Deployment records the exact workflow commit, image digest, runtime configuration, and execution
-  target.
+- Deployment records source/artifact/configuration provenance, applicable image digest and provider
+  correlation. Do not claim an unavailable hosted image or harness pin.
 
 ### Later Evaluation
 
-OpenAI's [Sandbox Agents](https://developers.openai.com/api/docs/guides/agents/sandboxes) offer
-workspace-oriented execution through the Agents SDK and are currently beta. They are a separate
-agent loop, not hosted Codex. Consider them only for an explicit runtime decision with behavioral
-acceptance evidence; shared model or skill support alone does not establish equivalence.
+The Agents API evaluated here is the managed Codex harness. Do not conflate it with the Agents SDK,
+earlier Sandbox Agents guidance, or ChatGPT Workspace Agents. Any alternative agent loop requires
+its own behavioral acceptance evidence; shared model or skill support alone is insufficient.
 
 AgentCore Gateway, Memory, or Harness and explicit graph frameworks are not implied by a hosting
 choice. Do not rewrite skills into graph nodes, add a multi-runtime abstraction, or introduce a
@@ -558,7 +618,8 @@ from that later adoption gate.
 
 ## Official References
 
-Provider capabilities were researched on 2026-09-10. Recheck availability, beta status, entitlement,
+Agents API capabilities were researched on 2026-09-11; the conditional AWS/Windmill candidate
+assessment originated on 2026-09-10. Recheck availability, beta status, entitlement,
 limits, and security requirements at the relevant decision gate; these links are not evidence that
 Headstart has configured or validated a service.
 
@@ -566,7 +627,7 @@ Headstart has configured or validated a service.
 - [Codex access tokens](https://learn.chatgpt.com/docs/enterprise/access-tokens)
 - [Codex workload identity federation](https://learn.chatgpt.com/docs/enterprise/workload-identity)
 - [Codex authentication](https://learn.chatgpt.com/docs/auth)
-- [OpenAI Sandbox Agents](https://developers.openai.com/api/docs/guides/agents/sandboxes)
+- [Agents API compatibility assessment and official sources](agents-api-compatibility.md)
 - [Non-interactive Codex](https://learn.chatgpt.com/docs/non-interactive-mode)
 - [ChatGPT Workspace Agents](https://help.openai.com/en/articles/20001143)
 - [AgentCore Harness versus Runtime](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/harness-vs-runtime.html)

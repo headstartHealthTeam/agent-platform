@@ -82,9 +82,9 @@ for workload identity federation where enabled, or an approved Codex access toke
 credential. No method is provisioned by this package, and product entitlement must be verified.
 Headstart MCP, AWS, and external providers retain separate identities, permissions, and rotation.
 
-Declared secrets are delivered at runtime through scoped AWS identity and Secrets Manager; federated
-tokens require protected delivery and renewal by trusted infrastructure instead of a stored static
-key. Credentials must never be
+Declared secrets use the selected profile's approved delivery mechanism; AWS identity and Secrets
+Manager apply where AWS infrastructure is selected. Federated tokens require protected delivery
+and renewal by trusted infrastructure instead of a stored static key. Credentials must never be
 written into prompts, workflow manifests, source control, command arguments, or logs.
 
 ## Workspace And Skill Materialization
@@ -114,6 +114,20 @@ cannot exercise.
 
 Live Codex, MCP, or AWS validation belongs in an explicit integration lane with separately approved
 credentials and data policy. It must never run in Git hooks or ordinary pull-request CI.
+
+## Proposed Agents API Adapter
+
+The current implementation remains SDK-based. The
+[compatibility assessment](../../docs/agents-api-compatibility.md#code-level-impact-and-reuse-decisions)
+identifies changes needed for a hosted adapter: prepared environment inputs, normalized events and
+usage, durable session/turn correlation, explicit remote cancellation and recovery through saved
+items. Preserve `ManagedWorkflowRunner` input, lifecycle, source and output checks on trusted
+compute. API session idleness or a completed subagent cannot certify the business run.
+
+Agents API requires its own Platform API credential outside the sandbox; SDK workspace tokens or
+federation are not established substitutes. Hosted permissions, managed provider bindings and
+retention need separate acceptance. The documentation proposes this adapter; no API calls,
+deployment, new authentication or activation modes are implemented by this package.
 
 ## Further Reading
 

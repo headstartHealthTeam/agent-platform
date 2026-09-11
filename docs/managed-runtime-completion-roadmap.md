@@ -9,16 +9,17 @@ whether an individual workflow needs managed execution and the
 [managed workflow architecture](codex-managed-workflow-architecture.md) for the complete system
 design.
 
-No particular business workflow is a prerequisite. **Slice 1: isolated materialization and local
-launch** establishes a reusable test boundary with synthetic packages. **Gate A** selects compatible
-hosting, and **Gate B** decides whether to adopt an operations service or build the minimum custom
-control plane. Begin requirements and provider screening alongside Slice 1; execute the gates
-against its boundary before committing to deployment, custom backend persistence, or admin screens.
+No particular business workflow is a prerequisite. **Slice 1** establishes a shared preparation
+contract and isolated local conformance path. **Gate A** evaluates Agents API with OpenAI-hosted
+execution first; self-hosted API execution or SDK hosting follows only for a concrete unmet need.
+**Gate B** selects the remaining operational integration. Begin provider screening alongside Slice 1
+without building an AWS worker merely to evaluate a hosted API.
 
-The ordered progression is materialization -> hosting and operations decisions -> immutable worker
-and dev identity -> durable operations -> operator surface -> platform acceptance. Business-workflow
-adoption follows its own gate. These are proposed implementation slices, not claims that any hosting
-or control-plane service is already installed or selected.
+The progression is shared preparation -> execution and operations decisions -> immutable artifact
+and selected adapter -> dev identity/integration -> durable operations -> operator surface ->
+platform acceptance. These are proposed slices, not implemented capabilities. The
+[compatibility assessment](agents-api-compatibility.md) records the code-level impact, official
+capabilities and remaining live questions; each real workflow retains a separate adoption gate.
 
 ## Current Baseline
 
@@ -45,14 +46,15 @@ following in Headstart's approved dev environment without an employee laptop. Th
 operation, not acceptance of a real business workflow:
 
 1. A manual request or approved event creates a durable run with an idempotency key.
-2. The worker receives an immutable workflow revision and validates the request before execution.
-3. A fresh workspace contains only declared repositories, revisions, and skills.
-4. The worker exposes only declared MCP servers, CLI commands, environment variables, and network
-   destinations.
+2. Trusted preparation validates the immutable workflow revision and request before dispatch.
+3. A fresh environment contains only the approved workflow sources, skills and dependency bundle
+   plus the declared provider runtime baseline; unrelated developer/workload files are inaccessible.
+4. The selected adapter/environment or broker enforces declared tool, executable, filesystem,
+   environment-variable and network policy; unsupported restrictions fail closed.
 5. The reviewed execution profile binds logical capabilities to verified targets and scoped
-   identities; AWS identity retrieves only its declared secrets when secret delivery is required.
-6. Codex, Headstart MCP, AWS, and external providers use separate scoped identities with independent
-   rotation.
+   identities; the selected secret-delivery mechanism exposes only approved credentials.
+6. The application, Codex execution, Headstart MCP and external providers have scoped identities
+   with independent rotation; self-hosted executor and AWS roles apply only when selected.
 7. The runner validates structured output and durably reports completion, failure, usage, and
    permitted audit events.
 8. Operators can inspect status, cancel an active run, and retry an eligible failure without
@@ -60,8 +62,9 @@ operation, not acceptance of a real business workflow:
 9. Missing tools, identity, secrets, or configuration fail closed before model execution.
 10. Logs and metrics follow the workflow's data classification and never expose credentials, PHI,
     raw tool payloads, or unrestricted model event streams.
-11. Deployment records the exact repository commit, workflow version, skill revision, runner image
-    digest, schema fingerprints, and model identifier.
+11. Deployment records source, workflow, skill, artifact and schema versions, adapter/client version,
+    effective configuration, model identifier, available provider revision metadata and applicable
+    customer-controlled image digest. Missing provider-internal pins remain explicit limitations.
 12. Synthetic end-to-end tests and separately approved dev smoke runs demonstrate the complete
     path, including interruption, recovery, denied access, and operator alerting.
 13. Run transitions and schedules have one authoritative owner, whether provided by an adopted
@@ -78,85 +81,81 @@ product restriction on workflows requiring approved writes or PHI access.
 
 ## Ownership By Repository And System
 
-| Owner                  | Responsibilities                                                                                                                                                                                     |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| This repository        | Workflow packages, contracts, materialization, runner executable, Docker image, runtime adapters, deployment infrastructure, service-profile schema, ECR publishing, and smoke tests                 |
-| Selected control plane | Schedules, trigger deduplication, durable run transitions, leases, dispatch, cancellation, retries, operational approvals, and operator controls; adopted service or custom implementation, not both |
-| Headstart backend      | Business state, authorization, event intake, and idempotent approved business-system writes; custom operational APIs and persistence only if Gate B selects them                                     |
-| Headstart admin panel  | Application-specific interfaces; a custom operator surface only if Gate B identifies a requirement not met by the selected service                                                                   |
-| Headstart MCP          | Bounded permission-gated Headstart operations; it does not own scheduling, run state, or workflow retries                                                                                            |
-| AWS                    | Workload identity, ECR, selected compute target, optional queue and dead-letter queue, Secrets Manager, KMS, CloudWatch, and network controls                                                        |
-| External providers     | OAuth application registration, delegated or service-account authorization, scopes, refresh behavior, and provider-side revocation                                                                   |
+| Owner                  | Responsibilities                                                                                                                                                                                         |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| This repository        | Complete workflow packages, shared preparation, execution adapters, artifact/configuration generation, profile/receipt contracts and tests; image/IaC/publishing only for selected self-hosted resources |
+| Selected control plane | Schedules, trigger deduplication, durable run transitions, leases, dispatch, cancellation, retries, operational approvals, and operator controls; adopted service or custom implementation, not both     |
+| Headstart backend      | Business state, authorization, event intake, and idempotent approved business-system writes; custom operational APIs and persistence only if Gate B selects them                                         |
+| Headstart admin panel  | Application-specific interfaces; a custom operator surface only if Gate B identifies a requirement not met by the selected service                                                                       |
+| Headstart MCP          | Bounded permission-gated Headstart operations; it does not own scheduling, run state, or workflow retries                                                                                                |
+| Execution providers    | Managed Codex harness/environment or selected self-hosted compute; documented session, storage, networking and identity facilities, never business authorization                                         |
+| External providers     | OAuth application registration, delegated or service-account authorization, scopes, refresh behavior, and provider-side revocation                                                                       |
 
-No new general infrastructure repository is required for the first implementation. The deployable
-worker's Dockerfile, GitHub deployment workflow, and AWS infrastructure-as-code should live here,
-following the existing Headstart pattern of keeping a service's deployment definition with the
-service. Adopted-service configuration and runtime integration live here where appropriate; custom
-backend and admin changes remain in their owning repositories. Do not create duplicate run-state
-stores or schedulers merely to preserve the old repository allocation.
+No new general infrastructure repository is required. Workflow-owned packaging, execution adapters
+and deployment configuration live here. A required worker image and its infrastructure also live
+here, but OpenAI-hosted execution does not require ECR or an AWS agent worker. Custom backend/admin
+changes remain in their owning repositories. Use existing shared scheduling, state and operator
+facilities where sufficient; do not create duplicate stores or services merely to preserve an older
+repository allocation.
 
 ## Authentication And Secret Contract
 
-AWS Secrets Manager is the store for declared long-lived secrets, not a universal identity or a
-requirement to turn every identity into an API key. The deployment must
-preserve these separate boundaries:
+The selected profile binds logical capabilities to approved targets, scopes, credential delivery,
+rotation owners and revocation procedures. Reuse `packages/capability-contracts/` and
+`packages/capability-runtime/`; they validate bindings and evidence but do not issue credentials.
+Workflow manifests contain logical references, never secret values or provider-specific token IDs.
 
-- The AgentCore runtime role, ECS task role, or temporary pilot VM role authenticates the worker to
-  AWS without static AWS keys.
-- Codex receives an approved non-interactive organization identity through deployment policy; use
-  workload identity federation when enabled and verified, or an approved token/API credential as
-  described in the architecture's
-  [authentication contract](codex-managed-workflow-architecture.md#authentication-and-capability-binding).
-- Headstart MCP receives a dedicated service identity with only the workflow's approved
-  permissions.
-- Each external CLI or API receives an organization-owned credential scoped to its required
-  operations.
-- Dev and production credentials, service profiles, compute roles, and secret access remain
-  separate.
+- Agents API requires a Platform API project credential held by trusted application infrastructure,
+  outside the sandbox. Workspace Codex tokens/federation are not established substitutes for it.
+- A self-hosted API executor receives a separate restricted connection key; an SDK worker uses its
+  independently approved Codex authentication method from the
+  [architecture](codex-managed-workflow-architecture.md#authentication-and-capability-binding).
+- Service-origin HTTP MCP may use API credential vaults. Environment-origin MCP/CLI access needs
+  its own approved binding. Provider registration, consent, target verification and revocation
+  remain explicit regardless of the delivery mechanism.
+- AWS roles and Secrets Manager apply where selected infrastructure needs them; an OpenAI-hosted
+  sandbox does not inherit an AWS task role or the creator's credentials.
+- Keep dev/production identities separate. Secret values never enter source, prompts, command
+  arguments or logs. Environment-injected values remain readable by agent code; prefer scoped
+  provider tools or a trusted broker when credentials must stay outside it.
 
-Workflow manifests contain logical secret identifiers only. A reviewed deployment service profile
-maps those identifiers to exact Secrets Manager resources and delivery methods. IAM grants the
-worker access only to those resources. Secret values are never committed, placed in prompts, passed
-as command arguments, emitted in logs, or inherited from an unrestricted host environment.
-
-The infrastructure-as-code owns secret resources, mappings, and access policy where practical.
-Secure operational setup supplies the actual values and performs external OAuth registration.
-Federated identity setup also owns upstream token renewal and protected delivery; it is not solved
-by copying a secret. Each profile must identify the provider's actual target, scopes, owner, and
-revocation path. Verify those rather than relying on a workstation alias or an available desktop
-plugin. Synthetic profiles exercise the same validation contract without live credentials.
+Synthetic profiles and fake providers exercise these contracts without live credentials. Required
+identity/target/access preflight must complete before model work; tool initialization alone does
+not verify business authorization. See the
+[API identity and permission findings](agents-api-compatibility.md#tools-identity-and-permissions).
 
 ## Final Runtime Contract
 
 ```text
 manual request, backend event, or schedule
-  -> selected control plane validates request and persists run
-  -> selected runtime adapter dispatches immutable run request and idempotency key
-  -> worker in the approved host acquires the execution
-  -> materializer resolves exact workflow commit and package
-  -> materializer creates isolated workspace and Codex home
-  -> materializer installs pinned skills and declared repositories
-  -> deployment adapter selects approved MCPs and pinned CLIs
-  -> service profile resolves allowlisted environment and scoped secrets
-  -> runner validates request and executes Codex
-  -> runner validates structured output
-  -> control plane persists result, usage, and permitted audit events
-  -> worker destroys temporary workspace and credentials
+  -> selected control plane validates request and durably records run/attempt launch intent
+  -> trusted preparation verifies source, schemas, bundle, policy and capability preflight
+  -> selected adapter prepares hosted configuration or an isolated local/self-hosted workspace
+  -> adapter launches Codex and durably correlates provider session/turn/environment or thread
+  -> Codex uses approved skills, tools and optional deterministic helpers
+  -> adapter observes or reconciles completion without replaying uncertain work
+  -> trusted handler independently validates final output and workflow outcome
+  -> control plane acknowledges result, approved artifacts/checkpoints and sanitized telemetry
+  -> selected adapter cleans up execution resources under the retention policy
   -> operator receives success or actionable failure state
 ```
 
-Consequential external writes remain outside the Codex thread. A future write-capable workflow
-produces a typed proposal; its owning backend or service revalidates current authorization and
-business state before an idempotent executor performs an approved action.
+Business-run state remains independent of agent conversation state. Provider recovery resumes the
+known attempt when safe; it does not create a second schedule/retry authority. External actions
+remain outside agent control: a future approved-write workflow produces a typed proposal, and its
+owning service revalidates authority/current state before idempotent execution.
 
 ## Binding Invariants
 
 - Managed runs never reuse a developer's global Codex home, installed skills, credential cache, or
   working tree.
-- Every source, image, schema, model, and workflow version is immutable and recorded.
+- Reviewed source, skill, schema and workflow artifacts are pinned and recorded. Record effective
+  configuration and the exact model identifier; unavailable hosted image/harness pins are explicit
+  compatibility risks, not invented provenance or deterministic-output promises.
 - Manifest declarations narrow runtime access but cannot grant authority beyond IAM, MCP, backend,
   or provider permissions.
-- The worker receives an explicit environment mapping; unrestricted `process.env` is prohibited.
+- Trusted validation stays outside agent-editable scratch. The selected adapter receives explicit
+  prepared inputs and an environment allowlist; unrestricted `process.env` is prohibited.
 - Required MCP or CLI initialization failure prevents the run from starting.
 - Network access is disabled or enforced by infrastructure allowlists outside prompt control.
 - Read-only remains the only permitted side-effect mode until durable approval and deterministic
@@ -167,24 +166,39 @@ business state before an idempotent executor performs an approved action.
 - Checkpoints, artifacts, and action receipts survive compute replacement. Workflow-owned freshness
   and compatibility policy controls reuse, not file existence alone.
 - Raw credentials, PHI, and unrestricted Codex or tool events do not enter logs.
-- AgentCore session state, container filesystems, and optional runtime memory are never authoritative
-  run or business state.
+- API sessions, compute filesystems and runtime memory are not authoritative business-run state or
+  cross-run source caches. Persist required artifacts before session deletion.
+- Data policy is checked for the actual API endpoint and account, including retained provider
+  state. Self-hosting or disabling raw event logs does not establish ZDR/BAA eligibility.
 - Local skill installation remains independent: `skills:update` continues to distribute only
   `skills/` and never becomes a managed deployment mechanism.
 
+## Implementation Plan
+
+Build one shared preparation/validation contract, retain the local SDK conformance path and add only
+the execution adapter selected by Gate A. The preferred candidate combines a managed Codex harness
+and OpenAI-hosted environment. Gate B supplies the remaining durable operations through a thin
+integration, an adopted service or justified custom code. Complete workflow source stays in Agent
+Platform regardless of where preparation, tools and agent code execute. The
+[impact inventory](agents-api-compatibility.md#code-level-impact-and-reuse-decisions) names reuse and
+extension boundaries; it does not authorize a speculative framework or duplicate provider packages.
+
 ## Slice-To-Behavior Mapping
 
-- Workspace, skill, repository, MCP, CLI, and environment preparation -> Slice 1
-- AgentCore Runtime compatibility and hosting decision -> Gate A
-- Operations build-versus-buy and authoritative state/interface ownership -> Gate B
-- Container image and immutable build artifact -> Slice 2
-- AWS compute, runtime dispatch, optional queue, workload identity, secret delivery, logging, and
-  deployment -> Slice 3
-- Durable run state, trigger intake, leases, cancellation, and retries -> Slice 4
-- Operator launch, status, review, cancellation, and retry experience -> Slice 5
-- Shared platform acceptance and recovery/observability evidence -> Slice 6
+- Shared prepared-execution/profile/receipt contracts and local materialization -> Slice 1
+- Bounded disposable API/environment compatibility probe and candidate decision -> Gate A
+- Remaining operations and authoritative state/interface ownership decision -> Gate B
+- Production execution adapter and immutable artifact/configuration build -> Slice 2
+- Selected dev infrastructure, identity, secret delivery and provider transport integration -> Slice 3
+- Durable launch/reconciliation, triggers, cancellation, retry and retention operations -> Slice 4
+- Minimum operator interface -> Slice 5
+- Integrated platform acceptance and measured recovery/outcome evidence -> Slice 6
 - Real workflow acceptance and activation -> Per-workflow adoption gate
 - Approved external writes -> Deferred beyond Operational V1
+
+Prototype evidence from Gate A informs Slice 2 but is not a second production adapter. Slice 3 uses
+injected operational sinks until Slice 4 supplies the durable owner; it does not implement a hidden
+second control plane.
 
 ## Commit Slices
 
@@ -197,12 +211,16 @@ Objective:
 
 Includes:
 
-- Add a materialization boundary, initially under `packages/workflow-materializer/`, shared by local
-  evaluation and hosted execution.
+- Define a provider-neutral prepared-execution and provenance receipt boundary, reusing workflow
+  and capability contracts. Add `packages/workflow-materializer/` only for preparation mechanics
+  not already owned by those packages or the existing standalone packaging utilities.
+- Separate shared source/dependency/policy resolution from local filesystem realization. The hosted
+  path must not require a developer Codex home or local working directory.
 - Resolve an exact workflow repository commit and package identity.
 - Create a fresh temporary workspace and isolated Codex home.
 - Materialize pinned skills and declared repository revisions.
-- Validate approved CLI inventory and generate MCP configuration from a typed, secret-free input.
+- Validate the profile's supported policy, CLI inventory and typed MCP configuration. Inventory is
+  not command enforcement; local isolation must reject undeclared access.
 - Construct the environment from an explicit allowlist supplied by the caller.
 - Invoke the existing runner and remove temporary state after durable result acknowledgement.
 - Add a local synthetic launch command and failure tests for missing skills, tools, repositories,
@@ -210,8 +228,8 @@ Includes:
 
 Explicitly excludes:
 
-- AWS SDK calls, real credentials, live MCPs, live external CLIs, queues, deployment, backend state,
-  admin UI, and external writes.
+- Agents API dispatch, production remote adapters, AWS calls, live credentials/providers, queues,
+  deployment, backend state, admin UI and external writes.
 
 Files / subsystems:
 
@@ -219,6 +237,10 @@ Files / subsystems:
 - `apps/codex-runner/`
 - `workflows/synthetic-read-only-reference/`
 - root Turborepo, TypeScript, lint, test, and documentation configuration
+
+Startup / shutdown impact in this slice:
+
+- Only local synthetic workspaces/executors start; clean them up on success, failure, timeout or cancellation. No managed schedule starts.
 
 Verification:
 
@@ -234,63 +256,71 @@ Review note:
 - Judge this slice on hermetic materialization and fail-closed behavior. It is not an AWS deployment
   or live integration slice.
 
-### Gate A - AgentCore Runtime Compatibility Spike
+### Gate A - Codex Execution And Environment Compatibility
 
 Objective:
 
-- Determine whether AgentCore Runtime can host the existing Codex SDK runner without changing the
-  workflow's execution engine or weakening its contracts.
+- Determine whether Agents API with OpenAI-hosted execution preserves the required local workflow
+  behavior and enforceable policies, before investing in self-hosted worker infrastructure.
 
 Includes:
 
-- Package the current runner and Slice 1 materializer in the smallest AgentCore-compatible custom
-  container needed for the test. Verify the selected compute mode's architecture and sandbox
-  requirements rather than assuming every AgentCore mode has identical constraints.
-- Invoke one synthetic read-only workflow through AgentCore Runtime using the exact reviewed prompt,
-  skills, schemas, and runner code.
-- Verify approved non-interactive Codex authentication without placing credentials in the image,
-  workflow package, prompt, command arguments, or logs.
-- Verify Headstart MCP-compatible configuration, one synthetic or dev-safe MCP connection, approved
-  CLI execution, explicit environment delivery, and constrained egress.
-- Verify structured output, timeout, cancellation, failure cleanup, runtime versioning, and
-  PHI-safe CloudWatch telemetry.
-- Measure cold start, execution latency, cost, quotas, long-running invocation behavior, and the
-  selected compute mode's session lifetime and storage semantics. Persistence features do not
-  replace durable run state or artifact validity checks.
-- Record a pass/fail decision against the criteria below; do not expand the spike into a live
-  business workflow.
+- Use a bounded prototype with synthetic prompt/skill-only and deterministic-helper fixtures from
+  the Slice 1 contract. No business workflow or complete AWS materializer is a prerequisite.
+- Verify JSON Schema results, exact skill/dependency preparation, model configuration and trusted
+  input/output validation against the existing SDK path.
+- Probe required MCP startup, provider preflight, explicit credentials, exact egress destinations,
+  immutable code/input policy, writable scratch and executable restrictions. Fail unsupported
+  policies explicitly; do not enable unrestricted networking to accommodate stdio MCP.
+- Probe remote root-turn completion, missing text deltas, pagination, disconnect recovery, duplicate
+  events, unknown launch outcome, explicit cancellation and artifact retrieval/deletion.
+- Establish acceptance thresholds and an accountable technical owner before the probe, then measure
+  setup/execution latency, costs, concurrency/quotas, lifetime and recovery limits. Verify account
+  entitlement, endpoint retention/regional policy and required contractual eligibility.
+- Evaluate a self-hosted API executor only if the API is acceptable and hosted compute fails a
+  material requirement. Evaluate SDK hosting, including AgentCore Runtime/ECS, when API behavior
+  or data policy fails. Each fallback uses the same acceptance contract.
 
-Pass criteria:
+Explicitly excludes:
 
-- The repository-owned `@openai/codex-sdk` loop remains the execution engine; AgentCore does not
-  replace it with Harness or another agent loop.
-- The same synthetic workflow contract passes locally and in AgentCore Runtime.
-- Exact source revisions and isolated materialization remain verifiable.
-- Required MCPs, CLIs, credentials, network policy, cancellation, and telemetry fail closed.
-- A contract-test control-plane adapter can correlate the compute session to a stable run id
-  without making session state authoritative. Final control-plane integration follows Gate B.
-- Security, compliance, cost, latency, quotas, and regional availability are acceptable for the
-  platform operating requirements established before the test.
+- Production adapter/deployment code, permanent vendor resources, operational run database, live
+  business workflows, PHI, real writes and silent runtime fallback.
+- Enabling checked-in active workflows. Synthetic execution uses temporary test-owned fixtures;
+  the repository activation gate is relaxed only in a separately reviewed implementation after
+  required platform controls and acceptance evidence exist.
 
-Decision:
+Files / subsystems:
 
-- If every material criterion passes, AgentCore Runtime qualifies as the preferred host for Slice 3.
-- If a material criterion fails, evaluate ECS/Fargate against the same criteria and preserve the
-  runner, image inputs, workflow contracts, and control-plane boundary. A fallback is not exempt
-  from verification.
-- Finalize the compute/operations pairing with Gate B before deployment. An operations service
-  that hosts the runner directly must pass the same hosting criteria; do not add a second compute
-  layer when it supplies no required capability.
-- Do not select AgentCore Harness or ChatGPT Workspace Agents as an equivalent substitute. Either
-  would require its own workflow classification and behavioral acceptance evidence.
+- Synthetic reference inputs, existing runner conformance tests, shared preparation contracts and
+  bounded prototype fixtures where needed; architecture and compatibility evidence.
+
+Pass criteria and decision:
+
+- The same reviewed behavior and policies pass with no local/cloud prompt fork or weakened access.
+- Provider IDs can correlate to one durable run/attempt without making sessions authoritative.
+- Required source, permission, recovery, cost and data-policy criteria pass with measured evidence.
+- Classify each criterion as passed, failed or unverified. Document the smallest qualifying path
+  and the unmet need for any fallback; finalize operations with Gate B before deployment.
+- No automatic switch or second launch follows an ambiguous remote response. Retaining Codex
+  behavior is mandatory; retaining the SDK subprocess is not.
+
+Startup / shutdown impact in this gate:
+
+- Only explicitly approved synthetic sessions/resources start. Record and clean them up within
+  the probe budget; no persistent scheduler or live workflow is enabled.
 
 Verification:
 
-- Full `pnpm qa` for repository changes.
-- Credential-free contract tests around the AgentCore adapter.
-- An explicitly approved AWS dev smoke run with synthetic data only.
-- A short decision record containing evidence, limitations, measured cost and latency, and the
-  selected target.
+- Full repository QA for committed changes; protocol fixtures remain credential-free.
+- Separately approved synthetic API/cloud probes with named account, bounded spend/time and cleanup.
+- An evidence record for every question in the
+  [compatibility matrix](agents-api-compatibility.md#acceptance-questions-that-still-require-execution),
+  including anything that could not be tested. Public examples alone cannot pass the gate.
+
+Review note:
+
+- Judge behavioral/policy compatibility and candidate selection. This gate does not deploy a
+  production adapter or establish real-workflow readiness.
 
 ### Gate B - Operations Build-Versus-Buy
 
@@ -303,11 +333,12 @@ Includes:
 
 - Evaluate Windmill as a concrete candidate against the architecture's
   [operations criteria](codex-managed-workflow-architecture.md#operations-build-versus-buy-gate).
-- Use the same runner contract and synthetic fixtures to check immutable Git-based launch,
+- Use the same prepared-execution contract and synthetic fixtures to check immutable Git-based launch,
   run correlation, authorized status/cancel/retry, schedule deduplication, and recoverable delivery.
 - Assess authenticated approval controls with synthetic decisions; do not enable real write modes.
-- Determine whether the service invokes the Gate A worker or hosts it directly. Verify the chosen
-  integration rather than assuming native AgentCore/Codex support.
+- Determine whether the service invokes Agents API, a separate SDK worker or a required self-hosted
+  executor. Also assess a thin integration with existing scheduling/state/operator facilities.
+  Account for API-managed sessions before adding operations machinery; do not assume native support.
 - Verify isolation configuration, private artifact handling, audit export, retention, identity
   boundaries, edition/license requirements, hosting effort, support, and exit cost.
 - Record one state authority and one schedule/retry owner. Preserve business-system permissions and
@@ -324,10 +355,15 @@ Files / subsystems:
 - Bounded integration fixtures and adapter tests in this repository where code is needed
 - Separately approved dev evaluation resources, with no credentials committed
 
+Startup / shutdown impact in this slice:
+
+- Only approved synthetic evaluation resources start; no production schedule or business write is enabled.
+
 Verification and decision:
 
 - Run repository QA for any code and separately authorize vendor/cloud checks.
-- Compare the smallest adopted-service integration with the minimum custom backend/admin option.
+- Compare a thin integration using existing services, the smallest adopted-service integration and
+  the minimum custom backend/admin option against the remaining operating needs.
 - Select adoption when it meets material requirements at acceptable operating cost; otherwise name
   the concrete gaps that justify custom code. Document prerequisites and evidence in the canonical
   architecture and roadmap before Slices 3-5.
@@ -339,101 +375,105 @@ Review note:
 - Judge the operating contract and ownership decision, not a replacement for Codex or a requirement
   to express prompt-and-skill workflows as graph nodes.
 
-### Slice 2 - Containerized Worker Artifact
+### Slice 2 - Selected Execution Adapter And Immutable Artifact
 
 Objective:
 
-- Produce one reproducible Linux image that can execute the Slice 1 contract without developer
-  machine dependencies.
+- Implement the chosen execution path around the shared workflow contract and reproducible source
+  artifact, without adding live infrastructure or changing workflow behavior.
 
 Includes:
 
-- Add a production runner entrypoint and graceful shutdown behavior.
-- Add a multi-stage Dockerfile with pinned Node, pnpm, Codex, and explicitly approved CLI versions.
-  Target the image architecture and worker contract verified by Gates A and B; do not assume a
-  container built for one execution mode works unchanged in every hosting mode.
-- Run as a non-root user with a writable ephemeral workspace and read-only application files.
-- Add image build, vulnerability scan, synthetic container smoke test, and immutable ECR tagging.
-- Add a GitHub Actions workflow that authenticates to AWS through OIDC and publishes the image after
-  protected `main` passes QA.
+- Adapt `apps/codex-runner/` to consume prepared execution rather than assuming every target has a
+  local working directory. Keep existing SDK support and independent validation.
+- For the API path, implement typed launch/observe/retrieve/cancel protocol operations, normalized
+  events/results and correlation receipts using an injected API client and result sink. Durable
+  operational reconciliation belongs to Slice 4, not this adapter's process memory.
+- Build source/dependency artifacts with integrity receipts and generate pinned skill/plugin and
+  agent/environment configuration. Reuse existing compatible packaging rather than duplicating it.
+- For a selected self-hosted path only, build the required pinned, scanned Linux image and its
+  immutable publishing configuration. Customer-controlled code remains protected from agent writes.
+- Preserve declared policy through explicit capability checks; unsupported mappings are errors.
+- Version normalized usage, events and receipts instead of casting API values into SDK types.
 
 Explicitly excludes:
 
-- Starting AgentCore Runtime, a VM, or an ECS service; consuming SQS; real secrets; live MCP
-  authentication; backend APIs; and production deployment.
+- Live API sessions, deployment, cloud identities, provider secrets, queues, durable operational
+  persistence, operator UI and real writes. No image/ECR work for OpenAI-hosted execution alone.
 
 Files / subsystems:
 
-- `apps/codex-runner/`
-- `infra/docker/`
-- `.github/workflows/`
-- ECR repository infrastructure under `infra/`
+- `apps/codex-runner/`, shared preparation/contracts and tests
+- Artifact/configuration build tooling and `.github/workflows/` where required
+- `infra/docker/` and image publishing only for a selected self-hosted path
+
+Startup / shutdown impact in this slice:
+
+- Test clients and synthetic executables only; exercise cancellation/cleanup protocol without
+  starting real vendor resources. Production adapter functions are not a deployed service.
 
 Verification:
 
-- Reproducible local image build.
-- Synthetic container execution with no mounted developer home.
-- Image scan and least-privilege filesystem checks.
-- CI proof that the published digest corresponds to the tested commit.
+- Full repository QA and existing SDK subprocess conformance.
+- API protocol fixtures for root/subagent events, absent deltas, invalid output, provider failure,
+  explicit cancellation and paginated retrieval. The API's schema support must preserve our schemas.
+- Artifact receipt/integrity and no-developer-path tests; image isolation/scan only where applicable.
+- Verify that trusted validation uses the reviewed source, not an agent-modified workspace copy.
 
 Review note:
 
-- Judge this slice on reproducibility and isolation of the deployable artifact, not runtime
-  scheduling.
+- Judge adapter semantics, artifact reproducibility and policy preservation, not live operation or
+  durable recovery implemented later.
 
-### Slice 3 - AWS Dev Worker And Secret Delivery
+### Slice 3 - Selected Dev Execution And Identity Integration
 
 Objective:
 
-- Run the container in Headstart AWS dev with bounded identity, dispatch, secrets, and
-  observability.
+- Connect the selected adapter to approved dev execution and provider identities with bounded
+  resources, secret delivery, artifact transport and sanitized observability.
 
 Includes:
 
-- Use the compute/operations pairing selected by Gates A and B. AgentCore is the preferred hosting
-  candidate and ECS/Fargate the fallback, not preselected deployments. A controlled VM requires a
-  separately justified, time-boxed contingency decision.
-- Add infrastructure-as-code for the selected compute and dispatch path, ECR consumption,
-  CloudWatch, KMS, network policy, and a dedicated workload role. Add SQS and a dead-letter queue
-  only when the selected dispatch design requires them.
-- Add typed service-profile configuration mapping logical workflow requirements to exact secret
-  resources and delivery methods.
-- Resolve declared Secrets Manager values at runtime without exposing them to prompts or logs;
-  configure protected token delivery/renewal instead where federated identity is selected.
-- Generate MCP and CLI authentication configuration in ephemeral files or allowlisted environment
-  variables.
-- Add the selected runtime invocation or queue-consumption adapter, cancellation and shutdown
-  behavior, and durable result-delivery interfaces.
-- Add sanitized run/attempt/stage telemetry and alerts for startup failures, missing or expired
-  identity, authenticated access denial, timeout, retry exhaustion, and dead-lettered runs.
-- Add approved artifact storage and checkpoint delivery interfaces with retention, isolation, and
-  integrity checks. Temporary credentials and execution scratch do not belong in reusable caches.
+- Implement the pairing selected by Gates A/B. OpenAI-hosted execution needs API configuration and
+  trusted application integration; it does not require deploying a Headstart agent worker.
+- Provision only required resources through reviewed configuration/IaC. Self-hosted compute, ECR,
+  SQS, CloudWatch or another provider's equivalents are conditional on the chosen path.
+- Bind typed execution profiles to approved API project, MCP/CLI identities, targets, scopes and
+  credential delivery. Keep the application key outside agent code; use restricted executor keys
+  and protected delivery where self-hosted execution is selected.
+- Integrate scoped HTTP MCP, supported environment tools or a broker, preserving verified source
+  semantics. Do not copy workstation auth caches or grant broader permissions for convenience.
+- Connect lifecycle/results, artifacts and sanitized telemetry to injected operational interfaces.
+  Add alerts for provisioning, identity, access, timeout, delivery and cleanup failure.
+- Verify environment readiness before model input and stop on failed preparation/preflight.
 
 Explicitly excludes:
 
-- Production deployment, broad backend business logic, admin UI, approved writes, and a general
-  visual workflow builder.
+- Production activation, live PHI, real writes, business logic changes, durable operational state
+  implementation from Slice 4 and custom admin UI.
 
 Files / subsystems:
 
-- `apps/codex-runner/`
-- `infra/`
-- `.github/workflows/`
-- secure external setup for Codex, Headstart MCP, and the selected dev capability identities
+- Selected runtime/profile integrations, required `infra/` and deployment workflows
+- Secure external account, credential and provider setup; approved artifact storage configuration
+- Existing provider packages only when a verified managed binding requires extension
+
+Startup / shutdown impact in this slice:
+
+- Approved dev resources only. Use bounded smoke-run lifetime and cleanup; no unattended business
+  cadence starts. Permanent operational retry and cancellation ownership arrives in Slice 4.
 
 Verification:
 
-- Infrastructure template validation and least-privilege policy review.
-- Dev deployment from an immutable ECR digest.
-- Synthetic hosted run covering success, retry, timeout, cancellation, runtime termination, and any
-  selected dead-letter behavior.
-- Credential-redaction and environment-allowlist tests.
-- Explicitly approved read-only smoke test against the selected dev capabilities.
+- Canonical QA, configuration/IaC validation and least-privilege review.
+- Approved synthetic dev runs with exact provenance, denied-access cases, timeout/cancel,
+  credential redaction, artifact export and cleanup. Scope live provider reads separately.
+- Confirm the real runtime/dependencies and identity targets match the prepared contract.
 
 Review note:
 
-- Judge this slice on service isolation, identity, secret boundaries, and recoverable operation in
-  dev. No business workflow should become production-active here.
+- Judge selected-service access/isolation and transport integration. A dev run does not complete
+  the durable control plane or a business workflow's adoption gate.
 
 ### Slice 4 - Durable Operational Control Plane
 
@@ -452,8 +492,13 @@ Includes:
 - Validate trigger payloads and dispatch immutable run requests through the selected runtime
   adapter.
 - Enforce idempotency and reject stale or duplicate triggers.
-- Receive worker lifecycle and final result updates through an authenticated service boundary.
-- Record exact workflow, skill, schema, model, and image versions.
+- Durably record launch intent and provider session/turn/environment or SDK thread correlation.
+  Verify/deduplicate webhook delivery, paginate saved state, reconcile lost streams and unknown
+  launch outcomes, and fence stale attempt updates before retry or cancellation completes.
+- Receive lifecycle/results through authenticated boundaries; do not infer success from provider
+  idleness, subagent completion or closed HTTP connections.
+- Record exact workflow, skill, schema, model and artifact/configuration provenance, plus image
+  versions where applicable. Implement resource retention/export/deletion with bounded retries.
 - Persist compatible checkpoints, artifact references, and result acknowledgements. Reject stale
   updates from superseded attempts and reconcile uncertain effects before replay.
 - Keep validated outcome and evidence completeness distinct from worker/process health.
@@ -468,6 +513,10 @@ Files / subsystems:
 - Adopted-service configuration and integration in this repository, or Headstart backend modules,
   entities, migrations, services, DTOs, and tests when Gate B selects custom implementation
 - Coordinating runtime-adapter and worker service-profile definitions in this repository
+
+Startup / shutdown impact in this slice:
+
+- The selected dev controller or adopted-service integration starts. Restart recovery reconciles existing attempts before dispatching new work; shutdown preserves durable intent and pending results.
 
 Verification:
 
@@ -508,6 +557,10 @@ Files / subsystems:
 - Adopted-service role/interface configuration, or the Headstart admin-panel repository when needed
 - Selected control-plane APIs and contracts from Slice 4
 
+Startup / shutdown impact in this slice:
+
+- Enable only the selected operator interface and authorized dev actions; it inherits lifecycle controls from Slice 4 and does not create another scheduler.
+
 Verification:
 
 - Component, API-contract, authorization, and browser workflow tests.
@@ -530,7 +583,10 @@ Includes:
 
 - Exercise prompt/skill-only execution and a fixture with a small deterministic adapter through
   the same contract. Neither requires a real business workflow or workflow-specific policy.
-- Verify pinned versions, isolated identity/tool access, structured results, and durable receipts.
+- Verify pinned versions, isolated identity/tool access, structured results and durable receipts.
+- Run two synthetic workflow identities with distinct profiles concurrently. Verify no cross-run
+  skill/credential/artifact leakage, correct cancel/retry correlation and bounded shared quotas.
+  New workflow admission must not require business-name branches in the shared executor.
 - Inject expired authentication, authenticated 403, rate limits, incomplete evidence, timeout,
   worker loss, duplicate triggers, delayed updates, and unavailable result delivery.
 - Prove compatible checkpoint/artifact reuse after interruption and rejection of stale or
@@ -551,6 +607,10 @@ Files / subsystems:
 - Dev profiles, deployment configuration, and selected operational service integration
 - Coordinating backend/admin configuration only when required by the selected implementation
 
+Startup / shutdown impact in this slice:
+
+- Exercise approved dev start, interruption, restart and cleanup paths across workflows; production business activation remains separate.
+
 Verification:
 
 - Repository QA and repeated synthetic evaluations.
@@ -567,9 +627,11 @@ Review note:
 Once the shared foundation is proven, each real workflow independently requires:
 
 1. named business, technical, and backup owners with actionable contacts;
-2. pinned source, skill, model, schema, tool, adapter, and image revisions;
+2. pinned source, skill, schema, tool, adapter and artifact/configuration provenance, exact model
+   identifier and applicable image revisions, with unavailable provider pins explicitly assessed;
 3. verified provider identities, target visibility, cadence, and exactly-one-schedule ownership;
-4. approved data classification, retention, side effects, and human-decision boundaries;
+4. approved data classification, endpoint/account retention and contractual eligibility, side effects
+   and human-decision boundaries; self-hosting does not remove Agents API retention constraints;
 5. repeated evaluations and an authorized shadow or historical run against its intended outcome;
 6. measured quality, latency, cost, failure, and recovery acceptance criteria; and
 7. pause, rollback, credential revocation, support handoff, and required deployment approvals.
@@ -602,7 +664,7 @@ not be copied into repository documentation or workflow fixtures.
 Slice 1 can begin without selecting a business workflow or deployment target. Before Slice 3, the
 team must decide:
 
-1. the hosting and operational-service pairing based on Gates A and B;
+1. the execution/environment and operational-service pairing based on Gates A and B;
 2. approved managed Codex authentication method;
 3. Headstart MCP service-identity and permission model;
 4. first external integration, if any, and its organization-owned authentication method;
@@ -618,7 +680,7 @@ permission to activate it.
 
 - Every repository change runs that repository's canonical QA command and required hooks.
 - Ordinary tests and pull-request CI remain synthetic, credential-free, and network-independent.
-- Live AWS, Codex, MCP, and provider checks run only in explicit integration or smoke lanes with
+- Live Agents API, AWS, Codex, MCP and provider checks run only in explicit integration or smoke lanes with
   approved identities and data handling.
 - Infrastructure changes include template validation, least-privilege review, deployment smoke,
   rollback evidence, and cost-impact notes.

@@ -178,6 +178,15 @@ separate copies of its reasoning or procedures.
 The self-updater serves the common workstation skill path. It is deliberately not a managed
 workflow installer or deployment system.
 
+Hosted Codex can use a different execution adapter while retaining this authoring model. The
+[Agents API assessment](agents-api-compatibility.md) maps existing skills, workflow contracts,
+capability profiles and helper packages to that path. API agents, uploaded skills and environment
+templates are generated deployment artifacts, not a second canonical workflow definition. Before
+promotion, identify every implicit workstation dependency, bind an approved managed equivalent and
+validate the same outcome and access policy. Do not copy personal task history, auth caches or
+installed connectors, or rewrite deterministic engine rules as prompt instructions. Unsupported
+hosted policies block that deployment profile; they do not justify weakening the workflow contract.
+
 ## Choose A Workflow Shape
 
 ### One-Off Agent Task

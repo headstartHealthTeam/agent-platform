@@ -53,7 +53,7 @@ those decisions.
 - `packages/workflow-contracts/` owns manifest and durable run schemas.
 - `packages/workflow-runtime/` owns safe workflow-package loading, reference resolution, and JSON
   Schema validation used during authoring and execution.
-- `apps/codex-runner/` owns Codex execution policy and SDK integration.
+- `apps/codex-runner/` owns Codex execution policy and adapters; the current implementation uses the SDK.
 - Installed copies under `.agents/skills`, `.claude/skills`, `.cursor/skills`, or user home
   directories are deployment artifacts, not editable sources.
 - Workstation refreshes use the repository-owned `skills:update` workflow. Its local receipt owns
@@ -363,7 +363,8 @@ corepack pnpm qa
   weaken the stable required-check contract.
 - Release reviewed changes with semantic tags. Workstations may follow protected `main` through the
   opt-in updater or install a reviewed skill release; managed runtimes must pin an exact tag or
-  commit and record the workflow version and runner image digest.
+  commit and record workflow and execution provenance under the architecture's
+  [versioning contract](docs/codex-managed-workflow-architecture.md#skills-and-version-pinning).
 - The workstation updater installs only `skills/`. It must never copy managed workflow packages,
   runner code, infrastructure, or workflow credentials into a user's global skill directory.
 - A local launcher or evaluation may load a managed package from an explicit repository checkout.
