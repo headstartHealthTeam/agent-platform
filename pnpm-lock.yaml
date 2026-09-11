@@ -34,8 +34,8 @@ importers:
         specifier: ^4.1.11
         version: 4.1.11(vitest@4.1.11)
       corepack:
-        specifier: 0.35.0
-        version: 0.35.0
+        specifier: 0.34.6
+        version: 0.34.6
       eslint:
         specifier: ^10.10.0
         version: 10.10.0
@@ -1849,9 +1849,9 @@ packages:
     resolution: {integrity: sha512-XGpFGbMLHwSt74YLTKho7Ib242qi6O8MSX+sRokV4oz7iKXvQWGYZthjIhjRGMxjzVkAubBO512dKGYcefmX3Q==}
     engines: {node: '>=6.4.0'}
 
-  corepack@0.35.0:
-    resolution: {integrity: sha512-9BuIGHDFE7Zieor1CeRsvt7X7AJFEuJ6OnbSbsVprq83ChDFoBh1wP98NeUS9FT3ZwlzFllPElXcz/OiDf0YGw==}
-    engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
+  corepack@0.34.6:
+    resolution: {integrity: sha512-gvylq9kzJB09mSsiOnKOnhg0YdCWNy2aGaeGbYF4HlyGd/v4moxEonQjJPYI45/K4zP7q1hW9qCVvaYYKK5nkA==}
+    engines: {node: ^20.10.0 || ^22.11.0 || >=24.0.0}
     hasBin: true
 
   cors@2.8.6:
@@ -4430,7 +4430,7 @@ snapshots:
     dependencies:
       browserslist: 4.28.7
 
-  corepack@0.35.0: {}
+  corepack@0.34.6: {}
 
   cors@2.8.6:
     dependencies:

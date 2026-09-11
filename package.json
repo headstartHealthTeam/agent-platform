@@ -45,7 +45,7 @@
     "@types/mdast": "^4.0.4",
     "@types/node": "^22.20.1",
     "@vitest/coverage-v8": "^4.1.11",
-    "corepack": "0.35.0",
+    "corepack": "0.34.6",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
