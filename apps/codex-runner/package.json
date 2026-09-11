@@ -30,7 +30,7 @@
   "dependencies": {
     "@headstart-health/workflow-contracts": "workspace:*",
     "@headstart-health/workflow-runtime": "workspace:*",
-    "@openai/codex-sdk": "0.151.0"
+    "@openai/codex-sdk": "0.153.4"
   },
   "devDependencies": {
     "@types/node": "^22.20.1",
