@@ -59,6 +59,12 @@ workstations. The updater installs and refreshes the reviewed contents of `skill
 Claude Code, and Cursor agents so a person can launch and supervise those capabilities from their
 normal working context.
 
+Workflows that require a separate engine also need that code provisioned locally. Skill installation
+and daily refresh do not install or rebuild those runtimes. Follow the setup guide linked from the
+workflow skill, verify its required version/revision and smoke check, then run it using its local
+commands or documented Node entrypoints. For organic reporting, use the
+[interim runtime setup](docs/organic-reporting-runtime.md#interim-workstation-readiness).
+
 The same canonical skills can also be pinned into an organization-managed run. Do not create a
 second cloud-specific copy of behavior that already belongs in a portable skill. A business
 workflow may offer both a local workflow skill for supervised use and a managed package under

@@ -4,13 +4,27 @@ description: Build decision-ready SEO and organic acquisition reports using Goog
 compatibility: Requires Node.js 22+, the headstart-organic-analyze TypeScript CLI, and authenticated read-only Search Console and GA4 capabilities; the full headstart-organic-collect profile also requires Google Cloud ADC, Google Sheets, and a separately provisioned Semrush provider.
 metadata:
   author: headstart-health
-  version: '0.7.1'
+  version: '0.7.2'
   deterministic_engine: '@headstart-health/organic-performance-engine@0.1.0'
 ---
 
 # Organic Performance Reporting
 
 Produce a concise narrative for decision-makers and enough detail for operators to act. Treat Google Search Console as the source for Google Search visibility and GA4 as the source for on-site behavior and business outcomes. Use Semrush for competitive estimates and market context, never as a replacement for first-party performance data.
+
+## Verify the local runtime first
+
+This installed skill requires separately provisioned local code. The skills updater does not install
+or refresh the reporting engine. Before collection or calculation, follow the
+[interim workstation setup guide](https://github.com/headstartHealthTeam/agent-platform/blob/main/docs/organic-reporting-runtime.md#interim-workstation-readiness).
+Read that guide from the same reviewed source revision as this skill (use the installation receipt
+or tag to resolve it in a local checkout or authenticated repository view; the link is a discovery
+entrypoint). Verify the declared engine version, source revision, actual command targets, and
+synthetic smoke result. Explicit Node entrypoints are supported when command shims are absent.
+If setup is missing, complete the documented local provisioning within the authorized task before
+running the report, or state the specific missing prerequisite. Recheck after skill updates. Engine
+metadata is a declaration, not an automatic installer or compatibility check. Provider access is a
+separate prerequisite; never recreate the engine's calculations to bypass missing setup.
 
 ## Preserve the read-only boundary
 

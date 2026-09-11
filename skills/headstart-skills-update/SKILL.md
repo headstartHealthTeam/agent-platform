@@ -4,7 +4,7 @@ description: Safely install, preview, manually refresh, or configure opt-in dail
 compatibility: Requires Git, Node.js 22 or newer, pnpm 9.15, and read access to the Headstart Agent Platform repository at headstartHealthTeam/agent-platform. Scheduled refresh uses user cron on macOS/Linux or Task Scheduler on Windows.
 metadata:
   author: headstart-health
-  version: '0.1.1'
+  version: '0.1.2'
 ---
 
 # Headstart Skills Update
@@ -127,6 +127,13 @@ Do not use this updater to install `workflows/`, runner code, infrastructure, cr
 monorepo packages globally. A managed workflow package may be loaded locally from an explicit
 repository checkout for development, evaluation, or a supported supervised launch; that is a
 separate package execution path.
+
+For a workflow the user wants to run, inspect its runtime requirements and follow the setup guide
+linked by that installed skill. Provision and verify required local code as part of authorized
+workflow setup; a successful skills install alone does not establish readiness. After a refresh,
+recheck the workflow's runtime version/revision before its next run, since this updater does not
+rebuild existing runtimes. Report skills installed, runtime ready or missing, and provider access
+separately. Coordinated automatic runtime installation and updates remain future work.
 
 ## Completion
 

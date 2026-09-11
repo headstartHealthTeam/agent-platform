@@ -5,6 +5,43 @@ This is the supervised, read-only runtime for the
 collection with deterministic TypeScript analysis. It is not a managed deployment, scheduler,
 Google Sheet publisher, or replacement for agent interpretation.
 
+## Interim workstation readiness
+
+The installed skill supplies instructions; the engine and shared adapter code must also be set up
+on the workstation. `skills:update` and its daily schedule update skills only. They do not build,
+install, or refresh the standalone runtime. Use this manual procedure until coordinated runtime
+distribution is implemented:
+
+1. Resolve the installed skill's reviewed source commit or tag from its installation receipt or
+   installation provenance. Use the same revision of this guide and package source. Check an
+   existing runtime's `runtime-receipt.json` (`package`, `version`, `sourceRevision`, `sourceDirty`)
+   and package metadata against the skill's declared engine. Require a clean reviewed source;
+   matching `0.1.0` versions alone do not establish compatible revisions. If provenance is missing
+   or revisions differ, align skill and runtime to the same reviewed revision before use.
+2. If the runtime is missing, follow [standalone provisioning](#provision-a-standalone-artifact).
+   The local Agent Platform checkout is the build source; the resulting standalone directory holds
+   the compiled engine and its dependencies. Normal execution uses that directory's commands or
+   explicit Node entrypoints and does not require the checkout to remain available.
+3. Inspect where any existing command shim resolves so an older command on `PATH` cannot silently
+   select another installation. Use the explicit Node entrypoints below if shims are unavailable.
+   These CLIs do not expose `--version`; inspect the receipt and package metadata instead.
+4. Run a credential-free smoke check using the selected source revision's
+   `packages/organic-performance-engine/fixtures/august-2026-regression.json` as the analyzer input
+   and a new scratch output file. Compare its `kpis` object with `kpis` in
+   `packages/organic-performance-engine/fixtures/august-2026-analysis.expected.json` from that same
+   revision; package QA covers the remaining analysis contract. For each other required entrypoint,
+   invoke it with no arguments and confirm its
+   documented missing-argument error, rather than a loader/module error. This checks startup only;
+   collection still requires the separate [private configuration](#private-configuration) and
+   successful source preflights.
+5. Record the local runtime directory, source revision, entrypoint resolution, and smoke result in
+   the workstation handoff. After a skill refresh, repeat the compatibility check before the next
+   report; provision a new runtime directory when needed and update command shims after verification.
+
+Report skill installation, local runtime readiness, and provider access separately. This interim
+procedure is agent-led guidance; no automatic skill/runtime compatibility gate or coordinated
+runtime updater currently enforces it.
+
 ## Provision a standalone artifact
 
 Use Node.js 22+ and the repository's exact Corepack pnpm version. Select a reviewed, immutable

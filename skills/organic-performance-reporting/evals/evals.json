@@ -2,6 +2,18 @@
   "skill": "organic-performance-reporting",
   "cases": [
     {
+      "name": "installed-skill-missing-or-stale-runtime",
+      "prompt": "The Headstart skills updater succeeded, so generate the report. The reporting CLI is missing on this workstation; alternatively, the CLI points to an older runtime with the same 0.1.0 package version. Work from the installed skill's instructions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Finds the interim runtime guide from the installed skill and resolves its reviewed source revision",
+        "Provisions missing runtime code through the documented local path within authorized setup and verifies the receipt, command target, and synthetic smoke result",
+        "Does not equate a matching version or successful skill update with a compatible runtime revision",
+        "Uses explicit Node entrypoints when shims are absent and distinguishes runtime readiness from provider access",
+        "Reports a concrete unresolved prerequisite rather than inventing engine calculations"
+      ]
+    },
+    {
       "name": "unequal-calendar-months-and-missing-history",
       "prompt": "Prepare a September monthly report against August. We have 30 and 31 days respectively, and this GA4 property has no prior-year history. Choose and document an appropriate comparison contract.",
       "shouldActivate": true,

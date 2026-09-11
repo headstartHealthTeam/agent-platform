@@ -74,6 +74,18 @@ those decisions.
   reach the first operational managed workflow.
 - GitHub owns current branches, pull requests, reviews, releases, and tags once a remote exists.
 
+### Interim Local Runtime Setup
+
+Installing or automatically updating skills does not provision their separate engines or workspace
+packages. For a supervised workflow that requires code, verify its declared runtime, source
+revision/version, local entrypoints, and documented smoke check before execution. Provision missing
+code through the owning package's local setup guide from a reviewed Agent Platform revision. Keep
+that guide reachable from the installed skill, without relying on creator-specific paths or chat
+history. A successful skill refresh does not rebuild an existing runtime: recheck compatibility and
+follow the same setup guide when it needs refreshing. Report skills installed, runtime ready, and
+provider access separately. This is the interim manual setup contract; coordinated automatic runtime
+installation and updates are not implemented.
+
 ## Structure
 
 ```text

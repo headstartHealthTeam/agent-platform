@@ -5,6 +5,12 @@ content-pillar/TAM snapshots. It produces auditable KPIs, period comparisons, ro
 reconciliation deltas, canonical outcomes, exact-host rankings, and content-pillar opportunity
 coverage.
 
+For local use, first follow the [interim workstation setup](../../docs/organic-reporting-runtime.md#interim-workstation-readiness).
+Installing or auto-updating the reporting skill does not install this engine. The supported setup
+builds a reviewed revision into a standalone directory containing compiled code and production
+dependencies, verifies it with synthetic evidence, and then uses local commands or explicit Node
+entrypoints. Recheck compatibility after skill updates; runtime refresh is currently manual.
+
 The engine deliberately stops before narrative interpretation. Agents own causal analysis,
 recommendations, repository-history interpretation, and stakeholder framing, and must classify
 claims as observed, inferred, or recommended.
