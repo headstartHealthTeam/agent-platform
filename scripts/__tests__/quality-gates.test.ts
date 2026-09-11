@@ -6,6 +6,12 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import {
+  GIT_COMMAND_TIMEOUT,
+  UNIT_TEST_TIMEOUT,
+  gitWorkflowTestTimeoutForPlatform,
+} from '../test-timeouts.js';
+
 const root = path.resolve(import.meta.dirname, '../..');
 const directories: string[] = [];
 interface PackageManifest {
@@ -38,20 +44,11 @@ afterEach(() => {
 
 describe('canonical typed lint quality gates', () => {
   it('keeps slow process-integration timeouts scoped away from ordinary unit tests', () => {
-    const vitestConfig = fs.readFileSync(path.join(root, 'vitest.config.ts'), 'utf8');
-    const skillsUpdateTests = fs.readFileSync(
-      path.join(root, 'scripts', '__tests__', 'update-skills.test.ts'),
-      'utf8'
-    );
-
-    expect(vitestConfig).toContain('testTimeout: 15_000');
-    expect(skillsUpdateTests).toContain(
-      "const gitWorkflowTestTimeout = process.platform === 'win32' ? 120_000 : 30_000"
-    );
-    expect(skillsUpdateTests).toContain('timeout: gitCommandTimeout');
-    expect(skillsUpdateTests).toContain(
-      "describe('skills update workflow', { timeout: gitWorkflowTestTimeout }"
-    );
+    expect(UNIT_TEST_TIMEOUT).toBe(15_000);
+    expect(GIT_COMMAND_TIMEOUT).toBe(30_000);
+    expect(gitWorkflowTestTimeoutForPlatform('win32')).toBe(120_000);
+    expect(gitWorkflowTestTimeoutForPlatform('linux')).toBe(30_000);
+    expect(gitWorkflowTestTimeoutForPlatform('darwin')).toBe(30_000);
   });
 
   it('keeps per-file caches out of every lint gate while retaining dependency-aware Turbo caching', () => {

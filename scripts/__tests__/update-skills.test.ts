@@ -6,6 +6,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { withoutRepositoryLocalGitEnvironment } from '../run-python-tests.js';
+import { GIT_COMMAND_TIMEOUT, gitWorkflowTestTimeoutForPlatform } from '../test-timeouts.js';
 import {
   inspectUpdate,
   isExpectedRemote,
@@ -16,15 +17,14 @@ import {
 } from '../update-skills.js';
 
 const temporaryDirectories: string[] = [];
-const gitCommandTimeout = 30_000;
-const gitWorkflowTestTimeout = process.platform === 'win32' ? 120_000 : 30_000;
+const gitWorkflowTestTimeout = gitWorkflowTestTimeoutForPlatform(process.platform);
 
 const runGit = (cwd: string, arguments_: string[]): string => {
   const result = spawnSync('git', arguments_, {
     cwd,
     encoding: 'utf8',
     env: withoutRepositoryLocalGitEnvironment(process.env),
-    timeout: gitCommandTimeout,
+    timeout: GIT_COMMAND_TIMEOUT,
   });
   if (result.error) {
     throw new Error(

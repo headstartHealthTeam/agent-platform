@@ -1,11 +1,13 @@
 import { defineConfig } from 'vitest/config';
 
+import { UNIT_TEST_TIMEOUT } from './scripts/test-timeouts.js';
+
 export default defineConfig({
   test: {
     environment: 'node',
     fileParallelism: false,
     include: ['scripts/__tests__/**/*.test.ts', 'skills/**/scripts/**/*.test.ts'],
-    testTimeout: 15_000,
+    testTimeout: UNIT_TEST_TIMEOUT,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],
