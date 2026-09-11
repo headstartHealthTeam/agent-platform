@@ -6,8 +6,6 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { testTimeoutForPlatform } from '../../vitest.config.js';
-
 const root = path.resolve(import.meta.dirname, '../..');
 const directories: string[] = [];
 interface PackageManifest {
@@ -39,10 +37,21 @@ afterEach(() => {
 });
 
 describe('canonical typed lint quality gates', () => {
-  it('retains a bounded Windows allowance for process-heavy repository tests', () => {
-    expect(testTimeoutForPlatform('win32')).toBe(120_000);
-    expect(testTimeoutForPlatform('linux')).toBe(15_000);
-    expect(testTimeoutForPlatform('darwin')).toBe(15_000);
+  it('keeps slow process-integration timeouts scoped away from ordinary unit tests', () => {
+    const vitestConfig = fs.readFileSync(path.join(root, 'vitest.config.ts'), 'utf8');
+    const skillsUpdateTests = fs.readFileSync(
+      path.join(root, 'scripts', '__tests__', 'update-skills.test.ts'),
+      'utf8'
+    );
+
+    expect(vitestConfig).toContain('testTimeout: 15_000');
+    expect(skillsUpdateTests).toContain(
+      "const gitWorkflowTestTimeout = process.platform === 'win32' ? 120_000 : 30_000"
+    );
+    expect(skillsUpdateTests).toContain('timeout: gitCommandTimeout');
+    expect(skillsUpdateTests).toContain(
+      "describe('skills update workflow', { timeout: gitWorkflowTestTimeout }"
+    );
   });
 
   it('keeps per-file caches out of every lint gate while retaining dependency-aware Turbo caching', () => {
