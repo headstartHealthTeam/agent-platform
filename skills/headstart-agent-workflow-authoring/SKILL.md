@@ -4,7 +4,7 @@ description: 'Classify, design, scaffold, or evolve a Headstart agent-assisted w
 compatibility: Requires read access to the Headstart Agent Platform repository for canonical implementation guidance.
 metadata:
   author: headstart-health
-  version: '0.4.0'
+  version: '0.5.0'
   headstart-requires: headstart-engineering-setup
 ---
 
@@ -20,7 +20,9 @@ while making only the context that must be shared, tested, or operated durable.
 2. Read the root `AGENTS.md`, `docs/README.md`, and `docs/workflow-authoring-guide.md`.
 3. Read `docs/codex-managed-workflow-architecture.md` only when independent managed execution is a
    plausible requirement.
-4. Read the standards and package READMEs linked for the selected shape before editing files.
+4. Inspect the current package inventory and public interfaces before proposing a new engine,
+   provider, adapter, transport, utility, or contract.
+5. Read the standards and package READMEs linked for the selected shape before editing files.
 
 If the canonical repository is unavailable, provide a provisional classification and name the
 missing source. Do not invent current manifests, package conventions, runtime capabilities, or
@@ -34,6 +36,10 @@ Determine:
 - trigger and whether work must continue while the creator is offline;
 - source systems, inputs, outputs, and durable identifiers;
 - deterministic, model-assisted, and human-only decisions;
+- existing Agent Platform packages that could satisfy or be safely extended for each deterministic
+  or provider capability;
+- ownership of every proposed code artifact, including whether it remains independently useful
+  without this workflow;
 - available native connectors, MCPs, APIs, browser operations, and CLIs;
 - read, proposal, and write side effects;
 - repeated and concurrent-run behavior, plus the system that enforces collision safety;
@@ -167,16 +173,31 @@ Extract a skill only when it adds independent reuse, a meaningful input/output c
 separate safety or evaluation boundary. Do not wrap existing tool descriptions or encode an
 application invariant in prompt prose.
 
+## Keep Workflow-Owned Artifacts In Agent Platform
+
+Keep the complete workflow implementation in this repository: workflow instructions, component
+skills, prompts, references, schemas, evaluations, fixtures, deterministic helpers, engines, and
+reusable provider or utility packages. Do not create or depend on a separate repository for code
+whose purpose exists only as part of the workflow.
+
+An owning application or service remains external only when it has an independent responsibility,
+such as durable business state, authorization, concurrency, idempotent writes, an end-user
+interface, or a permission-aware operation. Express it as a declared capability dependency rather
+than a second source of workflow logic. If ownership is unclear, keep the artifact in Agent Platform
+until an independent application boundary is established.
+
 ## Place Deterministic Support Correctly When Needed
 
 - Use `skills/<name>/scripts/` for a portable helper that supports only that skill.
-- Use the owning repository's normal source or script location for supervised helper code tied to
-  that repository's artifacts or domain contracts, then expose a bounded CLI or API to the skill.
-  Do not create a managed package merely to house that code.
+- Use a narrowly named Agent Platform package for a supervised workflow's larger engine when it
+  needs package-level typing and tests or is shared by skills or execution contexts. A package does
+  not imply managed execution.
 - Use `workflows/<id>/src/` for workflow-specific code when managed execution and deterministic
   support are both justified.
-- Use a narrowly named `packages/` workspace for runtime-neutral logic shared by workflows or the
-  runner.
+- Reuse an existing `packages/` contract when it fits. Extend it only with independently reusable
+  behavior that preserves existing consumers; otherwise keep the transform in the consuming engine.
+- Use a narrowly named `packages/` workspace for runtime-neutral logic shared by workflows, engines,
+  skills, execution contexts, or the runner.
 - Use an owning backend or service for triggers, durable state, permissions, business-system writes,
   and invariants.
 - Use a bounded MCP tool or CLI when multiple workflows need a stable permission-aware operation.

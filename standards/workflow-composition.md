@@ -16,6 +16,25 @@ managed execution can use guidance and existing tools alone or add focused teste
 Do not place runtime state or business-system authority inside a skill merely because the skill uses
 that system.
 
+## Repository Cohesion And Reuse
+
+Agent Platform owns the complete executable definition of an agent workflow. Its workflow skill or
+managed package, supporting skills, prompts, schemas, evaluations, fixtures, workflow-specific code,
+engines, and shared provider or utility packages belong in this repository. Do not split canonical
+workflow instructions and their deterministic implementation across Agent Platform and a separate
+workflow repository.
+
+Another application or service remains an external dependency only when it owns the capability
+independently of the workflow: durable business state, authorization, concurrency, idempotent writes,
+an end-user interface, deployment, or a permission-aware API. The workflow consumes that capability
+through a declared versioned boundary; the external repository is not a second workflow source.
+
+Before adding an engine, adapter, provider, transport, utility, or contract, inspect the existing
+package inventory and public interfaces. Reuse a compatible package. Extend one only when the added
+behavior remains independently reusable and preserves existing consumers. Create a new shared
+package only for a coherent cross-workflow or cross-engine contract; keep workflow-specific fields
+and transformations in the consuming engine.
+
 ## Choose The Right Artifact Boundary
 
 - A tool, API, MCP server, or CLI owns bounded authenticated operations and their permission model.

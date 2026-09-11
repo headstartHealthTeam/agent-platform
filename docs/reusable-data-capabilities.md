@@ -49,6 +49,30 @@ or the user's request.
 Future engines should reuse a provider package only when its normalized contract fits. Do not add a
 workflow-specific field to a shared adapter merely to avoid a small local transform.
 
+## Reuse-first design review
+
+Before creating an engine, adapter, provider, transport, utility, or contract:
+
+1. Read the current package inventory above and the candidate packages' public exports and READMEs.
+2. Separate external access and normalization from workflow-specific calculations, interpretation,
+   and human decisions.
+3. Reuse a package when its target, permission, request, response, completeness, and failure
+   contracts fit the new consumer.
+4. Extend a package only when the extension remains independently useful and does not weaken or
+   special-case the existing contract.
+5. Create a new shared package only for a coherent capability with credible reuse across workflows,
+   engines, skills, execution contexts, or the runner.
+6. Keep a small workflow-specific transform in the consuming engine instead of prematurely
+   generalizing it.
+
+Document the reuse, extend, or create decision in the implementation handoff or pull request. The
+requirement is to consider and use the platform's existing architecture, not to manufacture a shared
+abstraction for every possible future need.
+
+All workflow-owned implementation remains in Agent Platform. A separate application repository is
+appropriate only for independently owned application behavior such as durable state, authorization,
+idempotent writes, or a user interface; expose it to workflows through a bounded capability.
+
 ## Execution profiles and provider bindings
 
 Workflows name capabilities such as `google-search-console.performance.read` or
