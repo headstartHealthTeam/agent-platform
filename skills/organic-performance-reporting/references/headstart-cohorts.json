@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "organic-cohort-configuration/v1",
+  "version": "headstart-architecture-cohorts/v1",
+  "publicHostname": "headstart.health",
+  "evidence": [
+    "https://github.com/headstartHealthTeam/headstart-health-website/pull/327",
+    "https://github.com/headstartHealthTeam/headstart-health-website/tree/2d8be62a4f297e452bd73ab69483724cf29627ee/src/app"
+  ],
+  "routeRegistry": [
+    {
+      "id": "homepage",
+      "exactPaths": ["/"],
+      "prefixes": []
+    },
+    {
+      "id": "audience_hubs",
+      "exactPaths": ["/families", "/bcba", "/rbt", "/for-providers"],
+      "prefixes": []
+    },
+    {
+      "id": "resources",
+      "exactPaths": ["/resources"],
+      "prefixes": ["/resources"],
+      "lifecycle": {
+        "launchedOn": "2026-09-08",
+        "evidenceUrl": "https://github.com/headstartHealthTeam/headstart-health-website/pull/327",
+        "comparisonPolicy": "complete-post-launch-months"
+      }
+    },
+    {
+      "id": "organic_locations",
+      "exactPaths": ["/locations"],
+      "prefixes": ["/locations"],
+      "lifecycle": {
+        "launchedOn": "2026-09-08",
+        "evidenceUrl": "https://github.com/headstartHealthTeam/headstart-health-website/pull/327",
+        "comparisonPolicy": "complete-post-launch-months"
+      }
+    },
+    {
+      "id": "campaign_locations",
+      "exactPaths": [],
+      "prefixes": ["/location"]
+    },
+    {
+      "id": "legacy_locations",
+      "exactPaths": [],
+      "prefixes": ["/aba-therapy"]
+    },
+    {
+      "id": "editorial_legacy",
+      "exactPaths": ["/blogs"],
+      "prefixes": ["/blogs"]
+    },
+    {
+      "id": "conversion_utility",
+      "exactPaths": [
+        "/earnings-calculator",
+        "/contact-us",
+        "/aba-therapy-providers",
+        "/autism-therapy-providers",
+        "/get-started-with-autism-therapy",
+        "/interest-form-thank-you",
+        "/refer-client"
+      ],
+      "prefixes": ["/provider", "/intake"]
+    }
+  ],
+  "audienceRegistry": [
+    {
+      "id": "families",
+      "exactPaths": [
+        "/families",
+        "/get-started-with-autism-therapy",
+        "/aba-therapy-providers",
+        "/autism-therapy-providers"
+      ],
+      "prefixes": ["/location", "/locations", "/aba-therapy", "/resources/families"]
+    },
+    {
+      "id": "bcbas",
+      "exactPaths": ["/bcba", "/for-providers", "/earnings-calculator", "/interest-form-thank-you"],
+      "prefixes": ["/resources/bcbas"]
+    },
+    {
+      "id": "rbts",
+      "exactPaths": ["/rbt"],
+      "prefixes": ["/resources/rbts"]
+    }
+  ],
+  "unmatchedSegment": "other_unmapped",
+  "unmatchedAudience": "shared_unassigned"
+}

@@ -15,9 +15,15 @@ format.
 - Validate activation, behavior, portability, safety, and cross-platform scripts before release.
 - Publish reviewed, versioned skills and workflow artifacts that workstations and managed runtimes
   can consume through their separate installation paths.
+- Keep every workflow-owned artifact in this repository: instructions, skills, prompts, schemas,
+  evaluations, fixtures, workflow-specific code, engines, and reusable provider or utility packages.
 
 Do not use this repository for application code, project status, meeting notes, machine-local agent
 preferences, or copied repository instructions. Those remain in their owning systems.
+Do not create or depend on a separate repository for code whose only owner and consumer is an Agent
+Platform workflow. An external application or service may remain a declared dependency only when it
+owns behavior independently of the workflow, such as durable business state, authorization,
+idempotency, a user interface, or a permission-aware operation.
 
 ## Start Here
 
@@ -67,6 +73,18 @@ those decisions.
 - `docs/managed-runtime-completion-roadmap.md` owns the ordered implementation work required to
   reach the first operational managed workflow.
 - GitHub owns current branches, pull requests, reviews, releases, and tags once a remote exists.
+
+### Interim Local Runtime Setup
+
+Installing or automatically updating skills does not provision their separate engines or workspace
+packages. For a supervised workflow that requires code, verify its declared runtime, source
+revision/version, local entrypoints, and documented smoke check before execution. Provision missing
+code through the owning package's local setup guide from a reviewed Agent Platform revision. Keep
+that guide reachable from the installed skill, without relying on creator-specific paths or chat
+history. A successful skill refresh does not rebuild an existing runtime: recheck compatibility and
+follow the same setup guide when it needs refreshing. Report skills installed, runtime ready, and
+provider access separately. This is the interim manual setup contract; coordinated automatic runtime
+installation and updates are not implemented.
 
 ## Structure
 
@@ -125,6 +143,14 @@ prompt behavior between the two artifacts.
 - When one workflow supports both local and managed execution, keep shared guidance in canonical
   skills, make execution-context differences explicit, and test that both consumers honor the same
   behavioral contract. Do not maintain separate prompt forks.
+- Treat CI timeouts as test-design failures, not rerun-only flakes. Cross-platform tests that launch
+  processes, Git, package managers, or filesystem-heavy repository fixtures must bound each command
+  and declare a realistic test timeout derived from the slowest supported CI host. Keep the normal
+  unit-test timeout strict and never weaken assertions or remove a required operating-system lane.
+- Before adding an engine, adapter, transport, provider, utility, or contract, inspect the current
+  package inventory and public interfaces. Record a reuse, extend, or create decision; prefer an
+  existing compatible contract, and extend a shared package only when the added behavior remains
+  independently reusable rather than workflow-specific.
 - When a skill must be selected proactively from a broader task, do not assume installation alone
   guarantees invocation. Include a minimal persistent-routing reference, keep the detailed behavior
   in the skill, and verify fresh-session discovery from representative launch locations.
@@ -189,17 +215,19 @@ files, tools, approvals, and judgment into explicit managed-workflow policy.
 
 Before adding a shared package or changing the runner:
 
-1. confirm that the behavior is reused across workflows or belongs to the execution boundary rather
-   than one skill or workflow;
-2. define a narrow typed public contract and keep business-system authority in its owning service;
-3. add package-local build, lint, check-types, test, coverage, format, and clean commands when the
+1. inspect the current package inventory and public interfaces, then document why the change reuses,
+   extends, or creates a package;
+2. confirm that new or extended shared behavior is independently reusable or belongs to the
+   execution boundary rather than one skill or workflow;
+3. define a narrow typed public contract and keep business-system authority in its owning service;
+4. add package-local build, lint, check-types, test, coverage, format, and clean commands when the
    workspace contains TypeScript source;
-4. declare internal dependencies with `workspace:*` and external runtime dependencies in the
+5. declare internal dependencies with `workspace:*` and external runtime dependencies in the
    consuming package;
-5. add synthetic tests and package-level coverage thresholds;
-6. document purpose, boundaries, failure behavior, and links back to the documentation hub;
-7. update the Turborepo task graph only when a new repository-wide task class is required; and
-8. run `pnpm qa`.
+6. add synthetic tests and package-level coverage thresholds;
+7. document purpose, boundaries, failure behavior, and links back to the documentation hub;
+8. update the Turborepo task graph only when a new repository-wide task class is required; and
+9. run `pnpm qa`.
 
 ## Cross-Agent Compatibility
 

@@ -1,0 +1,18 @@
+export {
+  capabilityIdSchema,
+  capabilityPreflightResultSchema,
+  capabilityRequirementSchema,
+  executionProfileSchema,
+  preflightStatusSchema,
+  providerBindingSchema,
+  profileIdSchema,
+  revisionSchema,
+  sideEffectClassSchema,
+  targetAssertionSchema,
+  type CapabilityPreflightResult,
+  type CapabilityRequirement,
+  type ExecutionProfile,
+  type PreflightStatus,
+  type ProviderBinding,
+  type SideEffectClass,
+} from './contracts.js';

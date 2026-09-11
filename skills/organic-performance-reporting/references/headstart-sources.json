@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "organic-reporting-sources/v1",
+  "version": "headstart-organic-sources/v1.1",
+  "owner": "Headstart Growth / Mark Krasner",
+  "verifiedAt": "2026-09-10",
+  "approvedReport": {
+    "id": "1RvFPXWHu2Fq-QR9Mf83pwuDzNW0-NJOvsrRAtQcVXXE",
+    "title": "Headstart Organic Performance - July 2026",
+    "url": "https://docs.google.com/spreadsheets/d/1RvFPXWHu2Fq-QR9Mf83pwuDzNW0-NJOvsrRAtQcVXXE/edit"
+  },
+  "template": {
+    "id": "123-v30Wp3HVwqPEo1Y9SVG4_gwLv8EsQGPzuiWFo3m4",
+    "title": "Headstart Organic Performance — Clean Template v1 (validation)",
+    "url": "https://docs.google.com/spreadsheets/d/123-v30Wp3HVwqPEo1Y9SVG4_gwLv8EsQGPzuiWFo3m4/edit",
+    "version": "headstart-report/v1.1"
+  },
+  "strategy": {
+    "id": "15tz0HOSXzOLAY91jOCHoM03tFXMVOoHS8aMMKVy-drs",
+    "title": "SEO Content Pillar Guidance",
+    "url": "https://docs.google.com/document/d/15tz0HOSXzOLAY91jOCHoM03tFXMVOoHS8aMMKVy-drs/edit"
+  },
+  "tam": {
+    "id": "1fvn1t1XQn-6aAfKFWE5l3e5HvldU_5Uoa95iF__cbsM",
+    "title": "Headstart Patient Content Pillars & Journey Research",
+    "url": "https://docs.google.com/spreadsheets/d/1fvn1t1XQn-6aAfKFWE5l3e5HvldU_5Uoa95iF__cbsM/edit",
+    "range": "'Search TAM'!A15:T2100",
+    "approvedAt": "2026-07-24",
+    "approvalScope": "pillar-direction",
+    "coreValue": "Core",
+    "columns": {
+      "keyword": "Keyword",
+      "marketScope": "Market Scope",
+      "pillar": "Primary Content Pillar",
+      "searchVolume": "US Volume",
+      "serviceability": "Serviceability"
+    }
+  },
+  "historicalReports": [
+    {
+      "id": "1Oj6oVDT4lFygM62pPrV4IUsSkQVf7-hKBWoT89bIS_0",
+      "title": "Headstart Organic Performance - August 2026",
+      "url": "https://docs.google.com/spreadsheets/d/1Oj6oVDT4lFygM62pPrV4IUsSkQVf7-hKBWoT89bIS_0/edit"
+    }
+  ],
+  "approvalEvidence": [
+    {
+      "url": "https://grid-headstarthealth.enterprise.slack.com/archives/D0BFP29RE9K/p1785799376002099",
+      "meaning": "Ali's August 3 audience scorecard, hover-note, canonical-outcome, and driver-evidence direction."
+    },
+    {
+      "url": "https://grid-headstarthealth.enterprise.slack.com/archives/D0BFP29RE9K/p1785877523359139",
+      "meaning": "Ali's August 4 confirmation of Mark's proposed refinements; not an immutable revision approval."
+    },
+    {
+      "url": "https://grid-headstarthealth.enterprise.slack.com/archives/D0BFP295TPX/p1788980216274289",
+      "meaning": "Mark's September 9 confirmation that Ali approved the report template as the go-forward standard."
+    }
+  ]
+}

@@ -4,7 +4,7 @@ description: Establish Headstart engineering standards and repository agent inst
 compatibility: Requires repository read/write and command execution for implementation. The bundled Node/TypeScript example uses pnpm. Other languages and existing frameworks retain appropriate native tooling. Repository-host administration is optional and requires separate authority.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.2.0'
 ---
 
 # Headstart Engineering Setup
@@ -75,6 +75,10 @@ For new TypeScript engineering code:
 - Keep live API calls, credentials, and production access outside routine hooks and unit CI.
   Add synthetic contract/integration tests; use isolated databases or browser tests when warranted.
   Treat missing integration infrastructure as unverified coverage, not a silently passing test.
+- Classify child-process, Git, package-manager, and filesystem-heavy repository-fixture tests as
+  integration tests. Give spawned commands a finite timeout and give each such test an explicit
+  timeout derived from the slowest supported CI host. Keep the ordinary unit default strict; do not
+  drop Windows or repeatedly rerun timeout-only failures instead of repairing the test boundary.
 
 Use one deterministic QA entry point for formatting, lint, types, tests/coverage, and build. For
 behavior relying on a database, read [integration test selection](references/integration-testing.md)
@@ -122,7 +126,9 @@ For UI work, include real-browser inspection. Do not invent successful live veri
    formatting drift, and an untested source module. Confirm the corresponding gates fail for the
    intended reason. Never pollute the real repository or Git identity with fixture configuration.
 3. Verify hooks are installed and exercised, and inspect CI dependency wiring. Check the supported
-   operating-system paths. Local success does not establish unrun remote or cross-platform checks.
+   operating-system paths. For process-heavy integration tests, verify both command-level and test-
+   level timeouts against the slowest supported CI host. Local success does not establish unrun
+   remote or cross-platform checks.
 4. Check instruction links and documented commands. Have a fresh agent, when available, orient from
    the repository guide and complete a bounded synthetic change without the creator's transcript.
    Grade its actual changes and verification, not a claim that it read the guide. Record the host,

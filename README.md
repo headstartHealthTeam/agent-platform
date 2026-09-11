@@ -59,6 +59,12 @@ workstations. The updater installs and refreshes the reviewed contents of `skill
 Claude Code, and Cursor agents so a person can launch and supervise those capabilities from their
 normal working context.
 
+Workflows that require a separate engine also need that code provisioned locally. Skill installation
+and daily refresh do not install or rebuild those runtimes. Follow the setup guide linked from the
+workflow skill, verify its required version/revision and smoke check, then run it using its local
+commands or documented Node entrypoints. For organic reporting, use the
+[interim runtime setup](docs/organic-reporting-runtime.md#interim-workstation-readiness).
+
 The same canonical skills can also be pinned into an organization-managed run. Do not create a
 second cloud-specific copy of behavior that already belongs in a portable skill. A business
 workflow may offer both a local workflow skill for supervised use and a managed package under
@@ -74,15 +80,19 @@ contexts, not competing sources of truth.
 
 ## Monorepo Structure
 
-| Path                           | Responsibility                                                        |
-| ------------------------------ | --------------------------------------------------------------------- |
-| `skills/`                      | Portable capabilities and interactive workflow skills                 |
-| `workflows/`                   | Deployable workflow prompts, schemas, ownership, triggers, and policy |
-| `packages/workflow-contracts/` | Runtime-neutral workflow manifest and run schemas                     |
-| `packages/workflow-runtime/`   | Safe package loading, reference resolution, and schema validation     |
-| `apps/codex-runner/`           | Managed Codex SDK execution worker                                    |
-| `docs/`                        | Documentation map, workflow design guide, and managed architecture    |
-| `standards/`                   | Shared authoring, security, composition, testing, and release rules   |
+| Path                                   | Responsibility                                                        |
+| -------------------------------------- | --------------------------------------------------------------------- |
+| `skills/`                              | Portable capabilities and interactive workflow skills                 |
+| `workflows/`                           | Deployable workflow prompts, schemas, ownership, triggers, and policy |
+| `packages/capability-*/`               | Provider-neutral capability profiles and runtime preflight            |
+| `packages/google-*/`                   | Reusable bounded Google read adapters and normalization               |
+| `packages/semrush-data/`               | Reusable provider-neutral Semrush read contracts                      |
+| `packages/organic-performance-engine/` | Deterministic organic reporting evidence analysis                     |
+| `packages/workflow-contracts/`         | Runtime-neutral workflow manifest and run schemas                     |
+| `packages/workflow-runtime/`           | Safe package loading, reference resolution, and schema validation     |
+| `apps/codex-runner/`                   | Managed Codex SDK execution worker                                    |
+| `docs/`                                | Documentation map, workflow design guide, and managed architecture    |
+| `standards/`                           | Shared authoring, security, composition, testing, and release rules   |
 
 The pnpm workspace and Turborepo task graph follow the established `new-skunkworks` pattern:
 package-local build and test commands, dependency-aware builds, explicit cache outputs, and one root
@@ -115,6 +125,7 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 | [`design-headstart-public-website`](skills/design-headstart-public-website/SKILL.md)                 | Design and review Headstart's human, photographic public website                                     |
 | [`headstart-content-research`](skills/headstart-content-research/SKILL.md)                           | Build evidence-backed research packets from approved content opportunities                           |
 | [`headstart-content-engine`](skills/headstart-content-engine/SKILL.md)                               | Create and revise review-ready Headstart Resource proposals                                          |
+| [`organic-performance-reporting`](skills/organic-performance-reporting/SKILL.md)                     | Build evidence-backed organic reports from reproducible source snapshots and agent interpretation    |
 
 ## Managed Workflows
 
