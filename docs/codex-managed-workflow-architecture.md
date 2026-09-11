@@ -273,7 +273,7 @@ where the workspace supports it. It exchanges an upstream workload identity for 
 access. It is beta, requires workspace enablement, and requires the trusted host to refresh and
 protect the upstream token file from model-controlled commands. Do not assume an AWS role alone
 completes that setup. Otherwise select an approved
-[Enterprise Codex access token](https://learn.chatgpt.com/docs/enterprise/access-tokens) or
+[Codex access token](https://learn.chatgpt.com/docs/enterprise/access-tokens) or
 [API-key authentication](https://learn.chatgpt.com/docs/auth) under the organization's account and
 data-handling policy. Product availability and authorization must be verified at deployment time.
 
@@ -434,9 +434,11 @@ a time-boxed demonstration or contingency, not the intended Operational V1 archi
 
 Evaluate whether an existing operations service can satisfy the control-plane contract before
 building custom backend APIs and admin screens. Windmill is a concrete candidate because it
-documents running the actual Codex CLI or SDK in sandboxed jobs, alongside scheduling, approvals,
-and Git synchronization. Its built-in AI nodes are not the selected Codex runner, and its example
-scripts are not a replacement for this repository's typed executor and access controls.
+documents a Codex CLI subprocess example in sandboxed jobs, alongside scheduling, approvals,
+and Git synchronization. Its sandbox documentation also describes SDK invocation generically;
+compatibility with this repository's exact `@openai/codex-sdk` runner still requires the gate below.
+Its built-in AI nodes are not the selected Codex runner, and its example scripts are not a
+replacement for this repository's typed executor and access controls.
 [Codex jobs](https://www.windmill.dev/docs/core_concepts/ai_sandbox),
 [scheduling](https://www.windmill.dev/docs/core_concepts/scheduling),
 [approvals](https://www.windmill.dev/docs/flows/flow_approval),

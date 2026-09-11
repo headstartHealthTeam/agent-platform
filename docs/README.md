@@ -107,9 +107,10 @@ flowchart TD
 - [`packages/organic-performance-engine/`](../packages/organic-performance-engine/README.md) owns
   live organic evidence collection, deterministic analysis, and the August regression contract.
 - [`apps/codex-runner/`](../apps/codex-runner/README.md) owns the managed Codex execution boundary.
-- Headstart application repositories retain triggers, durable business state, permissions,
-  idempotent business writes, and application interfaces. The selected operational control plane
-  owns run scheduling/history and operator controls; custom backend/admin implementation is
+- Headstart application repositories retain business-system event sources and intake, durable
+  business state, permissions, idempotent business writes, and application interfaces. The selected
+  operational control plane owns managed-run scheduling, trigger validation and deduplication,
+  durable run history, dispatch, and operator controls; custom backend/admin implementation is
   conditional on the architecture's build-versus-buy decision.
 
 ## Standards

@@ -78,7 +78,7 @@ payloads before persistence.
 
 Codex authentication is supplied by the deployment, not stored in this package. Follow the
 [architecture's authentication contract](../../docs/codex-managed-workflow-architecture.md#authentication-and-capability-binding)
-for workload identity federation where enabled, or an approved Enterprise access token or API
+for workload identity federation where enabled, or an approved Codex access token or API
 credential. No method is provisioned by this package, and product entitlement must be verified.
 Headstart MCP, AWS, and external providers retain separate identities, permissions, and rotation.
 
