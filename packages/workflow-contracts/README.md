@@ -1,7 +1,7 @@
 # Managed Workflow Contracts
 
 This package is the canonical typed boundary between locally developed agent workflows, the
-managed Codex runner, the Headstart backend control plane, and durable run records. It deliberately
+managed Codex runner, the selected operational control plane, and durable run records. It deliberately
 contains no business workflow behavior and performs no external operations.
 
 ## Responsibilities
@@ -26,6 +26,12 @@ observability, and ownership.
 The schemas are intentionally runtime-neutral. The first executor is Codex, but the control plane
 can persist and reason about a run without depending on Codex-internal thread formats. Codex thread
 events may be recorded only when the manifest's data policy permits them.
+
+The proposed [Agents API integration](../../docs/agents-api-compatibility.md#code-level-impact-and-reuse-decisions)
+preserves these business contracts. Provider/session/turn correlation and effective execution
+configuration need a versioned receipt or profile extension; they are not current schema fields.
+Do not equate provider session status with workflow outcome or silently ignore an unsupported
+sandbox, network, tool or retention requirement.
 
 Read [`../../docs/codex-managed-workflow-architecture.md`](../../docs/codex-managed-workflow-architecture.md)
 for the end-to-end design and deployment progression.

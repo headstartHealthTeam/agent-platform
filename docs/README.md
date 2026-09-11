@@ -24,6 +24,10 @@ has not worked in this repository before.
 
 ## Choose The Smallest Durable Shape
 
+For hosted Codex planning, read the [Agents API compatibility assessment](agents-api-compatibility.md)
+alongside the architecture and roadmap. It maps current code to the proposed adapter, preserves the
+local-to-managed authoring path and separates documented capabilities from live acceptance questions.
+
 For a new code repository or an explicit quality-baseline adoption, use
 [`headstart-engineering-setup`](../skills/headstart-engineering-setup/SKILL.md). It includes working
 TypeScript configuration examples, repository-instruction design, conditional database integration
@@ -107,8 +111,11 @@ flowchart TD
 - [`packages/organic-performance-engine/`](../packages/organic-performance-engine/README.md) owns
   live organic evidence collection, deterministic analysis, and the August regression contract.
 - [`apps/codex-runner/`](../apps/codex-runner/README.md) owns the managed Codex execution boundary.
-- Headstart application repositories retain triggers, durable business state, permissions,
-  idempotent writes, and user interfaces.
+- Headstart application repositories retain business-system event sources and intake, durable
+  business state, permissions, idempotent business writes, and application interfaces. The selected
+  operational control plane owns managed-run scheduling, trigger validation and deduplication,
+  durable run history, dispatch, and operator controls; custom backend/admin implementation is
+  conditional on the architecture's build-versus-buy decision.
 
 ## Standards
 
@@ -137,7 +144,10 @@ flowchart TD
 - [Managed workflow architecture](codex-managed-workflow-architecture.md) owns the managed runtime
   design and current implementation boundary.
 - [Managed runtime completion roadmap](managed-runtime-completion-roadmap.md) owns the ordered work
-  required to reach the first operational managed workflow.
+  required to prove the shared runtime foundation with synthetic packages, including hosting and
+  operations decisions, then separately admit real business workflows.
+- [Agents API compatibility assessment](agents-api-compatibility.md) owns the dated API evidence,
+  code-level impact and remaining compatibility questions used by those decision gates.
 - Package READMEs own package-level behavior and limitations.
 - Standards own cross-cutting rules; they do not own volatile project or deployment status.
 

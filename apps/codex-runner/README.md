@@ -35,7 +35,8 @@ environment materialization controls are implemented and tested. The checked-in 
 is `draft` and cannot execute.
 
 The runner rejects draft workflows and all `propose-only` or `approved-write` workflows. This remains
-in place until a durable backend approval record and deterministic action executor are implemented.
+in place until durable approval and a deterministic action executor in the owning service are
+implemented. Selecting an operations service does not remove these restrictions.
 
 The SDK receives `approvalPolicy: never` because a queue worker has no interactive terminal user.
 That setting does not authorize external writes. Write authority is intentionally outside the Codex
@@ -75,13 +76,15 @@ payloads before persistence.
 
 ## Authentication
 
-Codex authentication is supplied by the deployment, not stored in this package. The expected
-managed options are a Codex access token from an approved ChatGPT Business or Enterprise workspace
-for trusted non-interactive automation, or an approved OpenAI Platform project credential when API
-key authentication fits the workflow. Headstart MCP and AWS identities are separate credentials
-with separate permissions and rotation.
+Codex authentication is supplied by the deployment, not stored in this package. Follow the
+[architecture's authentication contract](../../docs/codex-managed-workflow-architecture.md#authentication-and-capability-binding)
+for workload identity federation where enabled, or an approved Codex access token or API
+credential. No method is provisioned by this package, and product entitlement must be verified.
+Headstart MCP, AWS, and external providers retain separate identities, permissions, and rotation.
 
-Secrets must be injected at runtime through AWS identity and Secrets Manager. They must never be
+Declared secrets use the selected profile's approved delivery mechanism; AWS identity and Secrets
+Manager apply where AWS infrastructure is selected. Federated tokens require protected delivery
+and renewal by trusted infrastructure instead of a stored static key. Credentials must never be
 written into prompts, workflow manifests, source control, command arguments, or logs.
 
 ## Workspace And Skill Materialization
@@ -112,6 +115,20 @@ cannot exercise.
 Live Codex, MCP, or AWS validation belongs in an explicit integration lane with separately approved
 credentials and data policy. It must never run in Git hooks or ordinary pull-request CI.
 
+## Proposed Agents API Adapter
+
+The current implementation remains SDK-based. The
+[compatibility assessment](../../docs/agents-api-compatibility.md#code-level-impact-and-reuse-decisions)
+identifies changes needed for a hosted adapter: prepared environment inputs, normalized events and
+usage, durable session/turn correlation, explicit remote cancellation and recovery through saved
+items. Preserve `ManagedWorkflowRunner` input, lifecycle, source and output checks on trusted
+compute. API session idleness or a completed subagent cannot certify the business run.
+
+Agents API requires its own Platform API credential outside the sandbox; SDK workspace tokens or
+federation are not established substitutes. Hosted permissions, managed provider bindings and
+retention need separate acceptance. The documentation proposes this adapter; no API calls,
+deployment, new authentication or activation modes are implemented by this package.
+
 ## Further Reading
 
 Use the [documentation hub](../../docs/README.md) to navigate the complete repository and the
@@ -120,6 +137,11 @@ actually required.
 
 Read [`../../docs/codex-managed-workflow-architecture.md`](../../docs/codex-managed-workflow-architecture.md)
 for the complete repository, control-plane, runtime, security, deployment, and promotion model.
+
+The [completion roadmap](../../docs/managed-runtime-completion-roadmap.md) separates hosting
+compatibility and operations-service selection from shared platform acceptance and later business
+workflow adoption. The same runner contract applies whether an adopted service or custom Headstart
+control plane dispatches it; neither integration is implemented by this package today.
 
 The runner consumes the contracts from
 [`@headstart-health/workflow-contracts`](../../packages/workflow-contracts/README.md) and validated
@@ -130,4 +152,5 @@ Official OpenAI references:
 
 - [Codex SDK](https://learn.chatgpt.com/docs/codex-sdk)
 - [Codex access tokens](https://learn.chatgpt.com/docs/enterprise/access-tokens)
+- [Codex workload identity federation](https://learn.chatgpt.com/docs/enterprise/workload-identity)
 - [Non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode)

@@ -178,6 +178,15 @@ separate copies of its reasoning or procedures.
 The self-updater serves the common workstation skill path. It is deliberately not a managed
 workflow installer or deployment system.
 
+Hosted Codex can use a different execution adapter while retaining this authoring model. The
+[Agents API assessment](agents-api-compatibility.md) maps existing skills, workflow contracts,
+capability profiles and helper packages to that path. API agents, uploaded skills and environment
+templates are generated deployment artifacts, not a second canonical workflow definition. Before
+promotion, identify every implicit workstation dependency, bind an approved managed equivalent and
+validate the same outcome and access policy. Do not copy personal task history, auth caches or
+installed connectors, or rewrite deterministic engine rules as prompt instructions. Unsupported
+hosted policies block that deployment profile; they do not justify weakening the workflow contract.
+
 ## Choose A Workflow Shape
 
 ### One-Off Agent Task
@@ -297,21 +306,24 @@ person to complete the write in the owning system.
 
 ## Decision Table
 
-| Requirement                                | One-off task | Reusable or workflow skill | Deterministic helper | Managed workflow | Owning application       |
-| ------------------------------------------ | ------------ | -------------------------- | -------------------- | ---------------- | ------------------------ |
-| Person starts and supervises every run     | Yes          | Yes                        | Yes                  | Optional         | Optional                 |
-| Reusable reasoning or procedure            | No           | Yes                        | Optional             | Usually          | Optional                 |
-| Stable parsing, calculation, or validation | Optional     | Optional                   | Yes                  | Optional         | Often                    |
-| Runs while creator is offline              | No           | No                         | No                   | Yes              | Yes                      |
-| Schedule or event trigger                  | No           | No                         | No                   | Yes              | Often supplies trigger   |
-| Durable retries and run history            | No           | No                         | No                   | Yes              | Owns state/control plane |
-| Business-system write authority            | No           | No                         | No                   | Proposal only    | Yes                      |
-| End-user operations UI                     | No           | No                         | No                   | No               | Yes                      |
+| Requirement                                | One-off task | Reusable or workflow skill | Deterministic helper | Managed workflow | Owning application           |
+| ------------------------------------------ | ------------ | -------------------------- | -------------------- | ---------------- | ---------------------------- |
+| Person starts and supervises every run     | Yes          | Yes                        | Yes                  | Optional         | Optional                     |
+| Reusable reasoning or procedure            | No           | Yes                        | Optional             | Usually          | Optional                     |
+| Stable parsing, calculation, or validation | Optional     | Optional                   | Yes                  | Optional         | Often                        |
+| Runs while creator is offline              | No           | No                         | No                   | Yes              | Yes                          |
+| Schedule or event trigger                  | No           | No                         | No                   | Yes              | Often supplies trigger       |
+| Durable retries and run history            | No           | No                         | No                   | Yes              | Only if custom control plane |
+| Business-system write authority            | No           | No                         | No                   | Proposal only    | Yes                          |
+| End-user operations UI                     | No           | No                         | No                   | No               | When custom UI is needed     |
 
 Use several columns when the workflow spans elements. For example, a cloud workflow uses a managed
 package and runner, may use portable skills, and adds deterministic packages or backend
 control-plane code only when their separate responsibilities are required. The table chooses
-ownership; it does not require one artifact to do everything.
+ownership; it does not require one artifact to do everything. The
+[managed architecture](codex-managed-workflow-architecture.md#operations-build-versus-buy-gate)
+selects an adopted operations service or custom control plane for scheduling, run state, and
+operator controls. Those shared capabilities do not automatically require new backend/admin code.
 
 ## Choose Where Deterministic Code Belongs
 
