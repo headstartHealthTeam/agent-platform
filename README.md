@@ -104,6 +104,7 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 | [`headstart-pr-review`](skills/headstart-pr-review/SKILL.md)                                         | Complete Headstart review workflow that composes the two review skills                               |
 | [`headstart-dev-to-main-pr`](skills/headstart-dev-to-main-pr/SKILL.md)                               | Explicit-only production promotion inventory and PR workflow                                         |
 | [`headstart-release-pr-review`](skills/headstart-release-pr-review/SKILL.md)                         | Production promotion review gate with critical-risk triage                                           |
+| [`headstart-stacked-delivery`](skills/headstart-stacked-delivery/SKILL.md)                           | Continue independent or dependent delivery work safely while earlier PRs await review                |
 | [`headstart-skill-authoring`](skills/headstart-skill-authoring/SKILL.md)                             | Authoring and evaluation rules for shared Headstart skills                                           |
 | [`headstart-initiative-shaping`](skills/headstart-initiative-shaping/SKILL.md)                       | Evidence-backed scope, decisions, risks, and stakeholder questions                                   |
 | [`headstart-workflow-walkthrough-analysis`](skills/headstart-workflow-walkthrough-analysis/SKILL.md) | Cited current-state analysis from process demonstrations                                             |
@@ -199,6 +200,14 @@ edits and newly added skills. It records the exact installed commit and removes 
 that its prior receipt identifies as repository-managed. Unrelated local skills remain untouched.
 If the preview reports existing unreceipted skill names, confirm that the user intends to replace
 those same-name copies before applying.
+
+Skill installation and proactive routing are separate. After installation, a setup agent should
+inspect the user's actual instruction hierarchy and normal launch locations, then offer any minimal
+persistent routing blocks supplied by installed skills. Add them only with user approval at the
+narrowest durable scope that covers the intended Headstart work, and verify discovery from
+representative fresh repository and worktree sessions. Do not copy complete skill bodies into
+always-loaded instructions. The `headstart-stacked-delivery` skill provides this guidance in
+[`references/persistent-routing.md`](skills/headstart-stacked-delivery/references/persistent-routing.md).
 
 The lower-level installer is available only for intentionally selected, project-scoped, or
 unmanaged copies:

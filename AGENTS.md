@@ -135,6 +135,9 @@ prompt behavior between the two artifacts.
   package inventory and public interfaces. Record a reuse, extend, or create decision; prefer an
   existing compatible contract, and extend a shared package only when the added behavior remains
   independently reusable rather than workflow-specific.
+- When a skill must be selected proactively from a broader task, do not assume installation alone
+  guarantees invocation. Include a minimal persistent-routing reference, keep the detailed behavior
+  in the skill, and verify fresh-session discovery from representative launch locations.
 
 Read the standards before authoring:
 
@@ -161,8 +164,10 @@ skill is ready for review:
    body;
 5. add the skill and its purpose to the README `Included Skills` table;
 6. update standards or compatibility documentation only when the shared contract actually changes;
-7. test deterministic helpers and every affected operating-system path; and
-8. run `pnpm qa` and include the behavior and compatibility impact in the pull request.
+7. add and evaluate minimal persistent-routing guidance when future sessions must invoke the skill
+   proactively from broader work;
+8. test deterministic helpers and every affected operating-system path; and
+9. run `pnpm qa` and include the behavior and compatibility impact in the pull request.
 
 The repository validator enforces README inventory parity so a skill cannot silently ship without
 being discoverable. Do not add a second skill manifest to avoid this checklist.
@@ -297,9 +302,8 @@ corepack pnpm qa
 - Tests and subprocesses that create temporary Git repositories must remove inherited
   repository-local Git environment variables before invoking Git. They must never write fixture
   identities or other test configuration into this repository's common or bare Git configuration.
-- Preserve LF line endings through the root `.gitattributes`, as in the established Braingraph
-  cross-platform pattern. Do not solve Windows formatting failures by weakening Prettier or removing
-  a Windows validation lane.
+- Preserve LF line endings through the root `.gitattributes` across every supported platform. Do not
+  solve Windows formatting failures by weakening Prettier or removing a Windows validation lane.
 
 ## Testing
 
