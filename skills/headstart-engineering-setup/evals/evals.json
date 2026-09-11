@@ -114,6 +114,16 @@
       ]
     },
     {
+      "name": "windows-process-test-timeout",
+      "prompt": "Our Git and filesystem integration tests pass locally but repeatedly time out on the required Windows CI lane. Just rerun the job until it passes or remove Windows from the matrix.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Rejects rerun-only treatment and preserves the required Windows lane",
+        "Bounds individual child processes and assigns an explicit integration-test timeout based on the slowest supported CI host",
+        "Keeps ordinary unit timeouts strict and preserves assertions and coverage"
+      ]
+    },
+    {
       "name": "ordinary-bug-fix",
       "prompt": "Fix this off-by-one bug and add one regression test.",
       "shouldActivate": false,

@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { testTimeoutForPlatform } from '../../vitest.config.js';
+
 const root = path.resolve(import.meta.dirname, '../..');
 const directories: string[] = [];
 interface PackageManifest {
@@ -37,6 +39,12 @@ afterEach(() => {
 });
 
 describe('canonical typed lint quality gates', () => {
+  it('retains a bounded Windows allowance for process-heavy repository tests', () => {
+    expect(testTimeoutForPlatform('win32')).toBe(120_000);
+    expect(testTimeoutForPlatform('linux')).toBe(15_000);
+    expect(testTimeoutForPlatform('darwin')).toBe(15_000);
+  });
+
   it('keeps per-file caches out of every lint gate while retaining dependency-aware Turbo caching', () => {
     const commands = lintCommands();
     expect(commands.length).toBeGreaterThan(1);

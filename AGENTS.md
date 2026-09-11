@@ -131,6 +131,10 @@ prompt behavior between the two artifacts.
 - When one workflow supports both local and managed execution, keep shared guidance in canonical
   skills, make execution-context differences explicit, and test that both consumers honor the same
   behavioral contract. Do not maintain separate prompt forks.
+- Treat CI timeouts as test-design failures, not rerun-only flakes. Cross-platform tests that launch
+  processes, Git, package managers, or filesystem-heavy repository fixtures must bound each command
+  and declare a realistic test timeout derived from the slowest supported CI host. Keep the normal
+  unit-test timeout strict and never weaken assertions or remove a required operating-system lane.
 - Before adding an engine, adapter, transport, provider, utility, or contract, inspect the current
   package inventory and public interfaces. Record a reuse, extend, or create decision; prefer an
   existing compatible contract, and extend a shared package only when the added behavior remains

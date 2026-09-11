@@ -16,13 +16,21 @@ import {
 } from '../update-skills.js';
 
 const temporaryDirectories: string[] = [];
+const gitCommandTimeout = 30_000;
+const gitWorkflowTestTimeout = process.platform === 'win32' ? 120_000 : 30_000;
 
 const runGit = (cwd: string, arguments_: string[]): string => {
   const result = spawnSync('git', arguments_, {
     cwd,
     encoding: 'utf8',
     env: withoutRepositoryLocalGitEnvironment(process.env),
+    timeout: gitCommandTimeout,
   });
+  if (result.error) {
+    throw new Error(
+      `Fixture Git command failed: git ${arguments_.join(' ')}\n${result.error.message}`
+    );
+  }
   if (result.status !== 0) {
     throw new Error(
       `Fixture Git command failed: git ${arguments_.join(' ')}\n${result.stderr.trim()}`
@@ -228,7 +236,7 @@ describe('update plan output', () => {
   });
 });
 
-describe('skills update workflow', () => {
+describe('skills update workflow', { timeout: gitWorkflowTestTimeout }, () => {
   it('previews and applies a fast-forward update without touching unrelated skills', () => {
     const fixture = makeGitFixture();
     writeSkill(fixture.seed, '2');
