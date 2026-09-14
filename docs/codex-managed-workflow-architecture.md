@@ -160,8 +160,8 @@ difference must be expressed as a reviewed input, policy, adapter, or separate w
 ```text
 Salesforce event, EventBridge schedule, or manual request
   -> control plane validates trigger and creates durable run record
-  -> control plane dispatches immutable request through the selected runtime adapter
   -> trusted preparation validates exact source, input schema, policy and provider bindings
+  -> control plane dispatches the validated prepared execution to the selected runtime adapter
   -> execution adapter prepares a hosted environment or isolated local/self-hosted workspace
   -> adapter launches Codex and persists provider session/turn or thread correlation
   -> Codex executes prompt using allowed skills, MCPs, CLIs, and any declared adapters
@@ -171,6 +171,10 @@ Salesforce event, EventBridge schedule, or manual request
   -> if review or operations are required, the selected operator surface requests a decision
   -> if an approved external action is required, a deterministic backend executor performs it
 ```
+
+Here, dispatch means handing validated prepared execution to the selected runtime adapter. Trusted
+preparation must complete before that handoff, before provider environment creation, and before
+Codex launch; a validation failure prevents all three.
 
 The destination, human-review surface, and action executor are conditional branches. A read-only
 managed workflow may finish after persisted output is delivered through an existing approved
