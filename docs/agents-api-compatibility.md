@@ -79,10 +79,11 @@ infer multi-tenant isolation from one successful workflow or from subagents shar
 
 Use the Headstart Health OpenAI Platform organization. Start with one development project for
 synthetic compatibility tests and workflow experiments. Create a separate production project when
-a reviewed workflow is ready for live operation; add staging only when release testing needs it.
+a reviewed workflow is ready for live operation. When release testing needs staging, create a
+separate staging project with its own credentials and resources.
 Each project may host multiple workflows. Create additional projects when team access, data-policy
 requirements or operational isolation justify a separate boundary, rather than one per workflow.
-Keep development and production credentials and resources separate, and promote reviewed source
+Keep development, staging (when enabled), and production credentials and resources separate, and promote reviewed source
 and configuration through the same deployment process. This follows OpenAI's
 [project separation guidance](https://developers.openai.com/api/docs/guides/rbac#best-practices).
 
