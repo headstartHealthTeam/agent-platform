@@ -75,6 +75,23 @@ and cancellation remain scoped to the correct workflow/run. Test at least two sy
 identities with distinct profiles, concurrent execution and denied cross-workflow access. Do not
 infer multi-tenant isolation from one successful workflow or from subagents sharing an environment.
 
+### Initial OpenAI Project And Session Layout
+
+Use the Headstart Health OpenAI Platform organization. Start with one development project for
+synthetic compatibility tests and workflow experiments. Create a separate production project when
+a reviewed workflow is ready for live operation; add staging only when release testing needs it.
+Each project may host multiple workflows. Create additional projects when team access, data-policy
+requirements or operational isolation justify a separate boundary, rather than one per workflow.
+Keep development and production credentials and resources separate, and promote reviewed source
+and configuration through the same deployment process. This follows OpenAI's
+[project separation guidance](https://developers.openai.com/api/docs/guides/rbac#best-practices).
+
+Start a fresh Agents API session for each independent workflow run. Continue or recover the recorded
+session for follow-up work on that same run when safe; a retry must reconcile an uncertain launch
+before creating another session. Reuse reviewed agent configuration and environment templates
+across runs while keeping their conversations, execution state and outputs separate. These are
+setup defaults; this document does not create projects, credentials or sessions.
+
 ## Verified Capabilities And Consequences
 
 ### Preparation And Versioning
