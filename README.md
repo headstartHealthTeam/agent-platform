@@ -17,8 +17,12 @@ repository separates these composable concerns:
 5. managed runtimes that schedule work and own durable execution state.
 
 The repository owns layers two through four and the Codex worker code within layer five. The
-Headstart backend and admin panel retain control-plane state and user interfaces. This repository
-does not replace application code, MCP servers, business systems of record, or project tracking.
+selected operational control plane owns managed-run state and operator controls; custom backend
+APIs/persistence and admin-panel tooling are conditional on the
+[operations decision](docs/codex-managed-workflow-architecture.md). Headstart application services
+retain business state, authorization, event intake, approved business writes, and application-specific
+interfaces. This repository does not replace application code, MCP servers, business systems of
+record, or project tracking.
 These are not sequential maturity levels. Many final team workflows should remain a reviewed skill
 or prompt using existing MCPs, APIs, connectors, browser control, or CLIs.
 
@@ -145,9 +149,13 @@ control plane. Use the
 [workflow authoring guide](docs/workflow-authoring-guide.md) to decide whether one is needed, then
 read the [managed workflow architecture](docs/codex-managed-workflow-architecture.md) before adding
 or promoting it. The [managed runtime completion roadmap](docs/managed-runtime-completion-roadmap.md)
-defines the remaining implementation slices and names isolated workflow materialization as the
-immediate next step. A bounded compatibility gate then evaluates AgentCore Runtime as the preferred
-host for the existing Codex SDK runner, with ECS/Fargate retained as the fallback. The current
+defines the workflow-independent path through shared preparation, execution compatibility and the
+remaining operations decision. Evaluate Agents API with OpenAI-hosted execution first; self-hosted
+API execution or SDK hosting is conditional on a verified unmet requirement. The
+[compatibility assessment](docs/agents-api-compatibility.md) explains how the existing local workflow
+packages are reused and where adapters, policy enforcement and recovery need work. A thin integration
+or an operations service such as Windmill may cover the remaining controls. No provider is deployed
+by this design. Synthetic platform acceptance is separate from later business-workflow adoption. The current
 implementation is intentionally draft-only: repository validation blocks active workflows until
 isolated workspace, skill, tool, and environment materialization is implemented and tested.
 
@@ -318,7 +326,10 @@ Read the [repository guide](AGENTS.md), [documentation hub](docs/README.md), and
 `main` contains stable reviewed source. Releases use semantic tags. Skill and workflow changes must
 identify their behavioral and compatibility impact, pass the repository QA command, and include
 release notes. Cloud or scheduled runtimes never follow an unreviewed branch automatically and must
-record the exact repository commit, workflow version, skill revision, and runner image digest.
+record exact source, workflow and skill revisions, execution artifact/configuration provenance and
+an image digest where the deployment controls an image. Follow the
+[versioning contract](docs/codex-managed-workflow-architecture.md#skills-and-version-pinning) for
+hosted-provider limits and execution receipts.
 
 ## Security
 

@@ -86,6 +86,13 @@ global skill directory.
 
 ## Private configuration
 
+The standalone artifact is also an input to future managed execution, subject to the
+[Agents API compatibility assessment](agents-api-compatibility.md#workflow-specific-implications).
+Its existing receipt and deterministic engine remain useful. Hosted adoption still needs a verified
+Linux/runtime dependency bundle, separately supplied canonical skills, approved Google and Semrush
+bindings, enforceable permissions and durable artifact handling. This guide's workstation ADC and
+MCP setup must not be treated as a ready managed profile or copied from a person's machine.
+
 The [example collection plan](../packages/organic-performance-engine/examples/collection-plan.example.json)
 is schema-validated in tests and contains synthetic targets. Replace its targets and reporting
 definitions with the approved site's contract. Never use fixture counts as collection inputs.

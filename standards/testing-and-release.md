@@ -106,7 +106,10 @@ prose-only checks do not substitute for behavior validation.
 
 `main` contains stable reviewed source. Semantic tags create installable skill releases. Individual
 workstations may inspect and adopt a newer release; managed runtimes pin an exact tag or commit,
-workflow version, and immutable runner image and change only through an intentional deployment.
+workflow version and execution artifact/configuration provenance, with an immutable image digest
+where the deployment controls an image. Change these only through an intentional deployment. Follow
+the architecture's [versioning contract](../docs/codex-managed-workflow-architecture.md#skills-and-version-pinning)
+for hosted-provider limits and behavioral conformance.
 
 Rollback means reinstalling or redeploying a known-good tag. Do not repair an installed copy and
 leave the canonical source unchanged.
