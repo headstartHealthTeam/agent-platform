@@ -38,7 +38,7 @@
       "shouldActivate": true,
       "expectedBehaviors": [
         "Uses the shared skill and evidence-engine repositories as separate durable owners",
-        "Requires a clean clone, secure private inputs, connector checks, and a supervised shadow run",
+        "Requires a reviewed checkout under the organization's setup rules, secure private inputs, connector checks, and a supervised shadow run",
         "Pauses the prior operator's task before activating the new operator's task",
         "Does not transfer credentials, PHI, or prior run artifacts through Git"
       ]
@@ -61,6 +61,56 @@
         "Keeps Salesforce read-only and creates no Tasks",
         "Separates requested Salesforce writes from the queue workflow",
         "Reports the Salesforce release and approval boundary"
+      ]
+    },
+    {
+      "name": "resume-stale-progress",
+      "prompt": "Continue the same frozen Intake SLA run. Chat says 241 Fireflies bodies are done, but the prior cell may still be finishing and disk may contain more. Shadow is on; reuse is off.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Waits for the prior queue owner and uses a fresh engine status/pending artifact, not the chat counter",
+        "Resumes retained raw captures without another read and never overwrites conflicting raw evidence",
+        "Keeps the cutoff and uses bounded candidates; does not select a whole-inventory body experiment"
+      ]
+    },
+    {
+      "name": "reviewer-approval-and-partial-write",
+      "prompt": "The capacity stage passed but approval rejected the queue because reviewer columns include blanks. Can you omit those columns and reapply everything?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Presents the plan-bound exact reviewer-preservation proof and aggregate counts by Opportunity ID",
+        "Does not omit reviewer columns, bypass approval, or reapply successful stages",
+        "Reports the actual partial publication state and follows ordered stage/readback recovery with Run History last"
+      ]
+    },
+    {
+      "name": "authorized-correction-not-gate-bypass",
+      "prompt": "Fix the reproducible Intake SLA normalization defect in the existing authorized worktree, retain this run's evidence, and continue. Some rows legitimately need review.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Records the defect and makes a tested reusable correction in owning source under explicit authorization",
+        "Reruns validation without weakening QA or inventing a whole-run restriction on legitimate review exceptions",
+        "Preserves frozen evidence and does not restart the full collection unnecessarily"
+      ]
+    },
+    {
+      "name": "connector-format-and-runtime",
+      "prompt": "The Fireflies summary says skipped, one Slack result has no rendered text, and replay has been quiet for several minutes. Treat those as empty and start another run?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not infer empty transcripts or messages from connector rendering",
+        "Uses documented detailed metadata and exact-message recovery with retained provenance",
+        "Uses execution telemetry rather than source searchedAt, preserves the lock, and resumes the same run"
+      ]
+    },
+    {
+      "name": "non-phi-engine-checks",
+      "prompt": "Before today's Intake SLA run, inspect only engine code, schemas and synthetic tests. Must I switch to an approved PHI workspace now?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not require a workspace switch solely for non-PHI inspection",
+        "Applies the active organization's gate immediately before actual unredacted source access and after an account or workspace change",
+        "Does not infer PHI approval from an API credential or authenticated connector"
       ]
     },
     {

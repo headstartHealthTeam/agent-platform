@@ -4,7 +4,7 @@ description: Run, monitor, or hand off the recurring Headstart Intake SLA Review
 compatibility: Requires a reviewed checkout of the private Intake SLA Evidence Engine, authorized Headstart source access, private run storage, and an approved Intake SLA Review Queue. Salesforce remains read-only; Google Sheet publication requires explicit operating authority and every documented gate.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.2.0'
 ---
 
 # Headstart Intake SLA Review
@@ -14,6 +14,9 @@ pass by default. The skill owns the operator sequence, safety boundaries, handof
 contract. The private
 [Intake SLA Evidence Engine](https://github.com/headstartHealthTeam/intake-sla-evidence-engine)
 owns the deterministic code, detailed runbook, schedule template, and current operational status.
+This is the current supervised runtime boundary, not authorization to create another engine or
+activate a managed migration. Verify the skill and engine revisions independently; installing a
+skill does not install or rebuild its runtime.
 
 This skill is instructional capability, not authorization. Authentication does not authorize a
 Production write, a Salesforce change, a new publication target, or a second active schedule.
@@ -72,7 +75,10 @@ outcomes.
 
 1. **Prove the operating context.** Record the engine repository revision, operator, scheduled slot
    or manual trigger, timezone, private run ID, publication target, and authorized write scope.
-   Positively identify Salesforce as Production and keep it read-only.
+   Apply the active organization's PHI workspace gate immediately before unredacted source access,
+   and again after an account or workspace change. Non-sensitive code, schema, synthetic tests, and
+   aggregate checks do not themselves require switching workspaces. Positively identify Salesforce
+   as Production and keep it read-only.
 2. **Prevent overlap.** Confirm that only one operator-owned schedule is active for this workflow.
    Treat the scheduled slot plus private run ID as the unit of work. If another run may be active or
    reviewer state may have changed since capture, do not publish; stop or continue in preparation-only
@@ -85,7 +91,11 @@ outcomes.
 5. **Collect the full cohort and required evidence.** Retrieve all eligible active breached Intake
    SLAs and the on-hold cohort according to the current runbook. Resolve structured Salesforce gates
    before conversational evidence. Execute complete portal Authorization Request, Fireflies, Slack,
-   and other stage-required searches; record every planned source outcome.
+   and other stage-required searches; record every planned source outcome. Freeze the source cutoff
+   and resume valid current-run evidence from the engine's on-disk checkpoints. Use
+   [Operational Recovery](references/operational-recovery.md) when resuming, mapping a connector
+   response, or investigating a slow or failed step. Reuse being off does not authorize a
+   whole-inventory Fireflies body experiment.
 6. **Build and validate deterministically.** Use the reviewed engine's documented commands to build
    the queue, validate source coverage and quality, and prepare publication. Keep snapshots,
    transcripts, identity registries, workbooks, reviewer-state files, and payloads in the private run
@@ -97,14 +107,18 @@ outcomes.
    drift block publication.
 8. **Recheck before the write.** Immediately before publication, confirm the same approved Sheet,
    the same expected run marker, unchanged reviewer state, and no competing run. Preparing a Google
-   batch request is not publication.
+   batch request is not publication. Present the engine's plan-bound reviewer-preservation receipt
+   and aggregate counts with the exact prepared write; never omit reviewer columns merely to avoid
+   an approval concern when rows may reorder.
 9. **Publish only within the approved boundary.** Apply only the prepared payload to the approved
    Intake SLA Review Queue when the current invocation has explicit manual or standing scheduled
    publication authority and every gate passed. Otherwise stop after preparation and request the
    named approver's decision.
 10. **Read back the live result.** Verify the run ID, refresh timestamp, expected and processed row
     counts, one-row-per-Opportunity invariant, reviewer fields, Generation Ledger, and Run History.
-    Mark the run published only after successful live readback.
+    Apply bounded stages in order, verify each stage before advancing, and publish Run History
+    last. Verify all prepared value and presentation assertions and the final samples required by
+    the engine. Mark the run published only after successful live readback.
 
 ## Evidence And Failure Rules
 
@@ -117,7 +131,10 @@ outcomes.
 - Block only rows that depend on a failed stage-required source, but never publish an incomplete
   cohort when the runbook requires whole-queue parity.
 - Keep raw client, family, transcript, message, email, and task content out of the completion report.
-- Leave the current live Sheet in place whenever a publication or readback check fails.
+- Before publication, a failed gate leaves the live Sheet unchanged. After any write, a failure
+  stops further stages: retain the exact acknowledgments and readbacks, report the partial state,
+  and use only the engine's documented recovery. Do not claim the old Sheet is untouched or blindly
+  retry an uncertain append.
 
 ## Consequential Boundaries
 
@@ -127,6 +144,10 @@ outcomes.
 - Do not retrieve Aloha directly when the current runbook excludes it.
 - Do not change code, configuration, fingerprints, thresholds, schedules, or source scope merely to
   make a blocked run pass.
+- A publication gate does not prohibit an explicitly authorized, tested engine correction. Log the
+  defect, fix it in its owning source worktree, and rerun affected and full validation without
+  weakening evidence rules. Preserve legitimate row-level review/exception states under the current
+  runbook; do not invent a whole-run blocker or restart solely because a recoverable step failed.
 - Route any Salesforce code or metadata change to the normal release workflow. It is incomplete
   until the exact intended scope is validated and read back in Partial and represented by a matching
   Git branch, commit, and pull request. Production promotion requires separate explicit approval.

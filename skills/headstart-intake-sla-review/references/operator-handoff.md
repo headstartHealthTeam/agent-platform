@@ -36,15 +36,18 @@ files, production rows, or private payloads in Git or the handoff message.
 
 1. Confirm repository access and install the complete reviewed skill set from a clean
    `headstartHealthTeam/agent-platform` `main` checkout using its documented updater.
-2. Clone the exact reviewed Intake SLA Evidence Engine revision into a separate clean project. Do
-   not rely on the former operator's working folder or task history.
+2. Provision the exact reviewed Intake SLA Evidence Engine revision using the active organization's
+   repository/worktree setup rules. Do not rely on the former operator's working folder or task
+   history, or treat a successful skill installation as runtime readiness.
 3. Read the engine's `docs/operator-handoff.md`, `docs/automation-runbook.md`, and
    `docs/scheduled-task-template.md` completely.
 4. Verify each required connector from the new operator's Codex using a known non-sensitive target.
    Authentication alone does not establish correct scope or write authority.
 5. Provision private runtime configuration and a private run directory through the approved secure
    path. Keep them outside Git.
-6. Run the engine's complete synthetic and distribution-safety checks from the clean clone.
+6. Run the engine's complete synthetic and distribution-safety checks from the reviewed checkout.
+   Confirm support for protected raw capture/resume, replay execution telemetry, plan-bound reviewer
+   preservation proof, and prepared presentation readback before relying on those capabilities.
 7. Complete one supervised full-queue shadow run with a new private run ID. Prepare but do not apply
    the Google payload.
 8. Review expected-versus-processed parity, source coverage, QA, workbook checks, Production
@@ -78,6 +81,8 @@ QA, fingerprint, reviewer-state, source-completeness, or readback failures.
 
 Code fixes, schedule changes, source-scope changes, Salesforce writes, and Salesforce code or
 metadata releases remain separate work. The coverage assignment does not grant those permissions.
+Explicitly authorized engine fixes may proceed with tests and revalidation; a failed publication
+gate prohibits invalid writes, not correction of the underlying implementation.
 
 ## Return Handoff
 
