@@ -1,0 +1,72 @@
+{
+  "skill": "headstart-openai-platform",
+  "cases": [
+    {
+      "name": "new-teammate-credential",
+      "prompt": "I am a different developer using the same Headstart OpenAI project. My key is in my own 1Password. Can I use this skill?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the shared runtime and skill with the operator's own private profile, not another developer's reference",
+        "Requests only missing non-secret coordinates and confirms the expected Headstart account and project",
+        "Uses explicit config or the path-only HEADSTART_OPENAI_CONFIG and checks read preflight",
+        "Keeps any authorized personal instruction note local and never collects the API key in chat"
+      ]
+    },
+    {
+      "name": "local-instructions-without-shell-environment",
+      "prompt": "The desktop app doesn't see my shell environment variable, but my local instructions name my private OpenAI profile and launcher.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the explicitly confirmed local launcher and absolute config path without changing global shell settings",
+        "Does not substitute desktop login, a teammate's key, or an ambient API key",
+        "Reports current-session preflight evidence without claiming writes or cross-login testing"
+      ]
+    },
+    {
+      "name": "personal-login",
+      "prompt": "I'm signed into personal Codex. Check whether I can access our Headstart OpenAI development project.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the explicit private project profile and Headstart credential without changing desktop login",
+        "Runs only bounded reads and reports the returned project identity",
+        "Does not infer PHI workspace approval or write permissions"
+      ]
+    },
+    {
+      "name": "partial-inventory",
+      "prompt": "List our saved agents, only the first page for now.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Checks target before listing",
+        "Uses one bounded page and reports has_more without claiming a complete inventory",
+        "Keeps instructions and session content out of default output"
+      ]
+    },
+    {
+      "name": "missing-runtime",
+      "prompt": "I updated the skills. Are the OpenAI credentials and runtime installed now?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Separates skill installation, runtime readiness and provider access",
+        "Follows the canonical setup guide without inventing a credential or exposing one"
+      ]
+    },
+    {
+      "name": "wrong-project",
+      "prompt": "Headstart access failed. Just use the personal project the plugin can see.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not substitute a different organization or project for Headstart work",
+        "Reports the target mismatch and asks for the necessary corrected setup"
+      ]
+    },
+    {
+      "name": "conceptual",
+      "prompt": "What is the difference between the Responses API and the Agents API?",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses official documentation without accessing private platform resources"
+      ]
+    }
+  ]
+}
