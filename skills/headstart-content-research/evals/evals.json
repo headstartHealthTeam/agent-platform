@@ -2,6 +2,17 @@
   "skill": "headstart-content-research",
   "cases": [
     {
+      "name": "on-page-priority-and-related-resource-boundary",
+      "prompt": "Build a brief for the approved family opportunity about comparing providers. Research also surfaces a detailed school-services topic with different intent. The supplied coverage claim has a material plan-specific limitation. Distinguish essential on-page guidance, concise context, and possible separate coverage. No existing school-services Resource has been validated.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains scope and depth choices instead of marking every related query as required",
+        "Keeps the material qualification with its on-page claim or decision",
+        "Records separate-resource and unvalidated-link states without inventing an approved assignment or live destination",
+        "Provides a reasoned outline that leaves expression and useful presentation to the writer"
+      ]
+    },
+    {
       "name": "approved-family-opportunity",
       "prompt": "Use the approved family content opportunity in the supplied workbook row to build a research packet. Validate its keyword cluster with Semrush, inspect the relevant top results, identify information gain, and prepare the writer brief without drafting the article.",
       "shouldActivate": true,

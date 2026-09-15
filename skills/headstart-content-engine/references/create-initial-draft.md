@@ -28,7 +28,9 @@ bundle should be exported to a private review artifact. Capability alone is not 
    useful. Preserve every material qualifier and make the next action clear. Consolidate repeated
    caveats at the decision they affect, use natural references after an actor's responsibility is
    clear, and vary sentence and paragraph cadence so accuracy does not turn into disclaimer-like or
-   lecture-like prose. Supply one explicit visible H1 and a semantic H2/H3 outline whose levels
+   lecture-like prose. Give usable actions directly without deciding for the family; do not equate
+   a helpful `ask` or `compare` with coercion. Apply the tone skill's family examples when relevant.
+   Supply one explicit visible H1 and a semantic H2/H3 outline whose levels
    reflect content relationships. Search terms support relevance but do not determine voice or
    force headings.
 4. **Use evidence deliberately.** Support material claims from packet claim IDs. Omit or label gaps
@@ -62,6 +64,18 @@ bundle should be exported to a private review artifact. Capability alone is not 
 
 ## Drafting Constraints
 
+- Separate the page's main task from supporting context. Use the brief's priority and scope
+  decisions to choose depth and placement, not to turn every research note into a section. Keep
+  necessary qualifications where their omission would mislead. A related topic may receive a short
+  introduction and validated link; do not silently drop required coverage or invent a destination.
+  Return a material conflict between the brief and a coherent reader flow for scope reconciliation.
+- Make a step teach its action: explain the process, purpose, family role, or example question that
+  is useful at that point. Do not simply relabel `prepare`, `understand`, or `review` as a complete
+  explanation, or make every step repeat the same mini-template.
+- Use a numbered sequence only when it helps. Do not add competing counts in the introduction,
+  surprise extra steps at the end, or procedural slogans merely to package the article. Integrate
+  essential alternate paths at the relevant decision, or identify a separate-resource need in the
+  handoff without treating that resource as created or approved.
 - Do not write to a competitor-derived outline merely because sections recur in the result set.
 - Do not pad toward a competitor word count.
 - Do not use unsupported superlatives, guarantees, availability, coverage, timing, or outcome
