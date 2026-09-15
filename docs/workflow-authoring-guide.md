@@ -336,10 +336,14 @@ operator controls. Those shared capabilities do not automatically require new ba
   package.
 - Put runtime-neutral logic under a narrowly named `packages/` workspace when multiple workflows,
   engines, skills, execution contexts, or the runner reuse it.
-- Put trigger intake, durable state, permissions, idempotency, business-system writes, and business
-  invariants in the owning backend or service.
-- Put workflow discovery, manual launch, review, approvals, history, retry, and cancellation views in
-  the owning application UI.
+- Keep business-system event intake, durable business state, authorization, idempotency, business
+  writes, and business invariants in the owning backend or service. Keep application-specific
+  business views in the owning application UI.
+- Put scheduling, trigger validation and deduplication, operational run state, workflow discovery,
+  manual launch, operational review and approvals, history, retry, cancellation, and their operator
+  interfaces in the selected control plane. Implement custom backend/admin tooling only when the
+  operations decision justifies it; an adopted service does not replace application-owned business
+  authorization or write authority.
 - Expose a bounded MCP tool or CLI when agents need a stable, permission-aware operation that more
   than one workflow can use.
 
