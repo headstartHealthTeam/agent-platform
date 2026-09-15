@@ -17,8 +17,12 @@ repository separates these composable concerns:
 5. managed runtimes that schedule work and own durable execution state.
 
 The repository owns layers two through four and the Codex worker code within layer five. The
-Headstart backend and admin panel retain control-plane state and user interfaces. This repository
-does not replace application code, MCP servers, business systems of record, or project tracking.
+selected operational control plane owns managed-run state and operator controls; custom backend
+APIs/persistence and admin-panel tooling are conditional on the
+[operations decision](docs/codex-managed-workflow-architecture.md). Headstart application services
+retain business state, authorization, event intake, approved business writes, and application-specific
+interfaces. This repository does not replace application code, MCP servers, business systems of
+record, or project tracking.
 These are not sequential maturity levels. Many final team workflows should remain a reviewed skill
 or prompt using existing MCPs, APIs, connectors, browser control, or CLIs.
 
