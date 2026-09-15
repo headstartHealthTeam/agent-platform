@@ -43,8 +43,12 @@ Evaluate whether the Resource:
 - answers the approved reader need in a useful order and makes the topic's practical relevance clear
   near the beginning;
 - gives the reader a practical decision, framework, example, checklist, or next step;
+- makes the proposed action usable through a relevant explanation, example, or question rather than
+  merely telling the reader to prepare, understand, or review;
 - organizes questions and actions around the stage when the reader can use them instead of mixing
   unrelated phases;
+- earns its structure: no competing numbering, unexplained extra steps, or forced framework; main
+  guidance and supporting topics have appropriate depth without losing required coverage;
 - translates unfamiliar or clinical concepts into concrete reader questions, routines, or examples
   and defines terms before relying on shorthand;
 - delivers the packet's information-gain thesis;
@@ -79,9 +83,17 @@ qualifiers remain intact without recurring as defensive filler, responsible acto
 without legalistic repetition, contractions sound natural for the audience, and adjacent
 paragraphs do not repeat one uniform setup-qualification-takeaway cadence. For family content,
 confirm that care delivery, clinical oversight, and caregiver participation are distinct and that
-positive explanation replaces lecture-like strings of `should` wherever no direct instruction is
-required. A factually careful draft can still fail this gate when it reads like a risk-managed
-summary rather than a thoughtful person helping the reader.
+positive explanation replaces lecture-like obligations. Direct, concrete actions can empower a
+family; do not penalize `ask` or `compare` simply because the action is optional. Check whether
+`you can` preserves a real choice or makes useful guidance evasive. The opening should orient the
+family to the topic without assumed distress, formulaic reassurance, or procedural slogans.
+
+Assess the complete reader experience, not punctuation or phrase counts. The presence of a
+checklist, a reassuring sentence, or an internal link is not proof of usefulness. Cite the exact
+passage and reader consequence for qualitative findings. A factually careful draft can still fail
+this gate when it reads like a risk-managed summary rather than a thoughtful person helping the
+reader. Clinical and coverage claims still pass through the evidence gate; confident voice does
+not establish their truth.
 
 ## Visual And Accessibility Guidance
 

@@ -2,6 +2,41 @@
   "skill": "headstart-content-engine",
   "cases": [
     {
+      "name": "accurate-but-unusable-family-draft",
+      "prompt": "Verify this exact family draft against its complete packet. All factual and artifact checks pass, but its opening announces three moves and two tracks, each step only says prepare or review, and the final section introduces an essential extra step. It contains a reassuring sentence and a valid internal link. Evaluate reader usefulness and voice without rewriting facts or treating those elements as proof of quality.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Identifies specific reader-experience defects even though factual and structural fields pass",
+        "Requests a coherent sequence and usable explanations or questions rather than a fixed template",
+        "Preserves essential coverage and material qualifications while relocating supporting context",
+        "Cites passages and reader consequences rather than grading phrase or punctuation counts",
+        "Keeps corrections within the frozen packet and the bounded repair allowance"
+      ]
+    },
+    {
+      "name": "main-task-and-supporting-context",
+      "prompt": "Draft from this approved family packet. It requires explaining provider comparison and preserving a plan-specific coverage qualification; a detailed related school-services topic is explicitly optional. A relevant school-services Resource is planned but not live. Keep a clear reader flow and return any separate-resource recommendation in the handoff, without creating or publishing anything.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Prioritizes the main reader task and keeps the material coverage limit on the page",
+        "Does not make optional adjacent research a surprise extra required step",
+        "Does not represent a planned destination as live or a separate-resource suggestion as approved",
+        "Retains required coverage or escalates a real scope conflict instead of silently discarding it"
+      ]
+    },
+    {
+      "name": "reviewer-direction-and-evidence-boundary",
+      "prompt": "Revise an exact family draft from comments asking for warmer direct guidance, fewer unnecessary em dashes, more useful assessment questions, and an unsupported universal insurance-coverage statement. The reviewer also suggests a particular handout, whose identity is unresolved. Do not change shared skills or external systems in this run.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Applies supported voice and structure feedback without replacing family choice with commands",
+        "Routes the unsupported claim to bounded research rather than treating reviewer confidence as evidence",
+        "Resolves the handout identity before proposing a link or leaves the link explicitly unresolved",
+        "Distinguishes reusable candidates from draft-specific content without unrequested canonical edits",
+        "Does not make phrase bans, a universal emotional opening, or one article's topics into global rules"
+      ]
+    },
+    {
       "name": "initial-resource-draft",
       "prompt": "Run Content Engine V1 for this approved family opportunity. Build the research packet, draft the complete Resource in Headstart voice, include the image brief and CMS field proposals, verify it once, and return it for human review without writing to admin.",
       "shouldActivate": true,
