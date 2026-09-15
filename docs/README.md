@@ -58,6 +58,10 @@ and examples.
 
 ## Concrete Examples
 
+- [OpenAI platform development access](openai-platform-access.md) connects local API access,
+  approved lifecycle operations and pinned canonical skill preparation. Its
+  [provider package](../packages/openai-platform/README.md) does not activate managed workflows.
+
 - [`headstart-discovery-to-decision`](../skills/headstart-discovery-to-decision/SKILL.md) shows an
   interactive workflow skill composing several bounded capabilities while a person remains present.
 - [`headstart-dev-to-main-pr`](../skills/headstart-dev-to-main-pr/SKILL.md) shows a code-assisted

@@ -4,7 +4,7 @@ description: Write or revise Headstart Health audience-facing content for famili
 compatibility: Works with agents that can receive a content brief, draft, or factual source material.
 metadata:
   author: headstart-health
-  version: '1.1.0'
+  version: '1.2.0'
 ---
 
 # Write Headstart Tone And Voice
@@ -69,12 +69,19 @@ condition matters, use this sequence:
 3. describe how Headstart or another named actor helps.
 
 This pattern should reduce uncertainty without pretending the situation is simpler than it is.
+The opening reality can be a useful explanation, not a warning about everything it does not mean.
+Keep a limitation beside the decision it affects rather than making exceptions the article's spine.
 
 ### Preserve Agency
 
 Write with people, not at them. Families bring priorities and observations. Clinicians bring
 expertise and judgment. RBTs evaluate whether a role fits their needs. Avoid language that frames
 the organization as the hero and the audience as passive.
+
+Give clear, usable guidance without taking over the reader's decisions. Direct verbs such as
+`ask`, `compare`, and `tell` can support agency. Preserve choice where an action is optional; do not
+soften every useful suggestion into `you can`. Avoid coercion, blame, and assumed agreement, not
+direct language itself.
 
 ### Keep Roles Clear
 
@@ -128,8 +135,10 @@ step clearer without making the family feel managed or talked down to.
 
 - Be calm, welcoming, and practical.
 - Open educational content with the question or decision bringing the family to the page. Briefly
-  recognize the situation or uncertainty when it is supported by the topic, explain why the
-  information matters, and then move into useful guidance. Do not invent an emotional state.
+  recognize the significance of that moment when the topic supports it, explain why the information
+  matters, and move into useful guidance. Grounded reassurance can help before procedural detail;
+  do not assign feelings to every family, dramatize distress, or require an emotional opening when
+  the reader needs a quick answer.
 - Put context before clinical or insurance detail.
 - Explain an unfamiliar term in the sentence where it first appears. Introduce a treatment plan or
   other clinical concept before referring to it as `the plan` or assuming the family knows how it
@@ -141,13 +150,16 @@ step clearer without making the family feel managed or talked down to.
 - Help the reader understand options, expectations, and next steps without implying that one path
   fits every child or family.
 - Describe what clear, collaborative care looks like in positive terms. Avoid strings of `should`,
-  warnings, or instructions that make educational copy sound like a lecture; reserve direct
-  commands for genuine safety, legal, or required-action guidance and explain their purpose.
+  warnings, or obligations that make educational copy sound like a lecture. Offer concrete actions
+  and questions directly, explain their purpose, and leave clinical and personal decisions with the
+  people who own them. Direct guidance is not limited to safety, legal, or required actions.
 - Organize provider questions and decision aids around the stage when a family can use them, such
   as choosing a provider, discussing a recommendation, or preparing for care. Do not mix unrelated
   phases into one undifferentiated checklist.
 - Make preparation guidance answer practical questions: what happens, where it happens, who is
-  present, what may be needed, and what the family can clarify with the provider.
+  present, why it matters, and how the family participates. When useful, give an example question
+  or explain how to raise a concern. Select the details needed for this decision rather than making
+  every step follow an identical checklist; never invent logistics to fill the pattern.
 - Present the child as a whole person with strengths, needs, relationships, routines, and a life
   beyond therapy.
 - Preserve the family's role in asking questions, sharing priorities, and making decisions.
@@ -156,6 +168,8 @@ step clearer without making the family feel managed or talked down to.
 - Avoid fear, blame, pressure, clinical paternalism, and deficit-heavy descriptions of autism.
 
 Family content can recognize emotion, but the useful explanation should carry the message.
+For family educational content, read the [family-guidance examples](references/family-guidance.md).
+They illustrate judgment, not mandatory openings, phrases, or article structures.
 
 ### BCBAs
 
@@ -213,6 +227,10 @@ professional language.
 - Answer the main question early.
 - Organize related ideas into the sequence in which the reader will understand or use them. Group
   questions and actions by decision stage when combining them would create confusion.
+- Let structure serve the reader rather than advertise the writer's framework. Use steps for a
+  useful sequence, not to force every topic into numbered moves, tracks, or phases. Avoid competing
+  numbering systems and unexpected extra steps. Keep necessary context near its action; flag
+  scope conflicts rather than silently removing required information.
 - Define clinical or industry terms only when the reader needs them.
 - Distinguish examples from universal expectations.
 - End with a useful takeaway rather than a generic slogan.
@@ -269,6 +287,10 @@ professional language.
 - Define an acronym at first use unless the intended audience reliably knows it.
 - Use one stable term for the same concept within a communication.
 - Use headings, lists, steps, or examples when they make complex material easier to follow.
+- Make headings name the reader's question or action rather than an abstract category. Use bullets
+  or a small table when repeated roles or comparisons become easier to scan; neither is mandatory.
+- Use em dashes sparingly, when they help meaning or rhythm. Prefer a clear sentence break when a
+  dash merely adds an aside. Do not turn this preference into a punctuation ban.
 - Do not make every section re-explain Headstart when the reader already has the context.
 - Rewrite a sentence that stacks three abstract nouns or three adjectives before reaching a real
   person or action.
@@ -355,12 +377,16 @@ Before accepting polished copy, challenge it with these questions:
 - Does `support`, `guidance`, `path`, `solution`, or `clinician-led` appear without explaining the
   real action or reader benefit?
 - Does the paragraph summarize a category instead of saying something a person needs to know?
+- Could the reader actually use the guidance, or does it only tell them to understand, prepare,
+  review, or ask questions without showing what that involves?
 - Does the section restate Headstart's value proposition instead of moving the reader forward?
 - Do several consecutive paragraphs use the same setup, caveat, and conclusion rhythm?
 - Are modal verbs, negations, or role labels carrying real meaning, or merely making the prose sound
   cautious?
 - Would a real person say the sentence aloud?
 - For family content, does the opening show why this matters before defining the category?
+- Does the opening orient the reader naturally rather than announce an invented framework?
+- Is optional language preserving a real choice, or withholding a straightforward useful action?
 - Are questions, examples, and preparation details organized around when the family can use them?
 - Are clinical roles and terms explained before the copy relies on shorthand?
 
@@ -378,7 +404,8 @@ Before returning the copy, confirm that:
 - material qualifications remain intact but are not repeated as defensive filler;
 - concrete language has replaced vague brand language;
 - relevant people and roles remain distinct;
-- family-facing guidance is supportive and practical rather than directive or lecture-like;
+- family-facing guidance is direct, supportive, and practical without coercion or a lecture;
+- structure and examples clarify the reader's task without surprise steps or formulaic empathy;
 - the audience's agency and expertise are respected;
 - supplied facts, qualifiers, and attributed meaning remain intact;
 - no hype, guarantee, or unsupported specificity was added; and

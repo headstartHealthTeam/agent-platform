@@ -2,6 +2,67 @@
   "skill": "write-headstart-tone-and-voice",
   "cases": [
     {
+      "name": "direct-family-guidance-with-choice",
+      "prompt": "Rewrite this Headstart family paragraph using only its facts: 'If you are comparing providers, you can ask what the assessment involves. You can ask how your family's priorities inform goals. You can compare their answers before choosing.' Make the advice useful without choosing for the parent. Do not turn this into a mandatory process.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses concrete questions or direct verbs without treating all direct guidance as paternalistic",
+        "Preserves the family's choice about providers and does not create a requirement",
+        "Keeps optional language where it carries meaning rather than mechanically banning you can"
+      ]
+    },
+    {
+      "name": "family-orientation-without-assumed-distress",
+      "prompt": "Rewrite this opening for a Headstart guide about discussing an evaluation report: 'Begin with three practical moves and two tracks in parallel. First review the report, then prepare questions, then contact the evaluator.' Supplied facts: families may discuss their questions with the evaluator and need not settle every question first. Give a reassuring, clear orientation without assuming all parents feel the same way.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Recognizes the moment and offers grounded reassurance rather than procedural packaging",
+        "Does not assume fear, grief, relief, or any universal emotional response",
+        "Preserves the useful next action without competing counts or an invented process"
+      ]
+    },
+    {
+      "name": "usable-plan-review-guidance",
+      "prompt": "Improve this Headstart sentence: 'Review the proposed plan and ask questions if something is unclear.' Supplied facts: families discuss proposed goals and hours with the clinician, ask how they connect to assessment findings, and share priorities or concerns. Write a short practical explanation; do not invent recommended hours, goals, or outcomes.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Shows how to participate through specific questions or examples instead of repeating review and understand",
+        "Explains the family role in sharing priorities and raising concerns without assigning clinical responsibility",
+        "Adds no recommended schedule, outcome guarantee, or unsupported process detail"
+      ]
+    },
+    {
+      "name": "structure-without-formula",
+      "prompt": "Edit a Headstart family guide with three numbered provider-comparison steps. Its introduction announces two tracks, a heading says First before Step 1, and an essential question about session supervision appears as an unnumbered final step. Preserve that question and its meaning. A team-role comparison is dense prose. Improve structure and readability without imposing a fixed template or banning em dashes.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses one coherent sequence and places the supervision question where the family can use it",
+        "Removes distracting procedural packaging without deleting required information",
+        "Chooses prose, bullets, or a table for reader usefulness rather than format quotas",
+        "Uses punctuation intentionally without treating an em dash as an automatic failure"
+      ]
+    },
+    {
+      "name": "confident-voice-is-not-new-evidence",
+      "prompt": "Make this supplied Headstart copy more positive: 'Coverage depends on the family's plan; the supplied evidence does not establish universal eligibility.' A reviewer suggests replacing it with 'Every child qualifies for insurance-funded ABA, the gold standard of care.' You have no supporting evidence for the replacement. Return a clear fact-preserving edit and identify the unresolved factual request.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Improves clarity without adopting unsupported coverage or comparative clinical claims",
+        "Preserves the material plan-specific limit while avoiding repetitive disclaimers",
+        "Separates the reviewer's factual request from the tone change and returns it for research or qualified review"
+      ]
+    },
+    {
+      "name": "quick-answer-does-not-need-empathy-template",
+      "prompt": "Write a short Headstart family FAQ answer to 'Who should receive my intake forms?' Supplied answer: send them through the selected practice's secure portal, not to Headstart by email. No deadline or additional process is supplied. The reader wants a quick answer, not a diagnosis narrative.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Answers directly in natural language without a forced reassuring introduction",
+        "Preserves the actor and secure-channel distinction",
+        "Does not add a checklist, deadline, emotional state, or unsupported logistics"
+      ]
+    },
+    {
       "name": "family-intake-email",
       "prompt": "Rewrite this Headstart intake email for a parent. Preserve the supplied insurance and scheduling details, explain what happens next, and make it feel less formal.",
       "shouldActivate": true,

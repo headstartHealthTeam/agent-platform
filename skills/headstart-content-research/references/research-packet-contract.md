@@ -81,6 +81,9 @@ Provide:
 - reader outcome;
 - decision sequence or journey stage showing when the reader can use each major section;
 - recommended semantic H1/H2/H3 structure and required subtopics;
+- a reasoned distinction between essential on-page guidance, concise supporting context, and topics
+  better handled by an existing linked resource or a proposed separate article; keep any
+  qualification needed to prevent a misleading claim on the page itself;
 - clinical or industry terms that must be introduced before shorthand is used;
 - practical examples, questions, or preparation details mapped to the stage where they are useful;
 - claims to include, qualify, exclude, or escalate;
@@ -96,7 +99,11 @@ Provide:
 - accessibility considerations; and
 - success measures supplied by the approved opportunity.
 
-The outline is a reasoned brief, not a rigid competitor-derived template.
+The outline is a reasoned brief, not a rigid competitor-derived template. Do not mark every
+adjacent search question or research note as required coverage. Identify real alternate paths and
+where they matter without requiring a parallel checklist or an unexplained extra step. Record
+unresolved scope decisions before handing the packet to the writer. A separate-resource proposal
+is not an approved assignment, and an unavailable resource is not a live link.
 
 ### 8. Open Questions And Limitations
 
