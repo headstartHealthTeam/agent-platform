@@ -1,7 +1,10 @@
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { devNull, tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { strFromU8, unzipSync } from 'fflate';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { bundleSkills, gitReader, inspectWorkflow, type GitRead } from './source.js';
 
@@ -27,11 +30,95 @@ function reader(files: Record<string, string>, mode = '100644'): GitRead {
 }
 const simple = '---\nname: synthetic\ndescription: Synthetic only\n---\nUse synthetic inputs.';
 describe('immutable canonical skill source', () => {
+  it.each(['commit', 'blob'])(
+    'ignores %s replacement objects when reading pinned source',
+    (kind) => {
+      const directory = mkdtempSync(path.join(tmpdir(), 'openai-git-replace-fixture-'));
+      // Isolate synthetic Git state from the real repository and any enclosing Git hook.
+      for (const name of Object.keys(process.env).filter((name) => name.startsWith('GIT_'))) {
+        vi.stubEnv(name, undefined);
+      }
+      vi.stubEnv('GIT_CONFIG_NOSYSTEM', '1');
+      vi.stubEnv('GIT_CONFIG_GLOBAL', devNull);
+      const git = (args: string[]): string =>
+        execFileSync(
+          'git',
+          [
+            '-C',
+            directory,
+            '-c',
+            'user.name=Synthetic Fixture',
+            '-c',
+            'user.email=synthetic@example.invalid',
+            '-c',
+            'commit.gpgsign=false',
+            ...args,
+          ],
+          {
+            encoding: 'utf8',
+            timeout: 5_000,
+            maxBuffer: 1024 * 1024,
+            stdio: ['ignore', 'pipe', 'pipe'],
+          }
+        );
+      try {
+        git(['init', '--template=']);
+        mkdirSync(path.join(directory, 'skills/synthetic'), { recursive: true });
+        const file = path.join(directory, 'skills/synthetic/SKILL.md');
+        writeFileSync(file, simple);
+        git(['add', 'skills/synthetic/SKILL.md']);
+        git(['commit', '-m', 'Original synthetic skill']);
+        const original = git(['rev-parse', 'HEAD']).trim();
+        const originalObject = git([
+          'rev-parse',
+          kind === 'commit' ? 'HEAD' : 'HEAD:skills/synthetic/SKILL.md',
+        ]).trim();
+        writeFileSync(file, simple + '\nSubstituted content.');
+        git(['add', 'skills/synthetic/SKILL.md']);
+        git(['commit', '-m', 'Replacement synthetic skill']);
+        const replacement = git([
+          'rev-parse',
+          kind === 'commit' ? 'HEAD' : 'HEAD:skills/synthetic/SKILL.md',
+        ]).trim();
+        git(['replace', originalObject, replacement]);
+        expect(git(['show', `${original}:skills/synthetic/SKILL.md`])).toContain('Substituted');
+        const bundle = bundleSkills(gitReader(directory), original, ['synthetic']);
+        const archive = unzipSync(Buffer.from(bundle.skills[0]?.source.data ?? '', 'base64'));
+        expect(strFromU8(archive['synthetic/SKILL.md'] ?? new Uint8Array())).toBe(simple);
+      } finally {
+        vi.unstubAllEnvs();
+        rmSync(directory, { recursive: true, force: true });
+      }
+    },
+    30_000
+  );
+
+  it('rejects oversized dependency metadata before splitting or traversing it', () => {
+    const source = simple.replace(
+      '---\nUse',
+      `metadata:\n  headstart-requires: ${'aa,'.repeat(2000)}\n---\nUse`
+    );
+    expect(() =>
+      bundleSkills(reader({ 'skills/synthetic/SKILL.md': source }), revision, ['synthetic'])
+    ).toThrow('dependency metadata');
+  });
+  it('rejects excessive distinct dependencies before loading any of them', () => {
+    const names = Array.from({ length: 51 }, (_, index) => `dependency-${String(index)}`);
+    const source = simple.replace(
+      '---\nUse',
+      `metadata:\n  headstart-requires: ${names.join(',')}\n---\nUse`
+    );
+    expect(() =>
+      bundleSkills(reader({ 'skills/synthetic/SKILL.md': source }), revision, ['synthetic'])
+    ).toThrow('closure exceeds');
+    expect(() => bundleSkills(reader({}), revision, names)).toThrow('closure exceeds');
+  });
+
   it('bundles dependency closure and exact file contents with stable bytes', () => {
     const files = {
       'skills/synthetic/SKILL.md': simple.replace(
         '---\nUse',
-        'metadata:\n  headstart-requires: dependency\n---\nUse'
+        'metadata:\n  headstart-requires: dependency, dependency, synthetic\n---\nUse'
       ),
       'skills/synthetic/references/note.md': 'synthetic reference',
       'skills/dependency/SKILL.md': simple.replace('name: synthetic', 'name: dependency'),

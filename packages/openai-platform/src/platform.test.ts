@@ -78,6 +78,28 @@ function fixture(
 }
 
 describe('OpenAI access boundary', () => {
+  it.each(['agents.create', 'agents.update'])('accepts dotted model names for %s', (operation) => {
+    const request = {
+      operation,
+      body: { model: 'gpt-4.5-preview' },
+      ...(operation === 'agents.update'
+        ? { id: 'agent_synthetic', expectedFingerprint: 'a'.repeat(64) }
+        : {}),
+    };
+    expect(actionSchema.safeParse(request).success).toBe(true);
+    expect(actionSchema.safeParse({ ...request, body: { model: '' } }).success).toBe(false);
+    expect(actionSchema.safeParse({ ...request, body: { model: 'x'.repeat(201) } }).success).toBe(
+      false
+    );
+    expect(
+      actionSchema.safeParse({
+        operation: 'agents.delete',
+        id: 'agent.invalid',
+        expectedFingerprint: 'a'.repeat(64),
+      }).success
+    ).toBe(false);
+  });
+
   it('reuses profile binding and rejects unsupported or incomplete configuration', () => {
     expect(config.target.projectId).toBe('proj_synthetic');
     expect(() => resolveConfig({})).toThrow('Invalid local');

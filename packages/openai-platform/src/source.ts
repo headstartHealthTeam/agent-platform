@@ -11,7 +11,7 @@ export type GitRead = (args: readonly string[]) => string;
 export function gitReader(repository: string): GitRead {
   return (args) => {
     try {
-      return execFileSync('git', ['-C', repository, ...args], {
+      return execFileSync('git', ['--no-replace-objects', '-C', repository, ...args], {
         encoding: 'utf8',
         timeout: 20_000,
         maxBuffer: 12 * 1024 * 1024,
@@ -25,6 +25,8 @@ export function gitReader(repository: string): GitRead {
 
 const skillName = z.string().regex(/^[a-z][a-z0-9-]{1,63}$/);
 const revisionSchema = z.string().regex(/^[a-f0-9]{40}$/);
+const MAX_SKILLS = 50;
+const MAX_DEPENDENCY_METADATA_BYTES = 4096;
 const frontmatter = z.object({
   name: skillName,
   description: z.string().min(1),
@@ -70,10 +72,21 @@ function readSkill(
   if (metadata?.name !== name) {
     throw new Error('Skill frontmatter identity mismatch.');
   }
-  const dependencies = (metadata.metadata?.['headstart-requires'] ?? '')
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean);
+  const dependencySource = metadata.metadata?.['headstart-requires'] ?? '';
+  if (Buffer.byteLength(dependencySource) > MAX_DEPENDENCY_METADATA_BYTES) {
+    throw new Error('Skill dependency metadata exceeds the supported bound.');
+  }
+  const dependencies = [
+    ...new Set(
+      dependencySource
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    ),
+  ];
+  if (dependencies.length > MAX_SKILLS) {
+    throw new Error('Skill dependency closure exceeds the supported bound.');
+  }
   const zipped = zipSync(Object.fromEntries(files), { level: 6, mtime: new Date(2020, 0, 1) });
   return {
     skill: {
@@ -134,26 +147,31 @@ export function bundleSkills(
   if (git(['rev-parse', '--verify', `${revision}^{commit}`]).trim() !== revision) {
     throw new Error('Source revision mismatch.');
   }
-  const pending = requested.map((name) => skillName.parse(name));
-  const seen = new Set<string>();
+  const pending: string[] = [];
+  const queued = new Set<string>();
+  function enqueue(input: string): void {
+    const name = skillName.parse(input);
+    if (queued.has(name)) {
+      return;
+    }
+    if (queued.size >= MAX_SKILLS) {
+      throw new Error('Skill dependency closure exceeds the supported bound.');
+    }
+    queued.add(name);
+    pending.push(name);
+  }
+  requested.forEach(enqueue);
   const skills: BundledSkill[] = [];
   const allFiles: string[] = [];
   let bytes = 0;
   for (let name = pending.shift(); name !== undefined; name = pending.shift()) {
-    if (seen.has(name)) {
-      continue;
-    }
-    seen.add(name);
-    if (seen.size > 50) {
-      throw new Error('Skill dependency closure exceeds the supported bound.');
-    }
     const prepared = readSkill(git, revision, name);
     bytes += prepared.bytes;
     if (bytes > 5_000_000) {
       throw new Error('Skill bundle exceeds the supported byte bound.');
     }
     for (const dependency of prepared.dependencies) {
-      pending.push(skillName.parse(dependency));
+      enqueue(dependency);
     }
     allFiles.push(...prepared.paths);
     skills.push(prepared.skill);

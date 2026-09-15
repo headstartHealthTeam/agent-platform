@@ -204,6 +204,8 @@ Skill bundling reads only regular tracked files at the exact full commit, resolv
 dependencies, and produces deterministic inline ZIPs. It never copies installed skills, ignored
 files, auth caches, `node_modules`, dotfiles or symlinks. The current packager supports UTF-8 text
 assets only and rejects unsupported binary assets rather than corrupting them.
+Git replacement objects are disabled for every source read. Dependency metadata is limited to
+4,096 bytes per skill, and the deduplicated queue is bounded to 50 skills before traversal.
 
 After reviewing and approving the archive's **contents and source revision for external upload**,
 use its `skills` array as `body.skills` in a template create/update action. Retain the source commit,

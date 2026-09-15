@@ -45,6 +45,7 @@ const id = z
   .min(1)
   .max(200)
   .regex(/^[A-Za-z0-9_-]+$/);
+const model = z.string().min(1).max(200);
 const metadata = z
   .record(z.string().max(64), z.string().max(512))
   .refine((value) => Object.keys(value).length <= 16);
@@ -55,7 +56,7 @@ const agentFields = {
   reasoning: reasoning.nullable().optional(),
   tools: tools.nullable().optional(),
 };
-const agentObject = z.object({ model: id, ...agentFields }).strict();
+const agentObject = z.object({ model, ...agentFields }).strict();
 type AgentFields = z.infer<typeof agentObject>;
 function optionalAgentFields(value: Omit<AgentFields, 'model'>): Omit<AgentUpdateParams, 'model'> {
   return {
