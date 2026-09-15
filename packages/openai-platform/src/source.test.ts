@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { devNull, tmpdir } from 'node:os';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { strFromU8, unzipSync } from 'fflate';
@@ -39,7 +39,8 @@ describe('immutable canonical skill source', () => {
         vi.stubEnv(name, undefined);
       }
       vi.stubEnv('GIT_CONFIG_NOSYSTEM', '1');
-      vi.stubEnv('GIT_CONFIG_GLOBAL', devNull);
+      const globalConfig = path.join(directory, 'empty.gitconfig');
+      vi.stubEnv('GIT_CONFIG_GLOBAL', globalConfig);
       const git = (args: string[]): string =>
         execFileSync(
           'git',
@@ -62,6 +63,8 @@ describe('immutable canonical skill source', () => {
           }
         );
       try {
+        // Git for Windows rejects Node's null-device path as a configuration file.
+        writeFileSync(globalConfig, '');
         git(['init', '--template=']);
         mkdirSync(path.join(directory, 'skills/synthetic'), { recursive: true });
         const file = path.join(directory, 'skills/synthetic/SKILL.md');
