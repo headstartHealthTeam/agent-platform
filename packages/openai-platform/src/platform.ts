@@ -1,0 +1,251 @@
+import { createHash } from 'node:crypto';
+
+import { verifyCapabilityPreflight } from '@headstart-health/capability-runtime';
+import OpenAI from 'openai';
+
+import {
+  ADAPTER_VERSION,
+  CAPABILITY,
+  PROVIDER,
+  requirement,
+  type ResolvedConfig,
+  type Target,
+} from './config.js';
+import {
+  isBillable,
+  parseAction,
+  readSchema,
+  type Action,
+  type ReadOperation,
+} from './operations.js';
+
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(canonical).join(',')}]`;
+  }
+  if (typeof value === 'object' && value !== null) {
+    return `{${Object.entries(value)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entry]) => `${JSON.stringify(key)}:${canonical(entry)}`)
+      .join(',')}}`;
+  }
+  return value === undefined ? 'null' : JSON.stringify(value);
+}
+export function fingerprint(value: unknown): string {
+  return createHash('sha256').update(canonical(value)).digest('hex');
+}
+export interface ActionPlan {
+  operation: Action['operation'];
+  target: Target;
+  digest: string;
+  billable: boolean;
+  destructive: boolean;
+}
+export function planAction(target: Target, input: unknown): ActionPlan {
+  const action = parseAction(input);
+  return {
+    operation: action.operation,
+    target,
+    digest: fingerprint({ target, action }),
+    billable: isBillable(action),
+    destructive: action.operation.endsWith('.delete'),
+  };
+}
+export interface Approval {
+  apply: boolean;
+  digest: string;
+  allowBillable: boolean;
+}
+export interface PlatformResult {
+  data: unknown;
+  fingerprint: string;
+}
+
+// Never return or serialize an SDK Page: it contains transport state, not just API data.
+function pageData(page: { data: { id: string | null }[]; hasNextPage: () => boolean }): unknown {
+  return { data: page.data, has_more: page.hasNextPage(), last_id: page.data.at(-1)?.id ?? null };
+}
+
+/** Supervising caller owns human approval; managed workflows need a separate approval executor. */
+export class OpenAIPlatform {
+  readonly #client: OpenAI;
+  readonly #config: ResolvedConfig;
+
+  public constructor(config: ResolvedConfig, apiKey: string, fetchImplementation?: typeof fetch) {
+    this.#config = config;
+    this.#client = new OpenAI({
+      apiKey,
+      organization: config.target.organizationId,
+      project: config.target.projectId,
+      baseURL: 'https://api.openai.com/v1',
+      timeout: 30_000,
+      maxRetries: 0,
+      logLevel: 'off',
+      fetchOptions: { redirect: 'error' },
+      ...(fetchImplementation === undefined ? {} : { fetch: fetchImplementation }),
+    });
+  }
+
+  public async preflight(): Promise<{ projectId: string; agentsRead: true }> {
+    try {
+      const { response } = await this.#client.beta.agents.list({ limit: 1 }).withResponse();
+      const projectId = response.headers.get('openai-project');
+      verifyCapabilityPreflight(
+        {
+          ...requirement,
+          targetAssertions: [{ key: 'projectId', expected: this.#config.target.projectId }],
+        },
+        this.#config.binding,
+        {
+          capabilityId: CAPABILITY,
+          providerId: PROVIDER,
+          adapterVersion: ADAPTER_VERSION,
+          status: projectId === this.#config.target.projectId ? 'ready' : 'wrong-target',
+          permissions: ['api.agents.read'],
+          targetIdentity: { projectId: projectId ?? '' },
+          message: 'Bounded Agents API read with explicit organization and project headers.',
+        }
+      );
+      return { projectId: this.#config.target.projectId, agentsRead: true };
+    } catch {
+      throw new Error(
+        'OpenAI preflight failed: verify credential, Agents access, and exact project.'
+      );
+    }
+  }
+
+  public async read(input: unknown): Promise<PlatformResult> {
+    const parsed = readSchema.safeParse(input);
+    if (!parsed.success) {
+      throw new Error('Invalid or unsupported OpenAI read.');
+    }
+    await this.preflight();
+    try {
+      const data = await this.query(parsed.data);
+      return { data, fingerprint: fingerprint(data) };
+    } catch {
+      throw new Error('OpenAI read failed; no provider payload was emitted.');
+    }
+  }
+
+  private async query(request: ReadOperation): Promise<unknown> {
+    const agents = this.#client.beta.agents;
+    switch (request.operation) {
+      case 'models.list':
+        return (await this.#client.models.list()).data;
+      case 'agents.list':
+        return pageData(await agents.list(request.query));
+      case 'agents.get':
+        return agents.retrieve(request.id);
+      case 'sessions.list':
+        return pageData(await agents.sessions.list(request.query));
+      case 'sessions.get':
+        return agents.sessions.retrieve(request.id);
+      case 'sessions.turns':
+        return pageData(await agents.sessions.turns.list(request.id, request.query));
+      case 'sessions.items':
+        return pageData(await agents.sessions.items.list(request.id, request.query));
+      case 'templates.list':
+        return pageData(await agents.environments.templates.list(request.query));
+      case 'templates.get':
+        return agents.environments.templates.retrieve(request.id);
+    }
+  }
+
+  public async apply(input: unknown, approval: Approval): Promise<PlatformResult> {
+    const action = parseAction(input);
+    const plan = planAction(this.#config.target, action);
+    if (
+      !approval.apply ||
+      approval.digest !== plan.digest ||
+      (plan.billable && !approval.allowBillable)
+    ) {
+      throw new Error('Exact plan approval and separate billable authorization are required.');
+    }
+    await this.preflight();
+    await this.checkCurrentAgent(action);
+    try {
+      const data = await this.mutate(action);
+      return { data: data ?? null, fingerprint: fingerprint(data) };
+    } catch {
+      throw new Error(
+        'Mutation failed or outcome is unknown. Reconcile the resource before retrying; no automatic retry was attempted.'
+      );
+    }
+  }
+
+  private async checkCurrentAgent(action: Action): Promise<void> {
+    if (!('expectedFingerprint' in action)) {
+      return;
+    }
+    let current: unknown;
+    try {
+      current = action.operation.startsWith('templates.')
+        ? await this.#client.beta.agents.environments.templates.retrieve(action.id)
+        : await this.#client.beta.agents.retrieve(action.id);
+    } catch {
+      throw new Error('Unable to check current resource; no mutation attempted.');
+    }
+    if (fingerprint(current) !== action.expectedFingerprint) {
+      throw new Error('Resource changed since review; obtain a fresh read and approval.');
+    }
+  }
+
+  private async mutate(action: Action): Promise<unknown> {
+    const agents = this.#client.beta.agents;
+    switch (action.operation) {
+      case 'agents.create':
+        return agents.create(action.body);
+      case 'agents.update':
+        return agents.update(action.id, action.body);
+      case 'agents.delete':
+        return agents.delete(action.id);
+      case 'sessions.create':
+        return agents.sessions.create({ ...action.body, stream: false });
+      case 'sessions.send':
+        return agents.sessions.events.create(action.id, {
+          'Idempotency-Key': action.idempotencyKey,
+          events: [
+            {
+              type: 'agent.session.input.message',
+              input: [{ role: 'user', content: [{ type: 'input_text', text: action.input }] }],
+            },
+          ],
+        });
+      case 'sessions.cancel':
+        return agents.sessions.events.create(action.id, {
+          events: [{ type: 'agent.session.input.cancel' }],
+        });
+      case 'sessions.delete':
+        return agents.sessions.delete(action.id);
+      case 'templates.create':
+        return agents.environments.templates.create(action.body);
+      case 'templates.update':
+        return agents.environments.templates.update(action.id, action.body);
+      case 'templates.delete':
+        return agents.environments.templates.delete(action.id);
+    }
+  }
+}
+
+/** Default CLI output excludes instructions, messages, tool arguments, and credentials. */
+export function summarize(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return { count: value.length };
+  }
+  if (typeof value !== 'object' || value === null) {
+    return null;
+  }
+  const allowed = new Set(['id', 'object', 'status', 'deleted', 'has_more', 'first_id', 'last_id']);
+  const entries = Object.entries(value);
+  return Object.fromEntries(
+    entries.flatMap(([key, entry]): [string, unknown][] => {
+      if (key === 'data' && Array.isArray(entry)) {
+        return [['data', entry.map(summarize)]];
+      }
+      return allowed.has(key) && (typeof entry === 'string' || typeof entry === 'boolean')
+        ? [[key, entry]]
+        : [];
+    })
+  );
+}
