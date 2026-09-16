@@ -15,6 +15,11 @@ execution first; self-hosted API execution or SDK hosting follows only for a con
 **Gate B** selects the remaining operational integration. Begin provider screening alongside Slice 1
 without building an AWS worker merely to evaluate a hosted API.
 
+The [Desktop-to-API development pattern](agent-workflow-development.md) separately uses an isolated
+local executor with the real API for cross-application integration tests. This is a concrete
+development need, not a change to the hosted-first production evaluation or a claim that an executor
+has been provisioned.
+
 The progression is shared preparation -> execution and operations decisions -> immutable artifact
 and selected adapter -> dev identity/integration -> durable operations -> operator surface ->
 platform acceptance. These are proposed slices, not implemented capabilities. The
@@ -104,6 +109,33 @@ The selected profile binds logical capabilities to approved targets, scopes, cre
 rotation owners and revocation procedures. Reuse `packages/capability-contracts/` and
 `packages/capability-runtime/`; they validate bindings and evidence but do not issue credentials.
 Workflow manifests contain logical references, never secret values or provider-specific token IDs.
+
+### Headstart MCP Worker Identity Follow-Through
+
+Before managed runs access real Headstart data, establish an approved automation principal or an
+explicitly governed delegated identity. Do not inherit a creator's employee OAuth token, assume
+client-credentials support, or use a broad admin account as a shortcut. The inspected backend MCP
+authentication resolves admin employees; service-identity support is work to prove, not an existing
+capability inferred from the presence of an MCP endpoint.
+
+The backend identity owner and platform implementer must define tool, record and field scope,
+environment isolation, token lifetime/renewal, revocation and initiating-human versus worker audit
+attribution. Test unrelated-case access, wrong target, expired/revoked credentials and permission
+changes. Coordinate with existing capability profiles rather than introducing a second provider
+framework. Synthetic profiles remain usable while this gate is open.
+
+Reuse suitable Headstart MCP read tools. Its existing linked-file evidence surface does not itself
+provide exact-version attachment bytes, credentialing review writes or payer browser control.
+Keep artifact access and approved business actions behind their owning permission-aware services;
+MCP may expose thin wrappers without becoming a second workflow or authorization implementation.
+Payer authentication and automation permission are independent of Headstart MCP identity.
+
+This work belongs to Slice 3 and the per-workflow adoption gate. Recording it does not create an
+account, grant access or authorize a live run. See the
+[credentialing integration boundary](../workflows/provider-credentialing/README.md#capabilities-and-access-gates)
+for the intended reference consumer.
+
+### Execution Provider And Secret Delivery
 
 - Agents API requires a Platform API project credential held by trusted application infrastructure,
   outside the sandbox. Workspace Codex tokens/federation are not established substitutes for it.

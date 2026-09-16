@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "0.1.0",
+  "dataMode": "synthetic",
+  "caseRevision": "case-r1",
+  "workflowRevision": "workflow-r1",
+  "routeRevision": "route-r1",
+  "work": {
+    "id": "synthetic-ga-initial",
+    "providerId": "provider-alpha",
+    "practiceId": "practice-alpha",
+    "payer": "synthetic-medicaid-ga",
+    "product": "synthetic-professional",
+    "jurisdiction": "GA",
+    "requestType": "initial-enrollment",
+    "locationIds": ["location-a"],
+    "period": "2026",
+    "existingAffiliationIds": []
+  },
+  "facts": [
+    {
+      "id": "practice-start",
+      "key": "practice.startDate",
+      "subjectId": "practice-alpha",
+      "locationIds": ["location-a"],
+      "value": null,
+      "disposition": "unknown",
+      "evidence": []
+    }
+  ],
+  "evidence": [
+    {
+      "id": "route-note",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "title": "Synthetic route requirements",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "SCENARIO ONLY, not actual payer policy. For this invented case, practice start means the location's first operational date, not the provider's employment date. No submission or attestation is authorized."
+    },
+    {
+      "id": "practice-letter",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "title": "Operations-confirmed location opening",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "Synthetic practice-alpha location-a first operated on 2020-02-03. This letter addresses the location start date. Do not confuse it with provider-alpha joining in 2024."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "practice-start-date",
+      "question": "What is the practice start date for location-a?",
+      "required": true
+    }
+  ],
+  "recordedMilestones": [],
+  "execution": {
+    "priorOutcome": "none",
+    "stopRequested": false,
+    "permittedActions": ["inspect", "prepare"]
+  }
+}

@@ -1,5 +1,9 @@
 # Workflow Authoring Guide
 
+For an application-controlled workflow, use the
+[Desktop-to-API development pattern](agent-workflow-development.md) after selecting its shape.
+Desktop behavior trials and actual API/local-executor integration establish different guarantees.
+
 ## Purpose
 
 This guide helps a Headstart team member and their coding agent turn a useful task into the smallest

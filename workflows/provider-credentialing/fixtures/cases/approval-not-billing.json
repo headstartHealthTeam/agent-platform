@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "0.1.0",
+  "dataMode": "synthetic",
+  "caseRevision": "case-r1",
+  "workflowRevision": "workflow-r1",
+  "routeRevision": "route-r1",
+  "work": {
+    "id": "synthetic-approval-not-billing",
+    "providerId": "provider-alpha",
+    "practiceId": "practice-alpha",
+    "payer": "synthetic-medicaid-ga",
+    "product": "synthetic-professional",
+    "jurisdiction": "GA",
+    "requestType": "maintenance",
+    "locationIds": ["location-b"],
+    "period": "2026",
+    "existingAffiliationIds": []
+  },
+  "facts": [],
+  "evidence": [
+    {
+      "id": "approval-letter",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "title": "Approval for a different location",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "The synthetic payer approved provider-alpha at location-a for 2026. This does not cover location-b and states no billing-eligibility determination."
+    },
+    {
+      "id": "case-history",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "title": "Imported case-level status",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "The imported case flag says Approved. Location and billing readiness were not separately verified."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "target-approval",
+      "question": "Is approval evidenced for this work's location-b?",
+      "required": true
+    },
+    {
+      "id": "billing-ready",
+      "question": "Is billing eligibility verified for this work's location and period?",
+      "required": true
+    }
+  ],
+  "recordedMilestones": ["submitted", "approved"],
+  "execution": {
+    "priorOutcome": "none",
+    "stopRequested": false,
+    "permittedActions": ["inspect", "prepare"]
+  }
+}

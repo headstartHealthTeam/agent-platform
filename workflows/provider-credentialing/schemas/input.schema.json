@@ -1,0 +1,304 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "0.1.0"
+    },
+    "dataMode": {
+      "type": "string",
+      "const": "synthetic"
+    },
+    "caseRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "workflowRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "routeRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "work": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "providerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "practiceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "payer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "product": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "jurisdiction": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "requestType": {
+          "type": "string",
+          "enum": ["initial-enrollment", "group-add", "renewal", "maintenance"]
+        },
+        "locationIds": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "period": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "existingAffiliationIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "required": [
+        "id",
+        "providerId",
+        "practiceId",
+        "payer",
+        "product",
+        "jurisdiction",
+        "requestType",
+        "locationIds",
+        "period",
+        "existingAffiliationIds"
+      ],
+      "additionalProperties": false
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "subjectId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "locationIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "value": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 8000
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "documented",
+              "declared",
+              "verified",
+              "unknown",
+              "conflicting",
+              "not-applicable"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "revision": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "required": ["id", "revision"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["id", "key", "subjectId", "locationIds", "value", "disposition", "evidence"],
+        "additionalProperties": false
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "subjectId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "retrieval": {
+            "type": "string",
+            "enum": ["available", "awaiting-file", "missing", "error"]
+          },
+          "validity": {
+            "type": "string",
+            "enum": ["current", "expired", "unknown"]
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["id", "revision", "subjectId", "title", "retrieval", "validity", "content"],
+        "additionalProperties": false
+      }
+    },
+    "requirements": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8000
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "question", "required"],
+        "additionalProperties": false
+      }
+    },
+    "recordedMilestones": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["prepared", "populated", "submitted", "approved", "active", "billing-verified"]
+      }
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "priorOutcome": {
+          "type": "string",
+          "enum": ["none", "confirmed", "unknown"]
+        },
+        "stopRequested": {
+          "type": "boolean"
+        },
+        "permittedActions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["inspect", "prepare"]
+          }
+        }
+      },
+      "required": ["priorOutcome", "stopRequested", "permittedActions"],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "dataMode",
+    "caseRevision",
+    "workflowRevision",
+    "routeRevision",
+    "work",
+    "facts",
+    "evidence",
+    "requirements",
+    "recordedMilestones",
+    "execution"
+  ],
+  "additionalProperties": false
+}

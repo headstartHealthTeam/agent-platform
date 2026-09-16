@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "0.2.0",
+  "workId": "synthetic-ga-initial",
+  "caseRevision": "case-r1",
+  "workflowRevision": "workflow-r1",
+  "routeRevision": "route-r1",
+  "status": "prepared-for-review",
+  "answers": [
+    {
+      "requirementId": "practice-start-date",
+      "value": "2020-02-03",
+      "disposition": "supported",
+      "factIds": ["practice-start"],
+      "evidence": [
+        {
+          "id": "route-note",
+          "revision": "r1"
+        },
+        {
+          "id": "practice-letter",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The location-opening letter answers the route-defined date; provider employment began later and is not the requested date."
+    }
+  ],
+  "questions": [],
+  "humanStops": ["H-01", "H-04", "H-05"],
+  "handoff": "Prepared proposal only. Review exact source revisions and the proposed date before any destination action. No population, upload or submission has occurred; retain final readback review and human protected actions."
+}

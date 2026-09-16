@@ -104,11 +104,15 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 
 ## Included Skills
 
+Credentialing preparation uses the canonical skill below and a separate draft workflow package;
+it does not enable live payer actions.
+
 OpenAI development access uses separately provisioned [runtime tooling](docs/openai-platform-access.md);
 installing these skills does not install credentials, runtime packages or a hosted workflow.
 
 | Skill                                                                                                | Purpose                                                                                               |
 | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [`headstart-provider-credentialing`](skills/headstart-provider-credentialing/SKILL.md)               | Investigate scoped credentialing evidence and prepare cited proposals with explicit human boundaries  |
 | [`bulletin-writer`](skills/bulletin-writer/SKILL.md)                                                 | Provider-portal bulletins with clear actions and grounded Headstart voice                             |
 | [`deep-pr-review`](skills/deep-pr-review/SKILL.md)                                                   | Generic evidence-backed pull request review method                                                    |
 | [`headstart-agent-workflow-authoring`](skills/headstart-agent-workflow-authoring/SKILL.md)           | Select and design the smallest safe local or managed agent workflow                                   |
@@ -138,9 +142,10 @@ installing these skills does not install credentials, runtime packages or a host
 
 ## Managed Workflows
 
-| Workflow                                                                             | Status | Purpose                                                             |
-| ------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------- |
-| [`synthetic-read-only-reference`](workflows/synthetic-read-only-reference/README.md) | Draft  | Disabled synthetic example of the managed workflow package contract |
+| Workflow                                                                             | Status | Purpose                                                                     |
+| ------------------------------------------------------------------------------------ | ------ | --------------------------------------------------------------------------- |
+| [`provider-credentialing`](workflows/provider-credentialing/README.md)               | Draft  | Payer-neutral synthetic preparation foundation; not a live or connected MVP |
+| [`synthetic-read-only-reference`](workflows/synthetic-read-only-reference/README.md) | Draft  | Disabled synthetic example of the managed workflow package contract         |
 
 Managed workflow packages are not installed globally with portable skills. They may be loaded from
 a repository checkout for local development, evaluation, or an explicitly supported supervised

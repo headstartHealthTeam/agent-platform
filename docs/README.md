@@ -58,6 +58,11 @@ and examples.
 
 ## Concrete Examples
 
+- [Desktop-to-API workflow development](agent-workflow-development.md) defines authoring, actual API
+  integration with isolated local execution, and hosted validation as distinct evidence lanes.
+  [Provider credentialing](../workflows/provider-credentialing/README.md) is the intended reference;
+  its current implementation is a synthetic preparation foundation only.
+
 - [OpenAI platform development access](openai-platform-access.md) connects local API access,
   approved lifecycle operations and pinned canonical skill preparation. Its
   [provider package](../packages/openai-platform/README.md) does not activate managed workflows.
