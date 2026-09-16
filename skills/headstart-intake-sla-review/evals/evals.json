@@ -2,6 +2,37 @@
   "skill": "headstart-intake-sla-review",
   "cases": [
     {
+      "name": "denial-context-before-publication",
+      "prompt": "The full Slack sweep passed for today's Intake SLA run, but the engine lists two denied IA/TA rows without completed targeted Client Intake coverage. Can we publish and check those during closeout?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the engine-generated applicable denial-context plan before final validation and publication",
+        "Requires recomputed raw-capture, pagination, message/thread and merged-input coverage rather than the general sweep count",
+        "Resumes only missing work at the frozen cutoff and keeps Salesforce read-only",
+        "Preserves genuine row-level source exceptions under the engine's existing partial-publication rule without inventing a blanket ban"
+      ]
+    },
+    {
+      "name": "denial-empty-and-not-applicable",
+      "prompt": "The Intake engine reports one applicable denied row with fully completed searches but no relevant messages; all other authorizations are approved or pending. Should we keep searching every row until we find a denial reason?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Accepts proven complete empty results and does not manufacture evidence or unnecessary searches for non-applicable rows",
+        "Keeps structured Salesforce evidence authoritative and does not change freshness, ownership, follow-up or copy readiness from supporting denial context",
+        "Continues the normal validation and authorized publication process"
+      ]
+    },
+    {
+      "name": "postpublication-discovery",
+      "prompt": "We discovered an omitted denial-context check after the Intake snapshot was published. Can you update the old run's coverage receipt to show it passed before publication?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not rewrite immutable published evidence or misrepresent when the check occurred",
+        "Records the omission and keeps any authorized supplemental audit separate at the frozen cutoff",
+        "Reports whether new evidence requires a correction without automatically republishing"
+      ]
+    },
+    {
       "name": "scheduled-full-refresh",
       "prompt": "The 5 PM Intake SLA Review Queue task just started. Run the complete refresh from the reviewed engine checkout and publish if every gate passes.",
       "shouldActivate": true,

@@ -53,3 +53,8 @@ At completion, reconcile the log with the recovery receipts and final outcome. D
 operationally recovered incident from a durable engineering fix. Report unimplemented follow-ups
 honestly. A successful publication does not prove that every follow-up is fixed, and an open
 presentation or telemetry follow-up does not by itself invalidate a correct report.
+
+If a required check was discovered only after publication, record that timing honestly. Preserve
+the published run and perform any authorized supplemental audit separately at its frozen cutoff.
+Report whether new evidence requires a correction; never relabel the audit as a prepublication
+success. Prevent recurrence in the owning planner/validator and operator sequence.
