@@ -5,6 +5,7 @@ export {
   type CredentialReference,
 } from './config.js';
 export { readCredential, type SecretCommand } from './credential.js';
+export { selfHostedExecutorConnection, type ExecutorConnection } from './self-hosted.js';
 export {
   actionSchema,
   readSchema,

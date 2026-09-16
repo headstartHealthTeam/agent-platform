@@ -333,6 +333,100 @@ describe('OpenAI access boundary', () => {
     expect(actionSchema.parse(action)).toEqual(action);
   });
 
+  it.each([
+    { agent_id: 'agent_synthetic' },
+    {
+      agent: {
+        model: 'gpt-6-astra',
+        instructions: 'Use only the isolated synthetic workspace.',
+        reasoning: { effort: 'high' },
+        tools: [],
+      },
+    },
+  ])('creates a self-hosted session without prematurely submitting work', async (agent) => {
+    const { platform, requests } = fixture();
+    const body = {
+      ...agent,
+      environment: { type: 'self_hosted', workspace_directory: '/workspace' },
+    };
+    const action = { operation: 'sessions.create', body };
+    const plan = planAction(config.target, action);
+    expect(plan.billable).toBe(true);
+    await expect(
+      platform.apply(action, { apply: true, digest: plan.digest, allowBillable: false })
+    ).rejects.toThrow('billable');
+    expect(requests).toHaveLength(0);
+    await platform.apply(action, { apply: true, digest: plan.digest, allowBillable: true });
+    expect(requests).toHaveLength(2);
+    const request = requests.at(-1);
+    expect(request?.url).toBe('https://api.openai.com/v1/agents/sessions');
+    expect(await request?.json()).toEqual({ ...body, metadata: {}, stream: false });
+  });
+
+  it('binds self-hosted location and inline model settings to exact approval', async () => {
+    const { platform, requests } = fixture();
+    const body = {
+      agent: { model: 'gpt-6-astra', reasoning: { effort: 'high' } },
+      environment: { type: 'self_hosted', workspace_directory: '/workspace' },
+    };
+    const action = { operation: 'sessions.create', body };
+    const approved = planAction(config.target, action).digest;
+    for (const changed of [
+      { ...body, environment: { ...body.environment, workspace_directory: '/other' } },
+      { ...body, agent: { ...body.agent, reasoning: { effort: 'xhigh' } } },
+    ]) {
+      await expect(
+        platform.apply(
+          { ...action, body: changed },
+          { apply: true, digest: approved, allowBillable: true }
+        )
+      ).rejects.toThrow('approval');
+    }
+    expect(requests).toHaveLength(0);
+  });
+
+  it('rejects ambiguous agent selection, missing none input and executor secrets or mounts', () => {
+    const agent = { model: 'synthetic-model' };
+    const environment = { type: 'self_hosted', workspace_directory: '/workspace' };
+    for (const body of [
+      { environment },
+      { agent: {}, environment },
+      { agent, agent_id: 'agent_synthetic', environment },
+      { agent, environment: { type: 'none' } },
+      { agent, environment: { ...environment, CODEX_API_KEY: 'not-a-real-key' } },
+      { agent, environment: { ...environment, environment_template_id: 'template_synthetic' } },
+      { agent, environment: { ...environment, capability_directories: ['/private'] } },
+      { agent, environment: { ...environment, network: { access: 'enabled' } } },
+    ]) {
+      expect(actionSchema.safeParse({ operation: 'sessions.create', body }).success).toBe(false);
+    }
+    for (const workspace_directory of [
+      '',
+      '/',
+      'workspace',
+      '/workspace/../private',
+      '/work/./x',
+      '/work//x',
+      '/work/',
+      '/work\\private',
+      '/work\nprivate',
+      '/work\u007f',
+    ]) {
+      expect(
+        actionSchema.safeParse({
+          operation: 'sessions.create',
+          body: { agent, environment: { ...environment, workspace_directory } },
+        }).success
+      ).toBe(false);
+    }
+    expect(
+      actionSchema.safeParse({
+        operation: 'sessions.create',
+        body: { agent, environment: { type: 'none' }, input: 'bounded synthetic task' },
+      }).success
+    ).toBe(true);
+  });
+
   it('summarizes safely and fingerprints key order deterministically', () => {
     expect(fingerprint({ b: 2, a: [1, null] })).toBe(fingerprint({ a: [1, null], b: 2 }));
     expect(

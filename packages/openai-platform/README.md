@@ -16,6 +16,33 @@ Public exports include `resolveConfig`, `readCredential`, `OpenAIPlatform`, `pla
 state never enter output. Full resource content is returned to library callers; the CLI defaults
 to IDs/statuses and exposes content only through `--include-content`.
 
+## Self-Hosted Development Boundary
+
+The supervised session-creation contract also accepts `self_hosted` with an explicit normalized
+absolute POSIX `workspace_directory`. Choose either a saved `agent_id` or an inline agent with an
+explicit model, instructions, reasoning and scoped tools; simultaneous overrides are deliberately
+unsupported. Initial input can be omitted for an executor-backed session so the application can
+subscribe and connect the environment before sending work. `none` still requires initial input.
+Creation remains behind exact-target/payload approval and the conservative billable gate, even
+when input is deferred.
+
+`selfHostedExecutorConnection` validates a retrieved session against its expected ID and returns
+an argument array for `codex exec-server`, preserving the provider's remote URL unchanged. It does
+not spawn a process, provision isolation, retrieve a key or prove that an environment connected.
+Its routing data belongs only in protected provisioning state, not the operator activity feed.
+The current connection policy allows only the documented OpenAI WSS host; a future host change
+requires an explicit adapter review, not an arbitrary endpoint fallback.
+
+Use a separate restricted environment key inside each isolated executor; keep the application key,
+personal auth caches and unrelated workspace files outside. Self-hosted templates, capability
+mounts, secret fields and network-policy fields are rejected by this bounded surface. Network
+isolation must be enforced by the provisioner, not inferred from a path or this request schema.
+
+These are offline-tested SDK request/connection contracts, not a completed local executor or
+backend/admin integration. Stream subscription/recovery, materialization, scoped identity, durable
+business approval/action enforcement and actual API acceptance remain separate implementation and
+verification work. See the [development sequence](../../docs/agent-workflow-development.md).
+
 ## Safety And Failure Contract
 
 - Explicit organization/project routing and successful Agents read preflight are required. The API

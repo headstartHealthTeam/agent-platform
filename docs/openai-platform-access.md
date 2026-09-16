@@ -164,16 +164,16 @@ target. Add `--allow-billable` only when execution charges and the intended inpu
 Planning, capability, and key scope are not that approval. Request files may contain private prompts;
 keep them in approved local storage, out of Git and normal tool-output transcripts.
 
-| Action                                  | Required request fields                                               |
-| --------------------------------------- | --------------------------------------------------------------------- |
-| `agents.create`                         | `body.model`; optional name, instructions, metadata, reasoning, tools |
-| `agents.update`                         | `id`, `expectedFingerprint` from a current read, nonempty `body`      |
-| `agents.delete`                         | `id`, `expectedFingerprint` from a current read                       |
-| `templates.create`                      | `body` with optional name, network and prepared inline skills         |
-| `templates.update` / `templates.delete` | `id`, `expectedFingerprint`; update also takes `body`                 |
-| `sessions.create`                       | `body.agent_id`, explicit environment, input; optional metadata       |
-| `sessions.send`                         | `id`, input, stable `idempotencyKey`                                  |
-| `sessions.cancel` / `sessions.delete`   | `id`                                                                  |
+| Action                                  | Required request fields                                                                                                 |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `agents.create`                         | `body.model`; optional name, instructions, metadata, reasoning, tools                                                   |
+| `agents.update`                         | `id`, `expectedFingerprint` from a current read, nonempty `body`                                                        |
+| `agents.delete`                         | `id`, `expectedFingerprint` from a current read                                                                         |
+| `templates.create`                      | `body` with optional name, network and prepared inline skills                                                           |
+| `templates.update` / `templates.delete` | `id`, `expectedFingerprint`; update also takes `body`                                                                   |
+| `sessions.create`                       | Either `body.agent_id` or inline `body.agent.model`, explicit environment; input required for `none`; optional metadata |
+| `sessions.send`                         | `id`, input, stable `idempotencyKey`                                                                                    |
+| `sessions.cancel` / `sessions.delete`   | `id`                                                                                                                    |
 
 Example create: `{"operation":"agents.create","body":{"model":"APPROVED_MODEL","name":"Example","instructions":"Use synthetic inputs only."}}`.
 Updates preserve omitted fields; supplied arrays/objects replace the whole field. Review existing
@@ -182,10 +182,37 @@ functions, and credential-free HTTPS MCP with explicit tool allowlists. Declarin
 not install its responder. Credential vault provisioning and secret-bearing tool configuration are
 not implemented here.
 
-The initial CLI environment surface supports `none` and `openai_hosted` with an optional approved
-`environment_template_id` and explicit network policy. Templates can carry prepared inline skills.
-No automatic fallback creates compute or widens network access. Additional SDK capabilities need
-a reviewed typed adapter extension; unsupported fields fail clearly, not silently disappear.
+The CLI environment surface supports `none`, `openai_hosted` with an optional approved
+`environment_template_id` and explicit network policy, and `self_hosted` with an explicit normalized
+absolute POSIX `workspace_directory`. Hosted templates can carry prepared inline skills; templates
+do not apply to self-hosted environments. No automatic fallback creates compute or widens network
+access. Additional SDK capabilities need a reviewed typed adapter extension; unsupported fields
+fail clearly, not silently disappear.
+
+### Isolated Local Executor Preparation
+
+For real-API/local-executor development, create a `self_hosted` session without initial input, then
+persist the returned session/environment identity in protected application state. The library's
+`selfHostedExecutorConnection` returns a validated argument array for the official executor, not
+a shell string; it preserves the returned remote URL unchanged. Do not log that routing data or
+put it in the admin activity feed. A workspace path is configuration, not isolation or proof that
+the files and tools were materialized.
+
+The [official self-hosted guide](https://developers.openai.com/api/docs/guides/agents-api/environments/self-hosted)
+requires a separate restricted environment key belonging to the same organization, project and
+user/service account as the session. Keep the application credential outside the executor. The
+provisioner supplies only the restricted key as `CODEX_API_KEY` inside its isolated environment;
+do not pass it in command arguments, embed it in an image, or copy desktop auth caches. This
+package does not provision that key or launch the environment.
+
+Open the real session event stream before connecting the executor and sending work. Verify the
+environment connection and intended turn outcome; creating a session or accepting input proves
+neither execution nor success. Streams do not replay missed events: recover session/turn/items
+state after disconnect, not by creating another session or resubmitting a possibly accepted action.
+See [session behavior](https://developers.openai.com/api/docs/guides/agents-api/sessions).
+The current typed creation/connection extension is offline-tested only. Streaming/recovery,
+provisioning, application authority and connected/hosted acceptance are still follow-through work;
+the supervised adapter is not the business control plane.
 
 ## Canonical Source To Agent Environment
 

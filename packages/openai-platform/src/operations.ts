@@ -118,6 +118,25 @@ const environment = z.union([
   z.object({ type: z.literal('none') }).strict(),
   z
     .object({
+      type: z.literal('self_hosted'),
+      workspace_directory: z
+        .string()
+        .min(2)
+        .max(4096)
+        .refine(
+          (value) =>
+            value.startsWith('/') &&
+            !value.includes('\\') &&
+            !/\p{Cc}/u.test(value) &&
+            value
+              .split('/')
+              .slice(1)
+              .every((part) => part !== '' && part !== '.' && part !== '..')
+        ),
+    })
+    .strict(),
+  z
+    .object({
       type: z.literal('openai_hosted'),
       environment_template_id: id.optional(),
       network: network.optional(),
@@ -131,6 +150,37 @@ const environment = z.union([
       ...(value.network === undefined ? {} : { network: value.network }),
     })),
 ]);
+// Keep the supervised surface explicit: use one saved agent OR one inline configuration.
+// Overrides, capability-directory mounts and environment credentials are not accepted here.
+const sessionAgent = z
+  .object({
+    model,
+    instructions: z.string().max(100_000).optional(),
+    reasoning: reasoning.optional(),
+    tools: tools.optional(),
+  })
+  .strict()
+  .transform((value) => ({
+    model: value.model,
+    ...(value.instructions === undefined ? {} : { instructions: value.instructions }),
+    ...(value.reasoning === undefined ? {} : { reasoning: value.reasoning }),
+    ...(value.tools === undefined ? {} : { tools: value.tools }),
+  }));
+const sessionFields = {
+  environment,
+  input: z.string().min(1).max(100_000).optional(),
+  metadata: metadata.default({}),
+};
+const sessionCreate = z
+  .union([
+    z.object({ agent_id: id, ...sessionFields }).strict(),
+    z.object({ agent: sessionAgent, ...sessionFields }).strict(),
+  ])
+  .refine((value) => value.environment.type !== 'none' || value.input !== undefined)
+  .transform(({ input, ...value }) => ({
+    ...value,
+    ...(input === undefined ? {} : { input }),
+  }));
 const query = z
   .object({ limit: z.number().int().min(1).max(100).default(20), after: id.optional() })
   .strict()
@@ -167,14 +217,7 @@ export const actionSchema = z.discriminatedUnion('operation', [
   z
     .object({
       operation: z.literal('sessions.create'),
-      body: z
-        .object({
-          agent_id: id,
-          environment,
-          input: z.string().min(1).max(100_000),
-          metadata: metadata.default({}),
-        })
-        .strict(),
+      body: sessionCreate,
     })
     .strict(),
   z
