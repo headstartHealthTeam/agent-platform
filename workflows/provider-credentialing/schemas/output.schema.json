@@ -1,169 +1,452 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "schemaVersion": {
-      "type": "string",
-      "const": "0.2.0"
-    },
-    "workId": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
-    },
-    "caseRevision": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
-    },
-    "workflowRevision": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
-    },
-    "routeRevision": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
-    },
-    "status": {
-      "type": "string",
-      "enum": ["prepared-for-review", "needs-information", "blocked"]
-    },
-    "answers": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "requirementId": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "value": {
-            "anyOf": [
-              {
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "0.2.0"
+        },
+        "workId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "caseRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "workflowRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "routeRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "status": {
+          "type": "string",
+          "enum": ["prepared-for-review", "needs-information", "blocked"]
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "requirementId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "value": {
                 "anyOf": [
                   {
-                    "type": "string",
-                    "maxLength": 8000
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 8000
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
                   },
                   {
-                    "type": "number"
-                  },
-                  {
-                    "type": "boolean"
+                    "type": "null"
                   }
                 ]
               },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "disposition": {
-            "type": "string",
-            "enum": ["supported", "unresolved", "not-applicable"]
-          },
-          "factIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 200
-            }
-          },
-          "evidence": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                },
-                "revision": {
+              "disposition": {
+                "type": "string",
+                "enum": ["supported", "unresolved", "not-applicable"]
+              },
+              "factIds": {
+                "type": "array",
+                "items": {
                   "type": "string",
                   "minLength": 1,
                   "maxLength": 200
                 }
               },
-              "required": ["id", "revision"],
-              "additionalProperties": false
-            }
-          },
-          "explanation": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 8000
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "revision": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    }
+                  },
+                  "required": ["id", "revision"],
+                  "additionalProperties": false
+                }
+              },
+              "explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8000
+              }
+            },
+            "required": [
+              "requirementId",
+              "value",
+              "disposition",
+              "factIds",
+              "evidence",
+              "explanation"
+            ],
+            "additionalProperties": false
           }
         },
-        "required": ["requirementId", "value", "disposition", "factIds", "evidence", "explanation"],
-        "additionalProperties": false
-      }
-    },
-    "questions": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "kind": {
-            "description": "evidence: unresolved evidence, mapping or readback discrepancy requiring H-02; access or reconciliation: authorized access recovery or uncertain-effect reconciliation requiring blocked status and H-03. Include both stops when both conditions exist.",
-            "type": "string",
-            "enum": ["evidence", "access", "reconciliation"]
-          },
-          "question": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 8000
-          },
-          "evidenceIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 200
-            }
-          },
-          "nextActor": {
-            "type": "string",
-            "enum": ["ops", "provider", "engineering"]
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "kind": {
+                "type": "string",
+                "enum": ["evidence", "access", "reconciliation"],
+                "description": "evidence: unresolved evidence, mapping or readback discrepancy requiring H-02; access or reconciliation: authorized access recovery or uncertain-effect reconciliation requiring blocked status and H-03. Include both stops when both conditions exist."
+              },
+              "question": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8000
+              },
+              "evidenceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "nextActor": {
+                "type": "string",
+                "enum": ["ops", "provider", "engineering"]
+              }
+            },
+            "required": ["id", "kind", "question", "evidenceIds", "nextActor"],
+            "additionalProperties": false
           }
         },
-        "required": ["id", "kind", "question", "evidenceIds", "nextActor"],
-        "additionalProperties": false
-      }
+        "humanStops": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["H-01", "H-02", "H-03", "H-04", "H-05"]
+          }
+        },
+        "handoff": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8000
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "workId",
+        "caseRevision",
+        "workflowRevision",
+        "routeRevision",
+        "status",
+        "answers",
+        "questions",
+        "humanStops",
+        "handoff"
+      ],
+      "additionalProperties": false
     },
-    "humanStops": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": ["H-01", "H-02", "H-03", "H-04", "H-05"]
-      }
-    },
-    "handoff": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 8000
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "0.3.0"
+        },
+        "workId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "caseRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "workflowRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "routeRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "status": {
+          "type": "string",
+          "enum": ["prepared-for-review", "needs-information", "blocked"]
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "requirementId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 8000
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "disposition": {
+                "type": "string",
+                "enum": ["supported", "unresolved", "not-applicable"]
+              },
+              "factIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "revision": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    }
+                  },
+                  "required": ["id", "revision"],
+                  "additionalProperties": false
+                }
+              },
+              "explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8000
+              },
+              "basis": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "documented",
+                      "declared",
+                      "verified",
+                      "operator-selected",
+                      "proxy",
+                      "inferred"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "requirementId",
+              "value",
+              "disposition",
+              "factIds",
+              "evidence",
+              "explanation",
+              "basis"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "kind": {
+                "type": "string",
+                "enum": ["evidence", "access", "reconciliation"],
+                "description": "evidence: unresolved evidence, mapping or readback discrepancy requiring H-02; access or reconciliation: authorized access recovery or uncertain-effect reconciliation requiring blocked status and H-03. Include both stops when both conditions exist."
+              },
+              "question": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8000
+              },
+              "evidenceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "nextActor": {
+                "type": "string",
+                "enum": ["ops", "provider", "engineering"]
+              }
+            },
+            "required": ["id", "kind", "question", "evidenceIds", "nextActor"],
+            "additionalProperties": false
+          }
+        },
+        "humanStops": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["H-01", "H-02", "H-03", "H-04", "H-05"]
+          }
+        },
+        "handoff": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "requirementId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "disposition": {
+                "type": "string",
+                "enum": ["proposed", "unresolved", "not-applicable"]
+              },
+              "artifact": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "revision": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "digest": {
+                        "type": "string",
+                        "pattern": "^sha256:[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": ["id", "revision", "digest"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8000
+              }
+            },
+            "required": ["requirementId", "disposition", "artifact", "explanation"],
+            "additionalProperties": false
+          }
+        },
+        "protectedActions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "requirementId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "disposition": {
+                "type": "string",
+                "enum": ["human-required", "unresolved"]
+              },
+              "explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8000
+              }
+            },
+            "required": ["requirementId", "disposition", "explanation"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "workId",
+        "caseRevision",
+        "workflowRevision",
+        "routeRevision",
+        "status",
+        "answers",
+        "questions",
+        "humanStops",
+        "handoff",
+        "attachments",
+        "protectedActions"
+      ],
+      "additionalProperties": false
     }
-  },
-  "required": [
-    "schemaVersion",
-    "workId",
-    "caseRevision",
-    "workflowRevision",
-    "routeRevision",
-    "status",
-    "answers",
-    "questions",
-    "humanStops",
-    "handoff"
-  ],
-  "additionalProperties": false
+  ]
 }

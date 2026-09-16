@@ -3,11 +3,11 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 
 import {
-  credentialingInputSchema,
-  credentialingOutputSchema,
-  type CredentialingInput,
-  type CredentialingOutput,
-} from './contracts.js';
+  credentialingArtifactInputSchema,
+  credentialingArtifactOutputSchema,
+  type ArtifactInput,
+  type ArtifactOutput,
+} from './preparation-contracts.js';
 import { reviewFingerprint } from './review.js';
 
 const requestSchema = z.object({ inputJson: z.string(), proposalJson: z.string() }).strict();
@@ -17,16 +17,16 @@ export interface ReviewArtifactValidation {
   protocol: 'credentialing-validation/v1';
   dataMode: 'synthetic';
   workId: string;
-  work: Omit<CredentialingInput['work'], 'id'>;
+  work: Omit<ArtifactInput['work'], 'id'>;
   caseRevision: string;
   workflowRevision: string;
   routeRevision: string;
-  inputSchemaVersion: '0.1.0';
-  proposalSchemaVersion: '0.2.0';
+  inputSchemaVersion: ArtifactInput['schemaVersion'];
+  proposalSchemaVersion: ArtifactOutput['schemaVersion'];
   inputFingerprint: string;
   proposalFingerprint: string;
   reviewFingerprint: string;
-  readiness: CredentialingOutput['status'];
+  readiness: ArtifactOutput['status'];
 }
 
 export type ArtifactValidationReply =
@@ -38,8 +38,8 @@ export const validateReviewArtifacts = (request: unknown): ReviewArtifactValidat
   if ([inputJson, proposalJson].some((value) => Buffer.byteLength(value) > artifactByteLimit)) {
     throw new Error('Artifact exceeds the synthetic review limit.');
   }
-  const input = credentialingInputSchema.parse(JSON.parse(inputJson));
-  const proposal = credentialingOutputSchema.parse(JSON.parse(proposalJson));
+  const input = credentialingArtifactInputSchema.parse(JSON.parse(inputJson));
+  const proposal = credentialingArtifactOutputSchema.parse(JSON.parse(proposalJson));
   const fingerprint = reviewFingerprint(input, proposal);
   const { id: workId, ...work } = input.work;
   return {

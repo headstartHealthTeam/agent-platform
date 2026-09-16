@@ -87,6 +87,14 @@ Scenarios:
 | `uncertain-save`         | Escalate reconciliation rather than replay a possibly completed save                      |
 | `approval-not-billing`   | Notice an approval applies to another location and does not establish billing eligibility |
 
+The additional `ga-preparation` and `tx-preparation` tool scenarios use the richer contracts below.
+Their invented reference proposals live separately under `fixtures/preparation`; they are test
+oracles, not tool responses or model outputs. They exercise repeating records, address roles,
+conversion lineage, a superseded deficient CV, qualified dates and protected-action handoffs.
+Texas retains two locations and existing affiliation and uses different document signers.
+These are structural contrasts informed by workflow observations, not complete payer forms,
+current payer policy, real documents or evidence of a passing agent behavior trial.
+
 For a fresh-context behavioral trial, provide the skill, case/schema and access to only these tools.
 Do not include expected outcomes, reference output or evaluation rubrics in the agent input.
 Fixture `case` omits evidence content deliberately; it must be discovered/read. Model evaluations
@@ -136,11 +144,57 @@ authority; a worker thread and empty environment are not a security sandbox for 
 Do not load it from agent-writable storage. Managed ingestion, runtime execution and external action
 remain separately gated.
 
-Output schema `0.2.0` requires each question's `kind`: `evidence` maps to H-02, while `access`
+### Versioned Preparation Model
+
+The worker and published JSON Schemas accept two explicit pairs; canonical validation rejects
+cross-pair combinations. Existing artifacts and evaluations are not migrated in place.
+
+| Input   | Proposal | Role                                                                   |
+| ------- | -------- | ---------------------------------------------------------------------- |
+| `0.1.0` | `0.2.0`  | Original scalar preparation scenarios and historical artifacts         |
+| `0.2.0` | `0.3.0`  | Repeating records, scoped file proposals and protected-action handoffs |
+
+`preparation-contracts.ts` is the richer canonical definition. Regenerate the checked-in JSON
+Schemas with the package's `generate:schemas` command, then format and run normal QA. Legacy typed
+exports remain unchanged; artifact consumers use the explicit union exports.
+
+- `records` group fields by stable record ID for education, employment, address, ownership,
+  management, license and coverage. Separate rows retain their own subjects, related parties,
+  locations and periods. Address roles distinguish service, pay-to and mail-to. Unknown period
+  boundaries remain null; do not turn a proxy date into a record's verified date range.
+- `relatedParties` declare scoped people/organizations and cited relationship evidence. Their
+  presence is not a tool authorization or proof of ownership/signing authority. Scope remains
+  bounded to this synthetic case. Empty `locationIds` explicitly means case-wide; a null record
+  means subject-wide. A record-specific source cannot support a different record.
+- Facts preserve documented, declared, verified, operator-selected, proxy, unknown, conflicting
+  and not-applicable dispositions. Operator-selected/proxy facts require a rationale. Answers
+  retain a visible `basis`; citing a proxy cannot promote it to verification. `supported` means
+  a proposed answer with cited support, not objective truth. Evidence-based inference remains
+  allowed and must be labeled `inferred`; semantic correctness still needs agent and human review.
+- Evidence keeps source system/record/version and observation time. Each proposed attachment
+  resolves to one exact artifact ID, revision and digest, with media type, scope and evidence.
+  A converted artifact retains exact source references and the transformation ID/revision.
+  Validation rejects missing/stale references and cycles and checks the whole proposed lineage.
+  There is one declared revision per artifact ID in a snapshot; prior snapshots stay immutable.
+- Field and attachment requirements name their destination system/section/field. Protected-action
+  requirements name action, designated actor/role, related documents and any fields/documents
+  blocked by a mid-form human action. Each gets a `human-required` or `unresolved` disposition.
+  These are pending handoff requirements, not grants, signatures or a workflow scheduler.
+  `prepared-for-review` can include correctly routed, still-unperformed human actions; it cannot
+  include unresolved files or actor routing. Those require H-02 and an incomplete/blocked status.
+
+Artifact digests in the new fixtures are invented metadata; no file bytes are provided. The future
+protected file capability must retrieve and hash actual exact-version bytes, verify transformations
+and revalidate current authorization before upload. This contract does not implement conversion,
+browser selectors, uploads, signatures or execution. Validation establishes structural consistency,
+not that an answer is factually correct, a CV complete, or every real route requirement discovered.
+Do not turn inferred requirements, supplied `verified` facts or designated actors into trusted
+source-policy or permission assertions. Preserve human review and producer trust boundaries.
+
+Both output versions require each question's `kind`: `evidence` maps to H-02, while `access`
 and `reconciliation` require blocked status and H-03. Unresolved answers independently require
 H-02; mixed conditions require both stops. Any outstanding question prevents prepared-for-review.
-The input schema remains `0.1.0`. This is an explicit draft output-contract change: do not silently
-coerce old proposals or overwrite historical evaluation results. Schema/stop checks cannot prove
+Do not silently coerce old proposals or overwrite historical evaluation results. Schema/stop checks cannot prove
 that a question's classification is semantically correct; source review remains necessary.
 
 Malformed or inconsistent snapshots, stale references and invalid proposals fail validation.

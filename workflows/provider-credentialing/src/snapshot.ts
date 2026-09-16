@@ -1,9 +1,11 @@
-import type { CredentialingInput } from './contracts.js';
+import type { ArtifactInput } from './preparation-contracts.js';
+import { preparationSubjects, validatePreparationSnapshot } from './preparation-snapshot.js';
 
 export const unique = (values: string[]): boolean => new Set(values).size === values.length;
 
-export const validateSnapshot = (input: CredentialingInput): string[] => {
-  const issues: string[] = [];
+export const validateSnapshot = (input: ArtifactInput): string[] => {
+  const issues: string[] =
+    input.schemaVersion === '0.2.0' ? validatePreparationSnapshot(input) : [];
   const collections = [
     input.facts.map((fact) => fact.id),
     input.evidence.map((item) => item.id),
@@ -14,7 +16,10 @@ export const validateSnapshot = (input: CredentialingInput): string[] => {
   if (collections.some((ids) => !unique(ids))) {
     issues.push('Ambiguous duplicate identifiers.');
   }
-  const subjects = [input.work.providerId, input.work.practiceId];
+  const subjects =
+    input.schemaVersion === '0.2.0'
+      ? preparationSubjects(input)
+      : [input.work.providerId, input.work.practiceId];
   for (const item of input.evidence) {
     if (!subjects.includes(item.subjectId)) {
       issues.push(`Evidence is outside the work subject scope: ${item.id}`);
@@ -30,8 +35,8 @@ export const validateSnapshot = (input: CredentialingInput): string[] => {
 };
 
 const validateFact = (
-  input: CredentialingInput,
-  fact: CredentialingInput['facts'][number],
+  input: ArtifactInput,
+  fact: ArtifactInput['facts'][number],
   subjects: string[]
 ): string[] => {
   const issues: string[] = [];

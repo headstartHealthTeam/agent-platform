@@ -3,6 +3,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { credentialingInputSchema, type CredentialingInput } from './contracts.js';
+import {
+  credentialingArtifactInputSchema,
+  preparationInputSchema,
+  type ArtifactInput,
+  type PreparationInput,
+} from './preparation-contracts.js';
 import { validateSnapshot } from './snapshot.js';
 
 export const scenarioIds = [
@@ -12,6 +18,23 @@ export const scenarioIds = [
   'uncertain-save',
   'approval-not-billing',
 ] as const;
+
+export const preparationScenarioIds = ['ga-preparation', 'tx-preparation'] as const;
+
+export const loadPreparationScenario = (id: string): PreparationInput => {
+  if (!preparationScenarioIds.some((candidate) => candidate === id))
+    throw new Error('Unknown synthetic preparation scenario.');
+  const filename = path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../fixtures/preparation',
+    `${id}.input.json`
+  );
+  return preparationInputSchema.parse(JSON.parse(fs.readFileSync(filename, 'utf8')));
+};
+
+type CaseSnapshot = Omit<CredentialingInput, 'evidence'> | Omit<PreparationInput, 'evidence'>;
+const caseProjection = ({ evidence: _evidence, ...snapshot }: ArtifactInput): CaseSnapshot =>
+  snapshot;
 
 export const loadScenario = (id: string): CredentialingInput => {
   if (!scenarioIds.some((candidate) => candidate === id)) {
@@ -29,11 +52,11 @@ export const loadScenario = (id: string): CredentialingInput => {
 export const createSyntheticTools = (
   inputValue: unknown
 ): {
-  readCase: () => Omit<CredentialingInput, 'evidence'>;
-  listEvidence: () => Omit<CredentialingInput['evidence'][number], 'content'>[];
-  readEvidence: (id: string) => CredentialingInput['evidence'][number];
+  readCase: () => CaseSnapshot;
+  listEvidence: () => Omit<ArtifactInput['evidence'][number], 'content'>[];
+  readEvidence: (id: string) => ArtifactInput['evidence'][number];
 } => {
-  const input = credentialingInputSchema.parse(inputValue);
+  const input = credentialingArtifactInputSchema.parse(inputValue);
   const issues = validateSnapshot(input);
   if (issues.length > 0) {
     throw new Error(issues.join(' '));
@@ -42,24 +65,10 @@ export const createSyntheticTools = (
     throw new Error('Synthetic inspection is not permitted or has been stopped.');
   }
   return {
-    readCase: (): Omit<CredentialingInput, 'evidence'> => {
-      const snapshot = {
-        schemaVersion: input.schemaVersion,
-        dataMode: input.dataMode,
-        caseRevision: input.caseRevision,
-        workflowRevision: input.workflowRevision,
-        routeRevision: input.routeRevision,
-        work: input.work,
-        facts: input.facts,
-        requirements: input.requirements,
-        recordedMilestones: input.recordedMilestones,
-        execution: input.execution,
-      };
-      return structuredClone(snapshot);
-    },
-    listEvidence: (): Omit<CredentialingInput['evidence'][number], 'content'>[] =>
+    readCase: (): CaseSnapshot => structuredClone(caseProjection(input)),
+    listEvidence: (): Omit<ArtifactInput['evidence'][number], 'content'>[] =>
       input.evidence.map(({ content: _content, ...item }) => structuredClone(item)),
-    readEvidence: (id): CredentialingInput['evidence'][number] => {
+    readEvidence: (id): ArtifactInput['evidence'][number] => {
       const item = input.evidence.find((candidate) => candidate.id === id);
       if (!item) {
         throw new Error('Evidence is outside this synthetic case.');
@@ -74,7 +83,10 @@ export const runSyntheticCommand = (args: string[]): unknown => {
   if (!scenario || !command || args.length > 3) {
     throw new Error('Usage: <scenario> case|list-evidence|read-evidence [evidence-id]');
   }
-  const tools = createSyntheticTools(loadScenario(scenario));
+  const input = preparationScenarioIds.some((id) => id === scenario)
+    ? loadPreparationScenario(scenario)
+    : loadScenario(scenario);
+  const tools = createSyntheticTools(input);
   if (command === 'case' && !evidenceId) {
     return tools.readCase();
   }

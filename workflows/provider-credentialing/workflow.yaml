@@ -3,7 +3,7 @@ kind: ManagedAgentWorkflow
 metadata:
   id: provider-credentialing
   displayName: Provider credentialing
-  version: 0.2.0
+  version: 0.3.0
   description: Draft preparation contracts and synthetic investigation; no live access or execution.
   lifecycle: draft
   owners:

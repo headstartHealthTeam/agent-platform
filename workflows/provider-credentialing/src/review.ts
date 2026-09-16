@@ -1,18 +1,21 @@
 import { createHash } from 'node:crypto';
 
 import {
-  credentialingInputSchema,
-  credentialingOutputSchema,
-  type CredentialingInput,
-  type CredentialingOutput,
-} from './contracts.js';
+  credentialingArtifactInputSchema,
+  credentialingArtifactOutputSchema,
+  type ArtifactInput,
+  type ArtifactOutput,
+} from './preparation-contracts.js';
+import { validatePreparationProposal } from './preparation-review.js';
 import { unique, validateSnapshot } from './snapshot.js';
 
-export const validateProposal = (
-  input: CredentialingInput,
-  output: CredentialingOutput
-): string[] => {
+export const validateProposal = (input: ArtifactInput, output: ArtifactOutput): string[] => {
   const issues = validateSnapshot(input);
+  if (input.schemaVersion === '0.2.0' && output.schemaVersion === '0.3.0') {
+    issues.push(...validatePreparationProposal(input, output));
+  } else if (input.schemaVersion !== '0.1.0' || output.schemaVersion !== '0.2.0') {
+    issues.push('Unsupported input/proposal schema-version pair.');
+  }
   if (
     output.workId !== input.work.id ||
     output.caseRevision !== input.caseRevision ||
@@ -44,7 +47,7 @@ export const validateProposal = (
   return issues;
 };
 
-const validateStops = (input: CredentialingInput, output: CredentialingOutput): string[] => {
+const validateStops = (input: ArtifactInput, output: ArtifactOutput): string[] => {
   const issues: string[] = [];
   const evidenceException =
     output.answers.some((answer) => answer.disposition === 'unresolved') ||
@@ -83,8 +86,8 @@ const validateStops = (input: CredentialingInput, output: CredentialingOutput): 
 };
 
 const validateAnswer = (
-  input: CredentialingInput,
-  answer: CredentialingOutput['answers'][number]
+  input: ArtifactInput,
+  answer: ArtifactOutput['answers'][number]
 ): string[] => {
   const issues: string[] = [];
   if (!input.requirements.some((item) => item.id === answer.requirementId)) {
@@ -119,8 +122,8 @@ const validateAnswer = (
 
 /** Content binding only: does not issue approval, enforce a lease or authorize an external action. */
 export const reviewFingerprint = (inputValue: unknown, outputValue: unknown): string => {
-  const input = credentialingInputSchema.parse(inputValue);
-  const output = credentialingOutputSchema.parse(outputValue);
+  const input = credentialingArtifactInputSchema.parse(inputValue);
+  const output = credentialingArtifactOutputSchema.parse(outputValue);
   const issues = validateProposal(input, output);
   if (issues.length > 0) {
     throw new Error(issues.join(' '));
