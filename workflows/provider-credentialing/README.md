@@ -3,7 +3,9 @@
 This is the first **synthetic preparation foundation**, not the complete credentialing MVP.
 It contains payer-neutral work/evidence/proposal contracts, scoped investigative fixture tools,
 review-content fingerprinting and regression/evaluation cases. It does not implement browser
-population, uploads, approval enforcement, a backend/admin integration, or an Agents API executor.
+population, uploads, approval enforcement, an admin integration, or an Agents API executor. Its
+canonical validator now has a standalone application-consumption artifact for the backend review
+boundary described below.
 
 The intended MVP prepares and, after exact human review, populates the first authorized Georgia
 Medicaid route, reads back the result and hands protected actions to a human. Texas existing-provider
@@ -99,6 +101,40 @@ model evaluation or API/browser integration follows from these definitions alone
 evidence and its limitations must be recorded separately.
 
 ## Failure, Review And Activation
+
+### Application Artifact Validation
+
+The package build emits `dist/artifact-worker.cjs`, bundling the existing canonical schema and
+proposal validators and their Zod dependency. This is a deterministic validation worker, not an
+agent runner, API emulator, service, model call or second workflow implementation. Backend builds
+can consume the same bytes locally and in a hosted application. No new engine/package is needed.
+
+From a reviewed, exact Agent Platform revision, run the normal frozen dependency install and package
+build. Distribute the generated worker as a protected deployment artifact with its SHA-256 digest
+and source revision in the deployment record. Do not publish or install it through the skills
+updater, copy canonical validation source into a consuming repository, or trust a digest supplied
+by the agent. No registry publication or deployment automation is supplied here.
+
+The application launches the already-pinned worker bytes with one `workerData` object containing
+`inputJson` and `proposalJson` (UTF-8 strings, at most 1 MiB each). The worker sends one message and
+closes its channel. Success is `{ ok: true, value: ... }`, using protocol
+`credentialing-validation/v1`; failure is the static
+`{ ok: false, code: "invalid-artifacts" }`, without source-derived diagnostics.
+
+The projection contains synthetic work identity, case/workflow/route revisions, input/output schema
+versions, exact-byte fingerprints, parsed-content review fingerprint and preparation readiness.
+The caller must independently match the full authoritative case scope/version, recompute the byte
+fingerprints, atomically retain immutable bytes/references/history, and enforce human authorization.
+The backend's source snapshot uses the decimal review-control version as `caseRevision`; source and
+proposal must both bind to that revision. Progress tokens do not increment this version.
+
+Canonical validation establishes schema, reference and stop-contract consistency, not truth of the
+evidence, correct judgment, actual workflow execution or a verified worker/run principal. Input
+workflow/route revision strings remain claims until the managed producer binds them to its pinned
+run manifest. The application validator is trusted deployment code running with application OS
+authority; a worker thread and empty environment are not a security sandbox for untrusted code.
+Do not load it from agent-writable storage. Managed ingestion, runtime execution and external action
+remain separately gated.
 
 Output schema `0.2.0` requires each question's `kind`: `evidence` maps to H-02, while `access`
 and `reconciliation` require blocked status and H-03. Unresolved answers independently require

@@ -6,6 +6,7 @@ export {
 } from './contracts.js';
 export { reviewFingerprint, validateProposal } from './review.js';
 export { validateSnapshot } from './snapshot.js';
+export { validateReviewArtifacts, artifactValidationReply } from './artifact-validation.js';
 export {
   createSyntheticTools,
   loadScenario,
