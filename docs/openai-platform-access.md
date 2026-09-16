@@ -143,9 +143,13 @@ headstart-openai read --config PRIVATE_CONFIG.json --request PRIVATE_READ.json
 
 A read request is, for example, `{"operation":"agents.list","query":{"limit":20}}`.
 Supported reads: `models.list`, `agents.list`, `agents.get`, `sessions.list`, `sessions.get`,
-`sessions.turns`, `sessions.items`, `templates.list`, `templates.get`. Resource reads use `id`;
+`sessions.turns`, `sessions.turn.get`, `sessions.items`, `templates.list`, `templates.get`. Resource reads use `id`;
 page reads accept `query.limit` and `query.after`. Inspect content only when authorized and needed,
 using `--include-content`. Never persist raw private session items as routine diagnostics.
+`sessions.turn.get` takes the session `id` and exact `turnId`. Turn/item history reads also accept
+`query.order` and default to ascending order. They return one bounded page, with `has_more` and
+`last_id`; one page is not complete history. The pinned SDK does not expose a turn filter for item
+listing; do not silently assume all returned items belong to the active turn.
 
 Repeat preflight in a fresh local session after changing the desktop login. Report that test
 separately; a successful current-session probe does not prove both account configurations work.
@@ -210,8 +214,29 @@ environment connection and intended turn outcome; creating a session or acceptin
 neither execution nor success. Streams do not replay missed events: recover session/turn/items
 state after disconnect, not by creating another session or resubmitting a possibly accepted action.
 See [session behavior](https://developers.openai.com/api/docs/guides/agents-api/sessions).
-The current typed creation/connection extension is offline-tested only. Streaming/recovery,
-provisioning, application authority and connected/hosted acceptance are still follow-through work;
+The library's `openSessionObservation({ sessionId }, signal)` opens the official SDK stream after
+exact-project preflight. Await it before sending input; consume its single-use `events` iterable
+and always call `close()` during teardown, including when input dispatch fails before consumption.
+Closing the observer or aborting its signal never sends session cancellation. End-of-stream,
+disconnect, session idle and a cancellation request are not confirmed run termination. Use
+`observedRootTurnOutcome` only with the intended session/turn IDs; it excludes subagent turns and
+is not proof of successful tools, durable effects or a completed business case.
+
+This is a metadata-only control projection: explicit IDs and allowlisted session/environment/turn
+states. It excludes messages, reasoning, tool arguments/results, errors and environment routing
+data. Operator commentary, structured questions and artifacts require their own reviewed content
+projection; this is not the complete C-09 activity feed. Unknown event types are ignored. Malformed
+known control events fail safely and require recovery. No SDK retries or automatic resubmission are
+introduced.
+
+For reconnect, open a new stream before fetching saved session/turn/items state and buffer incoming
+events while reconciling. Paginate the saved history, key items by ID, retain final items over stale
+updates, and verify the intended root turn. Streams do not replay. The application must implement
+bounded buffering, durable cursors/state and authority checks; the adapter's raw read results must
+not be exposed directly to an operator. See the [official recovery contract](https://developers.openai.com/api/docs/guides/agents-api/sessions/events).
+
+These creation/connection/observation boundaries are offline-tested only. Application recovery,
+provisioning, approval authority and connected/hosted acceptance remain follow-through work;
 the supervised adapter is not the business control plane.
 
 ## Canonical Source To Agent Environment

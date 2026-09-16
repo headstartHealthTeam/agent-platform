@@ -7,6 +7,12 @@ export {
 export { readCredential, type SecretCommand } from './credential.js';
 export { selfHostedExecutorConnection, type ExecutorConnection } from './self-hosted.js';
 export {
+  projectSessionControlEvent,
+  observedRootTurnOutcome,
+  type SessionControlEvent,
+  type SessionObservation,
+} from './observation.js';
+export {
   actionSchema,
   readSchema,
   parseAction,

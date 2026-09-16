@@ -12,6 +12,12 @@ import {
   type Target,
 } from './config.js';
 import {
+  observationRequestSchema,
+  projectSessionControlEvent,
+  type SessionControlEvent,
+  type SessionObservation,
+} from './observation.js';
+import {
   isBillable,
   parseAction,
   readSchema,
@@ -86,9 +92,11 @@ export class OpenAIPlatform {
     });
   }
 
-  public async preflight(): Promise<{ projectId: string; agentsRead: true }> {
+  public async preflight(signal?: AbortSignal): Promise<{ projectId: string; agentsRead: true }> {
     try {
-      const { response } = await this.#client.beta.agents.list({ limit: 1 }).withResponse();
+      const { response } = await this.#client.beta.agents
+        .list({ limit: 1 }, signal === undefined ? {} : { signal })
+        .withResponse();
       const projectId = response.headers.get('openai-project');
       verifyCapabilityPreflight(
         {
@@ -111,6 +119,44 @@ export class OpenAIPlatform {
       throw new Error(
         'OpenAI preflight failed: verify credential, Agents access, and exact project.'
       );
+    }
+  }
+
+  /** Opens the real, non-replaying SDK stream; caller owns lifetime, recovery and persistence. */
+  public async openSessionObservation(
+    input: unknown,
+    signal: AbortSignal
+  ): Promise<SessionObservation> {
+    const parsed = observationRequestSchema.safeParse(input);
+    if (!parsed.success || signal.aborted) {
+      throw new Error('Invalid or aborted session observation request.');
+    }
+    const { sessionId } = parsed.data;
+    await this.preflight(signal);
+    try {
+      const stream = await this.#client.beta.agents.sessions.events.stream(sessionId, { signal });
+      async function* events(): AsyncGenerator<SessionControlEvent> {
+        try {
+          for await (const raw of stream) {
+            const event = projectSessionControlEvent(raw, sessionId);
+            if (event !== null) yield event;
+          }
+        } catch {
+          throw new Error(
+            'Session observation interrupted; recover session and turn state before continuing.'
+          );
+        } finally {
+          stream.controller.abort();
+        }
+      }
+      return {
+        events: events(),
+        close: (): void => {
+          stream.controller.abort();
+        },
+      };
+    } catch {
+      throw new Error('Unable to open session observation; no provider payload was emitted.');
     }
   }
 
@@ -143,6 +189,8 @@ export class OpenAIPlatform {
         return agents.sessions.retrieve(request.id);
       case 'sessions.turns':
         return pageData(await agents.sessions.turns.list(request.id, request.query));
+      case 'sessions.turn.get':
+        return agents.sessions.turns.retrieve(request.turnId, { session_id: request.id });
       case 'sessions.items':
         return pageData(await agents.sessions.items.list(request.id, request.query));
       case 'templates.list':

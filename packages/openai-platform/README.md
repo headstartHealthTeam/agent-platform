@@ -11,7 +11,7 @@ by local development and future execution adapters. Do not extend the read-only 
 or Codex runner to grant managed write authority.
 
 Public exports include `resolveConfig`, `readCredential`, `OpenAIPlatform`, `planAction`,
-`bundleSkills`, and `inspectWorkflow`. All operations are bounded; lists return one page with
+`bundleSkills`, and `inspectWorkflow`. Lists return one bounded page with
 `has_more` and `last_id`, and accept an explicit `query.after`. SDK Page instances and transport
 state never enter output. Full resource content is returned to library callers; the CLI defaults
 to IDs/statuses and exposes content only through `--include-content`.
@@ -38,8 +38,16 @@ personal auth caches and unrelated workspace files outside. Self-hosted template
 mounts, secret fields and network-policy fields are rejected by this bounded surface. Network
 isolation must be enforced by the provisioner, not inferred from a path or this request schema.
 
-These are offline-tested SDK request/connection contracts, not a completed local executor or
-backend/admin integration. Stream subscription/recovery, materialization, scoped identity, durable
+`OpenAIPlatform.openSessionObservation({ sessionId }, signal)` opens the official read-only event
+stream before input dispatch. Its single-consumer iterable emits allowlisted control metadata only;
+callers must own its lifetime and call `close()` on teardown. Abort/close/EOF/disconnect do not mean
+the run stopped or succeeded. `observedRootTurnOutcome` correlates only the intended root turn and
+does not prove business success. Neither raw content nor error/routing payloads reach this feed.
+Ordered, bounded history pages and `sessions.turn.get` support caller-owned recovery; there is no
+automatic replay, message resend, or full C-09 commentary/question feed.
+
+These are offline-tested SDK request/connection/observation contracts, not a completed local executor or
+backend/admin integration. Application recovery, materialization, scoped identity, durable
 business approval/action enforcement and actual API acceptance remain separate implementation and
 verification work. See the [development sequence](../../docs/agent-workflow-development.md).
 

@@ -78,6 +78,189 @@ function fixture(
 }
 
 describe('OpenAI access boundary', () => {
+  it('retrieves the exact session turn without inferring completion from session status', async () => {
+    const { platform, requests } = fixture();
+    await platform.read({
+      operation: 'sessions.turn.get',
+      id: 'session_synthetic',
+      turnId: 'turn_synthetic',
+    });
+    expect(new URL(requests[1]?.url ?? '').pathname).toBe(
+      '/v1/agents/sessions/session_synthetic/turns/turn_synthetic'
+    );
+    expect(requests).toHaveLength(2);
+  });
+
+  it.each(['sessions.items', 'sessions.turns'])(
+    'preserves explicit order and pagination for %s recovery reads',
+    async (operation) => {
+      const { platform, requests } = fixture();
+      await platform.read({
+        operation,
+        id: 'session_synthetic',
+        query: { limit: 5, after: 'previous', order: 'asc' },
+      });
+      const query = new URL(requests[1]?.url ?? '').searchParams;
+      expect(Object.fromEntries(query)).toEqual({ limit: '5', after: 'previous', order: 'asc' });
+      expect(requests).toHaveLength(2);
+      await expect(
+        platform.read({ operation, id: 'session_synthetic', query: { order: 'invalid' } })
+      ).rejects.toThrow('Invalid');
+    }
+  );
+
+  it('opens a read-only SDK stream before consumption and strips private content', async () => {
+    const requests: Request[] = [];
+    const transport: typeof fetch = async (input, init) => {
+      const request = new Request(input, init);
+      requests.push(request);
+      if (new URL(request.url).pathname.endsWith('/agents')) {
+        return Response.json(
+          { data: [], has_more: false },
+          { headers: { 'openai-project': 'proj_synthetic' } }
+        );
+      }
+      return new Response(
+        [
+          {
+            type: 'agent.session.idle',
+            event_id: 'e1',
+            session: { id: 'session_synthetic', status: 'idle', instructions: secret },
+          },
+          { type: 'agent.session.turn.output_text.delta', event_id: 'e2', delta: secret },
+        ]
+          .map((event) => `data: ${JSON.stringify(event)}\n\n`)
+          .join(''),
+        { headers: { 'content-type': 'text/event-stream' } }
+      );
+    };
+    const platform = new OpenAIPlatform(config, secret, transport);
+    const observation = await platform.openSessionObservation(
+      { sessionId: 'session_synthetic' },
+      new AbortController().signal
+    );
+    expect(requests).toHaveLength(2);
+    expect(new URL(requests[1]?.url ?? '').pathname).toBe(
+      '/v1/agents/sessions/session_synthetic/events'
+    );
+    const events = [];
+    for await (const event of observation.events) events.push(event);
+    expect(events).toEqual([
+      { kind: 'session', eventId: 'e1', sessionId: 'session_synthetic', status: 'idle' },
+    ]);
+    observation.close();
+    expect(requests.every((request) => request.method === 'GET')).toBe(true);
+  });
+
+  it('fails observation safely and does not retry, mutate or expose provider errors', async () => {
+    const { platform, requests } = fixture({ failOnRead: true });
+    await expect(
+      platform.openSessionObservation(
+        { sessionId: 'session_synthetic' },
+        new AbortController().signal
+      )
+    ).rejects.toThrow('Unable to open session observation; no provider payload was emitted.');
+    expect(requests).toHaveLength(2);
+    expect(requests.every((request) => request.method === 'GET')).toBe(true);
+  });
+
+  it.each(['close', 'abort'])(
+    'tears down a pending observation with %s without cancelling the run',
+    async (method) => {
+      const requests: Request[] = [];
+      const controller = new AbortController();
+      let transportAborted = false;
+      const transport: typeof fetch = async (input, init) => {
+        const request = new Request(input, init);
+        requests.push(request);
+        if (new URL(request.url).pathname.endsWith('/agents')) {
+          return Response.json(
+            { data: [], has_more: false },
+            { headers: { 'openai-project': 'proj_synthetic' } }
+          );
+        }
+        const body = new ReadableStream<Uint8Array>({
+          start(stream): void {
+            const event = {
+              type: 'agent.session.in_progress',
+              event_id: 'e1',
+              session: { id: 'session_synthetic', status: 'in_progress' },
+            };
+            stream.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(event)}\n\n`));
+            request.signal.addEventListener(
+              'abort',
+              () => {
+                transportAborted = true;
+                stream.error(new DOMException('Aborted', 'AbortError'));
+              },
+              { once: true }
+            );
+          },
+        });
+        return new Response(body, { headers: { 'content-type': 'text/event-stream' } });
+      };
+      const platform = new OpenAIPlatform(config, secret, transport);
+      const observation = await platform.openSessionObservation(
+        { sessionId: 'session_synthetic' },
+        controller.signal
+      );
+      const events = observation.events[Symbol.asyncIterator]();
+      await expect(events.next()).resolves.toMatchObject({
+        done: false,
+        value: { status: 'in_progress' },
+      });
+      const pending = events.next();
+      if (method === 'close') observation.close();
+      else controller.abort();
+      await expect(pending).resolves.toEqual({ done: true, value: undefined });
+      expect(transportAborted).toBe(true);
+      expect(requests).toHaveLength(2);
+      expect(requests.every((request) => request.method === 'GET')).toBe(true);
+    }
+  );
+
+  it('rejects malformed and already-aborted observation requests without network access', async () => {
+    const { platform, requests } = fixture();
+    await expect(
+      platform.openSessionObservation({ sessionId: '../unsafe' }, new AbortController().signal)
+    ).rejects.toThrow('Invalid');
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      platform.openSessionObservation({ sessionId: 'session_synthetic' }, controller.signal)
+    ).rejects.toThrow('aborted');
+    expect(requests).toHaveLength(0);
+  });
+
+  it('closes only the observer and requires recovery after a malformed streamed event', async () => {
+    const requests: Request[] = [];
+    const transport: typeof fetch = async (input, init) => {
+      const request = new Request(input, init);
+      requests.push(request);
+      if (new URL(request.url).pathname.endsWith('/agents')) {
+        return Response.json(
+          { data: [], has_more: false },
+          { headers: { 'openai-project': 'proj_synthetic' } }
+        );
+      }
+      return new Response(
+        `data: ${JSON.stringify({ type: 'agent.session.turn.completed', event_id: 'e1', error: secret })}\n\n`,
+        { headers: { 'content-type': 'text/event-stream' } }
+      );
+    };
+    const platform = new OpenAIPlatform(config, secret, transport);
+    const observation = await platform.openSessionObservation(
+      { sessionId: 'session_synthetic' },
+      new AbortController().signal
+    );
+    await expect(observation.events[Symbol.asyncIterator]().next()).rejects.toThrow(
+      'Session observation interrupted; recover session and turn state before continuing.'
+    );
+    observation.close();
+    expect(requests).toHaveLength(2);
+    expect(requests.every((request) => request.method === 'GET')).toBe(true);
+  });
+
   it.each(['agents.create', 'agents.update'])('accepts dotted model names for %s', (operation) => {
     const request = {
       operation,
