@@ -104,6 +104,45 @@ function fixture(
 }
 
 describe('OpenAI access boundary', () => {
+  it.each([false, true])(
+    'projects the official content stream and requires recovery at close (malformed=%s)',
+    async (malformed) => {
+      const payload = {
+        event_id: 'event_synthetic',
+        session_id: malformed ? 'wrong' : 'session_synthetic',
+        turn_id: 'turn_synthetic',
+        type: 'agent.session.turn.item.done',
+        item: {
+          id: 'item_synthetic',
+          turn_id: 'turn_synthetic',
+          type: 'message',
+          role: 'assistant',
+          phase: 'commentary',
+          status: 'completed',
+          content: [{ type: 'output_text', text: 'Checking the synthetic CV.' }],
+        },
+      };
+      const transport: typeof fetch = async (input, init) => {
+        const request = new Request(input, init);
+        if (new URL(request.url).pathname.endsWith('/events'))
+          return new Response(`data: ${JSON.stringify(payload)}\n\n`, {
+            headers: { 'content-type': 'text/event-stream' },
+          });
+        return Response.json(
+          { data: [], has_more: false },
+          { headers: { 'openai-project': 'proj_synthetic' } }
+        );
+      };
+      const platform = new OpenAIPlatform(config, secret, transport);
+      const observed = await platform.openOperatorObservation({
+        sessionId: 'session_synthetic',
+        turnId: 'turn_synthetic',
+      });
+      await expect(observed.completion).rejects.toThrow('recover saved state');
+      expect(observed.items.values()).toHaveLength(malformed ? 0 : 1);
+      observed.close();
+    }
+  );
   it('reads pending functions from current session state, not history', async () => {
     const { platform, requests } = fixture();
     const result = await platform.read({

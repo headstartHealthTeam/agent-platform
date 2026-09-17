@@ -23,6 +23,7 @@ import {
   type Action,
   type ReadOperation,
 } from './operations.js';
+import { OperatorItems } from './operator-items.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 
 export { fingerprint } from './fingerprint.js';
@@ -158,6 +159,35 @@ export class OpenAIPlatform {
     } catch {
       throw new Error('OpenAI read failed; no provider payload was emitted.');
     }
+  }
+
+  /** One root-turn content observation. Completion/closure never acknowledges executor shutdown. */
+  public async openOperatorObservation(binding: {
+    sessionId: string;
+    turnId: string;
+  }): Promise<{ items: OperatorItems; close: () => void; completion: Promise<void> }> {
+    const sessionId = observationRequestSchema.parse({ sessionId: binding.sessionId }).sessionId;
+    observationRequestSchema.parse({ sessionId: binding.turnId });
+    await this.preflight();
+    const stream = await this.#client.beta.agents.sessions.events.stream(sessionId);
+    const items = new OperatorItems(sessionId, binding.turnId);
+    const completion = (async (): Promise<void> => {
+      try {
+        for await (const raw of stream) items.consume(raw);
+      } catch {
+        throw new Error('Operator observation interrupted; recover saved state');
+      } finally {
+        stream.controller.abort();
+      }
+      throw new Error('Operator observation closed; recover saved state');
+    })();
+    return {
+      items,
+      close: (): void => {
+        stream.controller.abort();
+      },
+      completion,
+    };
   }
 
   private async query(request: ReadOperation): Promise<unknown> {

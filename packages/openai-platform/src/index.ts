@@ -7,6 +7,14 @@ export {
 export { readCredential, type SecretCommand } from './credential.js';
 export { selfHostedExecutorConnection, type ExecutorConnection } from './self-hosted.js';
 export { pendingFunctionCalls, type PendingFunctionCall } from './pending-functions.js';
+export { OperatorItems, type OperatorItem } from './operator-items.js';
+export {
+  OperatorRuntimePort,
+  createLocalOperatorRuntimePort,
+  type OperatorBinding,
+  type OperatorCommand,
+  type OperatorSnapshot,
+} from './operator-runtime.js';
 export {
   projectSessionControlEvent,
   observedRootTurnOutcome,

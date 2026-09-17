@@ -67,6 +67,40 @@ is not a retained executor provisioner or backend/admin integration. Application
 materialization, managed identity, durable business approval/action enforcement and hosted acceptance
 remain separate work. See the [development sequence](../../docs/agent-workflow-development.md).
 
+## Operator activity and owning-service integration
+
+`OpenAIPlatform.openOperatorObservation` and `OperatorItems` project one exact root turn's
+assistant commentary/final text and generic tool-activity notices. They omit private reasoning,
+shell arguments, raw results and routing content. New messages can stream incrementally; saved
+final items win during recovery. When reconnect misses a message's opening event, show an explicit
+writing placeholder until its complete text arrives rather than guessing overlapping delta offsets.
+Obvious credential patterns are withheld, but pattern matching is not comprehensive data-loss
+prevention. Keep source/tool access and data classification constrained upstream.
+
+`OperatorRuntimePort` extends this existing package rather than creating another runner or service.
+It verifies exact target/session/root-turn/workflow-revision correlation, merges bounded saved
+history with the stream, and derives ad hoc `ask_operator` questions from current required actions,
+not historical messages. The owning backend supplies the trusted binding, human authorization and
+immutable answer/outbox records. The port's `send` delegates to existing guarded tool-result and
+cancellation operations. Function replies require a bounded caller-authorized inference window;
+observation and cancellation do not create one. A successful send means API acceptance, not a
+completed action. General guidance/new turns, start, resume and provisioning are not implemented by
+this port. It is not safe to call its write method directly from an untrusted agent.
+
+Observers are coalesced per binding, limited to 20 sessions and closed after 45 seconds without a
+snapshot request. Call `close()` on application teardown. Overflow (100 saved items, 180 projected
+items or 10,000 observed events) requires explicit reconciliation; pagination/retention policy is
+not silently bypassed. A disconnect never resends input, cancels the agent or proves completion.
+`createLocalOperatorRuntimePort` resolves the existing private profile inside trusted application
+composition, never inside the isolated executor. This is a development helper, not production
+credential provisioning. No credential lookup happens merely by importing the package.
+
+Synthetic SDK/projection tests exercise this adapter. The credentialing backend exposes its
+corresponding durable port and the admin workspace exercises it with an explicitly simulated
+transport. The real adapter is **not yet installed into that backend composition**. Retained
+provisioning, exact producer authority, controlled distribution of this package and a separately
+authorized real-API end-to-end run remain required; the local UI demo is not that acceptance proof.
+
 ## Safety And Failure Contract
 
 - Explicit organization/project routing and successful Agents read preflight are required. The API
