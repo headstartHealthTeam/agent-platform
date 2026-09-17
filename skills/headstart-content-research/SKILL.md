@@ -4,7 +4,7 @@ description: Turn one approved Headstart content opportunity into a bounded, evi
 compatibility: Requires access to the exact approved opportunity source plus authenticated keyword and organic-search research, web-page retrieval, and approved Headstart source materials. Semrush is the preferred keyword and SERP evidence provider when available.
 metadata:
   author: headstart-health
-  version: '0.3.0'
+  version: '0.3.1'
 ---
 
 # Headstart Content Research
@@ -49,6 +49,9 @@ Require:
 
 Accept approved source links, internal context, existing Headstart URLs, and candidate sources as
 supporting inputs. Treat missing required fields as gaps, not permission to infer a new strategy.
+When a family opportunity concerns starting care or understanding a proposed ABA plan, consult the
+[approved Headstart references](references/approved-headstart-references.md). These are scoped source
+decisions, not mandatory links or blanket authority for clinical claims.
 
 ## Research Workflow
 
