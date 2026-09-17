@@ -69,6 +69,10 @@ remain separate work. See the [development sequence](../../docs/agent-workflow-d
 
 ## Operator activity and owning-service integration
 
+Portable port types now come from `@headstart-health/workflow-contracts`; the adapter retains its
+existing type exports. See [shared operator integration](../../docs/shared-operator-integration.md)
+for cross-repository ownership and the interim generated-contract distribution boundary.
+
 `OpenAIPlatform.openOperatorObservation` and `OperatorItems` project one exact root turn's
 assistant commentary/final text and generic tool-activity notices. They omit private reasoning,
 shell arguments, raw results and routing content. New messages can stream incrementally; saved

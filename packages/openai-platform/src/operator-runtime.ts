@@ -1,5 +1,10 @@
 import { readFile } from 'node:fs/promises';
 
+import type {
+  OperatorBinding,
+  OperatorCommand,
+  OperatorSnapshot,
+} from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
 import { resolveConfig, type Target } from './config.js';
@@ -10,19 +15,12 @@ import { operatorText } from './operator-items.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 import { OpenAIPlatform, fingerprint, planAction } from './platform.js';
 
-export interface OperatorBinding {
-  sessionId: string;
-  turnId: string;
-  target: string;
-  workflowRevision: string;
-}
-export interface OperatorCommand {
-  id: string;
-  kind: 'reply' | 'guidance' | 'stop';
-  questionId: string | null;
-  callFingerprint: string | null;
-  text: string;
-}
+export type {
+  OperatorBinding,
+  OperatorCommand,
+  OperatorSnapshot,
+} from '@headstart-health/workflow-contracts';
+
 const turnSchema = z.object({
   id: z.string(),
   session_id: z.string(),
@@ -32,11 +30,6 @@ const turnSchema = z.object({
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
 const pageSchema = z.object({ data: z.array(z.unknown()).max(100), has_more: z.literal(false) });
 type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'openOperatorObservation'>;
-export interface OperatorSnapshot {
-  status: 'running' | 'waiting' | 'completed' | 'failed' | 'cancelled';
-  items: ReturnType<OperatorItems['values']>;
-  pendingQuestionIds: string[];
-}
 
 /** Case records, operator authorization and durable outbox claims remain with the owning service. */
 export class OperatorRuntimePort {

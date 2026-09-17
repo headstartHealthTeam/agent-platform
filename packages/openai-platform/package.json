@@ -34,6 +34,7 @@
     "clean": "rimraf dist .turbo coverage"
   },
   "dependencies": {
+    "@headstart-health/workflow-contracts": "workspace:*",
     "@headstart-health/capability-contracts": "workspace:*",
     "@headstart-health/capability-runtime": "workspace:*",
     "@headstart-health/workflow-runtime": "workspace:*",

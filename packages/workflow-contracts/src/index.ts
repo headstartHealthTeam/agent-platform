@@ -14,3 +14,12 @@ export {
   type WorkflowRunResult,
   type WorkflowRunStatus,
 } from './run.js';
+
+export type {
+  OperatorBinding,
+  OperatorCommand,
+  OperatorSnapshot,
+  OperatorItem,
+  OperatorItemKind,
+  OperatorStatus,
+} from './operator.js';

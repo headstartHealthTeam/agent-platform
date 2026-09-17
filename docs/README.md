@@ -58,6 +58,9 @@ and examples.
 
 ## Concrete Examples
 
+- [Shared operator integration](shared-operator-integration.md) separates provider contracts,
+  backend runtime mechanics and admin components from the first credentialing consumer.
+
 - [Desktop-to-API workflow development](agent-workflow-development.md) defines authoring, actual API
   integration with isolated local execution, and hosted validation as distinct evidence lanes.
   [Provider credentialing](../workflows/provider-credentialing/README.md) is the intended reference;

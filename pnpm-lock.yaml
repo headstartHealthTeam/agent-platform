@@ -379,6 +379,9 @@ importers:
       '@headstart-health/capability-runtime':
         specifier: workspace:*
         version: link:../capability-runtime
+      '@headstart-health/workflow-contracts':
+        specifier: workspace:*
+        version: link:../workflow-contracts
       '@headstart-health/workflow-runtime':
         specifier: workspace:*
         version: link:../workflow-runtime
