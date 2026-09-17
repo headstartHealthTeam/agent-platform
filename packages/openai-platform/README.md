@@ -99,11 +99,29 @@ not silently bypassed. A disconnect never resends input, cancels the agent or pr
 composition, never inside the isolated executor. This is a development helper, not production
 credential provisioning. No credential lookup happens merely by importing the package.
 
-Synthetic SDK/projection tests exercise this adapter. The credentialing backend exposes its
-corresponding durable port and the admin workspace exercises it with an explicitly simulated
-transport. The real adapter is **not yet installed into that backend composition**. Retained
-provisioning, exact producer authority, controlled distribution of this package and a separately
-authorized real-API end-to-end run remain required; the local UI demo is not that acceptance proof.
+The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
+all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
+`headstart-openai-operator/v1` boundary and adapter version `0.1.0`. An owning service can use
+`createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
+`createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
+executor or creates a session. Credential lookup is never an import-time side effect.
+
+Deploy the reviewed artifact to protected application storage and pin its exact SHA-256 in trusted
+deployment configuration alongside source revision and lockfile provenance. The backend's local
+composition verifies and executes those same bytes, checks protocol/version, disallows unbundled
+dependencies and owns shutdown. This is trusted application code, **not** a JavaScript sandbox or
+a package registry/release pipeline. Never use agent scratch, browser input, or an agent-generated
+digest as deployment authority. Separate service identities and production credential delivery
+remain deployment work.
+
+Synthetic SDK/projection tests and the backend's explicit packaged-adapter HTTP integration lane
+exercise this boundary without credentials or inference. The backend can now select the real port
+for an explicitly configured local synthetic run; missing configuration remains closed. The console
+distinguishes simulated activity from real API transport, and neither mode claims that fixture
+preparation packages were agent-produced. Real-API connected acceptance, retained provisioning,
+exact producer authority and hosted-environment validation remain separate evidence gates. The
+same observation/reply/cancel adapter serves local-executor and hosted sessions; provisioning and
+credential delivery differ, not the operator contract.
 
 ## Safety And Failure Contract
 

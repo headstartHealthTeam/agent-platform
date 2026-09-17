@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { resolveConfig } from './config.js';
 import { actionSchema } from './operations.js';
+import { createOperatorRuntimePort, protocol, adapterVersion } from './operator-module.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 import { fingerprint, OpenAIPlatform, planAction, summarize } from './platform.js';
 
@@ -31,6 +32,34 @@ export const localConfig = {
   },
 };
 const config = resolveConfig(localConfig);
+
+describe('standalone operator factory', () => {
+  it('keeps transport construction credential-free until explicitly configured', () => {
+    expect(protocol).toBe('headstart-openai-operator/v1');
+    expect(adapterVersion).toBe('0.1.0');
+    const fetchImplementation = vi.fn<typeof fetch>();
+    for (const billableUntil of [undefined, '2026-09-17T12:00:00Z']) {
+      const port = createOperatorRuntimePort({
+        config: localConfig,
+        apiKey: 'synthetic-invalid-key',
+        ...(billableUntil === undefined ? {} : { billableUntil }),
+        fetchImplementation,
+      });
+      port.close();
+    }
+    expect(fetchImplementation).not.toHaveBeenCalled();
+    expect(() =>
+      createOperatorRuntimePort({
+        config: localConfig,
+        apiKey: 'synthetic-invalid-key',
+        billableUntil: 'invalid',
+      })
+    ).toThrow('expiry');
+    expect(() =>
+      createOperatorRuntimePort({ config: {}, apiKey: 'synthetic-invalid-key' })
+    ).toThrow('configuration');
+  });
+});
 const pendingCall = {
   type: 'function_call',
   turn_id: 'turn_synthetic',

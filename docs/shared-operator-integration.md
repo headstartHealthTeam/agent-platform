@@ -19,7 +19,10 @@ source. Its default mode verifies source parity using explicitly supplied checko
 canonical types, regenerate and validate all three repositories together; do not independently edit
 snapshots. Local checksum tests detect body edits but cannot prove upstream freshness. This interim
 mechanism does not install the OpenAI adapter or provide independently versioned package releases.
-Controlled package distribution remains part of actual provider integration.
+The OpenAI package now additionally builds a versioned, standalone operator artifact consumed by
+the backend's explicit local composition. See its [artifact boundary](../packages/openai-platform/README.md#operator-activity-and-owning-service-integration).
+The protected deployment pin and source/lockfile provenance must travel together. This establishes
+dependency-independent local distribution, not automated package publication or production release.
 
 The backend tests the same shared core with unrelated invented inventory work, not just a second
 payer. Admin has a matching independent synthetic panel consumer. These prove reuse of mechanics;
