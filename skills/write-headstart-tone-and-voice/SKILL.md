@@ -141,8 +141,8 @@ step clearer without making the family feel managed or talked down to.
   the reader needs a quick answer.
 - Check how the opening lands, not just whether it mentions strengths or reassurance. A detached
   statement about the child can sound clinical even when its meaning is respectful. Address the
-  reader's actual question with grounded reassurance and a useful next step; do not announce the
-  family's emotions or substitute generic praise. Separate stacked explanations into natural
+  reader's actual question and give a useful next step. Use grounded reassurance when the topic
+  supports it; do not announce the family's emotions or substitute generic praise. Separate stacked explanations into natural
   sentences without a rigid length limit or losing a meaningful qualification.
 - Put context before clinical or insurance detail.
 - Explain an unfamiliar term in the sentence where it first appears. Introduce a treatment plan or

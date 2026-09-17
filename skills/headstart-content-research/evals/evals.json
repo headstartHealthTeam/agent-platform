@@ -9,7 +9,7 @@
         "Uses the approved-reference register and records identity confirmation separately from claim-level evidence",
         "Records retrieval time, source revision or fingerprint, relevant locators, access validation, and the link's reader purpose",
         "Does not repeat the resolved identity question or treat the guide as a mandatory link for all family content",
-        "Creates a new packet version without silently changing the frozen predecessor"
+        "Returns a valid versioned packet; if an existing frozen predecessor is supplied, creates a new version without changing it, and otherwise does not invent predecessor state"
       ]
     },
     {

@@ -6,7 +6,7 @@
       "prompt": "Revise only this Headstart family guide opening: 'The child remains an individual with strengths and relationships. The report supplies information for subsequent decisions.' The reviewer says it sounds cold and transactional. Supplied facts: the reader may bring questions to the evaluator and need not resolve every question immediately. Keep the next section unchanged and add no diagnosis, outcome, or emotional assumptions.",
       "shouldActivate": true,
       "expectedBehaviors": [
-        "Speaks naturally to the family and offers grounded reassurance with a usable next step instead of detached description",
+        "Speaks naturally to the family and gives direct, useful, fact-preserving guidance instead of detached description; grounded reassurance is optional",
         "Does not treat mentioning strengths as sufficient warmth or presume that the reader is distressed",
         "Preserves the factual boundary and adjacent section without a mandatory empathy phrase or question hook"
       ]
