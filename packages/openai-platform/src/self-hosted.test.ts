@@ -16,6 +16,23 @@ const session = {
 };
 
 describe('self-hosted executor connection boundary', () => {
+  it('preserves the API-returned HTTPS registration route, not a synthesized WSS URL', () => {
+    const registration = 'https://api.openai.com/v1/agents/api/connect/rt_synthetic?route=a%2Fb';
+    const result = selfHostedExecutorConnection(
+      {
+        ...session,
+        environment: { ...session.environment, remote_url: registration },
+      },
+      session.id
+    );
+    expect(result.arguments).toEqual([
+      'exec-server',
+      '--remote',
+      registration,
+      '--environment-id',
+      'env_synthetic',
+    ]);
+  });
   it('preserves returned routing and environment identity exactly without launching a process', () => {
     expect(selfHostedExecutorConnection(session, session.id)).toEqual({
       sessionId: session.id,
@@ -41,6 +58,15 @@ describe('self-hosted executor connection boundary', () => {
   });
 
   it.each([
+    'https://api.openai.com/v1/agents/api/connect/',
+    'https://api.openai.com/v1/agents/api/connect/rt_synthetic/extra',
+    'https://api.openai.com/v1/other/rt_synthetic',
+    'http://api.openai.com/v1/agents/api/connect/rt_synthetic',
+    'https://api.openai.com.example.invalid/v1/agents/api/connect/rt_synthetic',
+    'https://api.openai.com:8443/v1/agents/api/connect/rt_synthetic',
+    'https://private@api.openai.com/v1/agents/api/connect/rt_synthetic',
+    'https://api.openai.com/v1/agents/api/connect/rt_synthetic#fragment',
+    'https://api.openai.com/v1/agents/api/connect/rt_syn\nthetic',
     'https://codex-cloud-environments.chatgpt.com/session/env_synthetic',
     'ws://codex-cloud-environments.chatgpt.com/session/env_synthetic',
     'wss://example.invalid/session/env_synthetic',

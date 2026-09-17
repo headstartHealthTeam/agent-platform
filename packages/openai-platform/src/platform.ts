@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 import { verifyCapabilityPreflight } from '@headstart-health/capability-runtime';
 import OpenAI from 'openai';
 
@@ -11,6 +9,7 @@ import {
   type ResolvedConfig,
   type Target,
 } from './config.js';
+import { fingerprint } from './fingerprint.js';
 import {
   observationRequestSchema,
   projectSessionControlEvent,
@@ -24,22 +23,9 @@ import {
   type Action,
   type ReadOperation,
 } from './operations.js';
+import { pendingFunctionCalls } from './pending-functions.js';
 
-function canonical(value: unknown): string {
-  if (Array.isArray(value)) {
-    return `[${value.map(canonical).join(',')}]`;
-  }
-  if (typeof value === 'object' && value !== null) {
-    return `{${Object.entries(value)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, entry]) => `${JSON.stringify(key)}:${canonical(entry)}`)
-      .join(',')}}`;
-  }
-  return value === undefined ? 'null' : JSON.stringify(value);
-}
-export function fingerprint(value: unknown): string {
-  return createHash('sha256').update(canonical(value)).digest('hex');
-}
+export { fingerprint } from './fingerprint.js';
 export interface ActionPlan {
   operation: Action['operation'];
   target: Target;
@@ -187,6 +173,13 @@ export class OpenAIPlatform {
         return pageData(await agents.sessions.list(request.query));
       case 'sessions.get':
         return agents.sessions.retrieve(request.id);
+      case 'sessions.pending-functions':
+        return {
+          data: pendingFunctionCalls(await agents.sessions.retrieve(request.id), {
+            sessionId: request.id,
+            turnId: request.turnId,
+          }),
+        };
       case 'sessions.turns':
         return pageData(await agents.sessions.turns.list(request.id, request.query));
       case 'sessions.turn.get':
@@ -212,6 +205,7 @@ export class OpenAIPlatform {
     }
     await this.preflight();
     await this.checkCurrentAgent(action);
+    await this.checkPendingFunction(action);
     try {
       const data = await this.mutate(action);
       return { data: data ?? null, fingerprint: fingerprint(data) };
@@ -239,6 +233,25 @@ export class OpenAIPlatform {
     }
   }
 
+  private async checkPendingFunction(action: Action): Promise<void> {
+    if (action.operation !== 'sessions.tool-result') return;
+    try {
+      const session = await this.#client.beta.agents.sessions.retrieve(action.id);
+      const pending = pendingFunctionCalls(session, {
+        sessionId: action.id,
+        turnId: action.turnId,
+      }).find((call) => call.callId === action.callId);
+      if (
+        pending?.name !== action.functionName ||
+        pending.fingerprint !== action.expectedCallFingerprint
+      ) {
+        throw new Error('Pending function changed.');
+      }
+    } catch {
+      throw new Error('Pending function missing, changed or unverifiable; no result submitted.');
+    }
+  }
+
   private async mutate(action: Action): Promise<unknown> {
     const agents = this.#client.beta.agents;
     switch (action.operation) {
@@ -263,6 +276,17 @@ export class OpenAIPlatform {
       case 'sessions.cancel':
         return agents.sessions.events.create(action.id, {
           events: [{ type: 'agent.session.input.cancel' }],
+        });
+      case 'sessions.tool-result':
+        return agents.sessions.events.create(action.id, {
+          events: [
+            {
+              type: 'agent.session.input.tool_result',
+              turn_id: action.turnId,
+              call_id: action.callId,
+              ...action.result,
+            },
+          ],
         });
       case 'sessions.delete':
         return agents.sessions.delete(action.id);

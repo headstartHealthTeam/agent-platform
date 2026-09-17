@@ -30,8 +30,11 @@ when input is deferred.
 an argument array for `codex exec-server`, preserving the provider's remote URL unchanged. It does
 not spawn a process, provision isolation, retrieve a key or prove that an environment connected.
 Its routing data belongs only in protected provisioning state, not the operator activity feed.
-The current connection policy allows only the documented OpenAI WSS host; a future host change
-requires an explicit adapter review, not an arbitrary endpoint fallback.
+The connection policy allows the documented OpenAI WSS host and the API-returned HTTPS registration
+route at `api.openai.com/v1/agents/api/connect/<route>`. The latter was observed in an authorized
+synthetic development session; the SDK contract requires passing it unchanged. Do not synthesize a
+WSS URL from it. Other hosts, registration paths, nonstandard ports, URL credentials and fragments
+are rejected; future endpoint changes require review, not an arbitrary fallback.
 
 Use a separate restricted environment key inside each isolated executor; keep the application key,
 personal auth caches and unrelated workspace files outside. Self-hosted templates, capability
@@ -46,10 +49,23 @@ does not prove business success. Neither raw content nor error/routing payloads 
 Ordered, bounded history pages and `sessions.turn.get` support caller-owned recovery; there is no
 automatic replay, message resend, or full C-09 commentary/question feed.
 
-These are offline-tested SDK request/connection/observation contracts, not a completed local executor or
-backend/admin integration. Application recovery, materialization, scoped identity, durable
-business approval/action enforcement and actual API acceptance remain separate implementation and
-verification work. See the [development sequence](../../docs/agent-workflow-development.md).
+`sessions.pending-functions` projects only current `required_actions` for an explicitly selected
+session/turn. `pendingFunctionCalls` is the same pure projection for retrieved session resources;
+history items never establish pending work. Each call has a fingerprint binding session, turn,
+call ID, name and arguments. Arguments remain untrusted content for application-specific schema,
+tool-allowlist and permission checks, not an operator-safe feed or automatic tool dispatcher.
+`sessions.tool-result` submits one success/error result only after exact plan/billing approval and
+a fresh pending-call check. This supports ad hoc questions without prescribing their wording.
+It does not persist questions, authorize human decisions or establish a connected admin console.
+The check is not atomic: serialize responders in the owning application, persist results before
+delivery, and reconcile uncertain outcomes without automatically replaying a tool or reply.
+
+These contracts have deterministic SDK-boundary tests. An authorized synthetic development smoke
+also exercised one real session with an isolated official executor, a file read, an agent-authored
+function question, a saved synthetic reply and completed root turn. That bounded transport proof
+is not a retained executor provisioner or backend/admin integration. Application recovery, source
+materialization, managed identity, durable business approval/action enforcement and hosted acceptance
+remain separate work. See the [development sequence](../../docs/agent-workflow-development.md).
 
 ## Safety And Failure Contract
 
@@ -62,7 +78,7 @@ verification work. See the [development sequence](../../docs/agent-workflow-deve
   Each developer supplies their own private profile and reference. CLI `--config` takes precedence
   over the optional path-only `HEADSTART_OPENAI_CONFIG`; neither exposes a key to the environment.
 - `planAction` is offline. `apply` requires the digest of the exact target and parsed action, plus
-  separate billable authorization for session creation or input. This is a caller-intent guard,
+  separate billable authorization for session creation, input or function results. This is a caller-intent guard,
   not an independent human-approval service; an untrusted agent must not mint its own approval.
 - Agent/template update and deletion require the fingerprint of a fresh read. The recheck detects
   changes since review but is **not atomic compare-and-set**: serialize supervised writers. The

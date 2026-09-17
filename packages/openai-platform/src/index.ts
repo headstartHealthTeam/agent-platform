@@ -6,6 +6,7 @@ export {
 } from './config.js';
 export { readCredential, type SecretCommand } from './credential.js';
 export { selfHostedExecutorConnection, type ExecutorConnection } from './self-hosted.js';
+export { pendingFunctionCalls, type PendingFunctionCall } from './pending-functions.js';
 export {
   projectSessionControlEvent,
   observedRootTurnOutcome,

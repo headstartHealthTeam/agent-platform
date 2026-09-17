@@ -143,7 +143,7 @@ headstart-openai read --config PRIVATE_CONFIG.json --request PRIVATE_READ.json
 
 A read request is, for example, `{"operation":"agents.list","query":{"limit":20}}`.
 Supported reads: `models.list`, `agents.list`, `agents.get`, `sessions.list`, `sessions.get`,
-`sessions.turns`, `sessions.turn.get`, `sessions.items`, `templates.list`, `templates.get`. Resource reads use `id`;
+`sessions.pending-functions`, `sessions.turns`, `sessions.turn.get`, `sessions.items`, `templates.list`, `templates.get`. Resource reads use `id`;
 page reads accept `query.limit` and `query.after`. Inspect content only when authorized and needed,
 using `--include-content`. Never persist raw private session items as routine diagnostics.
 `sessions.turn.get` takes the session `id` and exact `turnId`. Turn/item history reads also accept
@@ -177,6 +177,7 @@ keep them in approved local storage, out of Git and normal tool-output transcrip
 | `templates.update` / `templates.delete` | `id`, `expectedFingerprint`; update also takes `body`                                                                   |
 | `sessions.create`                       | Either `body.agent_id` or inline `body.agent.model`, explicit environment; input required for `none`; optional metadata |
 | `sessions.send`                         | `id`, input, stable `idempotencyKey`                                                                                    |
+| `sessions.tool-result`                  | `id`, `turnId`, `callId`, `functionName`, `expectedCallFingerprint`, and `result`                                       |
 | `sessions.cancel` / `sessions.delete`   | `id`                                                                                                                    |
 
 Example create: `{"operation":"agents.create","body":{"model":"APPROVED_MODEL","name":"Example","instructions":"Use synthetic inputs only."}}`.
@@ -235,9 +236,60 @@ updates, and verify the intended root turn. Streams do not replay. The applicati
 bounded buffering, durable cursors/state and authority checks; the adapter's raw read results must
 not be exposed directly to an operator. See the [official recovery contract](https://developers.openai.com/api/docs/guides/agents-api/sessions/events).
 
-These creation/connection/observation boundaries are offline-tested only. Application recovery,
-provisioning, approval authority and connected/hosted acceptance remain follow-through work;
-the supervised adapter is not the business control plane.
+These creation/connection/observation boundaries have deterministic tests and a bounded real-API
+synthetic smoke with an isolated official executor. Application recovery, retained provisioning,
+approval authority and connected-admin/hosted acceptance remain follow-through work; the supervised
+adapter is not the business control plane. The provisioner must include a valid standard CA trust
+store and keep TLS verification enabled; a minimal container image may omit that trust store.
+
+### Pending Functions And Human Replies
+
+Read `sessions.pending-functions` with the session `id` and exact `turnId` to project current
+`required_actions`. A historical function item is not a pending question. The bounded projection
+ignores environment-connection requests and other turns, rejects malformed/unknown actions and
+duplicates, and returns only function identity, arguments and a call fingerprint. CLI default
+output continues to omit arguments; content inspection is explicit. These arguments can contain
+sensitive, model-authored content: validate and sanitize them before display or dispatch.
+
+Use `sessions.tool-result` to return one result to the exact pending call:
+
+```json
+{
+  "operation": "sessions.tool-result",
+  "id": "session_synthetic",
+  "turnId": "turn_synthetic",
+  "callId": "call_synthetic",
+  "functionName": "ask_operator",
+  "expectedCallFingerprint": "FINGERPRINT_FROM_PENDING_READ",
+  "result": { "success": true, "output": "A separately authorized synthetic answer" }
+}
+```
+
+The placeholder must be replaced with the actual 64-character fingerprint before planning.
+Success requires a string `output` (serialize structured JSON); failure requires
+`{ "success": false, "error": "Sanitized failure explanation" }`. Mixed success/error payloads,
+unsupported content and oversized results are rejected. The exact plan covers the result as well
+as the target/call. `--allow-billable` is required because a result can resume inference.
+
+Before POST, the adapter retrieves the session again and requires matching turn/call/name/arguments.
+Missing, changed or unverifiable pending state stops without a POST. This freshness check is not
+atomic compare-and-set, a cross-process lock or proof of business authority. The owning service
+must bind the question to its case/run, enforce permissions and stop state, serialize responders,
+persist the answer and delivery disposition, and validate the function's allowed name/schema.
+Question wording may be ad hoc; typed routing does not require a fixed question catalogue.
+
+No automatic retry occurs, and message idempotency is not assumed for tool results. On an uncertain
+POST, retrieve pending state and saved items before deciding whether the same saved result needs
+delivery; disappearance alone is not proof of successful processing or completed business work.
+Never re-execute a side-effecting function merely to recover its result. See the
+[official function/recovery contract](https://developers.openai.com/api/docs/guides/agents-api/tools/functions).
+
+The pure projector and SDK boundary have deterministic tests. A bounded, authorized synthetic API
+smoke additionally verified an agent-authored question, a durably saved synthetic harness response
+and completion of the intended root turn. This was not an Ops response through the admin console,
+the canonical credentialing workflow or a cancellation/reconnect test. Durable application question
+records, operator presentation and full reconnect/control behavior remain connected-implementation
+work. Do not promote one successful transport exchange into workflow or production acceptance.
 
 ## Canonical Source To Agent Environment
 

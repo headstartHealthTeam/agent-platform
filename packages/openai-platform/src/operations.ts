@@ -209,6 +209,7 @@ export const readSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('agents.get'), id }).strict(),
   z.object({ operation: z.literal('sessions.list'), query }).strict(),
   z.object({ operation: z.literal('sessions.get'), id }).strict(),
+  z.object({ operation: z.literal('sessions.pending-functions'), id, turnId: id }).strict(),
   z.object({ operation: z.literal('sessions.turns'), id, query: historyQuery }).strict(),
   z.object({ operation: z.literal('sessions.turn.get'), id, turnId: id }).strict(),
   z.object({ operation: z.literal('sessions.items'), id, query: historyQuery }).strict(),
@@ -243,6 +244,20 @@ export const actionSchema = z.discriminatedUnion('operation', [
     })
     .strict(),
   z.object({ operation: z.literal('sessions.cancel'), id }).strict(),
+  z
+    .object({
+      operation: z.literal('sessions.tool-result'),
+      id,
+      turnId: id,
+      callId: id,
+      functionName: id,
+      expectedCallFingerprint: fingerprint,
+      result: z.discriminatedUnion('success', [
+        z.object({ success: z.literal(true), output: z.string().max(100_000) }).strict(),
+        z.object({ success: z.literal(false), error: z.string().min(1).max(10_000) }).strict(),
+      ]),
+    })
+    .strict(),
   z.object({ operation: z.literal('sessions.delete'), id }).strict(),
   z.object({ operation: z.literal('templates.create'), body: template }).strict(),
   z
@@ -267,5 +282,9 @@ export function parseAction(input: unknown): Action {
   return parsed.data;
 }
 export function isBillable(action: Action): boolean {
-  return action.operation === 'sessions.create' || action.operation === 'sessions.send';
+  return (
+    action.operation === 'sessions.create' ||
+    action.operation === 'sessions.send' ||
+    action.operation === 'sessions.tool-result'
+  );
 }

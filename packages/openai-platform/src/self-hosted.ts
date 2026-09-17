@@ -10,19 +10,31 @@ const sessionSchema = z.object({
   environment: z.object({
     type: z.literal('self_hosted'),
     id: identifier,
-    remote_url: z.url().pipe(
-      z.string().refine((value) => {
-        const url = new URL(value);
-        return (
-          url.protocol === 'wss:' &&
-          url.hostname === 'codex-cloud-environments.chatgpt.com' &&
-          url.port === '' &&
-          url.username === '' &&
-          url.password === '' &&
-          url.hash === ''
-        );
-      })
-    ),
+    remote_url: z
+      .string()
+      .min(1)
+      .max(4096)
+      .refine((value) => {
+        try {
+          const url = new URL(value);
+          const supportedEndpoint =
+            (url.protocol === 'wss:' && url.hostname === 'codex-cloud-environments.chatgpt.com') ||
+            (url.protocol === 'https:' &&
+              url.hostname === 'api.openai.com' &&
+              /^\/v1\/agents\/api\/connect\/[A-Za-z0-9_-]+$/.test(url.pathname));
+          return (
+            supportedEndpoint &&
+            url.href === value &&
+            !/\p{Cc}/u.test(value) &&
+            url.port === '' &&
+            url.username === '' &&
+            url.password === '' &&
+            url.hash === ''
+          );
+        } catch {
+          return false;
+        }
+      }),
   }),
 });
 

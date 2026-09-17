@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { resolveConfig } from './config.js';
 import { actionSchema } from './operations.js';
+import { pendingFunctionCalls } from './pending-functions.js';
 import { fingerprint, OpenAIPlatform, planAction, summarize } from './platform.js';
 
 export const localConfig = {
@@ -30,6 +31,29 @@ export const localConfig = {
   },
 };
 const config = resolveConfig(localConfig);
+const pendingCall = {
+  type: 'function_call',
+  turn_id: 'turn_synthetic',
+  call_id: 'call_synthetic',
+  name: 'ask_operator',
+  arguments: { question: 'Which synthetic document should be used?' },
+};
+const pendingSession = { id: 'session_synthetic', required_actions: [pendingCall] };
+const replyAction = {
+  operation: 'sessions.tool-result',
+  id: pendingSession.id,
+  turnId: pendingCall.turn_id,
+  callId: pendingCall.call_id,
+  functionName: pendingCall.name,
+  expectedCallFingerprint: fingerprint({
+    sessionId: pendingSession.id,
+    turnId: pendingCall.turn_id,
+    callId: pendingCall.call_id,
+    name: pendingCall.name,
+    arguments: pendingCall.arguments,
+  }),
+  result: { success: true, output: JSON.stringify({ answer: 'Use the corrected synthetic CV.' }) },
+};
 const current = {
   id: 'agent_synthetic',
   model: 'synthetic-model',
@@ -44,6 +68,7 @@ function fixture(
     failOnMutation?: boolean;
     failOnRead?: boolean;
     status?: number;
+    session?: unknown;
   } = {}
 ): {
   platform: OpenAIPlatform;
@@ -62,8 +87,9 @@ function fixture(
     }
     const url = new URL(request.url);
     const page = { object: 'list', data: [current], has_more: false };
-    const data =
-      url.pathname.endsWith('/agent_synthetic') || url.pathname.endsWith('/template_synthetic')
+    const data = url.pathname.endsWith('/session_synthetic')
+      ? (options.session ?? pendingSession)
+      : url.pathname.endsWith('/agent_synthetic') || url.pathname.endsWith('/template_synthetic')
         ? current
         : page;
     if (url.pathname.endsWith('/events')) {
@@ -78,6 +104,127 @@ function fixture(
 }
 
 describe('OpenAI access boundary', () => {
+  it('reads pending functions from current session state, not history', async () => {
+    const { platform, requests } = fixture();
+    const result = await platform.read({
+      operation: 'sessions.pending-functions',
+      id: pendingSession.id,
+      turnId: pendingCall.turn_id,
+    });
+    expect(result.data).toEqual({
+      data: pendingFunctionCalls(pendingSession, {
+        sessionId: pendingSession.id,
+        turnId: pendingCall.turn_id,
+      }),
+    });
+    expect(requests.map((request) => new URL(request.url).pathname)).toEqual([
+      '/v1/agents',
+      '/v1/agents/sessions/session_synthetic',
+    ]);
+  });
+
+  it.each([
+    { success: true, output: JSON.stringify({ answer: 'Use the corrected synthetic CV.' }) },
+    { success: false, error: 'The operator cannot resolve this evidence gap.' },
+  ])(
+    'submits an exact approved function result only after checking pending state',
+    async (result) => {
+      const { platform, requests } = fixture();
+      const action = { ...replyAction, result };
+      const plan = planAction(config.target, action);
+      expect(plan.billable).toBe(true);
+      await platform.apply(action, { apply: true, digest: plan.digest, allowBillable: true });
+      expect(requests.map((request) => [request.method, new URL(request.url).pathname])).toEqual([
+        ['GET', '/v1/agents'],
+        ['GET', '/v1/agents/sessions/session_synthetic'],
+        ['POST', '/v1/agents/sessions/session_synthetic/events'],
+      ]);
+      expect(await requests[2]?.json()).toEqual({
+        events: [
+          {
+            type: 'agent.session.input.tool_result',
+            turn_id: pendingCall.turn_id,
+            call_id: pendingCall.call_id,
+            ...result,
+          },
+        ],
+      });
+    }
+  );
+
+  it.each([
+    { ...pendingSession, id: 'session_other' },
+    { ...pendingSession, required_actions: [] },
+    { ...pendingSession, required_actions: [{ ...pendingCall, turn_id: 'turn_other' }] },
+    { ...pendingSession, required_actions: [{ ...pendingCall, call_id: 'call_other' }] },
+    { ...pendingSession, required_actions: [{ ...pendingCall, name: 'unexpected_function' }] },
+    {
+      ...pendingSession,
+      required_actions: [{ ...pendingCall, arguments: { question: 'Changed' } }],
+    },
+    { ...pendingSession, required_actions: [pendingCall, pendingCall] },
+  ])(
+    'rejects missing, changed, wrong-identity or duplicate pending questions without a POST',
+    async (session) => {
+      const { platform, requests } = fixture({ session });
+      await expect(
+        platform.apply(replyAction, {
+          apply: true,
+          digest: planAction(config.target, replyAction).digest,
+          allowBillable: true,
+        })
+      ).rejects.toThrow('no result submitted');
+      expect(requests).toHaveLength(2);
+      expect(requests.every((request) => request.method === 'GET')).toBe(true);
+    }
+  );
+
+  it('does not submit a result after a failed pending read or replay an uncertain POST', async () => {
+    for (const failOnRead of [true, false]) {
+      const { platform, requests } = fixture({ failOnRead, failOnMutation: !failOnRead });
+      await expect(
+        platform.apply(replyAction, {
+          apply: true,
+          digest: planAction(config.target, replyAction).digest,
+          allowBillable: true,
+        })
+      ).rejects.toThrow(failOnRead ? 'no result submitted' : 'outcome is unknown');
+      expect(requests.filter((request) => request.method === 'POST')).toHaveLength(
+        failOnRead ? 0 : 1
+      );
+    }
+  });
+
+  it('requires separate billable approval and binds the answer payload to its plan', async () => {
+    const { platform, requests } = fixture();
+    const plan = planAction(config.target, replyAction);
+    await expect(
+      platform.apply(replyAction, { apply: true, digest: plan.digest, allowBillable: false })
+    ).rejects.toThrow('billable');
+    await expect(
+      platform.apply(
+        { ...replyAction, result: { success: true, output: 'Changed answer' } },
+        {
+          apply: true,
+          digest: plan.digest,
+          allowBillable: true,
+        }
+      )
+    ).rejects.toThrow('Exact plan');
+    expect(requests).toHaveLength(0);
+  });
+
+  it.each([
+    { success: true },
+    { success: true, output: 'answer', error: 'both' },
+    { success: true, output: { answer: 'not serialized' } },
+    { success: true, output: 'x'.repeat(100_001) },
+    { success: false, error: '' },
+    { success: false, output: 'answer' },
+  ])('rejects ambiguous or unsupported function-result payloads', (result) => {
+    expect(actionSchema.safeParse({ ...replyAction, result }).success).toBe(false);
+  });
+
   it('retrieves the exact session turn without inferring completion from session status', async () => {
     const { platform, requests } = fixture();
     await platform.read({
