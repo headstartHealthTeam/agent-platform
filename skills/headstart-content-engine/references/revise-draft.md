@@ -79,6 +79,19 @@ canonical repository change; they are never edited as a second source of truth.
     access state. Do not approve, schedule, publish, notify, upload to the CMS, or overwrite the prior
     revision.
 
+For an authorized Google Docs review export, place each new revision in a clearly labeled new tab
+and preserve earlier tabs, direct edits, and comment anchors. Do not overwrite the reviewed text or
+resolve comments merely to make the document look complete. Record which feedback the new tab
+addresses; comment replies or resolution require separate explicit intent. If the connector cannot
+preserve those surfaces, return the revision bundle and explain the export limitation. Google Docs
+is an optional review surface, not the owner of application approval or publication state.
+
+Separate a reviewer's confirmation of a reference's identity from approval of the article or every
+claim in that reference. Close the resolved identity question with its dated source evidence; do
+not repeatedly ask for the same confirmation unless the source changes. Carry forward only the
+remaining material questions. Research owns the reference's approved-use scope and source ledger;
+the writer continues to use the frozen packet rather than silently importing new source claims.
+
 ## Conflict Rules
 
 When feedback conflicts:

@@ -4,7 +4,7 @@ description: Write or revise Headstart Health audience-facing content for famili
 compatibility: Works with agents that can receive a content brief, draft, or factual source material.
 metadata:
   author: headstart-health
-  version: '1.2.0'
+  version: '1.2.1'
 ---
 
 # Write Headstart Tone And Voice
@@ -139,6 +139,11 @@ step clearer without making the family feel managed or talked down to.
   matters, and move into useful guidance. Grounded reassurance can help before procedural detail;
   do not assign feelings to every family, dramatize distress, or require an emotional opening when
   the reader needs a quick answer.
+- Check how the opening lands, not just whether it mentions strengths or reassurance. A detached
+  statement about the child can sound clinical even when its meaning is respectful. Address the
+  reader's actual question and give a useful next step. Use grounded reassurance when the topic
+  supports it; do not announce the family's emotions or substitute generic praise. Separate stacked explanations into natural
+  sentences without a rigid length limit or losing a meaningful qualification.
 - Put context before clinical or insurance detail.
 - Explain an unfamiliar term in the sentence where it first appears. Introduce a treatment plan or
   other clinical concept before referring to it as `the plan` or assuming the family knows how it
@@ -385,6 +390,8 @@ Before accepting polished copy, challenge it with these questions:
   cautious?
 - Would a real person say the sentence aloud?
 - For family content, does the opening show why this matters before defining the category?
+- Does the opening sound like a person speaking to the family, or a detached description of them?
+  Does one sentence carry the decision, its explanation, and several consequences at once?
 - Does the opening orient the reader naturally rather than announce an invented framework?
 - Is optional language preserving a real choice, or withholding a straightforward useful action?
 - Are questions, examples, and preparation details organized around when the family can use them?

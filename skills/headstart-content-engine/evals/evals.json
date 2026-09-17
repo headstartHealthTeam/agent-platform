@@ -2,6 +2,28 @@
   "skill": "headstart-content-engine",
   "cases": [
     {
+      "name": "minor-opening-revision-preserves-review-history",
+      "prompt": "Revise exact draft revision 2 from its complete frozen packet. The reviewer likes the article but says the opening is cold; only that paragraph needs changing. I authorize exporting revision 3 into the same Google Doc, preserving the two existing tabs, human edits, and comment anchors. Do not send messages, resolve comments, approve, or publish.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Classifies the comment as voice and clarity, limits edits to the affected opening, and verifies its transition to the unchanged body",
+        "Uses the tone skill's paragraph-level opening check rather than judging warmth from respectful vocabulary alone",
+        "Exports a clearly labeled new revision tab without overwriting existing tabs or resolving comments",
+        "Returns revision and feedback dispositions without implying approval or other application writes"
+      ]
+    },
+    {
+      "name": "confirmed-reference-is-not-blanket-approval",
+      "prompt": "A reviewer confirms that the linked Parent Guide is the correct reference and leaves one small voice comment on exact draft revision 2. Its frozen packet still lists guide identity as unresolved and has no support for a universal therapy schedule. Prepare the revision handoff without publishing or editing shared skills.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Records the dated confirmation and resolves only the reference-identity question through a versioned packet update",
+        "Does not ask again for already-established identity absent a material source change",
+        "Does not import unverified schedule claims or mark article, image, or publication approval complete",
+        "Keeps remaining concrete evidence or editorial questions separate from the confirmed reference"
+      ]
+    },
+    {
       "name": "accurate-but-unusable-family-draft",
       "prompt": "Verify this exact family draft against its complete packet. All factual and artifact checks pass, but its opening announces three moves and two tracks, each step only says prepare or review, and the final section introduces an essential extra step. It contains a reassuring sentence and a valid internal link. Evaluate reader usefulness and voice without rewriting facts or treating those elements as proof of quality.",
       "shouldActivate": true,

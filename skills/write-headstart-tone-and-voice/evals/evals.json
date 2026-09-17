@@ -2,6 +2,26 @@
   "skill": "write-headstart-tone-and-voice",
   "cases": [
     {
+      "name": "respectful-but-detached-opening",
+      "prompt": "Revise only this Headstart family guide opening: 'The child remains an individual with strengths and relationships. The report supplies information for subsequent decisions.' The reviewer says it sounds cold and transactional. Supplied facts: the reader may bring questions to the evaluator and need not resolve every question immediately. Keep the next section unchanged and add no diagnosis, outcome, or emotional assumptions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Speaks naturally to the family and gives direct, useful, fact-preserving guidance instead of detached description; grounded reassurance is optional",
+        "Does not treat mentioning strengths as sufficient warmth or presume that the reader is distressed",
+        "Preserves the factual boundary and adjacent section without a mandatory empathy phrase or question hook"
+      ]
+    },
+    {
+      "name": "overloaded-opening-with-material-limit",
+      "prompt": "Simplify this Headstart opening without adding facts: 'Choosing a care setting can be an important decision because sessions need to fit your family's day and your child's activities while availability depends on the practice and coverage depends on your plan.' The reviewer says it is long and awkward. Preserve the availability and coverage limits without making the opening a disclaimer or using a fixed sentence word limit.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Separates stacked ideas into natural readable sentences rather than merely changing punctuation",
+        "Preserves the distinct practice-availability and plan-coverage limits",
+        "Does not manufacture emotion, apply a rigid length quota, or create choppy fragments"
+      ]
+    },
+    {
       "name": "direct-family-guidance-with-choice",
       "prompt": "Rewrite this Headstart family paragraph using only its facts: 'If you are comparing providers, you can ask what the assessment involves. You can ask how your family's priorities inform goals. You can compare their answers before choosing.' Make the advice useful without choosing for the parent. Do not turn this into a mandatory process.",
       "shouldActivate": true,

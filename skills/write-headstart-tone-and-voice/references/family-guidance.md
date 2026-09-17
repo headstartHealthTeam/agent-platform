@@ -34,6 +34,36 @@ This recognizes uncertainty without declaring that the reader is frightened or o
 simple reference page may need the answer immediately instead of reassurance. Do not manufacture
 emotion or a process slogan to make an opening seem warm.
 
+## Warmth Is More Than Respectful Facts
+
+Premise: a family guide explains how to bring questions about an evaluation to the evaluator. The
+supplied facts say that not every question needs an immediate answer and the evaluator can explain
+the findings. No particular emotional response or outcome is established.
+
+Before: `The child remains an individual with strengths and relationships. The report supplies
+information for subsequent decisions.`
+
+After: `You don't need to have every answer today. Bring the questions that matter to your family
+to the evaluator, and ask them to talk through what the findings mean.`
+
+The first version is respectful but speaks about the family from a distance. The second speaks to
+the reader and offers support through a usable action. Neither this wording nor a reassurance-first
+opening is required. Avoid an automatic `we know this is overwhelming` or empty optimism.
+
+## Give An Opening Room To Breathe
+
+Premise: a guide compares care settings and explains how sessions may fit family routines.
+
+Before: `Selecting a care setting is an important consideration because where sessions happen
+affects the routine your family follows and the activities your child participates in each day.`
+
+After: `Where would care fit into your family's day? This guide explains the setting options and
+what each could mean for your routine.`
+
+Remove the stacked explanation rather than merely inserting punctuation. A question is one option,
+not a required hook. Preserve meaning and qualifications; do not enforce a word-count threshold or
+turn every sentence into a fragment.
+
 ## Explain First, Qualify Where It Matters
 
 Premise: a supplied source says an assessment informs proposed goals, family input contributes, and
