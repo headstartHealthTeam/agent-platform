@@ -141,6 +141,18 @@ The provider implementation uses the official `openai` Node/TypeScript SDK (pinn
 including `client.beta.agents`; it is not the separate Agents SDK orchestration library. Follow the
 [official session input/recovery contract](https://developers.openai.com/api/docs/guides/agents-api/sessions).
 
+### Connected acceptance boundary — September 18, 2026
+
+A bounded synthetic connected trial verified general guidance while waiting and working, an exact
+first-turn answer, model acknowledgement, reload recovery, same-session continuation with retained
+context, and browser-originated cancellation. It did **not** establish complete multi-turn question
+handling: a second-turn `ask_operator` call and its output failed with
+`The managed agent session has no active turn.` even though that root completed. The runtime /
+provider / executor cause remains unresolved. Keep this failure distinct from passing transport
+checks and synthetic later-turn tests; a completed turn is not proof that its tools succeeded.
+Resolve and verify that boundary before claiming full continuation acceptance. No canonical
+credentialing workflow, hosted runtime or payer action was accepted by this trial.
+
 ## Safety And Failure Contract
 
 - Explicit organization/project routing and successful Agents read preflight are required. The API
