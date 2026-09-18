@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import type {
   OperatorBinding,
   OperatorCommand,
+  OperatorDelivery,
   OperatorSnapshot,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
@@ -13,7 +14,7 @@ import type { Action } from './operations.js';
 import type { OperatorItems } from './operator-items.js';
 import { operatorText } from './operator-items.js';
 import { pendingFunctionCalls } from './pending-functions.js';
-import { OpenAIPlatform, fingerprint, planAction } from './platform.js';
+import { OpenAIPlatform, fingerprint, planAction, InputNotSteerableError } from './platform.js';
 
 export type {
   OperatorBinding,
@@ -29,7 +30,18 @@ const turnSchema = z.object({
 });
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
 const pageSchema = z.object({ data: z.array(z.unknown()).max(100), has_more: z.literal(false) });
+const turnsSchema = pageSchema.extend({
+  data: z.array(turnSchema.extend({ subagent_id: z.string().nullable() })).max(100),
+});
 type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'openOperatorObservation'>;
+function operatorStatus(
+  status: z.infer<typeof turnSchema>['status'],
+  hasQuestions: boolean
+): OperatorSnapshot['status'] {
+  if (status === 'completed') return 'idle';
+  if (status === 'failed' || status === 'cancelled') return status;
+  return hasQuestions ? 'waiting' : 'running';
+}
 
 /** Case records, operator authorization and durable outbox claims remain with the owning service. */
 export class OperatorRuntimePort {
@@ -109,12 +121,12 @@ export class OperatorRuntimePort {
       observation = entry;
     }
     observation.expiry.refresh();
-    const [session, turn, history] = await Promise.all([
+    const [session, turns, history] = await Promise.all([
       this.platform.read({ operation: 'sessions.get', id: binding.sessionId }),
       this.platform.read({
-        operation: 'sessions.turn.get',
+        operation: 'sessions.turns',
         id: binding.sessionId,
-        turnId: binding.turnId,
+        query: { limit: 100, order: 'asc' },
       }),
       this.platform.read({
         operation: 'sessions.items',
@@ -124,18 +136,23 @@ export class OperatorRuntimePort {
     ]);
     const verified = sessionSchema.parse(session.data);
     this.requireOpen();
-    const root = turnSchema.parse(turn.data);
+    const roots = turnsSchema.parse(turns.data).data.filter((turn) => turn.subagent_id === null);
+    const root = roots.at(-1);
     if (
       verified.id !== binding.sessionId ||
       verified.metadata['workflow_revision'] !== binding.workflowRevision ||
-      root.id !== binding.turnId ||
-      root.session_id !== binding.sessionId
+      !root ||
+      roots[0]?.id !== binding.turnId ||
+      roots.some((turn) => turn.session_id !== binding.sessionId) ||
+      new Set(roots.map((turn) => turn.id)).size !== roots.length ||
+      roots.slice(0, -1).some((turn) => turn.status !== 'completed')
     )
       throw new Error('Run provenance changed');
+    observation.items.includeTurns(roots.map((turn) => turn.id));
     observation.items.recover(pageSchema.parse(history.data).data);
     const calls = pendingFunctionCalls(session.data, {
       sessionId: binding.sessionId,
-      turnId: binding.turnId,
+      turnId: root.id,
     });
     const questions = calls.map((call) => {
       if (call.name !== 'ask_operator') throw new Error('Unsupported pending function');
@@ -154,23 +171,16 @@ export class OperatorRuntimePort {
         callFingerprint: call.fingerprint,
       };
     });
-    const status =
-      root.status === 'completed' || root.status === 'failed' || root.status === 'cancelled'
-        ? root.status
-        : questions.length
-          ? ('waiting' as const)
-          : ('running' as const);
     return {
-      status,
+      status: operatorStatus(root.status, questions.length > 0),
+      currentTurnId: root.id,
       items: [...observation.items.values(), ...questions],
       pendingQuestionIds: questions.map((item) => item.id),
     };
   }
-  async send(binding: OperatorBinding, command: OperatorCommand): Promise<void> {
+  async send(binding: OperatorBinding, command: OperatorCommand): Promise<OperatorDelivery> {
     this.requireOpen();
     if (binding.target !== fingerprint(this.target)) throw new Error('Wrong runtime target');
-    if (command.kind === 'guidance')
-      throw new Error('Cross-turn guidance requires its separate dispatch contract');
     const verified = sessionSchema.parse(
       (await this.platform.read({ operation: 'sessions.get', id: binding.sessionId })).data
     );
@@ -179,27 +189,53 @@ export class OperatorRuntimePort {
       verified.metadata['workflow_revision'] !== binding.workflowRevision
     )
       throw new Error('Run provenance changed');
-    let action: Action;
-    if (command.kind === 'stop') action = { operation: 'sessions.cancel', id: binding.sessionId };
-    else {
-      if (Date.now() >= this.billableUntil || !command.questionId || !command.callFingerprint)
+    const action: Action =
+      command.kind === 'stop'
+        ? { operation: 'sessions.cancel', id: binding.sessionId }
+        : await this.inputAction(binding, command);
+    this.requireOpen();
+    try {
+      await this.platform.apply(action, {
+        apply: true,
+        digest: planAction(this.target, action).digest,
+        allowBillable: command.kind !== 'stop',
+      });
+    } catch (error) {
+      if (command.kind === 'guidance' && error instanceof InputNotSteerableError)
+        return { status: 'rejected', reason: 'not_steerable' };
+      throw error;
+    }
+    return undefined;
+  }
+  private async inputAction(binding: OperatorBinding, command: OperatorCommand): Promise<Action> {
+    if (Date.now() >= this.billableUntil)
+      throw new Error('No current bounded inference authorization');
+    // Subscribe before sending, and recover the latest root rather than replying to the launch turn.
+    const current = await this.snapshot(binding);
+    if (current.status === 'cancelled' || current.status === 'failed')
+      throw new Error('Stopped or failed work requires a separate continuation decision');
+    if (command.kind === 'guidance') {
+      if (command.questionId !== null || command.callFingerprint !== null || !command.text.trim())
+        throw new Error('Guidance is not an answer to a pending function');
+      return {
+        operation: 'sessions.send',
+        id: binding.sessionId,
+        input: command.text,
+        idempotencyKey: command.id,
+      };
+    } else {
+      if (!command.questionId || !command.callFingerprint || !current.currentTurnId)
         throw new Error('No current bounded inference authorization');
-      action = {
+      return {
         operation: 'sessions.tool-result',
         id: binding.sessionId,
-        turnId: binding.turnId,
+        turnId: current.currentTurnId,
         callId: command.questionId,
         functionName: 'ask_operator',
         expectedCallFingerprint: command.callFingerprint,
         result: { success: true, output: command.text },
       };
     }
-    this.requireOpen();
-    await this.platform.apply(action, {
-      apply: true,
-      digest: planAction(this.target, action).digest,
-      allowBillable: command.kind === 'reply',
-    });
   }
   private requireOpen(): void {
     if (this.closed) throw new Error('Runtime observer is closed');

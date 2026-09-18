@@ -18,6 +18,7 @@ export {
 export type {
   OperatorBinding,
   OperatorCommand,
+  OperatorDelivery,
   OperatorSnapshot,
   OperatorItem,
   OperatorItemKind,

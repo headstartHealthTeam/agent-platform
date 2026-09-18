@@ -73,7 +73,7 @@ Portable port types now come from `@headstart-health/workflow-contracts`; the ad
 existing type exports. See [shared operator integration](../../docs/shared-operator-integration.md)
 for cross-repository ownership and the interim generated-contract distribution boundary.
 
-`OpenAIPlatform.openOperatorObservation` and `OperatorItems` project one exact root turn's
+`OpenAIPlatform.openOperatorObservation` and `OperatorItems` project verified root turns'
 assistant commentary/final text and generic tool-activity notices. They omit private reasoning,
 shell arguments, raw results and routing content. New messages can stream incrementally; saved
 final items win during recovery. When reconnect misses a message's opening event, show an explicit
@@ -82,17 +82,31 @@ Obvious credential patterns are withheld, but pattern matching is not comprehens
 prevention. Keep source/tool access and data classification constrained upstream.
 
 `OperatorRuntimePort` extends this existing package rather than creating another runner or service.
-It verifies exact target/session/root-turn/workflow-revision correlation, merges bounded saved
+It verifies exact target/session/initial-root/workflow-revision correlation, merges bounded saved
 history with the stream, and derives ad hoc `ask_operator` questions from current required actions,
 not historical messages. The owning backend supplies the trusted binding, human authorization and
-immutable answer/outbox records. The port's `send` delegates to existing guarded tool-result and
-cancellation operations. Function replies require a bounded caller-authorized inference window;
+immutable message/answer/outbox records. Each binding anchors the first root of a dedicated,
+exclusively application-owned session. The complete bounded ordered root chain must retain that
+anchor; prior roots must be completed, not cancelled/failed or overlapping. The latest root owns
+current questions and exact replies. Subagent activity is not projected. A provider-completed turn
+maps to `idle`, not business completion; general input can start another turn in the same session.
+This is not resume after cancellation, failure or a protected business stop.
+
+The port's `send` delegates to guarded message, tool-result and cancellation operations. General
+messages carry a stable command ID as the SDK idempotency key, never a question ID or approval.
+Subscribe/reconcile before input. An exact HTTP 400/409 `active_turn_not_steerable` SDK refusal is
+returned as `rejected/not_steerable`; preserve that result and allow the pending exact answer rather
+than automatically retrying or interrupting the agent. Other failures remain uncertain. Delivery
+does not prove the agent acknowledged or used a correction. Messages and function replies require
+a bounded caller-authorized inference window;
 observation and cancellation do not create one. A successful send means API acceptance, not a
-completed action. General guidance/new turns, start, resume and provisioning are not implemented by
-this port. It is not safe to call its write method directly from an untrusted agent.
+completed action. Initial start, controlled resume and provisioning are not implemented by this
+port. It is not safe to call its write method directly from an untrusted agent. The owner serializes
+actual provider I/O per run, including Stop, and must not release that serialization on a local
+timeout while a detached send can still run. SDK requests have bounded timeouts and no automatic retries.
 
 Observers are coalesced per binding, limited to 20 sessions and closed after 45 seconds without a
-snapshot request. Call `close()` on application teardown. Overflow (100 saved items, 180 projected
+snapshot request. Call `close()` on application teardown. Overflow (100 session turns or saved items, 180 projected
 items or 10,000 observed events) requires explicit reconciliation; pagination/retention policy is
 not silently bypassed. A disconnect never resends input, cancels the agent or proves completion.
 `createLocalOperatorRuntimePort` resolves the existing private profile inside trusted application
@@ -101,7 +115,7 @@ credential provisioning. No credential lookup happens merely by importing the pa
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.1.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.2.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session. Credential lookup is never an import-time side effect.
@@ -120,8 +134,12 @@ for an explicitly configured local synthetic run; missing configuration remains 
 distinguishes simulated activity from real API transport, and neither mode claims that fixture
 preparation packages were agent-produced. Real-API connected acceptance, retained provisioning,
 exact producer authority and hosted-environment validation remain separate evidence gates. The
-same observation/reply/cancel adapter serves local-executor and hosted sessions; provisioning and
+same observation/message/reply/cancel adapter serves local-executor and hosted sessions; provisioning and
 credential delivery differ, not the operator contract.
+
+The provider implementation uses the official `openai` Node/TypeScript SDK (pinned in this package),
+including `client.beta.agents`; it is not the separate Agents SDK orchestration library. Follow the
+[official session input/recovery contract](https://developers.openai.com/api/docs/guides/agents-api/sessions).
 
 ## Safety And Failure Contract
 

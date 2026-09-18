@@ -9,6 +9,10 @@ Credentialing is the first connected consumer, not the owner of reusable agent p
 - Backend owns its shared run/activity/outbox module, permission-admitted streaming and serialized
   dispatch. Each business module owns its immutable run relationship, admission, stop intent,
   review and protected-action policy. Provider acceptance is not business completion.
+  General messages do not resolve exact questions or authorize review/actions. Completed provider
+  turns are `idle` within a dedicated session, not terminal business work. The initial root remains
+  the immutable anchor while the adapter verifies later roots. Stop intent blocks new input;
+  actual sends and cancellation are serialized, with no replay after unknown delivery.
 - Backend owns the browser-facing wire projection. Admin's shared panel/stream parser consumes it
   through a narrow client bound by the business page. Exact-document rendering/byte verification
   is also shared; evidence semantics, package membership and access authority are not.

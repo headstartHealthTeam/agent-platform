@@ -24,6 +24,22 @@ const event = (
 });
 
 describe('operator-safe activity projection', () => {
+  it('recovers and streams only explicitly verified root turns, preserving prior activity', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    const followup = { ...message('Follow-up', 'completed'), id: 'item_b', turn_id: 'turn_b' };
+    items.recover([message('Original', 'completed'), followup]);
+    expect(items.values()).toHaveLength(1);
+    items.includeTurns(['turn_a', 'turn_b']);
+    items.recover([followup, { ...followup, id: 'subagent_item', turn_id: 'turn_subagent' }]);
+    expect(items.values().map((item) => item.text)).toEqual(['Original', 'Follow-up']);
+    items.consume(
+      event('item.added', {
+        turn_id: 'turn_b',
+        item: { ...message('Working'), id: 'item_c', turn_id: 'turn_b' },
+      })
+    );
+    expect(items.values().at(-1)?.text).toBe('Working');
+  });
   it('streams exact text, deduplicates events and lets final saved items win', () => {
     const items = new OperatorItems('session_a', 'turn_a');
     items.consume(event('item.added', { item: message('Checking') }));

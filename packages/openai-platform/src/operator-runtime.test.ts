@@ -7,7 +7,7 @@ import {
   type OperatorBinding,
   type OperatorCommand,
 } from './operator-runtime.js';
-import { fingerprint, type OpenAIPlatform } from './platform.js';
+import { fingerprint, type OpenAIPlatform, InputNotSteerableError } from './platform.js';
 
 const target = { organizationId: 'org-synthetic', projectId: 'proj_synthetic' };
 const binding: OperatorBinding = {
@@ -32,7 +32,13 @@ const reply: OperatorCommand = {
 };
 
 function fixture(
-  options: { session?: unknown; turn?: unknown; history?: unknown; expiry?: number } = {}
+  options: {
+    session?: unknown;
+    turn?: unknown;
+    turns?: unknown[];
+    history?: unknown;
+    expiry?: number;
+  } = {}
 ): {
   platform: {
     [K in 'read' | 'apply' | 'openOperatorObservation']: ReturnType<
@@ -55,13 +61,18 @@ function fixture(
               metadata: { workflow_revision: 'revision_a' },
               required_actions: [question],
             })
-          : parsed.operation === 'sessions.turn.get'
-            ? (options.turn ?? {
-                id: 'turn_a',
-                session_id: 'session_a',
-                subagent_id: null,
-                status: 'in_progress',
-              })
+          : parsed.operation === 'sessions.turns'
+            ? {
+                data: options.turns ?? [
+                  options.turn ?? {
+                    id: 'turn_a',
+                    session_id: 'session_a',
+                    subagent_id: null,
+                    status: 'in_progress',
+                  },
+                ],
+                has_more: false,
+              }
             : (options.history ?? { data: [], has_more: false });
       return { data, fingerprint: fingerprint(data) };
     }),
@@ -89,6 +100,131 @@ function fixture(
 afterEach(() => vi.useRealTimers());
 
 describe('operator runtime adapter', () => {
+  it('returns a definitive refusal but never retries an uncertain write or answers the pending tool instead', async () => {
+    const f = fixture({ expiry: Date.now() + 60_000 });
+    const command: OperatorCommand = {
+      id: 'message_a',
+      kind: 'guidance',
+      questionId: null,
+      callFingerprint: null,
+      text: 'Check the corrected license.',
+    };
+    try {
+      f.platform.apply.mockRejectedValueOnce(new InputNotSteerableError());
+      expect(await f.port.send(binding, command)).toEqual({
+        status: 'rejected',
+        reason: 'not_steerable',
+      });
+      f.platform.apply.mockRejectedValueOnce(new Error('Unknown delivery'));
+      await expect(f.port.send(binding, { ...command, id: 'message_b' })).rejects.toThrow(
+        'Unknown delivery'
+      );
+      expect(f.platform.apply).toHaveBeenCalledTimes(2);
+      expect((await f.port.snapshot(binding)).pendingQuestionIds).toEqual(['call_a']);
+    } finally {
+      f.port.close();
+    }
+  });
+  it('sends idempotent guidance without resolving a question, and follows successive root turns after recovery', async () => {
+    const roots = [
+      { id: 'turn_a', session_id: 'session_a', subagent_id: null, status: 'in_progress' },
+    ];
+    const options = {
+      turns: roots,
+      expiry: Date.now() + 60_000,
+      session: {
+        id: 'session_a',
+        metadata: { workflow_revision: 'revision_a' },
+        required_actions: [question],
+      },
+    };
+    const f = fixture(options);
+    const guidance: OperatorCommand = {
+      id: 'correction_a',
+      kind: 'guidance',
+      questionId: null,
+      callFingerprint: null,
+      text: 'Use the corrected license.',
+    };
+    try {
+      await f.port.send(binding, guidance);
+      expect(f.platform.apply).toHaveBeenLastCalledWith(
+        {
+          operation: 'sessions.send',
+          id: binding.sessionId,
+          input: guidance.text,
+          idempotencyKey: guidance.id,
+        },
+        expect.objectContaining({ allowBillable: true })
+      );
+      expect((await f.port.snapshot(binding)).pendingQuestionIds).toEqual(['call_a']);
+      await expect(f.port.send(binding, { ...guidance, questionId: 'call_a' })).rejects.toThrow(
+        'not an answer'
+      );
+      options.session.required_actions = [];
+      Object.assign(roots[0] ?? {}, { status: 'completed' });
+      expect((await f.port.snapshot(binding)).status).toBe('idle');
+      await f.port.send(binding, { ...guidance, id: 'correction_b' });
+      roots.push({
+        id: 'turn_b',
+        session_id: 'session_a',
+        subagent_id: null,
+        status: 'in_progress',
+      });
+      options.session.required_actions = [{ ...question, turn_id: 'turn_b', call_id: 'call_b' }];
+      const current = await f.port.snapshot(binding);
+      expect(current).toMatchObject({
+        status: 'waiting',
+        currentTurnId: 'turn_b',
+        pendingQuestionIds: ['call_b'],
+      });
+      f.fail();
+      await Promise.resolve();
+      expect(await f.port.snapshot(binding)).toEqual(current);
+      await f.port.send(binding, {
+        ...reply,
+        questionId: 'call_b',
+        callFingerprint: current.items.at(-1)?.callFingerprint ?? '',
+      });
+      expect(f.platform.apply).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          operation: 'sessions.tool-result',
+          turnId: 'turn_b',
+          callId: 'call_b',
+        }),
+        expect.anything()
+      );
+      Object.assign(roots[1] ?? {}, { status: 'cancelled' });
+      await expect(f.port.send(binding, guidance)).rejects.toThrow('separate continuation');
+      expect(f.platform.apply).toHaveBeenCalledTimes(3);
+    } finally {
+      f.port.close();
+    }
+  });
+  it('rejects overlapping, foreign, unanchored and post-cancellation root histories', async () => {
+    const root = { id: 'turn_a', session_id: 'session_a', subagent_id: null, status: 'completed' };
+    for (const turns of [
+      [],
+      [{ ...root, id: 'other' }],
+      [root, { ...root, id: 'turn_b', session_id: 'other' }],
+      [
+        { ...root, status: 'in_progress' },
+        { ...root, id: 'turn_b' },
+      ],
+      [
+        { ...root, status: 'cancelled' },
+        { ...root, id: 'turn_b' },
+      ],
+      [root, root],
+    ]) {
+      const f = fixture({ turns });
+      try {
+        await expect(f.port.snapshot(binding)).rejects.toThrow('provenance');
+      } finally {
+        f.port.close();
+      }
+    }
+  });
   it('coalesces observations, recovers pending questions and does not derive pending work from history', async () => {
     const f = fixture();
     try {
@@ -125,7 +261,7 @@ describe('operator runtime adapter', () => {
       });
       try {
         expect((await f.port.snapshot(binding)).status).toBe(
-          status === 'in_progress' ? 'running' : status
+          status === 'in_progress' ? 'running' : status === 'completed' ? 'idle' : status
         );
       } finally {
         f.port.close();
@@ -168,7 +304,7 @@ describe('operator runtime adapter', () => {
     await expect(f.port.send({ ...binding, target: 'wrong' }, reply)).rejects.toThrow('target');
     await expect(f.port.send(binding, reply)).rejects.toThrow('authorization');
     await expect(f.port.send(binding, { ...reply, kind: 'guidance' })).rejects.toThrow(
-      'dispatch contract'
+      'authorization'
     );
     await expect(f.port.send({ ...binding, workflowRevision: 'wrong' }, reply)).rejects.toThrow(
       'provenance'

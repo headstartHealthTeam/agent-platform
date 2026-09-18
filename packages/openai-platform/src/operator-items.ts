@@ -39,10 +39,17 @@ export class OperatorItems {
   private readonly seen = new Set<string>();
   private readonly liveText = new Set<string>();
   private readonly withheld = new Set<string>();
+  private readonly turns = new Set<string>();
   constructor(
     private readonly sessionId: string,
-    private readonly turnId: string
-  ) {}
+    turnId: string
+  ) {
+    this.turns.add(turnId);
+  }
+  /** Called only after the adapter verifies the session's complete ordered root-turn history. */
+  includeTurns(turnIds: string[]): void {
+    for (const turnId of turnIds) this.turns.add(id.parse(turnId));
+  }
   values(): OperatorItem[] {
     return [...this.items.values()];
   }
@@ -62,7 +69,8 @@ export class OperatorItems {
       return;
     const parsed = event.parse(raw);
     if (parsed.session_id !== this.sessionId) throw new Error('Wrong observation session');
-    if (parsed.turn_id !== this.turnId || this.seen.has(parsed.event_id)) return;
+    if (!parsed.turn_id || !this.turns.has(parsed.turn_id) || this.seen.has(parsed.event_id))
+      return;
     if (this.seen.size >= 10000) throw new Error('Observation limit reached; recover saved state');
     this.seen.add(parsed.event_id);
     if (parsed.type.endsWith('item.added') || parsed.type.endsWith('item.done')) {
@@ -86,7 +94,7 @@ export class OperatorItems {
   }
   private item(raw: unknown, live: boolean): void {
     const base = itemBase.safeParse(raw);
-    if (!base.success || base.data.turn_id !== this.turnId) return;
+    if (!base.success || !this.turns.has(base.data.turn_id)) return;
     let next: OperatorItem;
     if (base.data.type === 'message') {
       const projected = this.message(raw, live);

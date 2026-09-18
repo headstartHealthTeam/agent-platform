@@ -53,6 +53,25 @@ export interface PlatformResult {
   data: unknown;
   fingerprint: string;
 }
+/** Sanitized, definitive provider refusal; unlike an uncertain network/write failure. */
+export class InputNotSteerableError extends Error {
+  constructor() {
+    super('The active turn cannot accept a message. No input was accepted.');
+  }
+}
+function sanitizedMutationError(action: Action, error: unknown): Error {
+  if (
+    action.operation === 'sessions.send' &&
+    error instanceof OpenAI.APIError &&
+    (error.status === 400 || error.status === 409) &&
+    error.code === 'active_turn_not_steerable'
+  )
+    return new InputNotSteerableError();
+  // Never retain SDK errors as causes: they may carry request, response or credential content.
+  return new Error(
+    'Mutation failed or outcome is unknown. Reconcile the resource before retrying; no automatic retry was attempted.'
+  );
+}
 
 // Never return or serialize an SDK Page: it contains transport state, not just API data.
 function pageData(page: { data: { id: string | null }[]; hasNextPage: () => boolean }): unknown {
@@ -239,10 +258,8 @@ export class OpenAIPlatform {
     try {
       const data = await this.mutate(action);
       return { data: data ?? null, fingerprint: fingerprint(data) };
-    } catch {
-      throw new Error(
-        'Mutation failed or outcome is unknown. Reconcile the resource before retrying; no automatic retry was attempted.'
-      );
+    } catch (error) {
+      throw sanitizedMutationError(action, error);
     }
   }
 

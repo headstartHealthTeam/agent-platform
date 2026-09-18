@@ -4,7 +4,13 @@ import { resolveConfig } from './config.js';
 import { actionSchema } from './operations.js';
 import { createOperatorRuntimePort, protocol, adapterVersion } from './operator-module.js';
 import { pendingFunctionCalls } from './pending-functions.js';
-import { fingerprint, OpenAIPlatform, planAction, summarize } from './platform.js';
+import {
+  fingerprint,
+  OpenAIPlatform,
+  planAction,
+  summarize,
+  InputNotSteerableError,
+} from './platform.js';
 
 export const localConfig = {
   profile: {
@@ -36,7 +42,7 @@ const config = resolveConfig(localConfig);
 describe('standalone operator factory', () => {
   it('keeps transport construction credential-free until explicitly configured', () => {
     expect(protocol).toBe('headstart-openai-operator/v1');
-    expect(adapterVersion).toBe('0.1.0');
+    expect(adapterVersion).toBe('0.2.0');
     const fetchImplementation = vi.fn<typeof fetch>();
     for (const billableUntil of [undefined, '2026-09-17T12:00:00Z']) {
       const port = createOperatorRuntimePort({
@@ -95,6 +101,7 @@ function fixture(
     project?: string;
     fail?: boolean;
     failOnMutation?: boolean;
+    refusal?: { status: number; code: string };
     failOnRead?: boolean;
     status?: number;
     session?: unknown;
@@ -122,6 +129,11 @@ function fixture(
         ? current
         : page;
     if (url.pathname.endsWith('/events')) {
+      if (options.refusal)
+        return Response.json(
+          { error: { code: options.refusal.code, message: secret, type: 'invalid_request_error' } },
+          { status: options.refusal.status }
+        );
       return new Response(null, { status: 204 });
     }
     return Response.json(data, {
@@ -133,6 +145,29 @@ function fixture(
 }
 
 describe('OpenAI access boundary', () => {
+  it.each([400, 409, 500])(
+    'classifies only definitive steering refusals without retaining sensitive provider errors (%s)',
+    async (status) => {
+      const f = fixture({ refusal: { status, code: 'active_turn_not_steerable' } });
+      const action = {
+        operation: 'sessions.send',
+        id: 'session_synthetic',
+        input: 'Synthetic correction',
+        idempotencyKey: 'message_a',
+      };
+      const outcome = f.platform.apply(action, {
+        apply: true,
+        digest: planAction(config.target, action).digest,
+        allowBillable: true,
+      });
+      await expect(outcome).rejects.toThrow(
+        status === 500 ? 'outcome is unknown' : 'No input was accepted'
+      );
+      await expect(outcome).rejects.not.toThrow(secret);
+      if (status !== 500) await expect(outcome).rejects.toBeInstanceOf(InputNotSteerableError);
+      expect(f.requests.filter((request) => request.method === 'POST')).toHaveLength(1);
+    }
+  );
   it.each([false, true])(
     'projects the official content stream and requires recovery at close (malformed=%s)',
     async (malformed) => {
