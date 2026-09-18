@@ -24,6 +24,68 @@ const event = (
 });
 
 describe('operator-safe activity projection', () => {
+  it('shows failed question calls from later roots without exposing arguments or raw errors', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    const call = {
+      id: 'call_b',
+      turn_id: 'turn_b',
+      type: 'function_call',
+      name: 'ask_operator',
+      arguments: { question: 'private question' },
+      status: 'failed',
+      error: 'private diagnostic',
+    };
+    items.recover([call]);
+    expect(items.values()).toEqual([]);
+    items.includeTurns(['turn_a', 'turn_b']);
+    items.consume(event('item.done', { turn_id: 'turn_b', item: call }));
+    items.recover([
+      call,
+      { ...call, id: 'output_b', type: 'function_call_output', output: 'private output' },
+    ]);
+    expect(items.values()).toEqual([
+      {
+        id: 'call_b',
+        kind: 'tool',
+        text: 'The agent could not complete a question request. Check the agent’s update before continuing.',
+        final: true,
+      },
+    ]);
+    const recovered = new OperatorItems('session_a', 'turn_b');
+    recovered.recover([call]);
+    expect(recovered.values()).toEqual(items.values());
+    expect(JSON.stringify(items.values())).not.toMatch(/private|diagnostic|arguments|fingerprint/);
+  });
+  it('shows generic tool failures but never turns function history into a pending question', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    const call = {
+      id: 'call_a',
+      turn_id: 'turn_a',
+      type: 'function_call',
+      name: 'private_function_name',
+      arguments: 'private arguments',
+    };
+    items.recover([
+      { ...call, status: 'in_progress' },
+      { ...call, status: 'completed' },
+      { ...call, status: 'invalid' },
+    ]);
+    expect(items.values()).toEqual([]);
+    items.recover([
+      { ...call, status: 'failed' },
+      { ...call, id: 'command_a', type: 'command_execution', status: 'failed' },
+    ]);
+    expect(items.values()).toHaveLength(2);
+    for (const item of items.values()) {
+      expect(item).toMatchObject({
+        kind: 'tool',
+        text: 'A tool call failed. Check the agent’s update and evidence before continuing.',
+        final: true,
+      });
+      expect(item.callFingerprint).toBeUndefined();
+    }
+    expect(JSON.stringify(items.values())).not.toMatch(/private/);
+  });
   it('recovers and streams only explicitly verified root turns, preserving prior activity', () => {
     const items = new OperatorItems('session_a', 'turn_a');
     const followup = { ...message('Follow-up', 'completed'), id: 'item_b', turn_id: 'turn_b' };

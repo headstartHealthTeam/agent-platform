@@ -100,6 +100,60 @@ function fixture(
 afterEach(() => vi.useRealTimers());
 
 describe('operator runtime adapter', () => {
+  it('preserves later-turn tool failure visibility without inventing pending work or business failure', async () => {
+    const root = {
+      id: 'turn_a',
+      session_id: 'session_a',
+      subagent_id: null,
+      status: 'completed',
+    };
+    const f = fixture({
+      session: {
+        id: 'session_a',
+        metadata: { workflow_revision: 'revision_a' },
+        required_actions: [],
+      },
+      turns: [root, { ...root, id: 'turn_b' }],
+      history: {
+        has_more: false,
+        data: [
+          {
+            ...question,
+            id: 'call_b',
+            turn_id: 'turn_b',
+            call_id: 'call_b',
+            status: 'failed',
+          },
+          {
+            id: 'output_b',
+            turn_id: 'turn_b',
+            call_id: 'call_b',
+            type: 'function_call_output',
+            status: 'failed',
+            error: 'The managed agent session has no active turn.',
+          },
+        ],
+      },
+    });
+    try {
+      expect(await f.port.snapshot(binding)).toMatchObject({
+        status: 'idle',
+        currentTurnId: 'turn_b',
+        pendingQuestionIds: [],
+        items: [
+          {
+            id: 'call_b',
+            kind: 'tool',
+            text: 'The agent could not complete a question request. Check the agent’s update before continuing.',
+            final: true,
+          },
+        ],
+      });
+      expect(f.platform.apply).not.toHaveBeenCalled();
+    } finally {
+      f.port.close();
+    }
+  });
   it('returns a definitive refusal but never retries an uncertain write or answers the pending tool instead', async () => {
     const f = fixture({ expiry: Date.now() + 60_000 });
     const command: OperatorCommand = {

@@ -15,6 +15,11 @@ const command = itemBase.extend({
   type: z.literal('command_execution'),
   status: z.enum(['in_progress', 'completed', 'incomplete', 'failed']),
 });
+const failedFunction = itemBase.extend({
+  type: z.literal('function_call'),
+  status: z.literal('failed'),
+  name: z.string(),
+});
 const event = z.object({ event_id: id, session_id: id, turn_id: id.nullable(), type: z.string() });
 const textEvent = event.extend({
   item_id: id,
@@ -95,27 +100,42 @@ export class OperatorItems {
   private item(raw: unknown, live: boolean): void {
     const base = itemBase.safeParse(raw);
     if (!base.success || !this.turns.has(base.data.turn_id)) return;
-    let next: OperatorItem;
-    if (base.data.type === 'message') {
-      const projected = this.message(raw, live);
-      if (!projected) return;
-      next = projected;
-    } else if (base.data.type === 'command_execution') {
+    const next =
+      base.data.type === 'message' ? this.message(raw, live) : this.tool(raw, base.data.type);
+    if (!next) return;
+    const previous = this.items.get(next.id);
+    if (previous?.final) return;
+    if (!previous && this.items.size >= 180) throw new Error('Activity limit reached');
+    this.items.set(next.id, next);
+  }
+  private tool(raw: unknown, type: string): OperatorItem | null {
+    if (type === 'command_execution') {
       const item = command.parse(raw);
-      next = {
+      return {
         id: item.id,
         kind: 'tool',
         text:
           item.status === 'in_progress'
             ? 'Agent is using a tool.'
-            : 'Tool activity ended. Review the agent’s explanation and evidence for the outcome.',
+            : item.status === 'failed'
+              ? 'A tool call failed. Check the agent’s update and evidence before continuing.'
+              : 'Tool activity ended. Review the agent’s explanation and evidence for the outcome.',
         final: item.status !== 'in_progress',
       };
-    } else return;
-    const previous = this.items.get(next.id);
-    if (previous?.final) return;
-    if (!previous && this.items.size >= 180) throw new Error('Activity limit reached');
-    this.items.set(next.id, next);
+    } else if (type === 'function_call') {
+      const parsed = failedFunction.safeParse(raw);
+      if (!parsed.success) return null;
+      return {
+        id: parsed.data.id,
+        kind: 'tool',
+        text:
+          parsed.data.name === 'ask_operator'
+            ? 'The agent could not complete a question request. Check the agent’s update before continuing.'
+            : 'A tool call failed. Check the agent’s update and evidence before continuing.',
+        final: true,
+      };
+    }
+    return null;
   }
   private message(raw: unknown, live: boolean): OperatorItem | null {
     const parsed = message.safeParse(raw);

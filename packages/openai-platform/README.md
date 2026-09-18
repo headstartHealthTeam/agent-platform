@@ -75,7 +75,9 @@ for cross-repository ownership and the interim generated-contract distribution b
 
 `OpenAIPlatform.openOperatorObservation` and `OperatorItems` project verified root turns'
 assistant commentary/final text and generic tool-activity notices. They omit private reasoning,
-shell arguments, raw results and routing content. New messages can stream incrementally; saved
+shell arguments, raw results and routing content. Failed question requests and other failed tools
+produce explicit, sanitized notices; they never invent a pending question or imply business failure.
+New messages can stream incrementally; saved
 final items win during recovery. When reconnect misses a message's opening event, show an explicit
 writing placeholder until its complete text arrives rather than guessing overlapping delta offsets.
 Obvious credential patterns are withheld, but pattern matching is not comprehensive data-loss
@@ -150,8 +152,25 @@ handling: a second-turn `ask_operator` call and its output failed with
 `The managed agent session has no active turn.` even though that root completed. The runtime /
 provider / executor cause remains unresolved. Keep this failure distinct from passing transport
 checks and synthetic later-turn tests; a completed turn is not proof that its tools succeeded.
-Resolve and verify that boundary before claiming full continuation acceptance. No canonical
-credentialing workflow, hosted runtime or payer action was accepted by this trial.
+
+A second, direct-API synthetic diagnostic removed the backend, admin and operator adapter from the
+question/reply path. Its second question failed inside the managed function service with HTTP 503,
+while the first and three subsequent questions succeeded in the same session. This isolates that
+failure from the application path, but does **not** reproduce the exact earlier error or establish
+one cause for both. Later function success is not proof of restored sandbox execution or full
+connected-console acceptance. The initial failed reconnect probe and both failures remain retained
+evidence, not overwritten by the later successes. No documented fix for either exact error was
+established by the official documentation review.
+
+Follow the [function recovery contract](https://developers.openai.com/api/docs/guides/agents-api/tools/functions):
+retrieve current `required_actions` and use the exact turn/call identity, not historical items.
+Follow the [environment lifecycle contract](https://developers.openai.com/api/docs/guides/agents-api/environments/lifecycle):
+connection events report state rather than request startup; later input can request a connection,
+and one provisioner must coordinate shutdown with incoming work. Function-only success does not
+validate that provisioner. Do not automatically replay messages or tool effects to hide a failed
+tool, or treat a completed root as workflow success. Resolve and verify the failure/recovery
+boundary before claiming full continuation acceptance. No canonical credentialing workflow, hosted
+runtime or payer action was accepted by these trials.
 
 ## Safety And Failure Contract
 
