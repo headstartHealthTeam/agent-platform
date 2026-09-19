@@ -2,6 +2,46 @@
   "skill": "headstart-intake-sla-review",
   "cases": [
     {
+      "name": "unfamiliar-note-is-judgment-not-new-regex",
+      "prompt": "The Intake parser does not recognize a note saying the case is on tomorrow's provider discussion list. The source is complete. Add a regex so today's run passes?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Classifies administrative-versus-substantive meaning as agent judgment and reviews the complete bounded context",
+        "Uses the reviewed runtime's source-bound note adjudication input when available, without refreshing substantive status for administrative activity",
+        "Does not add a phrase-specific engine rule or clear QA merely to pass; reruns normal validation without recollecting all sources"
+      ]
+    },
+    {
+      "name": "mixed-note-and-paused-staffing",
+      "prompt": "Today's note says the case is on the provider agenda and technician recruiting is temporarily suspended. The initial assessment is still scheduled. Is the whole note administrative or the whole case on hold?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Separates administrative agenda activity from the substantive recruiting pause and records supported source-bound interpretation",
+        "Retains the scheduled assessment without inferring cancellation or whole-case hold",
+        "Preserves uncertainty about the restart condition and does not require Salesforce repair before normal review processing"
+      ]
+    },
+    {
+      "name": "typed-finding-corrupted-by-renderer",
+      "prompt": "The saved supported interpretation says the corrected plan was sent back for review, but the report demands the already-reported edits again. Should we just tell the agent to be more careful?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Identifies loss of valid interpretation semantics in the consumer as a reproducible engine defect rather than another phrasing problem",
+        "Under code-edit authorization corrects the typed boundary with paraphrase and counterexample tests",
+        "Preserves provider-reported status and the older structured discrepancy without inventing approval or weakening QA"
+      ]
+    },
+    {
+      "name": "missing-required-source-is-not-adjudicable",
+      "prompt": "The note adjudication path is available, so mark a blocked required transcript administrative and publish. We also recovered one HTTP 502 and dropped one generated search argument; count all three as engine defects.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not adjudicate inaccessible required evidence as administrative or use judgment to waive source coverage",
+        "Applies existing row exception and publication rules while keeping Salesforce read-only",
+        "Separates the source exception, recovered transport incident and orchestration mistake instead of counting all as engine defects"
+      ]
+    },
+    {
       "name": "denial-context-before-publication",
       "prompt": "The full Slack sweep passed for today's Intake SLA run, but the engine lists two denied IA/TA rows without completed targeted Client Intake coverage. Can we publish and check those during closeout?",
       "shouldActivate": true,
