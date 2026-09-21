@@ -17,8 +17,9 @@ import {
   type CredentialingOutput,
 } from './contracts.js';
 import {
-  credentialingArtifactInputSchema,
   credentialingArtifactOutputSchema,
+  syntheticArtifactInputSchema,
+  productionReadInputSchema,
 } from './preparation-contracts.js';
 import { reviewFingerprint, validateProposal } from './review.js';
 import { validateSnapshot } from './snapshot.js';
@@ -50,7 +51,10 @@ describe('credentialing preparation contracts', () => {
   });
 
   it('keeps JSON Schemas synchronized with the canonical typed contracts', () => {
-    expect(workflow.inputSchema).toEqual(z.toJSONSchema(credentialingArtifactInputSchema));
+    expect(workflow.inputSchema).toEqual(z.toJSONSchema(syntheticArtifactInputSchema));
+    expect(readJson('schemas/production-read-input.schema.json')).toEqual(
+      z.toJSONSchema(productionReadInputSchema)
+    );
     expect(workflow.outputSchema).toEqual(z.toJSONSchema(credentialingArtifactOutputSchema));
     expect(validateWorkflowOutput(workflow, referenceOutput()).valid).toBe(true);
     expect(readJson('fixtures/input.valid.json')).toEqual(loadScenario('ga-initial'));

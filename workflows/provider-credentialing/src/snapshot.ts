@@ -5,7 +5,7 @@ export const unique = (values: string[]): boolean => new Set(values).size === va
 
 export const validateSnapshot = (input: ArtifactInput): string[] => {
   const issues: string[] =
-    input.schemaVersion === '0.2.0' ? validatePreparationSnapshot(input) : [];
+    input.schemaVersion !== '0.1.0' ? validatePreparationSnapshot(input) : [];
   const collections = [
     input.facts.map((fact) => fact.id),
     input.evidence.map((item) => item.id),
@@ -17,7 +17,7 @@ export const validateSnapshot = (input: ArtifactInput): string[] => {
     issues.push('Ambiguous duplicate identifiers.');
   }
   const subjects =
-    input.schemaVersion === '0.2.0'
+    input.schemaVersion !== '0.1.0'
       ? preparationSubjects(input)
       : [input.work.providerId, input.work.practiceId];
   for (const item of input.evidence) {

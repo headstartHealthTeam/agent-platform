@@ -4,10 +4,11 @@ import { fileURLToPath } from 'node:url';
 
 import { credentialingInputSchema, type CredentialingInput } from './contracts.js';
 import {
-  credentialingArtifactInputSchema,
+  syntheticArtifactInputSchema,
   preparationInputSchema,
   type ArtifactInput,
   type PreparationInput,
+  type SyntheticArtifactInput,
 } from './preparation-contracts.js';
 import { validateSnapshot } from './snapshot.js';
 
@@ -33,8 +34,10 @@ export const loadPreparationScenario = (id: string): PreparationInput => {
 };
 
 type CaseSnapshot = Omit<CredentialingInput, 'evidence'> | Omit<PreparationInput, 'evidence'>;
-const caseProjection = ({ evidence: _evidence, ...snapshot }: ArtifactInput): CaseSnapshot =>
-  snapshot;
+const caseProjection = ({
+  evidence: _evidence,
+  ...snapshot
+}: SyntheticArtifactInput): CaseSnapshot => snapshot;
 
 export const loadScenario = (id: string): CredentialingInput => {
   if (!scenarioIds.some((candidate) => candidate === id)) {
@@ -56,7 +59,7 @@ export const createSyntheticTools = (
   listEvidence: () => Omit<ArtifactInput['evidence'][number], 'content'>[];
   readEvidence: (id: string) => ArtifactInput['evidence'][number];
 } => {
-  const input = credentialingArtifactInputSchema.parse(inputValue);
+  const input = syntheticArtifactInputSchema.parse(inputValue);
   const issues = validateSnapshot(input);
   if (issues.length > 0) {
     throw new Error(issues.join(' '));

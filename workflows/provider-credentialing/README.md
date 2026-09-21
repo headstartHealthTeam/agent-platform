@@ -1,11 +1,36 @@
 # Provider Credentialing
 
-This is the first **synthetic preparation foundation**, not the complete credentialing MVP.
+This is the **preparation foundation and connected application definition**, not the complete credentialing MVP.
 It contains payer-neutral work/evidence/proposal contracts, scoped investigative fixture tools,
 review-content fingerprinting and regression/evaluation cases. It does not implement browser
 population, uploads, approval enforcement, an admin integration, or an Agents API executor. Its
 canonical validator now has a standalone application-consumption artifact for the backend review
 boundary described below.
+
+The explicit production-read input `0.3.0` uses the same payer-neutral rich preparation/proposal
+contracts as synthetic input `0.2.0`, without relabeling invented evidence as real. Synthetic helpers
+reject production-read inputs. This schema is not source-access authorization or proof of an agent
+run. The existing draft synthetic workflow manifest is unchanged.
+
+### Connected preparation definition
+
+The build also emits `dist/preparation-definition.json`: the canonical skill, the
+[connected entry prompt](prompts/connected.md), both public input schemas, proposal schema and
+three function declarations. Its workflow revision hashes the complete definition. The artifact
+contains no fixtures, expected answers, credentials or private case data. Deploy/pin reviewed bytes
+alongside the validator; do not maintain a second instruction copy in backend.
+
+`get_credentialing_review_context` obtains the server-bound case, exact workflow/route pins,
+current revision and saved feedback. `publish_credentialing_review_package` submits complete
+input/proposal JSON for canonical validation and durable human review. `ask_operator` remains an
+ad hoc human question. General source investigation uses separately configured, permission-aware
+native Headstart MCP tools; the backend functions are not a second source-access API.
+
+Saved review corrections remain instructions to investigate, not source truth or approval. The
+agent re-reads context, investigates and publishes a new package, which requires renewed review.
+Native source access, exact source-file handoff, retained executor provisioning and real-agent
+acceptance are not established by building this artifact. Missing byte access must be reported as
+missing; a file summary must not become an invented digest or fabricated original document.
 
 The intended MVP prepares and, after exact human review, populates the first authorized Georgia
 Medicaid route, reads back the result and hands protected actions to a human. Texas existing-provider

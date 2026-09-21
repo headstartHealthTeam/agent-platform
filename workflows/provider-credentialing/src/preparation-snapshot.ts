@@ -1,12 +1,12 @@
-import type { PreparationInput } from './preparation-contracts.js';
+import type { PreparationSnapshot } from './preparation-contracts.js';
 
-type Scope = PreparationInput['requirements'][number]['scope'];
+type Scope = PreparationSnapshot['requirements'][number]['scope'];
 interface EvidenceRef {
   id: string;
   revision: string;
 }
 
-export const preparationSubjects = (input: PreparationInput): string[] => [
+export const preparationSubjects = (input: PreparationSnapshot): string[] => [
   input.work.providerId,
   input.work.practiceId,
   ...input.relatedParties.map((party) => party.id),
@@ -21,7 +21,7 @@ export const coversScope = (source: Scope, target: Scope): boolean =>
       target.locationIds.every((id) => source.locationIds.includes(id))));
 
 export const currentEvidence = (
-  input: PreparationInput,
+  input: PreparationSnapshot,
   references: EvidenceRef[],
   scope: Scope
 ): boolean =>
@@ -37,7 +37,7 @@ export const currentEvidence = (
     )
   );
 
-const validScope = (input: PreparationInput, scope: Scope): boolean => {
+const validScope = (input: PreparationSnapshot, scope: Scope): boolean => {
   if (
     !preparationSubjects(input).includes(scope.subjectId) ||
     scope.locationIds.some((id) => !input.work.locationIds.includes(id))
@@ -48,12 +48,12 @@ const validScope = (input: PreparationInput, scope: Scope): boolean => {
   return Boolean(record && coversScope({ ...record, recordId: record.id }, scope));
 };
 
-const knownEvidence = (input: PreparationInput, references: EvidenceRef[]): boolean =>
+const knownEvidence = (input: PreparationSnapshot, references: EvidenceRef[]): boolean =>
   references.every((ref) =>
     input.evidence.some((item) => item.id === ref.id && item.revision === ref.revision)
   );
 
-export const validatePreparationSnapshot = (input: PreparationInput): string[] => {
+export const validatePreparationSnapshot = (input: PreparationSnapshot): string[] => {
   const issues: string[] = [];
   const collections = [
     preparationSubjects(input),
@@ -92,7 +92,7 @@ export const validatePreparationSnapshot = (input: PreparationInput): string[] =
   return issues;
 };
 
-const validateProtectedActions = (input: PreparationInput): string[] => {
+const validateProtectedActions = (input: PreparationSnapshot): string[] => {
   const issues: string[] = [];
   for (const action of input.protectedActionRequirements) {
     if (
@@ -112,8 +112,8 @@ const validateProtectedActions = (input: PreparationInput): string[] => {
 };
 
 const validateRecord = (
-  input: PreparationInput,
-  record: PreparationInput['records'][number]
+  input: PreparationSnapshot,
+  record: PreparationSnapshot['records'][number]
 ): string[] => {
   const issues: string[] = [];
   if (
@@ -132,8 +132,8 @@ const validateRecord = (
 };
 
 const validateArtifact = (
-  input: PreparationInput,
-  artifact: PreparationInput['artifacts'][number]
+  input: PreparationSnapshot,
+  artifact: PreparationSnapshot['artifacts'][number]
 ): string[] => {
   const issues: string[] = [];
   if (!knownEvidence(input, artifact.evidence))
@@ -155,7 +155,7 @@ const validateArtifact = (
   return issues;
 };
 
-const hasLineageCycle = (input: PreparationInput, origin: string): boolean => {
+const hasLineageCycle = (input: PreparationSnapshot, origin: string): boolean => {
   const pending = [origin];
   const visited = new Set<string>();
   while (pending.length > 0) {

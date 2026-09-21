@@ -15,6 +15,14 @@ export {
   type WorkflowRunStatus,
 } from './run.js';
 
+export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from './functions.js';
+export type {
+  AgentLaunchDefinition,
+  AgentLaunchRequest,
+  AgentSessionReceipt,
+  AgentLaunchPort,
+} from './launch.js';
+
 export type {
   OperatorBinding,
   OperatorCommand,

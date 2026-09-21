@@ -1,8 +1,8 @@
-import type { PreparationInput, PreparationOutput } from './preparation-contracts.js';
+import type { PreparationSnapshot, PreparationOutput } from './preparation-contracts.js';
 import { coversScope, currentEvidence } from './preparation-snapshot.js';
 
 export const validatePreparationProposal = (
-  input: PreparationInput,
+  input: PreparationSnapshot,
   output: PreparationOutput
 ): string[] => {
   const issues = [
@@ -41,7 +41,7 @@ const validateCoverage = (
 };
 
 const validateAnswerScope = (
-  input: PreparationInput,
+  input: PreparationSnapshot,
   answer: PreparationOutput['answers'][number]
 ): string[] => {
   const requirement = input.requirements.find((item) => item.id === answer.requirementId);
@@ -79,7 +79,7 @@ const validateAnswerScope = (
 };
 
 const validateAttachment = (
-  input: PreparationInput,
+  input: PreparationSnapshot,
   attachment: PreparationOutput['attachments'][number]
 ): string[] => {
   const requirement = input.attachmentRequirements.find(
@@ -105,7 +105,7 @@ const validateAttachment = (
   return [];
 };
 
-const artifactChainIsCurrent = (input: PreparationInput, origin: string): boolean => {
+const artifactChainIsCurrent = (input: PreparationSnapshot, origin: string): boolean => {
   const pending = [origin];
   const visited = new Set<string>();
   while (pending.length > 0) {

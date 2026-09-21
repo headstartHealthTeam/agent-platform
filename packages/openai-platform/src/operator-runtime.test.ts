@@ -38,6 +38,7 @@ function fixture(
     turns?: unknown[];
     history?: unknown;
     expiry?: number;
+    applicationFunctions?: string[];
   } = {}
 ): {
   platform: {
@@ -87,7 +88,12 @@ function fixture(
       }),
     })),
   };
-  const port = new OperatorRuntimePort(platform, target, options.expiry);
+  const port = new OperatorRuntimePort(
+    platform,
+    target,
+    options.expiry,
+    options.applicationFunctions
+  );
   return {
     platform,
     port,
@@ -100,6 +106,103 @@ function fixture(
 afterEach(() => vi.useRealTimers());
 
 describe('operator runtime adapter', () => {
+  it('keeps application tool arguments out of the operator view and preserves human questions', async () => {
+    const f = fixture({
+      applicationFunctions: ['read_case'],
+      session: {
+        id: binding.sessionId,
+        metadata: { workflow_revision: binding.workflowRevision },
+        required_actions: [
+          question,
+          {
+            ...question,
+            call_id: 'call_read',
+            name: 'read_case',
+            arguments: { privateRecord: 'invented' },
+          },
+        ],
+      },
+    });
+    const view = await f.port.snapshot(binding);
+    expect(view.pendingQuestionIds).toEqual(['call_a']);
+    expect(JSON.stringify(view)).not.toContain('privateRecord');
+    const pending = await f.port.pendingFunctions(binding);
+    expect(pending).toMatchObject([
+      { callId: 'call_read', name: 'read_case', arguments: { privateRecord: 'invented' } },
+    ]);
+    expect(f.platform.apply).not.toHaveBeenCalled();
+    f.port.close();
+  });
+  it('delivers a saved application result only to its exact current call', async () => {
+    const f = fixture({
+      expiry: Date.now() + 10_000,
+      applicationFunctions: ['read_case'],
+      session: {
+        id: binding.sessionId,
+        metadata: { workflow_revision: binding.workflowRevision },
+        required_actions: [{ ...question, name: 'read_case', arguments: {} }],
+      },
+    });
+    const call = (await f.port.pendingFunctions(binding))[0];
+    if (!call) throw new Error('Missing test call');
+    await f.port.completeFunction(binding, call, { success: true, output: 'invented result' });
+    expect(f.platform.apply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        operation: 'sessions.tool-result',
+        id: binding.sessionId,
+        turnId: binding.turnId,
+        callId: call.callId,
+        functionName: 'read_case',
+        expectedCallFingerprint: call.fingerprint,
+        result: { success: true, output: 'invented result' },
+      }),
+      expect.objectContaining({ allowBillable: true })
+    );
+    await expect(
+      f.port.completeFunction(
+        binding,
+        { ...call, fingerprint: 'changed' },
+        { success: false, error: 'Unavailable' }
+      )
+    ).rejects.toThrow('no longer pending');
+    f.port.close();
+  });
+  it('never executes application tools or implicitly authorizes inference', async () => {
+    const f = fixture();
+    expect(await f.port.pendingFunctions(binding)).toEqual([]);
+    await expect(
+      f.port.completeFunction(
+        binding,
+        {
+          ...binding,
+          callId: 'call_a',
+          name: 'ask_operator',
+          arguments: {},
+          fingerprint: 'a'.repeat(64),
+        },
+        { success: true, output: 'test' }
+      )
+    ).rejects.toThrow('authorization');
+    await expect(f.port.pendingFunctions({ ...binding, target: 'wrong' })).rejects.toThrow(
+      'target'
+    );
+    expect(() => new OperatorRuntimePort(f.platform, target, 0, ['ask_operator'])).toThrow(
+      'Human questions'
+    );
+    const ended = fixture({
+      turn: {
+        id: binding.turnId,
+        session_id: binding.sessionId,
+        subagent_id: null,
+        status: 'cancelled',
+      },
+      applicationFunctions: ['read_case'],
+    });
+    expect(await ended.port.pendingFunctions(binding)).toEqual([]);
+    f.port.close();
+    ended.port.close();
+    await expect(f.port.pendingFunctions(binding)).rejects.toThrow('closed');
+  });
   it('preserves later-turn tool failure visibility without inventing pending work or business failure', async () => {
     const root = {
       id: 'turn_a',

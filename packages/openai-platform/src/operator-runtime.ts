@@ -5,16 +5,27 @@ import type {
   OperatorCommand,
   OperatorDelivery,
   OperatorSnapshot,
+  AgentFunctionCall,
+  AgentFunctionResult,
+  AgentLaunchRequest,
+  AgentSessionReceipt,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
-import { resolveConfig, type Target } from './config.js';
+import { credentialSchema, resolveConfig, type Target } from './config.js';
 import { readCredential } from './credential.js';
+import {
+  DockerSessionExecutor,
+  dockerExecutorSettingsSchema,
+  type SessionExecutor,
+} from './docker-executor.js';
 import type { Action } from './operations.js';
 import type { OperatorItems } from './operator-items.js';
 import { operatorText } from './operator-items.js';
+import { verifiedOperatorRoots } from './operator-provenance.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 import { OpenAIPlatform, fingerprint, planAction, InputNotSteerableError } from './platform.js';
+import { SessionLaunchPort } from './session-launch.js';
 
 export type {
   OperatorBinding,
@@ -22,20 +33,14 @@ export type {
   OperatorSnapshot,
 } from '@headstart-health/workflow-contracts';
 
-const turnSchema = z.object({
-  id: z.string(),
-  session_id: z.string(),
-  subagent_id: z.null(),
-  status: z.enum(['queued', 'in_progress', 'waiting', 'completed', 'failed', 'cancelled']),
-});
+const wrongTarget = 'Wrong runtime target';
+const noInferenceAuthority = 'No current bounded inference authorization';
+const sessionGet = 'sessions.get' as const;
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
 const pageSchema = z.object({ data: z.array(z.unknown()).max(100), has_more: z.literal(false) });
-const turnsSchema = pageSchema.extend({
-  data: z.array(turnSchema.extend({ subagent_id: z.string().nullable() })).max(100),
-});
 type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'openOperatorObservation'>;
 function operatorStatus(
-  status: z.infer<typeof turnSchema>['status'],
+  status: ReturnType<typeof verifiedOperatorRoots>['root']['status'],
   hasQuestions: boolean
 ): OperatorSnapshot['status'] {
   if (status === 'completed') return 'idle';
@@ -64,8 +69,64 @@ export class OperatorRuntimePort {
   constructor(
     private readonly platform: Platform,
     private readonly target: Target,
-    private readonly billableUntil = 0
-  ) {}
+    private readonly billableUntil = 0,
+    private readonly appFunctions: readonly string[] = [],
+    private readonly launchSettings?: unknown,
+    private readonly executor?: SessionExecutor
+  ) {
+    z.array(z.string().regex(/^[A-Za-z0-9_-]{1,100}$/))
+      .max(30)
+      .parse(appFunctions);
+    if (appFunctions.includes('ask_operator'))
+      throw new Error('Human questions are not application functions');
+  }
+  createSession(request: AgentLaunchRequest): Promise<AgentSessionReceipt> {
+    this.requireOpen();
+    return new SessionLaunchPort(
+      this.platform,
+      this.target,
+      this.launchSettings,
+      this.billableUntil,
+      this.appFunctions,
+      this.executor
+    ).createSession(request);
+  }
+  inspectSession(receipt: AgentSessionReceipt): Promise<OperatorBinding | null> {
+    this.requireOpen();
+    return new SessionLaunchPort(
+      this.platform,
+      this.target,
+      this.launchSettings,
+      this.billableUntil,
+      this.appFunctions,
+      this.executor
+    ).inspectSession(receipt);
+  }
+  cancelSession(receipt: AgentSessionReceipt): Promise<void> {
+    this.requireOpen();
+    return new SessionLaunchPort(
+      this.platform,
+      this.target,
+      this.launchSettings,
+      this.billableUntil,
+      this.appFunctions,
+      this.executor
+    ).cancelSession(receipt);
+  }
+  reconcileEnvironment(
+    receipt: AgentSessionReceipt,
+    action: 'start' | 'reconcile' | 'stop'
+  ): Promise<void> {
+    this.requireOpen();
+    return new SessionLaunchPort(
+      this.platform,
+      this.target,
+      this.launchSettings,
+      this.billableUntil,
+      this.appFunctions,
+      this.executor
+    ).reconcileEnvironment(receipt, action);
+  }
   async snapshot(binding: OperatorBinding): Promise<OperatorSnapshot> {
     this.requireOpen();
     const identity = fingerprint(binding);
@@ -83,7 +144,7 @@ export class OperatorRuntimePort {
     }
   }
   private async observe(binding: OperatorBinding): Promise<OperatorSnapshot> {
-    if (binding.target !== fingerprint(this.target)) throw new Error('Wrong runtime target');
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
     let observation = this.observations.get(binding.sessionId);
     if (observation && observation.binding !== fingerprint(binding))
       throw new Error('Observation binding changed');
@@ -122,7 +183,7 @@ export class OperatorRuntimePort {
     }
     observation.expiry.refresh();
     const [session, turns, history] = await Promise.all([
-      this.platform.read({ operation: 'sessions.get', id: binding.sessionId }),
+      this.platform.read({ operation: sessionGet, id: binding.sessionId }),
       this.platform.read({
         operation: 'sessions.turns',
         id: binding.sessionId,
@@ -134,43 +195,33 @@ export class OperatorRuntimePort {
         query: { limit: 100, order: 'asc' },
       }),
     ]);
-    const verified = sessionSchema.parse(session.data);
     this.requireOpen();
-    const roots = turnsSchema.parse(turns.data).data.filter((turn) => turn.subagent_id === null);
-    const root = roots.at(-1);
-    if (
-      verified.id !== binding.sessionId ||
-      verified.metadata['workflow_revision'] !== binding.workflowRevision ||
-      !root ||
-      roots[0]?.id !== binding.turnId ||
-      roots.some((turn) => turn.session_id !== binding.sessionId) ||
-      new Set(roots.map((turn) => turn.id)).size !== roots.length ||
-      roots.slice(0, -1).some((turn) => turn.status !== 'completed')
-    )
-      throw new Error('Run provenance changed');
+    const { roots, root } = verifiedOperatorRoots(binding, session.data, turns.data);
     observation.items.includeTurns(roots.map((turn) => turn.id));
     observation.items.recover(pageSchema.parse(history.data).data);
     const calls = pendingFunctionCalls(session.data, {
       sessionId: binding.sessionId,
       turnId: root.id,
     });
-    const questions = calls.map((call) => {
-      if (call.name !== 'ask_operator') throw new Error('Unsupported pending function');
-      const args = z
-        .object({
-          question: z.string().min(1).max(10000),
-          evidenceReference: z.string().max(1000).optional(),
-        })
-        .strict()
-        .parse(call.arguments);
-      return {
-        id: call.callId,
-        kind: 'question' as const,
-        text: operatorText(args.question),
-        final: true,
-        callFingerprint: call.fingerprint,
-      };
-    });
+    const questions = calls
+      .filter((call) => !this.appFunctions.includes(call.name))
+      .map((call) => {
+        if (call.name !== 'ask_operator') throw new Error('Unsupported pending function');
+        const args = z
+          .object({
+            question: z.string().min(1).max(10000),
+            evidenceReference: z.string().max(1000).optional(),
+          })
+          .strict()
+          .parse(call.arguments);
+        return {
+          id: call.callId,
+          kind: 'question' as const,
+          text: operatorText(args.question),
+          final: true,
+          callFingerprint: call.fingerprint,
+        };
+      });
     return {
       status: operatorStatus(root.status, questions.length > 0),
       currentTurnId: root.id,
@@ -178,11 +229,62 @@ export class OperatorRuntimePort {
       pendingQuestionIds: questions.map((item) => item.id),
     };
   }
+  /** Read-only application channel, separate from the sanitized operator feed. */
+  async pendingFunctions(binding: OperatorBinding): Promise<AgentFunctionCall[]> {
+    this.requireOpen();
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
+    const [session, turns] = await Promise.all([
+      this.platform.read({ operation: sessionGet, id: binding.sessionId }),
+      this.platform.read({
+        operation: 'sessions.turns',
+        id: binding.sessionId,
+        query: { limit: 100, order: 'asc' },
+      }),
+    ]);
+    this.requireOpen();
+    const { root } = verifiedOperatorRoots(binding, session.data, turns.data);
+    if (['completed', 'cancelled', 'failed'].includes(root.status)) return [];
+    return pendingFunctionCalls(session.data, {
+      sessionId: binding.sessionId,
+      turnId: root.id,
+    }).filter((call) => this.appFunctions.includes(call.name));
+  }
+  async completeFunction(
+    binding: OperatorBinding,
+    call: AgentFunctionCall,
+    result: AgentFunctionResult
+  ): Promise<void> {
+    if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
+    const pending = (await this.pendingFunctions(binding)).find(
+      (item) =>
+        item.callId === call.callId &&
+        item.turnId === call.turnId &&
+        item.name === call.name &&
+        item.sessionId === call.sessionId &&
+        item.fingerprint === call.fingerprint
+    );
+    if (!pending) throw new Error('Application function is no longer pending');
+    const action: Action = {
+      operation: 'sessions.tool-result',
+      id: binding.sessionId,
+      turnId: pending.turnId,
+      callId: pending.callId,
+      functionName: pending.name,
+      expectedCallFingerprint: pending.fingerprint,
+      result,
+    };
+    this.requireOpen();
+    await this.platform.apply(action, {
+      apply: true,
+      digest: planAction(this.target, action).digest,
+      allowBillable: true,
+    });
+  }
   async send(binding: OperatorBinding, command: OperatorCommand): Promise<OperatorDelivery> {
     this.requireOpen();
-    if (binding.target !== fingerprint(this.target)) throw new Error('Wrong runtime target');
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
     const verified = sessionSchema.parse(
-      (await this.platform.read({ operation: 'sessions.get', id: binding.sessionId })).data
+      (await this.platform.read({ operation: sessionGet, id: binding.sessionId })).data
     );
     if (
       verified.id !== binding.sessionId ||
@@ -208,8 +310,7 @@ export class OperatorRuntimePort {
     return undefined;
   }
   private async inputAction(binding: OperatorBinding, command: OperatorCommand): Promise<Action> {
-    if (Date.now() >= this.billableUntil)
-      throw new Error('No current bounded inference authorization');
+    if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
     // Subscribe before sending, and recover the latest root rather than replying to the launch turn.
     const current = await this.snapshot(binding);
     if (current.status === 'cancelled' || current.status === 'failed')
@@ -225,7 +326,7 @@ export class OperatorRuntimePort {
       };
     } else {
       if (!command.questionId || !command.callFingerprint || !current.currentTurnId)
-        throw new Error('No current bounded inference authorization');
+        throw new Error(noInferenceAuthority);
       return {
         operation: 'sessions.tool-result',
         id: binding.sessionId,
@@ -254,10 +355,48 @@ export class OperatorRuntimePort {
 export async function createLocalOperatorRuntimePort(options: {
   configPath: string;
   billableUntil?: string;
+  applicationFunctions?: string[];
+  launchSettings?: unknown;
+  executorSettings?: unknown;
 }): Promise<OperatorRuntimePort> {
   const config = resolveConfig(JSON.parse(await readFile(options.configPath, 'utf8')));
   const key = await readCredential(config.credential);
   const expiry = options.billableUntil ? Date.parse(options.billableUntil) : 0;
   if (!Number.isFinite(expiry)) throw new Error('Invalid bounded authorization expiry');
-  return new OperatorRuntimePort(new OpenAIPlatform(config, key), config.target, expiry);
+  let executor: SessionExecutor | undefined;
+  if (options.executorSettings !== undefined) {
+    const settings = dockerExecutorSettingsSchema
+      .extend({ credential: credentialSchema })
+      .strict()
+      .parse(options.executorSettings);
+    if (options.launchSettings !== undefined) {
+      z.object({
+        environment: z.object({
+          type: z.literal('self_hosted'),
+          workspace_directory: z.literal('/workspace'),
+        }),
+        mcpServers: z
+          .array(z.object({ type: z.literal('mcp'), connection_origin: z.literal('service') }))
+          .default([]),
+      }).parse(options.launchSettings);
+    }
+    executor = new DockerSessionExecutor(
+      { imageId: settings.imageId },
+      fingerprint(config.target),
+      async () => {
+        const environmentKey = await readCredential(settings.credential);
+        if (environmentKey === key)
+          throw new Error('Executor credential must differ from application credential');
+        return environmentKey;
+      }
+    );
+  }
+  return new OperatorRuntimePort(
+    new OpenAIPlatform(config, key),
+    config.target,
+    expiry,
+    options.applicationFunctions,
+    options.launchSettings,
+    executor
+  );
 }

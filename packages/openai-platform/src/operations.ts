@@ -40,6 +40,48 @@ const tools = z.array(
   ])
 );
 
+// Session-only HTTP credentials. Reusable agent definitions deliberately use the narrower schema
+// above. Native MCP performs source reads; application function handlers do not proxy them.
+const sessionMcp = z
+  .object({
+    type: z.literal('mcp'),
+    server_label: z.string().min(1).max(100),
+    connection_origin: z.enum(['service', 'environment']),
+    transport: z
+      .object({
+        type: z.literal('http'),
+        server_url: z.url(),
+        authorization: z
+          .string()
+          .min(1)
+          .max(16_384)
+          .refine((value) => !/[\r\n]/.test(value))
+          .optional(),
+      })
+      .strict()
+      .transform(({ authorization, ...transport }) => ({
+        ...transport,
+        ...(authorization === undefined ? {} : { authorization }),
+      })),
+    allowed_tools: z.array(z.string().min(1)).min(1).max(100),
+    required: z.boolean(),
+  })
+  .strict()
+  .refine((value) => {
+    const url = new URL(value.transport.server_url);
+    return (
+      !url.username &&
+      !url.password &&
+      !url.search &&
+      !url.hash &&
+      (url.protocol === 'https:' ||
+        (value.connection_origin === 'environment' &&
+          url.protocol === 'http:' &&
+          url.hostname === 'localhost'))
+    );
+  });
+const sessionTools = z.array(z.union([tools.element, sessionMcp]));
+
 const id = z
   .string()
   .min(1)
@@ -157,7 +199,7 @@ const sessionAgent = z
     model,
     instructions: z.string().max(100_000).optional(),
     reasoning: reasoning.optional(),
-    tools: tools.optional(),
+    tools: sessionTools.optional(),
   })
   .strict()
   .transform((value) => ({
@@ -177,6 +219,19 @@ const sessionCreate = z
     z.object({ agent: sessionAgent, ...sessionFields }).strict(),
   ])
   .refine((value) => value.environment.type !== 'none' || value.input !== undefined)
+  .refine(
+    (value) =>
+      value.environment.type !== 'none' ||
+      !(
+        'agent' in value &&
+        value.agent.tools?.some(
+          (tool) =>
+            tool.type === 'mcp' &&
+            'connection_origin' in tool &&
+            tool.connection_origin === 'environment'
+        )
+      )
+  )
   .transform(({ input, ...value }) => ({
     ...value,
     ...(input === undefined ? {} : { input }),

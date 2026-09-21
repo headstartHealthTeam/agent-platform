@@ -102,8 +102,9 @@ than automatically retrying or interrupting the agent. Other failures remain unc
 does not prove the agent acknowledged or used a correction. Messages and function replies require
 a bounded caller-authorized inference window;
 observation and cancellation do not create one. A successful send means API acceptance, not a
-completed action. Initial start, controlled resume and provisioning are not implemented by this
-port. It is not safe to call its write method directly from an untrusted agent. The owner serializes
+completed action. Initial start uses the separate launch boundary below. Controlled resume remains
+unimplemented; local compute uses the retained provisioner below. It is not safe to call its write
+methods directly from an untrusted agent. The owner serializes
 actual provider I/O per run, including Stop, and must not release that serialization on a local
 timeout while a detached send can still run. SDK requests have bounded timeouts and no automatic retries.
 
@@ -117,10 +118,10 @@ credential provisioning. No credential lookup happens merely by importing the pa
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.2.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.4.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
-executor or creates a session. Credential lookup is never an import-time side effect.
+executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
 
 Deploy the reviewed artifact to protected application storage and pin its exact SHA-256 in trusted
 deployment configuration alongside source revision and lockfile provenance. The backend's local
@@ -142,6 +143,39 @@ credential delivery differ, not the operator contract.
 The provider implementation uses the official `openai` Node/TypeScript SDK (pinned in this package),
 including `client.beta.agents`; it is not the separate Agents SDK orchestration library. Follow the
 [official session input/recovery contract](https://developers.openai.com/api/docs/guides/agents-api/sessions).
+
+### Application functions and normal application launch
+
+`pendingFunctions` / `completeFunction` share the verified session/root chain with operator
+observation. Only application-registered names are returned; `ask_operator` remains human-only.
+Each result binds to the exact currently pending call and requires the same bounded inference
+authority. The owning backend validates arguments, current domain authority and output size, saves
+the handler result before delivery, and serializes processing with human commands. Function
+arguments/results do not become operator commentary. This is not a generic arbitrary-code executor.
+
+`createSession` accepts a trusted canonical `AgentLaunchDefinition` and one request UUID. Optional
+`launchSettings` selects model, reasoning, environment and native `mcpServers` using the same narrow
+SDK action schema as supervised creation. MCP is the agent's source-access surface; it is not
+proxied through new workflow-specific backend functions. Credentials/configuration must be supplied
+by protected application composition, never model/browser input. Synthetic profiles must not bind
+live source tools. The backend registers only its own context/publication functions.
+
+The owner persists launch intent before calling. Creation includes the initial input and exact
+workflow/request correlation metadata; the returned receipt must be saved before further work.
+`inspectSession` reads only that known session and returns its first root when available. It never
+recreates a session or resends input after uncertainty. `cancelSession` validates that same receipt.
+There is no automatic adoption of an ambiguous create attempt. `reconcileEnvironment` follows the
+saved receipt and starts or reconciles a configured `SessionExecutor` only for initial startup or
+a current environment-connection request. Self-hosted creation without a provisioner fails before
+the API call. The reusable `DockerSessionExecutor` retains local compute and session files; the
+local factory accepts a private `executorSettings` image/credential binding. No compute starts at
+factory initialization. See [retained local executor](../../docs/local-agent-executor.md) for setup,
+isolation, recovery and the distinction from hosted execution. Source identity issuance, exact file
+materialization and a provider-backed launch demonstration remain separate work; a created
+self-hosted session alone has no running executor. Follow the official
+[environment lifecycle](https://developers.openai.com/api/docs/guides/agents-api/environments/lifecycle)
+and keep one provisioning owner per session. The existing local smoke launcher is not that retained
+provisioner and must not silently supply its invented evidence to this workflow.
 
 ### Connected acceptance boundary — September 18, 2026
 

@@ -58,6 +58,9 @@ and examples.
 
 ## Concrete Examples
 
+- [Retained local executor](local-agent-executor.md) separates reusable session lifecycle from
+  local Docker compute and the later OpenAI-hosted acceptance gate.
+
 - [Shared operator integration](shared-operator-integration.md) separates provider contracts,
   backend runtime mechanics and admin components from the first credentialing consumer.
 

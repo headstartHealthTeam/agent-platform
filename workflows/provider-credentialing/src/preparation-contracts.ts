@@ -145,6 +145,12 @@ export const preparationInputSchema = credentialingInputSchema.extend({
   ),
 });
 
+/** A data contract, not an access grant. Source access is authorized by the application. */
+export const productionReadInputSchema = preparationInputSchema.extend({
+  schemaVersion: z.literal('0.3.0'),
+  dataMode: z.literal('production-read'),
+});
+
 export const preparationOutputSchema = credentialingOutputSchema.extend({
   schemaVersion: z.literal('0.3.0'),
   answers: z.array(
@@ -175,15 +181,23 @@ export const preparationOutputSchema = credentialingOutputSchema.extend({
   ),
 });
 
+export const syntheticArtifactInputSchema = z.union([
+  credentialingInputSchema,
+  preparationInputSchema,
+]);
 export const credentialingArtifactInputSchema = z.union([
   credentialingInputSchema,
   preparationInputSchema,
+  productionReadInputSchema,
 ]);
 export const credentialingArtifactOutputSchema = z.union([
   credentialingOutputSchema,
   preparationOutputSchema,
 ]);
 export type PreparationInput = z.infer<typeof preparationInputSchema>;
+export type ProductionReadInput = z.infer<typeof productionReadInputSchema>;
+export type PreparationSnapshot = PreparationInput | ProductionReadInput;
+export type SyntheticArtifactInput = z.infer<typeof syntheticArtifactInputSchema>;
 export type PreparationOutput = z.infer<typeof preparationOutputSchema>;
 export type ArtifactInput = z.infer<typeof credentialingArtifactInputSchema>;
 export type ArtifactOutput = z.infer<typeof credentialingArtifactOutputSchema>;

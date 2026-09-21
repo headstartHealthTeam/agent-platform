@@ -11,7 +11,7 @@ import { unique, validateSnapshot } from './snapshot.js';
 
 export const validateProposal = (input: ArtifactInput, output: ArtifactOutput): string[] => {
   const issues = validateSnapshot(input);
-  if (input.schemaVersion === '0.2.0' && output.schemaVersion === '0.3.0') {
+  if (input.schemaVersion !== '0.1.0' && output.schemaVersion === '0.3.0') {
     issues.push(...validatePreparationProposal(input, output));
   } else if (input.schemaVersion !== '0.1.0' || output.schemaVersion !== '0.2.0') {
     issues.push('Unsupported input/proposal schema-version pair.');
@@ -80,7 +80,7 @@ const validateStops = (input: ArtifactInput, output: ArtifactOutput): string[] =
     issues.push('Stop requested: no continued execution or readiness claim.');
   }
   if (!input.execution.permittedActions.includes('prepare') && output.status !== 'blocked') {
-    issues.push('Preparation is not permitted by the supplied synthetic scope.');
+    issues.push('Preparation is not permitted by the supplied scope.');
   }
   return issues;
 };

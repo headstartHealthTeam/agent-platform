@@ -6,10 +6,13 @@ export {
 } from './contracts.js';
 export {
   preparationInputSchema,
+  productionReadInputSchema,
   preparationOutputSchema,
   credentialingArtifactInputSchema,
   credentialingArtifactOutputSchema,
   type PreparationInput,
+  type ProductionReadInput,
+  type PreparationSnapshot,
   type PreparationOutput,
   type ArtifactInput,
   type ArtifactOutput,

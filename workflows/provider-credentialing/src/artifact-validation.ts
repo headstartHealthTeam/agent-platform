@@ -15,7 +15,7 @@ export const artifactByteLimit = 1_048_576;
 
 export interface ReviewArtifactValidation {
   protocol: 'credentialing-validation/v1';
-  dataMode: 'synthetic';
+  dataMode: ArtifactInput['dataMode'];
   workId: string;
   work: Omit<ArtifactInput['work'], 'id'>;
   caseRevision: string;
@@ -36,7 +36,7 @@ export type ArtifactValidationReply =
 export const validateReviewArtifacts = (request: unknown): ReviewArtifactValidation => {
   const { inputJson, proposalJson } = requestSchema.parse(request);
   if ([inputJson, proposalJson].some((value) => Buffer.byteLength(value) > artifactByteLimit)) {
-    throw new Error('Artifact exceeds the synthetic review limit.');
+    throw new Error('Artifact exceeds the review limit.');
   }
   const input = credentialingArtifactInputSchema.parse(JSON.parse(inputJson));
   const proposal = credentialingArtifactOutputSchema.parse(JSON.parse(proposalJson));

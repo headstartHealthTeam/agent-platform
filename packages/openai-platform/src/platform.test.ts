@@ -42,7 +42,7 @@ const config = resolveConfig(localConfig);
 describe('standalone operator factory', () => {
   it('keeps transport construction credential-free until explicitly configured', () => {
     expect(protocol).toBe('headstart-openai-operator/v1');
-    expect(adapterVersion).toBe('0.2.0');
+    expect(adapterVersion).toBe('0.4.0');
     const fetchImplementation = vi.fn<typeof fetch>();
     for (const billableUntil of [undefined, '2026-09-17T12:00:00Z']) {
       const port = createOperatorRuntimePort({
@@ -816,6 +816,58 @@ describe('OpenAI access boundary', () => {
       ).rejects.toThrow('approval');
     }
     expect(requests).toHaveLength(0);
+  });
+
+  it('connects native MCP from the session environment with credentials absent from the approval summary', async () => {
+    const { platform, requests } = fixture();
+    const mcp = {
+      type: 'mcp',
+      server_label: 'invented-source',
+      connection_origin: 'environment',
+      transport: {
+        type: 'http',
+        server_url: 'http://localhost:3004/mcp',
+        authorization: 'Bearer invented-session-value',
+      },
+      allowed_tools: ['get_invented_record'],
+      required: true,
+    };
+    const body = {
+      agent: { model: 'gpt-6-astra', tools: [mcp] },
+      environment: { type: 'self_hosted', workspace_directory: '/workspace' },
+    };
+    const action = { operation: 'sessions.create', body };
+    const plan = planAction(config.target, action);
+    expect(JSON.stringify(plan)).not.toContain('invented-session-value');
+    await platform.apply(action, { apply: true, digest: plan.digest, allowBillable: true });
+    expect(await requests.at(-1)?.json()).toEqual({ ...body, metadata: {}, stream: false });
+    expect(actionSchema.safeParse({ operation: 'agents.create', body: body.agent }).success).toBe(
+      false
+    );
+    expect(
+      actionSchema.safeParse({
+        operation: 'sessions.create',
+        body: { ...body, input: 'Invented', environment: { type: 'none' } },
+      }).success
+    ).toBe(false);
+    for (const changed of [
+      { ...mcp, connection_origin: 'service' },
+      { ...mcp, transport: { ...mcp.transport, server_url: 'http://remote.example.invalid/mcp' } },
+      {
+        ...mcp,
+        transport: { ...mcp.transport, server_url: 'https://user:secret@example.invalid/mcp' },
+      },
+      {
+        ...mcp,
+        transport: { ...mcp.transport, authorization: 'Bearer invented\r\nHeader: injected' },
+      },
+    ])
+      expect(
+        actionSchema.safeParse({
+          operation: 'sessions.create',
+          body: { ...body, agent: { ...body.agent, tools: [changed] } },
+        }).success
+      ).toBe(false);
   });
 
   it('rejects ambiguous agent selection, missing none input and executor secrets or mounts', () => {

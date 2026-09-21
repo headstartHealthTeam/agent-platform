@@ -3,12 +3,14 @@ import fs from 'node:fs';
 import { z } from 'zod';
 
 import {
-  credentialingArtifactInputSchema,
+  syntheticArtifactInputSchema,
+  productionReadInputSchema,
   credentialingArtifactOutputSchema,
 } from './preparation-contracts.js';
 
 for (const [name, schema] of [
-  ['input', credentialingArtifactInputSchema],
+  ['input', syntheticArtifactInputSchema],
+  ['production-read-input', productionReadInputSchema],
   ['output', credentialingArtifactOutputSchema],
 ] as const) {
   fs.writeFileSync(
