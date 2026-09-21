@@ -85,10 +85,15 @@ describe('application session launch', () => {
         allowed_tools: ['read_inventory'],
         transport: { type: 'http', server_url: 'https://example.com/mcp' },
       };
+      const referenceServer = {
+        ...server,
+        server_label: 'references',
+        transport: { type: 'http', server_url: 'https://references.example.com/mcp' },
+      };
       const configured = {
         ...settings,
         environment: environment === 'none' ? { type: 'none' } : settings.environment,
-        mcpServers: [server],
+        mcpServers: [server, referenceServer],
       };
       const port = new SessionLaunchPort(
         platform,
@@ -112,6 +117,7 @@ describe('application session launch', () => {
         ...server,
         transport: { ...server.transport, authorization: credential.authorization },
       });
+      expect(action.body.agent.tools).toContainEqual(referenceServer);
       expect(JSON.stringify(configured)).not.toContain(credential.authorization);
       expect(JSON.stringify(request)).not.toContain(credential.authorization);
     }

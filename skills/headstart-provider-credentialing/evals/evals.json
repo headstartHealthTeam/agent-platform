@@ -2,6 +2,18 @@
   "skill": "headstart-provider-credentialing",
   "cases": [
     {
+      "name": "full-evidence-not-summary-only",
+      "prompt": "The credentialing summary says the CV is complete, but the original has more pages, the workbook has another sheet, and a shared practice letter may contradict it. The form needs the provider's tax identifier. Prepare the review package.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reads all relevant original pages, text cursors and workbook sheets instead of trusting the summary",
+        "Investigates the authorized shared practice letter and reconciles exact-source contradictions",
+        "Uses necessary business identifiers without confusing them with authentication secrets",
+        "Persists the review package through the application while source-system access remains read-only",
+        "Does not claim complete source access from a backend download or reviewer preview"
+      ]
+    },
+    {
       "name": "credentialing-investigation",
       "prompt": "Prepare this provider's payer enrollment proposal; the opening date is missing in the case but there are linked letters.",
       "shouldActivate": true,

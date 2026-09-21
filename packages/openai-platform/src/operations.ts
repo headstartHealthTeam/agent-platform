@@ -1,3 +1,4 @@
+import { AGENT_FUNCTION_PAYLOAD_LIMIT } from '@headstart-health/workflow-contracts';
 import type { AgentUpdateParams } from 'openai/resources/beta/agents/agents';
 import { z } from 'zod';
 
@@ -308,7 +309,14 @@ export const actionSchema = z.discriminatedUnion('operation', [
       functionName: id,
       expectedCallFingerprint: fingerprint,
       result: z.discriminatedUnion('success', [
-        z.object({ success: z.literal(true), output: z.string().max(100_000) }).strict(),
+        z
+          .object({
+            success: z.literal(true),
+            output: z
+              .string()
+              .refine((value) => Buffer.byteLength(value) <= AGENT_FUNCTION_PAYLOAD_LIMIT),
+          })
+          .strict(),
         z.object({ success: z.literal(false), error: z.string().min(1).max(10_000) }).strict(),
       ]),
     })

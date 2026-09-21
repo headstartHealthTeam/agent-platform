@@ -358,7 +358,7 @@ describe('operator runtime adapter', () => {
       f.port.close();
     }
   });
-  it('rejects overlapping, foreign, unanchored and post-cancellation root histories', async () => {
+  it('rejects overlapping, foreign, duplicate and unanchored root histories', async () => {
     const root = { id: 'turn_a', session_id: 'session_a', subagent_id: null, status: 'completed' };
     for (const turns of [
       [],
@@ -366,10 +366,6 @@ describe('operator runtime adapter', () => {
       [root, { ...root, id: 'turn_b', session_id: 'other' }],
       [
         { ...root, status: 'in_progress' },
-        { ...root, id: 'turn_b' },
-      ],
-      [
-        { ...root, status: 'cancelled' },
         { ...root, id: 'turn_b' },
       ],
       [root, root],
@@ -382,6 +378,23 @@ describe('operator runtime adapter', () => {
       }
     }
   });
+  it.each(['failed', 'cancelled'])(
+    'reads an existing continuation after an older %s root without starting or replaying work',
+    async (status) => {
+      const f = fixture({
+        turns: [
+          { id: 'turn_a', session_id: 'session_a', subagent_id: null, status },
+          { id: 'turn_b', session_id: 'session_a', subagent_id: null, status: 'completed' },
+        ],
+      });
+      try {
+        expect((await f.port.snapshot(binding)).status).toBe('idle');
+        expect(f.platform.apply).not.toHaveBeenCalled();
+      } finally {
+        f.port.close();
+      }
+    }
+  );
   it('coalesces observations, recovers pending questions and does not derive pending work from history', async () => {
     const f = fixture();
     try {

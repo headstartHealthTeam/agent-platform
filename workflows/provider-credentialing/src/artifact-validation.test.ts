@@ -49,8 +49,12 @@ describe('application artifact validation', () => {
     { inputJson: ' '.repeat(artifactByteLimit + 1), proposalJson },
     { inputJson, proposalJson: proposalJson.replace('prepared-for-review', 'submitted') },
     { inputJson, proposalJson: proposalJson.replace('H-01', 'H-02') },
-  ])('fails closed with a static diagnostic', (request) => {
-    expect(artifactValidationReply(request)).toEqual({ ok: false, code: 'invalid-artifacts' });
+  ])('rejects invalid artifacts with actionable diagnostics', (request) => {
+    const reply = artifactValidationReply(request);
+    expect(reply.ok).toBe(false);
+    if (reply.ok) throw new Error('Invalid artifacts were accepted');
+    expect(reply.code).toBe('invalid-artifacts');
+    expect(reply.issues.length).toBeGreaterThan(0);
   });
 });
 

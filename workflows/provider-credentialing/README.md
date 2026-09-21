@@ -21,17 +21,19 @@ contains no fixtures, expected answers, credentials or private case data. Deploy
 alongside the validator; do not maintain a second instruction copy in backend.
 
 `get_credentialing_review_context` obtains the server-bound case, exact workflow/route pins,
-current revision and saved feedback. `publish_credentialing_review_package` submits complete
+current revision, the complete saved package and saved feedback. `publish_credentialing_review_package` submits complete
 input/proposal JSON for canonical validation and durable human review. `ask_operator` remains an
 ad hoc human question. General source investigation uses separately configured, permission-aware
 native Headstart MCP tools; the backend functions are not a second source-access API.
 
 `capture_credentialing_source_document` is the protected original-file retention capability.
 It accepts exact Salesforce link/document/version identifiers discovered through MCP, verifies the
-case relationship in the backend, and returns artifact identity and digest after retention. No raw
+business-source authority in the backend, and returns artifact identity and digest after retention. No raw
 bytes, arbitrary URLs, new source login or search interface are exposed. The backend rejects
-production-read artifacts without a matching case/subject/version receipt. Source PDF/PNG/JPEG are
-connected; conversion artifacts remain an explicit gap, not a fabricated original. This does not
+production-read artifacts without a matching case/subject/version receipt. Originals include PDFs,
+images and Office/workbook files; browser rendering is distinct from original availability.
+Pass the discovered `sourceObject` for relevant shared sources. Case assignment is not an exclusive
+source-record blindfold. Conversion artifacts remain an explicit gap, not a fabricated original. This does not
 change the schema or its payer-neutral semantics, or establish live source/MCP acceptance.
 
 Saved review corrections remain instructions to investigate, not source truth or approval. The
@@ -69,8 +71,11 @@ approval token, signature, deduplication key or authorization service.
 Prefer existing permission-aware Headstart MCP schema, record, query and linked-file evidence reads
 over a new Salesforce connector. Expose scoped tools that the agent can revisit to investigate
 unexpected discrepancies; the tool boundary must constrain actual records, fields and targets.
-The inspected backend file tool returns evidence/summaries, not exact-version file bytes. Protected
-attachment delivery and narrowly approved actions need separately implemented capabilities.
+The corrected backend MCP file tool exposes cursor-complete text, PDF pages and original resources
+in addition to optional secondary-model answers. The primary agent must read full evidence and
+follow pagination; summaries and reviewer previews do not satisfy that requirement. Native resource
+and image consumption still needs actual Agents API verification, not just a server-side test.
+Protected destination actions remain separately authorized capabilities.
 
 Before managed access to real Headstart data, establish a revocable, auditable worker identity or
 explicitly governed delegated model with the backend identity owner. Current employee authentication
@@ -160,7 +165,9 @@ The application launches the already-pinned worker bytes with one `workerData` o
 `inputJson` and `proposalJson` (UTF-8 strings, at most 1 MiB each). The worker sends one message and
 closes its channel. Success is `{ ok: true, value: ... }`, using protocol
 `credentialing-validation/v1`; failure is the static
-`{ ok: false, code: "invalid-artifacts" }`, without source-derived diagnostics.
+`{ ok: false, code: "invalid-artifacts", issues: ... }`, with schema paths/codes or semantic
+validation messages, but no raw source values. The agent receives actionable corrections rather
+than an arbitrary two-repair-attempt limit.
 
 The projection contains synthetic work identity, case/workflow/route revisions, input/output schema
 versions, exact-byte fingerprints, parsed-content review fingerprint and preparation readiness.
@@ -245,6 +252,15 @@ Keep the package draft until immutable sources, owners/backups/contacts, exact c
 data policy, scoped identity, operational approval/recovery, repeated behavior evaluations and
 the [per-workflow adoption gate](../../docs/managed-runtime-completion-roadmap.md) are proven.
 No schedule, deployment or live run is authorized.
+
+## Instruction revision 0.3.0 — full evidence
+
+The credentialing skill now explicitly requires primary-agent access to complete documents,
+repeated history and relevant shared references. Sensitive business facts are not authentication
+secrets and must not be silently stripped. Read-only MCP source capability is distinct from the
+backend's normal writes of packages, reviews, messages and audit. The added
+`full-evidence-not-summary-only` evaluation defines the expected behavior; it is not a recorded
+passing model trial. These requirements supersede earlier metadata-only or summary-only assumptions.
 
 See the [documentation hub](../../docs/README.md),
 [authoring guide](../../docs/workflow-authoring-guide.md) and

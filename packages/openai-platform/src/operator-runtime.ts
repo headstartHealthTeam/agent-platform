@@ -26,6 +26,7 @@ import { operatorText } from './operator-items.js';
 import { verifiedOperatorRoots } from './operator-provenance.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 import { OpenAIPlatform, fingerprint, planAction, InputNotSteerableError } from './platform.js';
+import { sessionHistory } from './session-history.js';
 import { SessionLaunchPort } from './session-launch.js';
 
 export type {
@@ -38,7 +39,6 @@ const wrongTarget = 'Wrong runtime target';
 const noInferenceAuthority = 'No current bounded inference authorization';
 const sessionGet = 'sessions.get' as const;
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
-const pageSchema = z.object({ data: z.array(z.unknown()).max(100), has_more: z.literal(false) });
 type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'openOperatorObservation'>;
 function operatorStatus(
   status: ReturnType<typeof verifiedOperatorRoots>['root']['status'],
@@ -188,21 +188,13 @@ export class OperatorRuntimePort {
     observation.expiry.refresh();
     const [session, turns, history] = await Promise.all([
       this.platform.read({ operation: sessionGet, id: binding.sessionId }),
-      this.platform.read({
-        operation: 'sessions.turns',
-        id: binding.sessionId,
-        query: { limit: 100, order: 'asc' },
-      }),
-      this.platform.read({
-        operation: 'sessions.items',
-        id: binding.sessionId,
-        query: { limit: 100, order: 'asc' },
-      }),
+      sessionHistory(this.platform, binding.sessionId, 'sessions.turns'),
+      sessionHistory(this.platform, binding.sessionId, 'sessions.items'),
     ]);
     this.requireOpen();
-    const { roots, root } = verifiedOperatorRoots(binding, session.data, turns.data);
+    const { roots, root } = verifiedOperatorRoots(binding, session.data, turns);
     observation.items.includeTurns(roots.map((turn) => turn.id));
-    observation.items.recover(pageSchema.parse(history.data).data);
+    observation.items.recover(history.data);
     const calls = pendingFunctionCalls(session.data, {
       sessionId: binding.sessionId,
       turnId: root.id,
@@ -239,14 +231,10 @@ export class OperatorRuntimePort {
     if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
     const [session, turns] = await Promise.all([
       this.platform.read({ operation: sessionGet, id: binding.sessionId }),
-      this.platform.read({
-        operation: 'sessions.turns',
-        id: binding.sessionId,
-        query: { limit: 100, order: 'asc' },
-      }),
+      sessionHistory(this.platform, binding.sessionId, 'sessions.turns'),
     ]);
     this.requireOpen();
-    const { root } = verifiedOperatorRoots(binding, session.data, turns.data);
+    const { root } = verifiedOperatorRoots(binding, session.data, turns);
     if (['completed', 'cancelled', 'failed'].includes(root.status)) return [];
     return pendingFunctionCalls(session.data, {
       sessionId: binding.sessionId,

@@ -56,13 +56,13 @@ describe('operator-safe activity projection', () => {
     expect(recovered.values()).toEqual(items.values());
     expect(JSON.stringify(items.values())).not.toMatch(/private|diagnostic|arguments|fingerprint/);
   });
-  it('shows generic tool failures but never turns function history into a pending question', () => {
+  it('shows named tool lifecycle activity but never turns function history into a pending question', () => {
     const items = new OperatorItems('session_a', 'turn_a');
     const call = {
       id: 'call_a',
       turn_id: 'turn_a',
       type: 'function_call',
-      name: 'private_function_name',
+      name: 'another_tool',
       arguments: 'private arguments',
     };
     items.recover([
@@ -70,21 +70,43 @@ describe('operator-safe activity projection', () => {
       { ...call, status: 'completed' },
       { ...call, status: 'invalid' },
     ]);
-    expect(items.values()).toEqual([]);
+    expect(items.values()).toMatchObject([
+      { kind: 'tool', text: 'Another tool · Completed', final: true },
+    ]);
     items.recover([
-      { ...call, status: 'failed' },
+      { ...call, id: 'failed_call', status: 'failed' },
       { ...call, id: 'command_a', type: 'command_execution', status: 'failed' },
     ]);
-    expect(items.values()).toHaveLength(2);
+    expect(items.values()).toHaveLength(3);
     for (const item of items.values()) {
       expect(item).toMatchObject({
         kind: 'tool',
-        text: 'A tool call failed. Check the agent’s update and evidence before continuing.',
         final: true,
       });
       expect(item.callFingerprint).toBeUndefined();
     }
     expect(JSON.stringify(items.values())).not.toMatch(/private/);
+  });
+  it('shows successful MCP evidence reads without exposing tool arguments or output', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    const call = {
+      id: 'source_a',
+      turn_id: 'turn_a',
+      type: 'mcp_call',
+      name: 'get_salesforce_record_files',
+      server_label: 'headstart',
+      arguments: { token: 'private' },
+      output: 'private original bytes',
+    };
+    items.recover([{ ...call, status: 'in_progress' }]);
+    expect(items.values()).toMatchObject([
+      { text: 'Read source documents · In progress', final: false },
+    ]);
+    items.recover([{ ...call, status: 'completed' }]);
+    expect(items.values()).toMatchObject([
+      { text: 'Read source documents · Completed', final: true },
+    ]);
+    expect(JSON.stringify(items.values())).not.toContain('private');
   });
   it('recovers and streams only explicitly verified root turns, preserving prior activity', () => {
     const items = new OperatorItems('session_a', 'turn_a');
@@ -169,6 +191,9 @@ describe('operator-safe activity projection', () => {
     expect(items.values()[0]?.final).toBe(true);
   });
   it('redacts obvious secrets and keeps subsequent fragments withheld', () => {
+    expect(
+      operatorText('Risk-based review: date of birth and tax identifiers need verification.')
+    ).toBe('Risk-based review: date of birth and tax identifiers need verification.');
     const items = new OperatorItems('session_a', 'turn_a');
     items.consume(event('item.added', { item: message('sk-') }));
     items.consume(
@@ -196,18 +221,22 @@ describe('operator-safe activity projection', () => {
       )
     );
     items.consume(event('item.added', { item: message('a'.repeat(10000)) }));
-    expect(() => {
-      items.consume(
-        event('output_text.delta', { item_id: 'item_a', content_index: 0, delta: 'b' }, 'oversize')
-      );
-    }).toThrow('text');
+    items.consume(
+      event('output_text.delta', { item_id: 'item_a', content_index: 0, delta: 'b' }, 'oversize')
+    );
+    expect(
+      items
+        .values()
+        .map((item) => item.text)
+        .join('')
+    ).toBe(`${'a'.repeat(10000)}b`);
     for (let index = 0; index < 179; index++)
       items.recover([
         { ...message('final', 'completed'), id: `other_${String(index)}`, phase: 'final_answer' },
       ]);
-    expect(() => {
-      items.recover([{ ...message(), id: 'overflow' }]);
-    }).toThrow('Activity limit');
+    items.recover([{ ...message(), id: 'overflow' }]);
+    expect(items.values()).toHaveLength(180);
+    expect(items.values().at(-1)?.id).toBe('overflow');
     const bounded = new OperatorItems('session_a', 'turn_a');
     for (let index = 0; index < 10000; index++)
       bounded.consume(
@@ -217,6 +246,6 @@ describe('operator-safe activity projection', () => {
       bounded.consume(
         event('output_text.delta', { item_id: 'unknown', content_index: 0 }, 'overflow')
       );
-    }).toThrow('Observation limit');
+    }).not.toThrow();
   });
 });

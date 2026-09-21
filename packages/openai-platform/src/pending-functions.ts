@@ -1,3 +1,4 @@
+import { AGENT_FUNCTION_PAYLOAD_LIMIT } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
 import { fingerprint } from './fingerprint.js';
@@ -57,7 +58,8 @@ export function pendingFunctionCalls(
         name: call.name,
         arguments: call.arguments,
       };
-      if (JSON.stringify(projected).length > 100_000) throw new Error('Oversized function.');
+      if (Buffer.byteLength(JSON.stringify(projected)) > AGENT_FUNCTION_PAYLOAD_LIMIT)
+        throw new Error('Oversized function.');
       calls.push({ ...projected, fingerprint: fingerprint(projected) });
     }
     return calls;

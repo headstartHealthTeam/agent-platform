@@ -88,8 +88,10 @@ It verifies exact target/session/initial-root/workflow-revision correlation, mer
 history with the stream, and derives ad hoc `ask_operator` questions from current required actions,
 not historical messages. The owning backend supplies the trusted binding, human authorization and
 immutable message/answer/outbox records. Each binding anchors the first root of a dedicated,
-exclusively application-owned session. The complete bounded ordered root chain must retain that
-anchor; prior roots must be completed, not cancelled/failed or overlapping. The latest root owns
+exclusively application-owned session. The complete paginated ordered root chain must retain that
+anchor; prior roots must be terminal, not overlapping. An older failed/cancelled turn does not make
+an existing later turn foreign or invalidate observation. Reading history neither starts nor
+authorizes continuation; the backend still owns Stop and explicit recovery authority. The latest root owns
 current questions and exact replies. Subagent activity is not projected. A provider-completed turn
 maps to `idle`, not business completion; general input can start another turn in the same session.
 This is not resume after cancellation, failure or a protected business stop.
@@ -109,16 +111,21 @@ actual provider I/O per run, including Stop, and must not release that serializa
 timeout while a detached send can still run. SDK requests have bounded timeouts and no automatic retries.
 
 Observers are coalesced per binding, limited to 20 sessions and closed after 45 seconds without a
-snapshot request. Call `close()` on application teardown. Overflow (100 session turns or saved items, 180 projected
-items or 10,000 observed events) requires explicit reconciliation; pagination/retention policy is
-not silently bypassed. A disconnect never resends input, cancels the agent or proves completion.
+snapshot request. Call `close()` on application teardown. Session history follows every API page;
+100 is the page size, not a session lifetime limit. The observer keeps a rolling window of 180
+projected items and 10,000 event deduplication IDs. Long assistant messages are split into stable
+10,000-character display parts instead of failing observation. Applications retain durable events
+and expose their own history pagination; a recent-activity window must not disable operator controls.
+MCP/function activity includes tool names and lifecycle status, never raw arguments/results or
+private reasoning. This follows the official [Agents item contract](https://developers.openai.com/api/reference/typescript/resources/beta/subresources/agents).
+A disconnect never resends input, cancels the agent or proves completion.
 `createLocalOperatorRuntimePort` resolves the existing private profile inside trusted application
 composition, never inside the isolated executor. This is a development helper, not production
 credential provisioning. No credential lookup happens merely by importing the package.
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.5.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.6.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
@@ -169,7 +176,7 @@ are rejected before creation. Authorization is attached only to that session's n
 transport. The owning application provisions the non-human identity, issues and revokes run grants
 and enforces source permissions. This package does not implement employee OAuth or mint Headstart
 credentials. The same attachment path works with hosted and retained local execution; it does not
-make a credential valid at a different MCP deployment/database. Adapter `0.5.0` pins this boundary
+make a credential valid at a different MCP deployment/database. Adapter `0.6.0` pins this boundary
 so an older artifact cannot silently ignore the second argument.
 
 The owner persists launch intent before calling. Creation includes the initial input and exact

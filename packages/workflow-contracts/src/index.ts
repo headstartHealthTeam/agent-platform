@@ -16,6 +16,7 @@ export {
 } from './run.js';
 
 export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from './functions.js';
+export { AGENT_FUNCTION_PAYLOAD_LIMIT } from './functions.js';
 export type {
   AgentLaunchDefinition,
   AgentLaunchRequest,

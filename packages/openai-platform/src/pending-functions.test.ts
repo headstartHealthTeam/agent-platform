@@ -15,6 +15,22 @@ const call = {
 const session = { id: expected.sessionId, required_actions: [call] };
 
 describe('pending function projection', () => {
+  it('accepts complete review packages above the former 100 KB mismatch', () => {
+    const arguments_ = {
+      inputJson: JSON.stringify({ fact: '\\'.repeat(600000) }),
+      proposalJson: JSON.stringify({ text: 'complete'.repeat(60000) }),
+    };
+    const [projected] = pendingFunctionCalls(
+      {
+        ...session,
+        required_actions: [
+          { ...call, name: 'publish_credentialing_review_package', arguments: arguments_ },
+        ],
+      },
+      expected
+    );
+    expect(projected?.arguments).toEqual(arguments_);
+  });
   it('projects the exact pending call and binds arguments and identity, not extra provider content', () => {
     const projected = {
       ...expected,
@@ -62,7 +78,10 @@ describe('pending function projection', () => {
     { id: expected.sessionId, items: [call] },
     { ...session, required_actions: [call, call] },
     { ...session, required_actions: [{ ...call, arguments: null }] },
-    { ...session, required_actions: [{ ...call, arguments: { text: 'x'.repeat(100_001) } }] },
+    {
+      ...session,
+      required_actions: [{ ...call, arguments: { text: 'x'.repeat(16 * 1024 * 1024 + 1) } }],
+    },
     { ...session, required_actions: [{ type: 'future-action', private: 'private-marker' }] },
     { ...session, required_actions: [{ ...call, call_id: '../invalid' }] },
     { ...session, required_actions: Array.from({ length: 101 }, () => call) },

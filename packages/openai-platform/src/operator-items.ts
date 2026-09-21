@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { z } from 'zod';
 
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,200}$/);
@@ -7,25 +9,23 @@ const message = itemBase.extend({
   role: z.literal('assistant'),
   phase: z.enum(['commentary', 'final_answer']),
   status: z.enum(['in_progress', 'completed', 'incomplete']),
-  content: z
-    .array(z.object({ type: z.literal('output_text'), text: z.string().max(10000) }))
-    .max(1),
+  content: z.array(z.object({ type: z.literal('output_text'), text: z.string() })),
 });
 const command = itemBase.extend({
   type: z.literal('command_execution'),
   status: z.enum(['in_progress', 'completed', 'incomplete', 'failed']),
 });
-const failedFunction = itemBase.extend({
-  type: z.literal('function_call'),
-  status: z.literal('failed'),
+const namedTool = itemBase.extend({
+  type: z.enum(['function_call', 'mcp_call']),
+  status: z.enum(['in_progress', 'completed', 'failed', 'incomplete']),
   name: z.string(),
 });
 const event = z.object({ event_id: id, session_id: id, turn_id: id.nullable(), type: z.string() });
 const textEvent = event.extend({
   item_id: id,
   content_index: z.literal(0),
-  delta: z.string().max(10000).optional(),
-  text: z.string().max(10000).optional(),
+  delta: z.string().optional(),
+  text: z.string().optional(),
 });
 
 export interface OperatorItem {
@@ -36,7 +36,9 @@ export interface OperatorItem {
   callFingerprint?: string;
 }
 export const operatorText = (value: string): string =>
-  /sk-|Bearer\s|-----BEGIN .*PRIVATE KEY/i.test(value) ? '[Sensitive content withheld]' : value;
+  /\bsk-|\bBearer\s+[A-Za-z0-9._~-]{8,}|-----BEGIN [A-Z ]*PRIVATE KEY/i.test(value)
+    ? '[Sensitive content withheld]'
+    : value;
 
 /** Allowlisted explanatory content only. Never expose reasoning, shell arguments or raw outputs. */
 export class OperatorItems {
@@ -56,7 +58,23 @@ export class OperatorItems {
     for (const turnId of turnIds) this.turns.add(id.parse(turnId));
   }
   values(): OperatorItem[] {
-    return [...this.items.values()];
+    // UI/event frames are bounded; the original assistant message is not truncated or rejected.
+    // Stable part IDs let the owning application retain every observed fragment across reloads.
+    return [...this.items.values()]
+      .flatMap((item) => {
+        if (item.text.length <= 10000) return [item];
+        const parts: OperatorItem[] = [];
+        const key = createHash('sha256').update(item.id).digest('hex');
+        for (let offset = 0; offset < item.text.length; offset += 10000) {
+          parts.push({
+            ...item,
+            id: offset ? `part_${key}_${String(offset)}` : item.id,
+            text: item.text.slice(offset, offset + 10000),
+          });
+        }
+        return parts;
+      })
+      .slice(-180);
   }
   recover(rawItems: unknown[]): void {
     for (const item of rawItems) this.item(item, false);
@@ -76,7 +94,10 @@ export class OperatorItems {
     if (parsed.session_id !== this.sessionId) throw new Error('Wrong observation session');
     if (!parsed.turn_id || !this.turns.has(parsed.turn_id) || this.seen.has(parsed.event_id))
       return;
-    if (this.seen.size >= 10000) throw new Error('Observation limit reached; recover saved state');
+    if (this.seen.size >= 10000) {
+      const oldest = this.seen.values().next().value;
+      if (oldest) this.seen.delete(oldest);
+    }
     this.seen.add(parsed.event_id);
     if (parsed.type.endsWith('item.added') || parsed.type.endsWith('item.done')) {
       this.item(z.object({ item: z.unknown() }).parse(raw).item, true);
@@ -89,7 +110,7 @@ export class OperatorItems {
     // reconnect: wait for the full text.done/item.done when the opening item was missed.
     if (!this.liveText.has(previous.id) && !parsed.type.endsWith('.done')) return;
     const text = parsed.type.endsWith('.done') ? update.text : previous.text + (update.delta ?? '');
-    if (text === undefined || text.length > 10000) throw new Error('Invalid text update');
+    if (text === undefined) throw new Error('Invalid text update');
     this.items.set(previous.id, { ...previous, text: this.text(previous.id, text) });
   }
   private text(itemId: string, value: string): string {
@@ -105,7 +126,14 @@ export class OperatorItems {
     if (!next) return;
     const previous = this.items.get(next.id);
     if (previous?.final) return;
-    if (!previous && this.items.size >= 180) throw new Error('Activity limit reached');
+    if (!previous && this.items.size >= 180) {
+      const oldest = this.items.keys().next().value;
+      if (oldest) {
+        this.items.delete(oldest);
+        this.liveText.delete(oldest);
+        this.withheld.delete(oldest);
+      }
+    }
     this.items.set(next.id, next);
   }
   private tool(raw: unknown, type: string): OperatorItem | null {
@@ -122,20 +150,43 @@ export class OperatorItems {
               : 'Tool activity ended. Review the agent’s explanation and evidence for the outcome.',
         final: item.status !== 'in_progress',
       };
-    } else if (type === 'function_call') {
-      const parsed = failedFunction.safeParse(raw);
-      if (!parsed.success) return null;
-      return {
-        id: parsed.data.id,
-        kind: 'tool',
-        text:
-          parsed.data.name === 'ask_operator'
-            ? 'The agent could not complete a question request. Check the agent’s update before continuing.'
-            : 'A tool call failed. Check the agent’s update and evidence before continuing.',
-        final: true,
-      };
     }
+    if (type === 'function_call' || type === 'mcp_call') return this.namedTool(raw, type);
     return null;
+  }
+  private namedTool(raw: unknown, type: string): OperatorItem | null {
+    const parsed = namedTool.safeParse(raw);
+    if (!parsed.success) return null;
+    const item = parsed.data;
+    // The separate question projection owns pending question text and reply controls.
+    if (item.name === 'ask_operator' && item.status !== 'failed') return null;
+    const labels: Record<string, string> = {
+      describe_salesforce_schema: 'Inspect Salesforce fields and relationships',
+      query_salesforce_records: 'Read Salesforce records',
+      search_salesforce_records: 'Search Salesforce records',
+      get_salesforce_record_files: 'Read source documents',
+    };
+    const readableName = /^[A-Za-z][A-Za-z0-9_]{0,99}$/.test(item.name)
+      ? item.name.replaceAll('_', ' ').replace(/^./, (first) => first.toUpperCase())
+      : type === 'mcp_call'
+        ? 'Source tool'
+        : 'Agent tool';
+    const label = labels[item.name] ?? operatorText(readableName);
+    const status = {
+      in_progress: 'In progress',
+      completed: 'Completed',
+      failed: 'Failed',
+      incomplete: 'Interrupted',
+    }[item.status];
+    return {
+      id: item.id,
+      kind: 'tool',
+      text:
+        item.name === 'ask_operator'
+          ? 'The agent could not complete a question request. Check the agent’s update before continuing.'
+          : `${label} · ${status}`,
+      final: item.status !== 'in_progress',
+    };
   }
   private message(raw: unknown, live: boolean): OperatorItem | null {
     const parsed = message.safeParse(raw);

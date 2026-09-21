@@ -127,11 +127,23 @@ export class SessionLaunchPort implements AgentLaunchPort {
       )
       .parse(credentials);
     if (
-      parsed.length !== servers.length ||
+      !parsed.length ||
+      parsed.length > servers.length ||
+      parsed.some(
+        (credential) =>
+          servers.filter((value) => {
+            const server = z.object({ server_label: z.string() }).safeParse(value);
+            return server.success && server.data.server_label === credential.serverLabel;
+          }).length !== 1
+      ) ||
       new Set(parsed.map((item) => item.serverLabel)).size !== parsed.length
     )
       throw new Error('MCP credential binding mismatch');
     return servers.map((value) => {
+      const label = z.object({ server_label: z.string() }).parse(value).server_label;
+      // Other native MCP connections use their own reviewed deployment binding; a Headstart run
+      // credential does not replace them or require every source to share its identity scheme.
+      if (!parsed.some((credential) => credential.serverLabel === label)) return value;
       const server = z
         .object({
           type: z.literal('mcp'),

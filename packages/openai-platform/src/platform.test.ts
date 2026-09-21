@@ -42,7 +42,7 @@ const config = resolveConfig(localConfig);
 describe('standalone operator factory', () => {
   it('keeps transport construction credential-free until explicitly configured', () => {
     expect(protocol).toBe('headstart-openai-operator/v1');
-    expect(adapterVersion).toBe('0.5.0');
+    expect(adapterVersion).toBe('0.6.0');
     const fetchImplementation = vi.fn<typeof fetch>();
     for (const billableUntil of [undefined, '2026-09-17T12:00:00Z']) {
       const port = createOperatorRuntimePort({
@@ -321,7 +321,7 @@ describe('OpenAI access boundary', () => {
     { success: true },
     { success: true, output: 'answer', error: 'both' },
     { success: true, output: { answer: 'not serialized' } },
-    { success: true, output: 'x'.repeat(100_001) },
+    { success: true, output: 'x'.repeat(16 * 1024 * 1024 + 1) },
     { success: false, error: '' },
     { success: false, output: 'answer' },
   ])('rejects ambiguous or unsupported function-result payloads', (result) => {

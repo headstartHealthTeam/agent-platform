@@ -21,7 +21,7 @@ export function verifiedOperatorRoots(
     .object({ id: z.string(), metadata: z.record(z.string(), z.string()) })
     .parse(session);
   const roots = z
-    .object({ data: z.array(rootSchema).max(100), has_more: z.literal(false) })
+    .object({ data: z.array(rootSchema), has_more: z.literal(false) })
     .parse(turns)
     .data.filter((turn) => turn.subagent_id === null);
   const root = roots.at(-1);
@@ -32,7 +32,7 @@ export function verifiedOperatorRoots(
     roots[0]?.id !== binding.turnId ||
     roots.some((turn) => turn.session_id !== binding.sessionId) ||
     new Set(roots.map((turn) => turn.id)).size !== roots.length ||
-    roots.slice(0, -1).some((turn) => turn.status !== 'completed')
+    roots.slice(0, -1).some((turn) => !['completed', 'failed', 'cancelled'].includes(turn.status))
   )
     throw new Error('Run provenance changed');
   return { roots, root };

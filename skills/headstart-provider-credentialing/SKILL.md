@@ -4,7 +4,7 @@ description: Investigate provider credentialing or payer enrollment evidence and
 compatibility: Requires scoped case retrieval, evidence discovery and exact-version evidence reads. Can use synthetic tools during development. Live capabilities require separately verified identity, data authorization and destination permission.
 metadata:
   author: headstart-health
-  version: '0.2.0'
+  version: '0.3.0'
 ---
 
 # Headstart Provider Credentialing
@@ -25,6 +25,18 @@ affiliations. Missing identifiers are gaps, not permission to select a likely re
 Confirm the active data policy, permitted tools, target and case scope before retrieving evidence.
 Use an approved Headstart read capability when available; its presence does not grant permission.
 Linked-file metadata or summaries do not establish access to original attachment bytes.
+The primary agent needs complete source evidence, not only answers from another model. Follow all
+text/file cursors; inspect pages for scans, signatures, handwriting or conflicting layout. Read
+workbook sheets and repeated histories, including hidden content when relevant. A summary may help
+navigation but cannot replace the underlying document. A backend download or reviewer preview does
+not prove that you received it. If a representation is incomplete, use another available original
+or page-reading capability and report any actual remaining access failure explicitly.
+
+Case identity binds the assignment and its review; it is not a rule against investigating relevant
+shared practice, payer, SOP or other authorized business records. Necessary business facts,
+including identity and tax identifiers, belong in authorized evidence processing, not blanket
+redaction or avoidable manual-entry questions. Protect authentication secrets separately. Read-only
+MCP/source tools do not prohibit normal application persistence of packages, messages and reviews.
 No personal token or browser-session export. Headstart identity and payer access are separate.
 
 For a synthetic run, use only its supplied case and synthetic evidence tools. Do not look up real

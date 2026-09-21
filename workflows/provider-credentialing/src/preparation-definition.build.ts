@@ -47,11 +47,22 @@ const definition = {
       type: 'function',
       name: 'capture_credentialing_source_document',
       description:
-        'Retain an exact original Salesforce file for the bound case. Requires provider/practice relationship and source-read authority. Returns verified artifact identity, digest and media type, never bytes or URLs. Read-only at Salesforce; writes only protected application retention. Not a search or conversion tool.',
+        'Retain an exact original Salesforce file as evidence for the bound case, including relevant shared business and payer sources. Pass its discovered sourceObject; subject identifies which case subject the evidence informs, not ownership of the original. Returns verified artifact identity, digest and media type, never bytes or URLs. Read-only at Salesforce; writes protected application retention. Not a search or conversion tool.',
       parameters: {
         type: 'object',
         properties: {
           subject: { type: 'string', enum: ['provider', 'practice'] },
+          sourceObject: {
+            type: 'string',
+            enum: [
+              'Headstart_Provider_Profile__c',
+              'Headstart_Business_Profile__c',
+              'Licensure_Certification_Record__c',
+              'INS_Network_Affiliation__c',
+              'Account',
+              'Task',
+            ],
+          },
           linkedRecordId: { type: 'string' },
           contentDocumentId: { type: 'string' },
           contentVersionId: { type: 'string' },

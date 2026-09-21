@@ -1,5 +1,8 @@
 import type { OperatorBinding } from './operator.js';
 
+/** UTF-8 envelope limit; accommodates complete application artifacts including JSON escaping. */
+export const AGENT_FUNCTION_PAYLOAD_LIMIT = 16 * 1024 * 1024;
+
 /** Application-only tool boundary. Never include raw arguments/results in operator activity. */
 export interface AgentFunctionCall {
   sessionId: string;
