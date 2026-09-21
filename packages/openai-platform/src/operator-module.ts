@@ -5,7 +5,7 @@ import { OperatorRuntimePort } from './operator-runtime.js';
 import { OpenAIPlatform } from './platform.js';
 
 export const protocol = 'headstart-openai-operator/v1';
-export const adapterVersion = '0.4.0';
+export const adapterVersion = '0.5.0';
 export { createLocalOperatorRuntimePort, OperatorRuntimePort } from './operator-runtime.js';
 export { OpenAIPlatform } from './platform.js';
 export { resolveConfig } from './config.js';

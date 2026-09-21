@@ -25,9 +25,20 @@ export interface AgentSessionReceipt {
   requestId: string;
 }
 
+/** Ephemeral trusted composition input. Never persist in launch intent, metadata or operator views. */
+export interface AgentSessionCredential {
+  serverLabel: string;
+  audience: string;
+  authorization: string;
+  allowedTools: string[];
+}
+
 export interface AgentLaunchPort {
   /** One attempt only. The owner persists intent before calling and never retries uncertainty. */
-  createSession(request: AgentLaunchRequest): Promise<AgentSessionReceipt>;
+  createSession(
+    request: AgentLaunchRequest,
+    credentials?: AgentSessionCredential[]
+  ): Promise<AgentSessionReceipt>;
   /** Recover the first root of the exact owned session; never creates or sends input. */
   inspectSession(receipt: AgentSessionReceipt): Promise<OperatorBinding | null>;
   cancelSession(receipt: AgentSessionReceipt): Promise<void>;

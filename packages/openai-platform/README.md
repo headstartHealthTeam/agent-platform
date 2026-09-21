@@ -118,7 +118,7 @@ credential provisioning. No credential lookup happens merely by importing the pa
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.4.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.5.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
@@ -159,6 +159,18 @@ SDK action schema as supervised creation. MCP is the agent's source-access surfa
 proxied through new workflow-specific backend functions. Credentials/configuration must be supplied
 by protected application composition, never model/browser input. Synthetic profiles must not bind
 live source tools. The backend registers only its own context/publication functions.
+
+The optional second `createSession(request, credentials)` argument carries ephemeral
+`AgentSessionCredential` bindings from trusted application composition, never from the agent or
+browser. It does not mutate the saved request or reusable launch settings. Each binding must match
+exactly one required service-origin MCP server's label, HTTPS audience and allowed-tool subset;
+preexisting profile authorization, missing/duplicate bindings or environment-origin transports
+are rejected before creation. Authorization is attached only to that session's native MCP
+transport. The owning application provisions the non-human identity, issues and revokes run grants
+and enforces source permissions. This package does not implement employee OAuth or mint Headstart
+credentials. The same attachment path works with hosted and retained local execution; it does not
+make a credential valid at a different MCP deployment/database. Adapter `0.5.0` pins this boundary
+so an older artifact cannot silently ignore the second argument.
 
 The owner persists launch intent before calling. Creation includes the initial input and exact
 workflow/request correlation metadata; the returned receipt must be saved before further work.

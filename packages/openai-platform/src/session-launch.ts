@@ -2,6 +2,7 @@ import type {
   AgentLaunchPort,
   AgentLaunchRequest,
   AgentSessionReceipt,
+  AgentSessionCredential,
   OperatorBinding,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
@@ -35,7 +36,10 @@ export class SessionLaunchPort implements AgentLaunchPort {
     private readonly executor?: SessionExecutor
   ) {}
 
-  async createSession(request: AgentLaunchRequest): Promise<AgentSessionReceipt> {
+  async createSession(
+    request: AgentLaunchRequest,
+    credentials?: AgentSessionCredential[]
+  ): Promise<AgentSessionReceipt> {
     if (Date.now() >= this.billableUntil) throw new Error('Inference authorization expired');
     z.uuid().parse(request.requestId);
     id.parse(request.workflowRevision);
@@ -64,7 +68,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
           model: settings.model,
           reasoning: settings.reasoning,
           instructions: request.definition.instructions,
-          tools: [...functions, ...settings.mcpServers],
+          tools: [...functions, ...this.bindCredentials(settings.mcpServers, credentials)],
         },
         environment: settings.environment,
         input: request.input,
@@ -102,6 +106,54 @@ export class SessionLaunchPort implements AgentLaunchPort {
       workflowRevision: request.workflowRevision,
       requestId: request.requestId,
     };
+  }
+
+  private bindCredentials(servers: unknown[], credentials?: AgentSessionCredential[]): unknown[] {
+    if (credentials === undefined) return servers;
+    const parsed = z
+      .array(
+        z
+          .object({
+            serverLabel: z.string().min(1),
+            audience: z.url(),
+            authorization: z
+              .string()
+              .min(1)
+              .max(16384)
+              .refine((value) => !/[\r\n]/.test(value)),
+            allowedTools: z.array(z.string().min(1)).min(1),
+          })
+          .strict()
+      )
+      .parse(credentials);
+    if (
+      parsed.length !== servers.length ||
+      new Set(parsed.map((item) => item.serverLabel)).size !== parsed.length
+    )
+      throw new Error('MCP credential binding mismatch');
+    return servers.map((value) => {
+      const server = z
+        .object({
+          type: z.literal('mcp'),
+          server_label: z.string(),
+          connection_origin: z.literal('service'),
+          required: z.literal(true),
+          allowed_tools: z.array(z.string()).min(1),
+          transport: z.object({ type: z.literal('http'), server_url: z.url() }).strict(),
+        })
+        .strict()
+        .parse(value);
+      const credential = parsed.find((item) => item.serverLabel === server.server_label);
+      if (
+        credential?.audience !== server.transport.server_url ||
+        server.allowed_tools.some((tool) => !credential.allowedTools.includes(tool))
+      )
+        throw new Error('MCP credential target or tool scope mismatch');
+      return {
+        ...server,
+        transport: { ...server.transport, authorization: credential.authorization },
+      };
+    });
   }
 
   async inspectSession(value: AgentSessionReceipt): Promise<OperatorBinding | null> {

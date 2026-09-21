@@ -73,6 +73,95 @@ function setup(): {
   };
 }
 describe('application session launch', () => {
+  it.each(['self_hosted', 'none'])(
+    'attaches per-run service credentials without mutating shared settings (%s)',
+    async (environment) => {
+      const { platform, settings } = setup();
+      const server = {
+        type: 'mcp',
+        server_label: 'source',
+        connection_origin: 'service',
+        required: true,
+        allowed_tools: ['read_inventory'],
+        transport: { type: 'http', server_url: 'https://example.com/mcp' },
+      };
+      const configured = {
+        ...settings,
+        environment: environment === 'none' ? { type: 'none' } : settings.environment,
+        mcpServers: [server],
+      };
+      const port = new SessionLaunchPort(
+        platform,
+        target,
+        configured,
+        Date.now() + 60000,
+        ['publish'],
+        { ensure: vi.fn(), stop: vi.fn() }
+      );
+      const credential = {
+        serverLabel: 'source',
+        audience: 'https://example.com/mcp',
+        authorization: 'Bearer invented-run-only',
+        allowedTools: ['read_inventory'],
+      };
+      await port.createSession(request, [credential]);
+      const action = actionSchema.parse(platform.apply.mock.calls[0]?.[0]);
+      if (action.operation !== 'sessions.create' || !('agent' in action.body))
+        throw new Error('Expected inline session');
+      expect(action.body.agent.tools).toContainEqual({
+        ...server,
+        transport: { ...server.transport, authorization: credential.authorization },
+      });
+      expect(JSON.stringify(configured)).not.toContain(credential.authorization);
+      expect(JSON.stringify(request)).not.toContain(credential.authorization);
+    }
+  );
+  it.each([
+    'wrong audience',
+    'wrong tools',
+    'duplicate',
+    'missing',
+    'inline secret',
+    'environment origin',
+  ])('rejects %s before API creation', async (scenario) => {
+    const { platform, settings } = setup();
+    const server = {
+      type: 'mcp',
+      server_label: 'source',
+      connection_origin: scenario === 'environment origin' ? 'environment' : 'service',
+      required: true,
+      allowed_tools: ['read_inventory'],
+      transport: {
+        type: 'http',
+        server_url: 'https://example.com/mcp',
+        ...(scenario === 'inline secret' ? { authorization: 'Bearer existing' } : {}),
+      },
+    };
+    const credential = {
+      serverLabel: 'source',
+      audience:
+        scenario === 'wrong audience' ? 'https://other.example/mcp' : 'https://example.com/mcp',
+      authorization: 'Bearer invented',
+      allowedTools: scenario === 'wrong tools' ? ['other'] : ['read_inventory'],
+    };
+    const credentials =
+      scenario === 'missing'
+        ? []
+        : scenario === 'duplicate'
+          ? [credential, credential]
+          : [credential];
+    await expect(
+      new SessionLaunchPort(
+        platform,
+        target,
+        { ...settings, mcpServers: [server] },
+        Date.now() + 60000,
+        ['publish'],
+        { ensure: vi.fn(), stop: vi.fn() }
+      ).createSession(request, credentials)
+    ).rejects.toThrow();
+    expect(platform.apply).not.toHaveBeenCalled();
+  });
   it('requires a provisioner before self-hosted creation, but never provisions before a durable receipt', async () => {
     const { platform, settings } = setup();
     await expect(

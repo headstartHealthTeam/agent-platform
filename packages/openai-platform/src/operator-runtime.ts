@@ -9,6 +9,7 @@ import type {
   AgentFunctionResult,
   AgentLaunchRequest,
   AgentSessionReceipt,
+  AgentSessionCredential,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
@@ -80,7 +81,10 @@ export class OperatorRuntimePort {
     if (appFunctions.includes('ask_operator'))
       throw new Error('Human questions are not application functions');
   }
-  createSession(request: AgentLaunchRequest): Promise<AgentSessionReceipt> {
+  createSession(
+    request: AgentLaunchRequest,
+    credentials?: AgentSessionCredential[]
+  ): Promise<AgentSessionReceipt> {
     this.requireOpen();
     return new SessionLaunchPort(
       this.platform,
@@ -89,7 +93,7 @@ export class OperatorRuntimePort {
       this.billableUntil,
       this.appFunctions,
       this.executor
-    ).createSession(request);
+    ).createSession(request, credentials);
   }
   inspectSession(receipt: AgentSessionReceipt): Promise<OperatorBinding | null> {
     this.requireOpen();

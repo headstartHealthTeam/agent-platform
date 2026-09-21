@@ -16,7 +16,7 @@ run. The existing draft synthetic workflow manifest is unchanged.
 
 The build also emits `dist/preparation-definition.json`: the canonical skill, the
 [connected entry prompt](prompts/connected.md), both public input schemas, proposal schema and
-three function declarations. Its workflow revision hashes the complete definition. The artifact
+four function declarations. Its workflow revision hashes the complete definition. The artifact
 contains no fixtures, expected answers, credentials or private case data. Deploy/pin reviewed bytes
 alongside the validator; do not maintain a second instruction copy in backend.
 
@@ -25,6 +25,14 @@ current revision and saved feedback. `publish_credentialing_review_package` subm
 input/proposal JSON for canonical validation and durable human review. `ask_operator` remains an
 ad hoc human question. General source investigation uses separately configured, permission-aware
 native Headstart MCP tools; the backend functions are not a second source-access API.
+
+`capture_credentialing_source_document` is the protected original-file retention capability.
+It accepts exact Salesforce link/document/version identifiers discovered through MCP, verifies the
+case relationship in the backend, and returns artifact identity and digest after retention. No raw
+bytes, arbitrary URLs, new source login or search interface are exposed. The backend rejects
+production-read artifacts without a matching case/subject/version receipt. Source PDF/PNG/JPEG are
+connected; conversion artifacts remain an explicit gap, not a fabricated original. This does not
+change the schema or its payer-neutral semantics, or establish live source/MCP acceptance.
 
 Saved review corrections remain instructions to investigate, not source truth or approval. The
 agent re-reads context, investigates and publishes a new package, which requires renewed review.

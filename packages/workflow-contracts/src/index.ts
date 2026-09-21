@@ -19,6 +19,7 @@ export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from '
 export type {
   AgentLaunchDefinition,
   AgentLaunchRequest,
+  AgentSessionCredential,
   AgentSessionReceipt,
   AgentLaunchPort,
 } from './launch.js';

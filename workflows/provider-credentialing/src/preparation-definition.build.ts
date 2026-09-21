@@ -45,6 +45,23 @@ const definition = {
     },
     {
       type: 'function',
+      name: 'capture_credentialing_source_document',
+      description:
+        'Retain an exact original Salesforce file for the bound case. Requires provider/practice relationship and source-read authority. Returns verified artifact identity, digest and media type, never bytes or URLs. Read-only at Salesforce; writes only protected application retention. Not a search or conversion tool.',
+      parameters: {
+        type: 'object',
+        properties: {
+          subject: { type: 'string', enum: ['provider', 'practice'] },
+          linkedRecordId: { type: 'string' },
+          contentDocumentId: { type: 'string' },
+          contentVersionId: { type: 'string' },
+        },
+        required: ['subject', 'linkedRecordId', 'contentDocumentId', 'contentVersionId'],
+        additionalProperties: false,
+      },
+    },
+    {
+      type: 'function',
       name: 'publish_credentialing_review_package',
       description:
         'Save a complete cited snapshot and proposal for human review. Does not authorize or perform source/payer writes. Re-read context on stale versions.',
