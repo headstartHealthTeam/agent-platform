@@ -82,6 +82,13 @@ invent a service identity, or add a parallel backend source-query tool.
   Docker's stored environment or process arguments. Container output logging is disabled.
 - One supervisor child per retained binding, with an explicit development expiry. A `ready`
   bootstrap response confirms local handoff only, **not** API connection or successful model work.
+  Resource identity uses the target, session and environment, not a rotating provider connection
+  URL. A changed validated URL retires the previous child before starting its replacement, retaining
+  the workspace and original expiry. Unconfirmed exit fails the handoff without overlapping children;
+  a subsequent reconciliation may continue only after exit. Stop prevents queued replacement.
+- The control socket retries only startup connection failures within its ten-second deadline. Once
+  connected, an uncertain bootstrap is not replayed. Earlier resources with incompatible identity
+  labels remain rejected for explicit operator reconciliation; they are not relabeled or deleted.
 - Stop compute separately from cancelling the provider session. Neither operation deletes files
   or undoes business effects. Retain stopped resources for diagnosis; cleanup is an explicit
   operation against verified identities, never automatic deletion after a failed test.

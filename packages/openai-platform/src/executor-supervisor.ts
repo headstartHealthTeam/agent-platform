@@ -39,9 +39,17 @@ const startExecutor: ExecutorSpawn = (args, key) =>
 export class ExecutorSupervisor {
   private child: ChildProcess | undefined;
   private identity: string | undefined;
+  private argumentsIdentity: string | undefined;
+  private pending: Promise<void> = Promise.resolve();
+  private stopped = false;
   private timer: ReturnType<typeof setTimeout> | undefined;
   constructor(private readonly start: ExecutorSpawn = startExecutor) {}
-  ensure(value: unknown): void {
+  ensure(value: unknown): Promise<void> {
+    const next = this.pending.then(() => this.reconcile(value));
+    this.pending = next.catch(() => undefined);
+    return next;
+  }
+  private async reconcile(value: unknown): Promise<void> {
     const payload = payloadSchema.parse(value);
     const args = payload.connection.arguments;
     if (
@@ -65,26 +73,59 @@ export class ExecutorSupervisor {
     const duration = payload.expiresAt - Date.now();
     if (duration <= 0 || duration > 2_147_483_647)
       throw new Error('Executor authority expired or unsupported');
-    const identity = fingerprint({ connection: payload.connection, expiresAt: payload.expiresAt });
+    const identity = fingerprint({
+      sessionId: payload.connection.sessionId,
+      environmentId: payload.connection.environmentId,
+      expiresAt: payload.expiresAt,
+    });
     if (this.identity && this.identity !== identity) throw new Error('Executor binding changed');
     this.identity = identity;
-    if (this.child) return;
+    this.assertActive(payload.expiresAt);
+    const argumentsIdentity = fingerprint(args);
+    if (this.child && this.argumentsIdentity === argumentsIdentity) return;
+    if (this.child) await this.retireChild(this.child);
+    // Rotation cannot extend authority or race a Stop while the old process exits.
+    this.assertActive(payload.expiresAt);
     const child = this.start(args, payload.key);
     this.child = child;
+    this.argumentsIdentity = argumentsIdentity;
     const ended = (): void => {
       if (this.child === child) {
         this.child = undefined;
         if (this.timer) clearTimeout(this.timer);
       }
     };
-    child.once('error', ended);
+    child.once('error', () => {
+      // A failed spawn has no process. A kill error is not evidence that a live child exited.
+      if (child.pid === undefined) ended();
+    });
     child.once('exit', ended);
     this.timer = setTimeout(() => {
       this.stop();
-    }, duration);
+    }, payload.expiresAt - Date.now());
     this.timer.unref();
   }
+  private assertActive(expiresAt: number): void {
+    if (this.stopped || expiresAt <= Date.now()) throw new Error('Executor stopped or expired');
+  }
+  private retireChild(child: ChildProcess): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const ended = (): void => {
+        clearTimeout(timeout);
+        resolve();
+      };
+      const timeout = setTimeout(() => {
+        child.removeListener('exit', ended);
+        if (this.child === child) child.kill('SIGKILL');
+        // Keep ownership until exit is observed; a later ensure can reconcile, not overlap.
+        reject(new Error('Executor replacement awaits confirmed exit'));
+      }, 5000);
+      child.once('exit', ended);
+      child.kill('SIGTERM');
+    });
+  }
   stop(): void {
+    this.stopped = true;
     if (this.timer) clearTimeout(this.timer);
     const child = this.child;
     if (!child) return;
@@ -100,7 +141,7 @@ export function serveExecutor(supervisor = new ExecutorSupervisor()): Server {
   const server = createServer((socket) => {
     let input = '';
     socket.setEncoding('utf8');
-    socket.setTimeout(5000, () => socket.destroy());
+    socket.setTimeout(10_000, () => socket.destroy());
     socket.on('error', () => socket.destroy());
     socket.on('data', (data: string) => {
       input += data;
@@ -110,9 +151,12 @@ export function serveExecutor(supervisor = new ExecutorSupervisor()): Server {
       }
       const boundary = input.indexOf('\n');
       if (boundary < 0) return;
+      socket.pause();
       try {
-        supervisor.ensure(JSON.parse(input.slice(0, boundary)));
-        socket.end('ready');
+        supervisor
+          .ensure(JSON.parse(input.slice(0, boundary)))
+          .then(() => socket.end('ready'))
+          .catch(() => socket.end('unavailable'));
       } catch {
         socket.end('unavailable');
       }

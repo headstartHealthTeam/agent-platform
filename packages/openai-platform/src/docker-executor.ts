@@ -171,7 +171,11 @@ export class DockerSessionExecutor implements SessionExecutor {
     if (!Number.isFinite(expiresAt) || expiresAt <= Date.now())
       throw new Error('Executor authority expired');
     const name = this.name(connection.sessionId);
-    const environment = fingerprint(connection);
+    const environment = fingerprint({
+      target: this.target,
+      sessionId: connection.sessionId,
+      environmentId: connection.environmentId,
+    });
     await this.local();
     await this.network(name);
     const proxy = `${name}-egress`;
