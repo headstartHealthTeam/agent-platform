@@ -132,7 +132,7 @@ describe('complete read-only Google Drive evidence', () => {
     const result = await reader.read({ fileId: file.id, version: '10', mode: 'text' });
     expect(result.document.text).toContain('Prior history (hidden)');
     expect(result.document.text).toContain('Corrected');
-  });
+  }, 35_000); // Real Office worker: allow its 30-second deadline and termination.
   it('labels native exports instead of pretending they are binary originals', async () => {
     get.mockImplementation(async (path) =>
       path.endsWith('/export')

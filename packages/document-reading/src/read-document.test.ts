@@ -47,23 +47,27 @@ describe('full deterministic document views', () => {
       'outside'
     );
   }, 30_000);
-  it('includes hidden workbook history, cell addresses and formulas', async () => {
-    const book = new Workbook();
-    book.addWorksheet('Employment').getCell('A1').value = 'All original employment';
-    const hidden = book.addWorksheet('Corrections', { state: 'hidden' });
-    hidden.getCell('D42').value = { formula: '1+1', result: 2 };
-    hidden.getRow(42).hidden = true;
-    const bytes = Buffer.from(await book.xlsx.writeBuffer());
-    for (const mime of [
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel.sheet.macroEnabled.12',
-    ]) {
+  // Real worker launches have their own 30-second deadline. The outer test must allow that
+  // deadline and termination to complete before the next test uses the process-wide parser slot.
+  it.each([
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel.sheet.macroEnabled.12',
+  ])(
+    'includes hidden workbook history, cell addresses and formulas for %s',
+    async (mime) => {
+      const book = new Workbook();
+      book.addWorksheet('Employment').getCell('A1').value = 'All original employment';
+      const hidden = book.addWorksheet('Corrections', { state: 'hidden' });
+      hidden.getCell('D42').value = { formula: '1+1', result: 2 };
+      hidden.getRow(42).hidden = true;
+      const bytes = Buffer.from(await book.xlsx.writeBuffer());
       const result = await readDocument(bytes, mime, { mode: 'text' });
       expect(result.document.text).toContain('All original employment');
       expect(result.document.text).toContain('Corrections (hidden)');
       expect(result.document.text).toContain('D42: {"formula":"1+1","result":2}');
-    }
-  });
+    },
+    35_000
+  );
   it('reads actual DOCX body text, with a warning that visuals require the original', async () => {
     const zip = new JSZip();
     zip.file(
@@ -82,7 +86,7 @@ describe('full deterministic document views', () => {
     );
     expect(result.document.text).toContain('Complete invented CV');
     expect(result.document.warnings.join(' ')).toContain('original');
-  });
+  }, 35_000);
   it('keeps exact Office originals available while parsing is busy and after a parser failure', async () => {
     const bytes = Buffer.from('unsupported synthetic Office bytes');
     const mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -95,7 +99,7 @@ describe('full deterministic document views', () => {
     const after = await readDocument(bytes, mime, { mode: 'original' });
     expect(after).toEqual(during);
     await expect(readDocument(bytes, mime, { mode: 'text' })).rejects.toThrow('extraction failed');
-  });
+  }, 65_000); // Two sequential real-worker failures, each bounded at 30 seconds.
   it.each(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])(
     'delivers %s itself, not inferred text',
     async (mimeType) => {
