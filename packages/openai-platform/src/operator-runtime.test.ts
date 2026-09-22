@@ -42,7 +42,7 @@ function fixture(
   } = {}
 ): {
   platform: {
-    [K in 'read' | 'apply' | 'openOperatorObservation']: ReturnType<
+    [K in 'read' | 'apply' | 'preflight' | 'openOperatorObservation']: ReturnType<
       typeof vi.fn<OpenAIPlatform[K]>
     >;
   };
@@ -53,6 +53,7 @@ function fixture(
   let rejectObservation: ((reason: Error) => void) | undefined;
   const close = vi.fn<() => void>();
   const platform = {
+    preflight: vi.fn<OpenAIPlatform['preflight']>(),
     read: vi.fn<OpenAIPlatform['read']>(async (input) => {
       const parsed = readSchema.parse(input);
       const data =

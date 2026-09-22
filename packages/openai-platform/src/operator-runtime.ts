@@ -10,6 +10,13 @@ import type {
   AgentLaunchRequest,
   AgentSessionReceipt,
   AgentSessionCredential,
+  AgentSessionCredentialDescriptor,
+  AgentSessionCreateOptions,
+  AgentSessionCreateResult,
+  AgentLaunchPreflight,
+  AgentLaunchIdentity,
+  AgentLaunchCandidateResult,
+  AgentLaunchCandidatePage,
   OperatorHistoryCursor,
   OperatorHistoryPage,
 } from '@headstart-health/workflow-contracts';
@@ -42,7 +49,7 @@ const wrongTarget = 'Wrong runtime target';
 const noInferenceAuthority = 'No current bounded inference authorization';
 const sessionGet = 'sessions.get' as const;
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
-type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'openOperatorObservation'>;
+type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight' | 'openOperatorObservation'>;
 function operatorStatus(
   status: ReturnType<typeof verifiedOperatorRoots>['root']['status'],
   hasQuestions: boolean
@@ -84,11 +91,7 @@ export class OperatorRuntimePort {
     if (appFunctions.includes('ask_operator'))
       throw new Error('Human questions are not application functions');
   }
-  createSession(
-    request: AgentLaunchRequest,
-    credentials?: AgentSessionCredential[]
-  ): Promise<AgentSessionReceipt> {
-    this.requireOpen();
+  private launchPort(): SessionLaunchPort {
     return new SessionLaunchPort(
       this.platform,
       this.target,
@@ -96,43 +99,51 @@ export class OperatorRuntimePort {
       this.billableUntil,
       this.appFunctions,
       this.executor
-    ).createSession(request, credentials);
+    );
+  }
+  preflightLaunch(
+    request: AgentLaunchRequest,
+    descriptors?: AgentSessionCredentialDescriptor[]
+  ): Promise<AgentLaunchPreflight> {
+    this.requireOpen();
+    return this.launchPort().preflightLaunch(request, descriptors);
+  }
+  createSession(
+    request: AgentLaunchRequest,
+    credentials?: AgentSessionCredential[],
+    options?: AgentSessionCreateOptions
+  ): Promise<AgentSessionCreateResult> {
+    if (this.closed) return Promise.resolve({ status: 'not-attempted', reason: 'validation' });
+    return this.launchPort().createSession(request, credentials, options);
+  }
+  inspectLaunchCandidate(
+    expectedTarget: string,
+    sessionId: string
+  ): Promise<AgentLaunchCandidateResult> {
+    this.requireOpen();
+    return this.launchPort().inspectLaunchCandidate(expectedTarget, sessionId);
+  }
+  discoverLaunchCandidates(
+    identity: AgentLaunchIdentity,
+    after?: string
+  ): Promise<AgentLaunchCandidatePage> {
+    this.requireOpen();
+    return this.launchPort().discoverLaunchCandidates(identity, after);
   }
   inspectSession(receipt: AgentSessionReceipt): Promise<OperatorBinding | null> {
     this.requireOpen();
-    return new SessionLaunchPort(
-      this.platform,
-      this.target,
-      this.launchSettings,
-      this.billableUntil,
-      this.appFunctions,
-      this.executor
-    ).inspectSession(receipt);
+    return this.launchPort().inspectSession(receipt);
   }
   cancelSession(receipt: AgentSessionReceipt): Promise<void> {
     this.requireOpen();
-    return new SessionLaunchPort(
-      this.platform,
-      this.target,
-      this.launchSettings,
-      this.billableUntil,
-      this.appFunctions,
-      this.executor
-    ).cancelSession(receipt);
+    return this.launchPort().cancelSession(receipt);
   }
   reconcileEnvironment(
     receipt: AgentSessionReceipt,
     action: 'start' | 'reconcile' | 'stop'
   ): Promise<void> {
     this.requireOpen();
-    return new SessionLaunchPort(
-      this.platform,
-      this.target,
-      this.launchSettings,
-      this.billableUntil,
-      this.appFunctions,
-      this.executor
-    ).reconcileEnvironment(receipt, action);
+    return this.launchPort().reconcileEnvironment(receipt, action);
   }
   async snapshot(binding: OperatorBinding): Promise<OperatorSnapshot> {
     this.requireOpen();

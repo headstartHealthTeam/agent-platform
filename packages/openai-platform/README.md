@@ -141,7 +141,7 @@ credential provisioning. No credential lookup happens merely by importing the pa
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.6.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.7.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
@@ -192,14 +192,48 @@ are rejected before creation. Authorization is attached only to that session's n
 transport. The owning application provisions the non-human identity, issues and revokes run grants
 and enforces source permissions. This package does not implement employee OAuth or mint Headstart
 credentials. The same attachment path works with hosted and retained local execution; it does not
-make a credential valid at a different MCP deployment/database. Adapter `0.6.0` pins this boundary
-so an older artifact cannot silently ignore the second argument.
+make a credential valid at a different MCP deployment/database. Adapter `0.7.0` pins the credential
+and dispatch/recovery contract together, so an older artifact cannot silently ignore either.
 
-The owner persists launch intent before calling. Creation includes the initial input and exact
-workflow/request correlation metadata; the returned receipt must be saved before further work.
+Call `preflightLaunch(request, descriptors)` before issuing a run credential. Descriptors contain
+the intended MCP label, audience and tools, never authorization. This validates the same definition,
+deployment settings and bindings as creation and verifies the configured provider project with a
+read-only request. Persist its returned target fingerprint with the application launch attempt.
+Recheck it before issuance if configuration could have changed. The third
+`createSession(request, credentials, { expectedTarget, beforeDispatch })` argument is required for
+successful creation. A mismatched/absent target fails before any provider request.
+
+The owner first persists a `preparing` attempt, then issues the credential. `beforeDispatch` must
+durably change that attempt to `creating`; it runs after all predictable validation/provider reads,
+immediately before the one SDK create call. A callback failure prevents that call, even if its
+database acknowledgment was lost. A crashed `preparing` attempt therefore never dispatched; the
+owning application can explicitly retire/reissue credentials using its transactional attempt policy.
+A crash after `creating` is uncertain. Never infer safe recreation from a timeout, generic SDK
+failure or zero search matches, and never reset an issued credential merely because creation is
+uncertain. Retain separate Stop/revocation authority.
+
+The result is `created` with a receipt, `not-attempted` with a sanitized local-validation,
+provider-preflight or pre-dispatch reason, or `unknown` after crossing the dispatch boundary or
+receiving an unusable response. Unknown results may retain a provider request ID and candidate
+session ID as diagnostic hints, not proof of ownership. Creation includes initial input and exact
+`launch_request` UUID / `workflow_revision` metadata. The returned receipt must be saved before further work.
+The pinned SDK has no documented session-create idempotency guarantee; arbitrary header acceptance
+does not create one. It does have a separate, documented message-event idempotency field.
+
+`inspectLaunchCandidate(expectedTarget, sessionId)` reads a webhook/response hint in the pinned
+project and returns only its session ID, creation time and launch correlation. Missing resources,
+valid unrelated resources and failed reads are distinct. `discoverLaunchCandidates(identity, after)`
+reads one page of at most 100 sessions and returns every exact request/revision match plus a cursor.
+Persist the cursor and candidate/conflict evidence atomically. A malformed/nonadvancing page fails
+without advancing; a completed empty pass remains uncertain. Reinspect a candidate and correlate
+under the application's launch lock before adoption. Metadata is mutable, not provider-enforced
+uniqueness; conflicting matches must not be resolved by picking the newest. Recovery needs read
+access, not a source credential, executor, launch profile or fresh inference authorization.
+
 `inspectSession` reads only that known session and returns its first root when available. It never
 recreates a session or resends input after uncertainty. `cancelSession` validates that same receipt.
-There is no automatic adoption of an ambiguous create attempt. `reconcileEnvironment` follows the
+The application owns positive-match recovery, Stop-before-continuation and conflict handling;
+the adapter never adopts or recreates on its own. `reconcileEnvironment` follows the
 saved receipt and starts or reconciles a configured `SessionExecutor` only for initial startup or
 a current environment-connection request. Self-hosted creation without a provisioner fails before
 the API call. The reusable `DockerSessionExecutor` retains local compute and session files; the

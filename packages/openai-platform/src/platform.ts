@@ -53,6 +53,35 @@ export interface PlatformResult {
   data: unknown;
   fingerprint: string;
 }
+export interface DispatchOptions {
+  /** Durable application dispatch journal, after every provider read and before mutation. */
+  beforeDispatch?: () => Promise<void>;
+}
+export class OpenAIResourceMissingError extends Error {
+  constructor() {
+    super('OpenAI read failed; the requested resource was not found.');
+  }
+}
+export class MutationOutcomeUnknownError extends Error {
+  readonly providerRequestId?: string;
+  constructor(error: unknown) {
+    super(
+      'Mutation failed or outcome is unknown. Reconcile the resource before retrying; no automatic retry was attempted.'
+    );
+    if (
+      error instanceof OpenAI.APIError &&
+      typeof error.requestID === 'string' &&
+      /^[A-Za-z0-9_-]{1,200}$/.test(error.requestID)
+    )
+      this.providerRequestId = error.requestID;
+  }
+}
+function sanitizedReadError(error: unknown): Error {
+  // Do not attach an SDK error/cause: provider responses may contain credentials or source data.
+  return error instanceof OpenAI.APIError && error.status === 404
+    ? new OpenAIResourceMissingError()
+    : new Error('OpenAI read failed; no provider payload was emitted.');
+}
 /** Sanitized, definitive provider refusal; unlike an uncertain network/write failure. */
 export class InputNotSteerableError extends Error {
   constructor() {
@@ -68,14 +97,12 @@ function sanitizedMutationError(action: Action, error: unknown): Error {
   )
     return new InputNotSteerableError();
   // Never retain SDK errors as causes: they may carry request, response or credential content.
-  return new Error(
-    'Mutation failed or outcome is unknown. Reconcile the resource before retrying; no automatic retry was attempted.'
-  );
+  return new MutationOutcomeUnknownError(error);
 }
 
 // Never return or serialize an SDK Page: it contains transport state, not just API data.
-function pageData(page: { data: { id: string | null }[]; hasNextPage: () => boolean }): unknown {
-  return { data: page.data, has_more: page.hasNextPage(), last_id: page.data.at(-1)?.id ?? null };
+function pageData(page: { data: { id: string | null }[]; has_more: boolean }): unknown {
+  return { data: page.data, has_more: page.has_more, last_id: page.data.at(-1)?.id ?? null };
 }
 
 /** Supervising caller owns human approval; managed workflows need a separate approval executor. */
@@ -175,8 +202,8 @@ export class OpenAIPlatform {
     try {
       const data = await this.query(parsed.data);
       return { data, fingerprint: fingerprint(data) };
-    } catch {
-      throw new Error('OpenAI read failed; no provider payload was emitted.');
+    } catch (error) {
+      throw sanitizedReadError(error);
     }
   }
 
@@ -242,7 +269,11 @@ export class OpenAIPlatform {
     }
   }
 
-  public async apply(input: unknown, approval: Approval): Promise<PlatformResult> {
+  public async apply(
+    input: unknown,
+    approval: Approval,
+    options?: DispatchOptions
+  ): Promise<PlatformResult> {
     const action = parseAction(input);
     const plan = planAction(this.#config.target, action);
     if (
@@ -255,6 +286,9 @@ export class OpenAIPlatform {
     await this.preflight();
     await this.checkCurrentAgent(action);
     await this.checkPendingFunction(action);
+    // No further read/preflight may be inserted after this journal boundary. SDK errors after
+    // it remain uncertain; accepting a generic header does not establish create idempotency.
+    await options?.beforeDispatch?.();
     try {
       const data = await this.mutate(action);
       return { data: data ?? null, fingerprint: fingerprint(data) };

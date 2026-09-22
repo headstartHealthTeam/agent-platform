@@ -21,7 +21,15 @@ export type {
   AgentLaunchDefinition,
   AgentLaunchRequest,
   AgentSessionCredential,
+  AgentSessionCredentialDescriptor,
   AgentSessionReceipt,
+  AgentLaunchIdentity,
+  AgentSessionCandidate,
+  AgentLaunchPreflight,
+  AgentSessionCreateOptions,
+  AgentSessionCreateResult,
+  AgentLaunchCandidateResult,
+  AgentLaunchCandidatePage,
   AgentLaunchPort,
 } from './launch.js';
 

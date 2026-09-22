@@ -246,6 +246,19 @@ const query = z
     ...(value.after === undefined ? {} : { after: value.after }),
   }));
 const fingerprint = z.string().regex(/^[a-f0-9]{64}$/);
+const sessionQuery = z
+  .object({
+    limit: z.number().int().min(1).max(100).default(20),
+    after: id.optional(),
+    order: z.enum(['asc', 'desc']).optional(),
+  })
+  .strict()
+  .default({ limit: 20 })
+  .transform((value) => ({
+    limit: value.limit,
+    ...(value.after === undefined ? {} : { after: value.after }),
+    ...(value.order === undefined ? {} : { order: value.order }),
+  }));
 const historyQuery = z
   .object({
     limit: z.number().int().min(1).max(100).default(20),
@@ -263,7 +276,7 @@ export const readSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('models.list') }).strict(),
   z.object({ operation: z.literal('agents.list'), query }).strict(),
   z.object({ operation: z.literal('agents.get'), id }).strict(),
-  z.object({ operation: z.literal('sessions.list'), query }).strict(),
+  z.object({ operation: z.literal('sessions.list'), query: sessionQuery }).strict(),
   z.object({ operation: z.literal('sessions.get'), id }).strict(),
   z.object({ operation: z.literal('sessions.pending-functions'), id, turnId: id }).strict(),
   z.object({ operation: z.literal('sessions.turns'), id, query: historyQuery }).strict(),

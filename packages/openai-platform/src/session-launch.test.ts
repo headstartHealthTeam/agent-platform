@@ -28,10 +28,15 @@ const receipt = {
   workflowRevision: request.workflowRevision,
   requestId: request.requestId,
 };
+const createOptions = { expectedTarget: receipt.target };
 function setup(): {
   session: { id: string; metadata: { workflow_revision: string; launch_request: string } };
   roots: { id: string; session_id: string; subagent_id: null }[];
-  platform: { apply: Mock<OpenAIPlatform['apply']>; read: Mock<OpenAIPlatform['read']> };
+  platform: {
+    apply: Mock<OpenAIPlatform['apply']>;
+    read: Mock<OpenAIPlatform['read']>;
+    preflight: Mock<OpenAIPlatform['preflight']>;
+  };
   settings: {
     model: string;
     reasoning: { effort: string };
@@ -46,7 +51,15 @@ function setup(): {
   };
   const roots = [{ id: 'turn', session_id: 'session', subagent_id: null }];
   const platform = {
-    apply: vi.fn<OpenAIPlatform['apply']>().mockResolvedValue({ data: session, fingerprint: 'f' }),
+    preflight: vi
+      .fn<OpenAIPlatform['preflight']>()
+      .mockResolvedValue({ projectId: target.projectId, agentsRead: true }),
+    apply: vi
+      .fn<OpenAIPlatform['apply']>()
+      .mockImplementation(async (_action, _approval, options) => {
+        await options?.beforeDispatch?.();
+        return { data: session, fingerprint: 'f' };
+      }),
     read: vi.fn<OpenAIPlatform['read']>().mockImplementation(async (operation) => ({
       data:
         readSchema.parse(operation).operation === 'sessions.get'
@@ -109,7 +122,15 @@ describe('application session launch', () => {
         authorization: 'Bearer invented-run-only',
         allowedTools: ['read_inventory'],
       };
-      await port.createSession(request, [credential]);
+      const descriptor = {
+        serverLabel: credential.serverLabel,
+        audience: credential.audience,
+        allowedTools: credential.allowedTools,
+      };
+      expect(await port.preflightLaunch(request, [descriptor])).toEqual({ target: receipt.target });
+      expect(platform.preflight).toHaveBeenCalledTimes(1);
+      expect(platform.apply).not.toHaveBeenCalled();
+      await port.createSession(request, [credential], createOptions);
       const action = actionSchema.parse(platform.apply.mock.calls[0]?.[0]);
       if (action.operation !== 'sessions.create' || !('agent' in action.body))
         throw new Error('Expected inline session');
@@ -156,16 +177,29 @@ describe('application session launch', () => {
         : scenario === 'duplicate'
           ? [credential, credential]
           : [credential];
+    const port = new SessionLaunchPort(
+      platform,
+      target,
+      { ...settings, mcpServers: [server] },
+      Date.now() + 60000,
+      ['publish'],
+      { ensure: vi.fn(), stop: vi.fn() }
+    );
     await expect(
-      new SessionLaunchPort(
-        platform,
-        target,
-        { ...settings, mcpServers: [server] },
-        Date.now() + 60000,
-        ['publish'],
-        { ensure: vi.fn(), stop: vi.fn() }
-      ).createSession(request, credentials)
-    ).rejects.toThrow();
+      port.preflightLaunch(
+        request,
+        credentials.map((item) => ({
+          serverLabel: item.serverLabel,
+          audience: item.audience,
+          allowedTools: item.allowedTools,
+        }))
+      )
+    ).rejects.toThrow('no session creation');
+    expect(platform.preflight).not.toHaveBeenCalled();
+    await expect(port.createSession(request, credentials, createOptions)).resolves.toEqual({
+      status: 'not-attempted',
+      reason: 'validation',
+    });
     expect(platform.apply).not.toHaveBeenCalled();
   });
   it('requires a provisioner before self-hosted creation, but never provisions before a durable receipt', async () => {
@@ -173,8 +207,8 @@ describe('application session launch', () => {
     await expect(
       new SessionLaunchPort(platform, target, settings, Date.now() + 60_000, [
         'publish',
-      ]).createSession(request)
-    ).rejects.toThrow('executor is not configured');
+      ]).createSession(request, undefined, createOptions)
+    ).resolves.toEqual({ status: 'not-attempted', reason: 'validation' });
     expect(platform.apply).not.toHaveBeenCalled();
     const executor = { ensure: vi.fn(), stop: vi.fn() };
     await new SessionLaunchPort(
@@ -184,7 +218,7 @@ describe('application session launch', () => {
       Date.now() + 60_000,
       ['publish'],
       executor
-    ).createSession(request);
+    ).createSession(request, undefined, createOptions);
     expect(executor.ensure).not.toHaveBeenCalled();
   });
   it('starts the exact owned environment and reconnects only for a current connection request', async () => {
@@ -245,7 +279,10 @@ describe('application session launch', () => {
   });
   it('creates exactly once with canonical instructions and durable caller correlation', async () => {
     const { port, platform } = setup();
-    expect(await port.createSession(request)).toEqual(receipt);
+    expect(await port.createSession(request, undefined, createOptions)).toEqual({
+      status: 'created',
+      receipt,
+    });
     expect(platform.apply).toHaveBeenCalledTimes(1);
     const call = platform.apply.mock.calls[0];
     if (!call) throw new Error('Expected session creation');
@@ -268,17 +305,29 @@ describe('application session launch', () => {
   });
   it('does not replay a failed create and rejects missing authority and undeclared handlers', async () => {
     const { port, platform, settings } = setup();
-    platform.apply.mockRejectedValue(new Error('uncertain'));
-    await expect(port.createSession(request)).rejects.toThrow('uncertain');
+    platform.apply.mockImplementation(async (_action, _approval, options) => {
+      await options?.beforeDispatch?.();
+      throw new Error('uncertain');
+    });
+    await expect(port.createSession(request, undefined, createOptions)).resolves.toEqual({
+      status: 'unknown',
+      reason: 'provider-outcome',
+    });
     expect(platform.apply).toHaveBeenCalledTimes(1);
     await expect(
-      new SessionLaunchPort(platform, target, settings, 0, ['publish']).createSession(request)
-    ).rejects.toThrow('expired');
+      new SessionLaunchPort(platform, target, settings, 0, ['publish']).createSession(
+        request,
+        undefined,
+        createOptions
+      )
+    ).resolves.toEqual({ status: 'not-attempted', reason: 'validation' });
     await expect(
       new SessionLaunchPort(platform, target, settings, Date.now() + 60_000, []).createSession(
-        request
+        request,
+        undefined,
+        createOptions
       )
-    ).rejects.toThrow('Unregistered');
+    ).resolves.toEqual({ status: 'not-attempted', reason: 'validation' });
   });
   it('rejects configuration masquerading as MCP, wrong provenance, and ambiguous roots', async () => {
     const { port, platform, settings, session, roots } = setup();
@@ -289,8 +338,8 @@ describe('application session launch', () => {
         { ...settings, mcpServers: [request.definition.tools[0]] },
         Date.now() + 60_000,
         ['publish']
-      ).createSession(request)
-    ).rejects.toThrow('Only native MCP');
+      ).createSession(request, undefined, createOptions)
+    ).resolves.toEqual({ status: 'not-attempted', reason: 'validation' });
     await expect(port.inspectSession({ ...receipt, target: 'other' })).rejects.toThrow('target');
     session.metadata.launch_request = 'other';
     await expect(port.inspectSession(receipt)).rejects.toThrow();
