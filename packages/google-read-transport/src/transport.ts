@@ -47,6 +47,9 @@ export interface GoogleTokenProvider {
 export interface GoogleJsonReader {
   request(url: string, body?: Readonly<Record<string, unknown>>): Promise<unknown>;
 }
+export interface GoogleResponseReader {
+  readResponse(url: string, resourceKey?: string): Promise<Response>;
+}
 export class GoogleReadError extends Error {
   public constructor(message: string) {
     super(message);
@@ -75,13 +78,15 @@ export class GcloudReadTokenProvider implements GoogleTokenProvider {
     }
   }
 }
+const GOOGLE_HOST = 'www.googleapis.com';
 const ALLOWED_HOSTS = new Set([
-  'www.googleapis.com',
+  GOOGLE_HOST,
   'analyticsdata.googleapis.com',
   'analyticsadmin.googleapis.com',
   'sheets.googleapis.com',
+  'docs.googleapis.com',
 ]);
-export class GoogleReadTransport implements GoogleJsonReader {
+export class GoogleReadTransport implements GoogleJsonReader, GoogleResponseReader {
   readonly #tokens: GoogleTokenProvider;
   public constructor(tokens: GoogleTokenProvider) {
     this.#tokens = tokens;
@@ -101,6 +106,25 @@ export class GoogleReadTransport implements GoogleJsonReader {
     }
   }
   public async request(url: string, body?: Readonly<Record<string, unknown>>): Promise<unknown> {
+    const response = await this.#fetch(url, body);
+    try {
+      return await response.json();
+    } catch {
+      throw new GoogleReadError('Google returned invalid JSON');
+    }
+  }
+  public async readResponse(url: string, resourceKey?: string): Promise<Response> {
+    if (resourceKey !== undefined && !/^[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(resourceKey)) {
+      throw new GoogleReadError('Invalid Drive resource key');
+    }
+    return this.#fetch(url, undefined, resourceKey, '*/*');
+  }
+  async #fetch(
+    url: string,
+    body?: Readonly<Record<string, unknown>>,
+    resourceKey?: string,
+    accept = 'application/json'
+  ): Promise<Response> {
     const parsed = new URL(url);
     if (
       parsed.protocol !== 'https:' ||
@@ -111,8 +135,8 @@ export class GoogleReadTransport implements GoogleJsonReader {
     )
       throw new GoogleReadError('Google API origin is not allowed');
     const allowedRead =
-      (parsed.hostname === 'www.googleapis.com' &&
-        searchConsoleRead(parsed.pathname, body !== undefined)) ||
+      googleDocumentRead(parsed, body !== undefined) ||
+      (parsed.hostname === GOOGLE_HOST && searchConsoleRead(parsed.pathname, body !== undefined)) ||
       (parsed.hostname === 'analyticsdata.googleapis.com' &&
         body !== undefined &&
         /^\/v1beta\/properties\/\d+:runReport$/.test(parsed.pathname)) ||
@@ -131,8 +155,9 @@ export class GoogleReadTransport implements GoogleJsonReader {
         method: body === undefined ? 'GET' : 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
+          Accept: accept,
           'Content-Type': 'application/json',
+          ...(resourceKey === undefined ? {} : { 'X-Goog-Drive-Resource-Keys': resourceKey }),
         },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         redirect: 'error',
@@ -163,12 +188,20 @@ export class GoogleReadTransport implements GoogleJsonReader {
         `Google read returned HTTP ${String(response.status)} from ${parsed.hostname}${reason ? ` (${reason})` : ''}`
       );
     }
-    try {
-      return await response.json();
-    } catch {
-      throw new GoogleReadError('Google returned invalid JSON');
-    }
+    return response;
   }
+}
+
+function googleDocumentRead(url: URL, post: boolean): boolean {
+  if (post) return false;
+  if (url.hostname === 'docs.googleapis.com')
+    return /^\/v1\/documents\/[A-Za-z0-9_-]+$/.test(url.pathname);
+  return (
+    url.hostname === GOOGLE_HOST &&
+    /^\/drive\/v3\/(?:about|files|files\/[A-Za-z0-9_-]+|files\/[A-Za-z0-9_-]+\/export)$/.test(
+      url.pathname
+    )
+  );
 }
 
 function searchConsoleRead(path: string, post: boolean): boolean {

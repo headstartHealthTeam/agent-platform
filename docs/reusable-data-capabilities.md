@@ -39,7 +39,10 @@ or the user's request.
 | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | [`capability-contracts`](../packages/capability-contracts/README.md)             | Logical capability, execution-profile, provider-binding, target, and preflight schemas                                     |
 | [`capability-runtime`](../packages/capability-runtime/README.md)                 | Binding resolution and deterministic readiness verification                                                                |
-| [`google-read-transport`](../packages/google-read-transport/README.md)           | Sanitized ADC resolution and read-operation-only Google HTTP transport                                                     |
+| [`google-read-transport`](../packages/google-read-transport/README.md)           | Explicit Google credential bindings and shared read-only JSON/binary HTTP transport                                        |
+| [`google-drive-data`](../packages/google-drive-data/README.md)                   | Paginated Drive discovery, version-bound full evidence, native Docs/export lineage and standalone runtime                  |
+| [`document-reading`](../packages/document-reading/README.md)                     | Source-independent deterministic full text, page/image and original-file views                                             |
+| [`headstart-mcp-data`](../packages/headstart-mcp-data/README.md)                 | Original-file materialization through existing authenticated Headstart MCP tools, without another Salesforce connector     |
 | [`google-search-console`](../packages/google-search-console/README.md)           | Search Analytics validation, exact-property preflight, pagination, immutable snapshot metadata, and supervised ADC binding |
 | [`google-analytics-data`](../packages/google-analytics-data/README.md)           | GA4 Data API report contract, exact-property preflight, and tabular normalization                                          |
 | [`google-sheets-data`](../packages/google-sheets-data/README.md)                 | Exact read-only sheet ranges, revision evidence, and header-to-record mapping                                              |
@@ -50,6 +53,23 @@ Future engines should reuse a provider package only when its normalized contract
 workflow-specific field to a shared adapter merely to avoid a small local transform.
 
 ## Reuse-first design review
+
+Drive is a concrete second consumer of the shared Google transport, alongside reporting.
+The [Drive package](../packages/google-drive-data/README.md) adds binary/Docs reads and a
+standalone runtime; [Document Reading](../packages/document-reading/README.md) owns format
+parsing without source credentials or workflow policy. Existing Headstart MCP remains the route
+to Salesforce capabilities it already exposes. New agent-owned tooling does not become a backend
+module merely because backend owns that MCP. Application retention and reviewer permissions remain
+backend concerns; do not copy source connectors there to bridge an artifact handoff.
+Backend MCP exposes source discovery and exact original bytes. Document parsing/rendering runs
+inside the agent environment using `document-reading` or other provisioned agent tools, not by
+importing that package into backend. `headstart-mcp-data` closes the response-to-file boundary;
+its private runtime binding must use the existing authorized MCP identity. This is not a second
+Salesforce access pattern or an automatic extension of native service-origin MCP credentials.
+
+Drive and organic runtime artifacts reuse `scripts/runtime-packaging.ts` for pinned pnpm
+production dependencies, portable-link verification and provenance. Provider packages remain
+independent of the organic engine and credentialing workflow.
 
 Before creating an engine, adapter, provider, transport, utility, or contract:
 

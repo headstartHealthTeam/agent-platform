@@ -1,22 +1,23 @@
-import { chmod, mkdtemp, symlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { delimiter, join } from 'node:path';
+import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { GcloudReadTokenProvider, GoogleReadError, GoogleReadTransport } from './transport.js';
 
-describe('Google read transport', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.unstubAllEnvs();
-  });
-  it('uses the real gcloud launcher, including .cmd on Windows, without live credentials', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'google token space & fixture-'));
-    const script = join(directory, 'gcloud-fixture.cjs');
-    await writeFile(
-      script,
-      `#!/usr/bin/env node
+const directories: string[] = [];
+// Windows process startup under matrix coverage exceeded 5s for the former six-launch test.
+// Keep each scenario independent and bounded without changing the strict unit-test default.
+const launcherTestTimeout = 20_000;
+
+async function fixture(): Promise<void> {
+  const directory = await mkdtemp(join(tmpdir(), 'google token space & fixture-'));
+  directories.push(directory);
+  const script = join(directory, 'gcloud-fixture.cjs');
+  await writeFile(
+    script,
+    `#!/usr/bin/env node
 if (JSON.stringify(process.argv.slice(2)) !== JSON.stringify(['auth', 'application-default', 'print-access-token'])) process.exit(3);
 const mode = process.env.HEADSTART_GCLOUD_TEST_MODE;
 if (mode === 'fail') {
@@ -25,39 +26,69 @@ if (mode === 'fail') {
 } else if (mode === 'large') process.stdout.write('x'.repeat(65_000));
 else process.stdout.write('synthetic-subprocess-token\\n');
 `
+  );
+  if (process.platform === 'win32') {
+    await writeFile(
+      join(directory, 'gcloud.cmd'),
+      `@"${process.execPath}" "%~dp0gcloud-fixture.cjs" %*\r\n`
     );
-    if (process.platform === 'win32') {
-      await writeFile(
-        join(directory, 'gcloud.cmd'),
-        `@"${process.execPath}" "%~dp0gcloud-fixture.cjs" %*\r\n`
-      );
-    } else {
-      await symlink(script, join(directory, 'gcloud'));
-      await chmod(script, 0o755);
-    }
-    vi.stubEnv('PATH', `${directory}${delimiter}${process.env['PATH'] ?? ''}`);
-    expect(await new GcloudReadTokenProvider().getAccessToken()).toBe('synthetic-subprocess-token');
-    vi.stubEnv('HEADSTART_GCLOUD_TEST_MODE', 'fail');
-    await expect(new GcloudReadTokenProvider().getAccessToken()).rejects.toThrow(/Google ADC/);
-    await expect(new GcloudReadTokenProvider().getAccessToken()).rejects.not.toThrow(
-      /private-provider/
-    );
-    vi.stubEnv('HEADSTART_GCLOUD_TEST_MODE', 'large');
-    await expect(new GcloudReadTokenProvider().getAccessToken()).rejects.toThrow(/Google ADC/);
-    // Removing the fixture command from PATH covers missing-launcher failure on both platforms.
-    vi.stubEnv('PATH', await mkdtemp(join(tmpdir(), 'missing-google-launcher-')));
-    await expect(new GcloudReadTokenProvider().getAccessToken()).rejects.toThrow(
-      /verify gcloud installation and PATH/
-    );
-    const fetcher = vi.fn();
-    vi.stubGlobal('fetch', fetcher);
-    await expect(
-      new GoogleReadTransport(new GcloudReadTokenProvider()).request(
-        'https://sheets.googleapis.com/v4/spreadsheets/test'
-      )
-    ).rejects.toThrow(/verify gcloud installation and PATH/);
-    expect(fetcher).not.toHaveBeenCalled();
+  } else {
+    await symlink(process.execPath, join(directory, 'node'));
+    await symlink(script, join(directory, 'gcloud'));
+    await chmod(script, 0o755);
+  }
+  // Resolve only synthetic commands, never a workstation's installed gcloud or credentials.
+  vi.stubEnv('PATH', directory);
+}
+
+describe('Google read transport', () => {
+  afterEach(async () => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+    for (const directory of directories.splice(0))
+      await rm(directory, { recursive: true, force: true });
   });
+  it(
+    'uses the real gcloud launcher, including .cmd on Windows, without live credentials',
+    async () => {
+      await fixture();
+      expect(await new GcloudReadTokenProvider().getAccessToken()).toBe(
+        'synthetic-subprocess-token'
+      );
+    },
+    launcherTestTimeout
+  );
+  it.each(['fail', 'large'])(
+    'sanitizes real launcher %s failures without exposing child output',
+    async (mode) => {
+      await fixture();
+      vi.stubEnv('HEADSTART_GCLOUD_TEST_MODE', mode);
+      const result = new GcloudReadTokenProvider().getAccessToken();
+      await expect(result).rejects.toThrow(/Google ADC/);
+      await expect(result).rejects.not.toThrow(/private-provider/);
+    },
+    launcherTestTimeout
+  );
+  it(
+    'reports missing gcloud without probing live credentials or sending Google requests',
+    async () => {
+      const directory = await mkdtemp(join(tmpdir(), 'missing-google-launcher-'));
+      directories.push(directory);
+      vi.stubEnv('PATH', directory);
+      await expect(new GcloudReadTokenProvider().getAccessToken()).rejects.toThrow(
+        /verify gcloud installation and PATH/
+      );
+      const fetcher = vi.fn();
+      vi.stubGlobal('fetch', fetcher);
+      await expect(
+        new GoogleReadTransport(new GcloudReadTokenProvider()).request(
+          'https://sheets.googleapis.com/v4/spreadsheets/test'
+        )
+      ).rejects.toThrow(/verify gcloud installation and PATH/);
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+    launcherTestTimeout
+  );
   it('preserves fixed ADC guidance through the transport but sanitizes arbitrary token-provider errors', async () => {
     const fetcher = vi.fn();
     vi.stubGlobal('fetch', fetcher);

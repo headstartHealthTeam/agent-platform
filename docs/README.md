@@ -105,6 +105,10 @@ flowchart TD
   [reusable data capabilities](reusable-data-capabilities.md).
 - [Organic reporting runtime](organic-reporting-runtime.md) documents standalone deployment,
   private provider profiles, and synthetic/live end-to-end verification.
+- [Google Drive tools](../packages/google-drive-data/README.md),
+  [document inspection](../packages/document-reading/README.md), and
+  [Headstart MCP original-file access](../packages/headstart-mcp-data/README.md) provide reusable
+  primary-agent evidence access. They do not activate a workflow or provision credentials.
 - [`packages/google-read-transport/`](../packages/google-read-transport/README.md) owns sanitized
   ADC resolution and the explicit read-only Google HTTP operation allowlist.
 - [`packages/google-search-console/`](../packages/google-search-console/README.md),
