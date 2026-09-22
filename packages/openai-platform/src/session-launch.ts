@@ -344,13 +344,27 @@ export class SessionLaunchPort implements AgentLaunchPort {
     return session.data;
   }
   async cancelSession(receipt: AgentSessionReceipt): Promise<void> {
-    await this.session(receipt);
-    const action = { operation: 'sessions.cancel' as const, id: receipt.sessionId };
-    await this.platform.apply(action, {
-      apply: true,
-      allowBillable: false,
-      digest: planAction(this.target, action).digest,
-    });
+    try {
+      if (this.quiescent(await this.session(receipt))) return;
+      const action = { operation: 'sessions.cancel' as const, id: receipt.sessionId };
+      await this.platform.apply(action, {
+        apply: true,
+        allowBillable: false,
+        digest: planAction(this.target, action).digest,
+      });
+      // Event acceptance is not observed termination. One fresh read per reconciliation attempt;
+      // the owning application retains no-input intent and schedules any further cleanup.
+      if (this.quiescent(await this.session(receipt))) return;
+    } catch {
+      // Neither provider failures nor malformed/mismatched evidence establish safe release.
+    }
+    throw new Error('Session quiescence is unconfirmed; retain cleanup intent and reconcile.');
+  }
+  private quiescent(value: unknown): boolean {
+    const status = z
+      .object({ status: z.enum(['idle', 'failed', 'in_progress', 'requires_action']) })
+      .parse(value).status;
+    return status === 'idle' || status === 'failed';
   }
 
   async reconcileEnvironment(

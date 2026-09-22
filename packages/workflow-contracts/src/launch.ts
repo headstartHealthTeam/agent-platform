@@ -104,6 +104,10 @@ export interface AgentLaunchPort {
   ): Promise<AgentLaunchCandidatePage>;
   /** Recover the first root of the exact owned session; never creates or sends input. */
   inspectSession(receipt: AgentSessionReceipt): Promise<OperatorBinding | null>;
+  /** Resolves only after metadata-verified provider quiescence (idle/failed), not event acceptance.
+   * No polling: unconfirmed cleanup throws for durable reconciliation. Quiescence is neither
+   * deletion nor a permanent session stop; the application must retain its own no-input intent.
+   */
   cancelSession(receipt: AgentSessionReceipt): Promise<void>;
   /** Trusted, serialized lifecycle work after the receipt is durable. Never sends/replays input.
    * Initial startup is explicit; later startup requires a current provider connection request.

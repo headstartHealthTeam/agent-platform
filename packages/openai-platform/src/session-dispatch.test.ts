@@ -41,6 +41,7 @@ const request: AgentLaunchRequest = {
 const expectedTarget = fingerprint(target);
 const session = {
   id: 'session_synthetic',
+  status: 'in_progress',
   created_at: 1_790_000_000,
   metadata: { launch_request: request.requestId, workflow_revision: request.workflowRevision },
 };
@@ -57,9 +58,13 @@ function fixture(
     mutationBody?: unknown;
     loseResponse?: boolean;
     readStatus?: number;
+    sessionStatus?: string;
+    cancelReadback?: unknown;
+    cancelReadFailure?: boolean;
   } = {}
 ): { port: OperatorRuntimePort; platform: OpenAIPlatform; calls: string[] } {
   const calls: string[] = [];
+  let cancellationAccepted = false;
   const transport: typeof fetch = async (input, init) => {
     const incoming = new Request(input, init);
     const path = new URL(incoming.url).pathname;
@@ -68,11 +73,19 @@ function fixture(
     expect(incoming.headers.get('OpenAI-Organization')).toBe(target.organizationId);
     if (incoming.method === 'POST' && options.loseResponse)
       throw new Error('private failure payload');
+    if (path.endsWith('/events')) {
+      cancellationAccepted = true;
+      return new Response(null, { status: 204 });
+    }
+    if (path.endsWith('/session_synthetic') && cancellationAccepted && options.cancelReadFailure)
+      throw new Error('private readback failure');
     const body =
       incoming.method === 'POST'
         ? (options.mutationBody ?? session)
         : path.endsWith('/session_synthetic')
-          ? session
+          ? cancellationAccepted
+            ? (options.cancelReadback ?? { ...session, status: 'idle' })
+            : { ...session, status: options.sessionStatus ?? session.status }
           : { data: [], has_more: false };
     return Response.json(body, {
       status:
@@ -262,5 +275,73 @@ describe('session dispatch certainty at the official SDK boundary', () => {
         session.id
       )
     ).toEqual({ status: 'missing' });
+  });
+});
+
+describe('verified session cleanup without hosted/local divergence', () => {
+  const receipt = {
+    sessionId: session.id,
+    target: expectedTarget,
+    requestId: request.requestId,
+    workflowRevision: request.workflowRevision,
+  };
+  it.each(['idle', 'failed'])(
+    'does not send redundant cancellation for already-quiescent %s sessions',
+    async (sessionStatus) => {
+      const f = fixture({ sessionStatus });
+      await f.port.cancelSession(receipt);
+      expect(f.calls).toEqual(['GET /v1/agents', 'GET /v1/agents/sessions/session_synthetic']);
+    }
+  );
+  it.each(['idle', 'failed'])(
+    'requires a fresh %s readback after cancellation acceptance',
+    async (status) => {
+      const f = fixture({ cancelReadback: { ...session, status } });
+      await f.port.cancelSession(receipt);
+      expect(f.calls).toEqual([
+        'GET /v1/agents',
+        'GET /v1/agents/sessions/session_synthetic',
+        'GET /v1/agents',
+        'POST /v1/agents/sessions/session_synthetic/events',
+        'GET /v1/agents',
+        'GET /v1/agents/sessions/session_synthetic',
+      ]);
+    }
+  );
+  it.each(['in_progress', 'requires_action', 'cancelled', undefined])(
+    'never equates acceptance or malformed %s status with confirmed quiescence',
+    async (status) => {
+      const f = fixture({ cancelReadback: { ...session, status } });
+      await expect(f.port.cancelSession(receipt)).rejects.toThrow('quiescence is unconfirmed');
+      expect(f.calls.filter((call) => call.startsWith('POST'))).toHaveLength(1);
+      expect(f.calls.filter((call) => call.endsWith('/session_synthetic'))).toHaveLength(2);
+    }
+  );
+  it('revalidates exact launch metadata after cancellation and sanitizes readback failures', async () => {
+    for (const options of [
+      { cancelReadback: { ...session, status: 'idle', metadata: {} } },
+      { cancelReadFailure: true },
+    ]) {
+      const f = fixture(options);
+      await expect(f.port.cancelSession(receipt)).rejects.toThrow('quiescence is unconfirmed');
+      expect(f.calls.filter((call) => call.startsWith('POST'))).toHaveLength(1);
+    }
+  });
+  it('never retries an unconfirmed cancellation inside one cleanup attempt', async () => {
+    const f = fixture({ loseResponse: true });
+    await expect(f.port.cancelSession(receipt)).rejects.toThrow('quiescence is unconfirmed');
+    expect(f.calls.filter((call) => call.startsWith('POST'))).toHaveLength(1);
+    expect(f.calls.filter((call) => call.endsWith('/session_synthetic'))).toHaveLength(1);
+  });
+  it('does not cancel a foreign target or session even when it appears idle', async () => {
+    const f = fixture({ sessionStatus: 'idle' });
+    await expect(f.port.cancelSession({ ...receipt, target: 'other' })).rejects.toThrow(
+      'quiescence is unconfirmed'
+    );
+    expect(f.calls).toEqual([]);
+    await expect(
+      f.port.cancelSession({ ...receipt, requestId: '063dd72e-193f-4478-9aee-86ee24ab7edc' })
+    ).rejects.toThrow('quiescence is unconfirmed');
+    expect(f.calls.every((call) => call.startsWith('GET'))).toBe(true);
   });
 });

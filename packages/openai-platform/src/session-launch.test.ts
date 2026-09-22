@@ -30,7 +30,11 @@ const receipt = {
 };
 const createOptions = { expectedTarget: receipt.target };
 function setup(): {
-  session: { id: string; metadata: { workflow_revision: string; launch_request: string } };
+  session: {
+    id: string;
+    status: string;
+    metadata: { workflow_revision: string; launch_request: string };
+  };
   roots: { id: string; session_id: string; subagent_id: null }[];
   platform: {
     apply: Mock<OpenAIPlatform['apply']>;
@@ -47,6 +51,7 @@ function setup(): {
 } {
   const session = {
     id: 'session',
+    status: 'in_progress',
     metadata: { workflow_revision: 'revision', launch_request: request.requestId },
   };
   const roots = [{ id: 'turn', session_id: 'session', subagent_id: null }];
@@ -56,8 +61,9 @@ function setup(): {
       .mockResolvedValue({ projectId: target.projectId, agentsRead: true }),
     apply: vi
       .fn<OpenAIPlatform['apply']>()
-      .mockImplementation(async (_action, _approval, options) => {
+      .mockImplementation(async (action, _approval, options) => {
         await options?.beforeDispatch?.();
+        if (actionSchema.parse(action).operation === 'sessions.cancel') session.status = 'idle';
         return { data: session, fingerprint: 'f' };
       }),
     read: vi.fn<OpenAIPlatform['read']>().mockImplementation(async (operation) => ({

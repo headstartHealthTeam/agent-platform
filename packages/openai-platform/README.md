@@ -231,7 +231,14 @@ uniqueness; conflicting matches must not be resolved by picking the newest. Reco
 access, not a source credential, executor, launch profile or fresh inference authorization.
 
 `inspectSession` reads only that known session and returns its first root when available. It never
-recreates a session or resends input after uncertainty. `cancelSession` validates that same receipt.
+recreates a session or resends input after uncertainty. `cancelSession` validates that same receipt
+and resolves only after a provider session read reports `idle` or `failed`. Already-quiescent
+sessions need no redundant cancel event. Otherwise it submits one cancellation and performs one
+fresh metadata-verified read; acceptance, continued activity, missing/malformed evidence or a read
+failure is not confirmed quiescence. Unconfirmed cleanup throws so the owning application retains
+intent and reconciles later. This does not poll, delete the session, prove hosted-environment
+destruction or permanently prevent new input. Backend must keep its durable no-input intent and
+must not confuse local executor release with hosted-session cancellation.
 The application owns positive-match recovery, Stop-before-continuation and conflict handling;
 the adapter never adopts or recreates on its own. `reconcileEnvironment` follows the
 saved receipt and starts or reconciles a configured `SessionExecutor` only for initial startup or
