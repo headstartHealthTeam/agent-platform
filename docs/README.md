@@ -58,16 +58,16 @@ and examples.
 
 ## Concrete Examples
 
-- [Retained local executor](local-agent-executor.md) separates reusable session lifecycle from
-  local Docker compute and the later OpenAI-hosted acceptance gate.
+- [Retained local executor](local-agent-executor.md) documents the optional self-hosted fallback,
+  not a prerequisite to normal-app testing with OpenAI-hosted compute.
 
 - [Shared operator integration](shared-operator-integration.md) separates provider contracts,
   backend runtime mechanics and admin components from the first credentialing consumer.
 
-- [Desktop-to-API workflow development](agent-workflow-development.md) defines authoring, actual API
-  integration with isolated local execution, and hosted validation as distinct evidence lanes.
+- [Desktop-to-API workflow development](agent-workflow-development.md) defines authoring, normal
+  local-app integration with OpenAI-hosted execution, and deployed-application acceptance.
   [Provider credentialing](../workflows/provider-credentialing/README.md) is the intended reference;
-  its current implementation is a synthetic preparation foundation only.
+  complete real-source hosted acceptance remains unverified.
 
 - [OpenAI platform development access](openai-platform-access.md) connects local API access,
   approved lifecycle operations and pinned canonical skill preparation. Its

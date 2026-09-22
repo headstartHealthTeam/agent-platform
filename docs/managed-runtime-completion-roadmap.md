@@ -15,10 +15,10 @@ execution first; self-hosted API execution or SDK hosting follows only for a con
 **Gate B** selects the remaining operational integration. Begin provider screening alongside Slice 1
 without building an AWS worker merely to evaluate a hosted API.
 
-The [Desktop-to-API development pattern](agent-workflow-development.md) separately uses an isolated
-local executor with the real API for cross-application integration tests. This is a concrete
-development need, not a change to the hosted-first production evaluation or a claim that an executor
-has been provisioned.
+The [Desktop-to-API development pattern](agent-workflow-development.md) uses normal local
+applications with real API/OpenAI-hosted execution by default. A local executor is an optional
+fallback for a demonstrated requirement, not a prerequisite to connected testing. This aligns
+development with Gate A; it does not claim hosted configuration or acceptance is complete.
 
 The progression is shared preparation -> execution and operations decisions -> immutable artifact
 and selected adapter -> dev identity/integration -> durable operations -> operator surface ->

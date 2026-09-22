@@ -1,5 +1,11 @@
 # Retained local Agents API executor
 
+**Optional fallback, not the default connected-test path.** Follow the
+[hosted-first development decision](agent-workflow-development.md#hosted-first-connected-execution).
+Normal local backend/admin can use an OpenAI-hosted sandbox directly. The implementation below is
+retained for explicit local-execution needs or verified hosted limitations, not a prerequisite for
+installing Agent Platform tools. This decision neither removes existing code nor changes resources.
+
 The normal backend and authenticated admin application are the primary integration path. This
 package adds a retained **local-development** `codex exec-server` provisioner, not another agent
 runtime, API emulator, playground, or decision to host production on a laptop.
@@ -22,7 +28,7 @@ OpenAI-hosted execution. Hosted environments do not use this Docker provisioner.
 managed credentials, source access, file retention and their own acceptance evidence. The current
 backend composition remains deliberately local-only until that deployment work is verified.
 
-## Build and configure
+## Build and configure the optional self-hosted path
 
 Build from the reviewed package checkout, then pin the resulting local image ID:
 

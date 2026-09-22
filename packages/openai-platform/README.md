@@ -16,7 +16,16 @@ Public exports include `resolveConfig`, `readCredential`, `OpenAIPlatform`, `pla
 state never enter output. Full resource content is returned to library callers; the CLI defaults
 to IDs/statuses and exposes content only through `--include-content`.
 
-## Self-Hosted Development Boundary
+## Hosted-First Development Direction
+
+Follow the [canonical connected-test pattern](../../docs/agent-workflow-development.md#hosted-first-connected-execution):
+normal local applications use OpenAI-hosted compute by default. Existing `openai_hosted` schema
+support is limited to template/network selection; package/file/setup configuration and actual
+credentialing acceptance remain unfinished. Extend this provider surface as needed, not a second
+launcher. The self-hosted implementation below is optional and retained, not required for hosted
+sessions or evidence that hosted execution cannot run our packages.
+
+## Optional Self-Hosted Development Boundary
 
 The supervised session-creation contract also accepts `self_hosted` with an explicit normalized
 absolute POSIX `workspace_directory`. Choose either a saved `agent_id` or an inline agent with an

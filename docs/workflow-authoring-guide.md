@@ -2,7 +2,8 @@
 
 For an application-controlled workflow, use the
 [Desktop-to-API development pattern](agent-workflow-development.md) after selecting its shape.
-Desktop behavior trials and actual API/local-executor integration establish different guarantees.
+Desktop behavior trials and normal-app/real-API integration establish different guarantees. Use
+OpenAI-hosted execution for the latter by default; local applications do not require local compute.
 
 ## Purpose
 

@@ -109,6 +109,13 @@ Reuse discovered versions and keep source/representation/byte-digest provenance 
 
 ## Integration status and acceptance
 
+The [hosted-first connected-test decision](../../docs/agent-workflow-development.md#hosted-first-connected-execution)
+selects OpenAI-hosted environment setup for this runtime in credentialing, even while backend/admin
+run locally. Supply the reviewed artifact and dependencies through supported files/packages/setup
+configuration; do not expand the local Docker executor merely to install this tool. The private
+Google binding must match an authentication mode the reader actually supports. Hosted secret
+delivery and native dependencies still need verification; this is the selected path, not readiness.
+
 The package and CLI are implemented and tested with synthetic source responses and real format
 fixtures. No Google runtime identity is activated by installing or building them. The credentialing
 executor still needs this artifact installed/mounted, an approved Google profile, and tool

@@ -37,6 +37,9 @@ Before creating files for a new agent task or automation:
    behavior, data classification, and owner before implementing unattended behavior.
 
 For application-controlled agents, follow [Desktop-to-API development](docs/agent-workflow-development.md).
+Use OpenAI-hosted sandboxes for connected Agents API testing by default, even with local backend/admin.
+Do not make custom executor work a prerequisite merely to install tools; use the documented
+[hosted-first decision and fallback criteria](docs/agent-workflow-development.md#hosted-first-connected-execution).
 For credentialing preparation, load [the canonical skill](skills/headstart-provider-credentialing/SKILL.md);
 its synthetic foundation is not yet proof of connected or hosted execution.
 

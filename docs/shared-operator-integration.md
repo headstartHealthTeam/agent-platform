@@ -32,4 +32,4 @@ The backend tests the same shared core with unrelated invented inventory work, n
 payer. Admin has a matching independent synthetic panel consumer. These prove reuse of mechanics;
 they are not another product, a real-API run or credentialing behavior evaluation. Keep canonical
 credentialing instructions and semantic validation in its workflow package, and retain separate
-[desktop, actual-API/local-executor and hosted acceptance lanes](agent-workflow-development.md).
+[desktop, normal-app/hosted-API and deployed-application acceptance lanes](agent-workflow-development.md).

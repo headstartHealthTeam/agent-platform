@@ -14,6 +14,11 @@ run. The existing draft synthetic workflow manifest is unchanged.
 
 ### Connected preparation definition
 
+Use the [hosted-first development pattern](../../docs/agent-workflow-development.md#hosted-first-connected-execution):
+normal local backend/admin with an OpenAI-hosted agent sandbox. The local Docker executor is an
+optional fallback, not a gate before source/package/reviewer integration. Hosted tool setup and the
+complete real-source correction loop remain unverified; this decision changes no runtime settings.
+
 The build also emits `dist/preparation-definition.json`: the canonical skill, the
 [connected entry prompt](prompts/connected.md), both public input schemas, proposal schema and
 four function declarations. Its workflow revision hashes the complete definition. The artifact
@@ -29,7 +34,7 @@ native Headstart MCP tools; the backend functions are not a second source-access
 New shared Drive tooling lives in [Agent Platform's Drive package](../../packages/google-drive-data/README.md),
 not in a backend MCP module. Its standalone CLI reuses shared Google transport and
 [document parsing](../../packages/document-reading/README.md). It still requires an installed
-runtime artifact and explicit Google profile in the executor; those bindings and a real-source
+runtime artifact and explicit Google binding in the selected sandbox; those bindings and a real-source
 agent demonstration are not established by this package relocation. Do not infer availability
 from an employee's desktop connector. Drive-to-review retention is also unfinished: the existing
 capture function below remains Salesforce-specific, and a runtime file is not a retained receipt.
@@ -46,7 +51,7 @@ change the schema or its payer-neutral semantics, or establish live source/MCP a
 
 Saved review corrections remain instructions to investigate, not source truth or approval. The
 agent re-reads context, investigates and publishes a new package, which requires renewed review.
-Native source access, exact source-file handoff, retained executor provisioning and real-agent
+Native source access, exact source-file handoff, hosted environment setup and real-agent
 acceptance are not established by building this artifact. Missing byte access must be reported as
 missing; a file summary must not become an invented digest or fabricated original document.
 

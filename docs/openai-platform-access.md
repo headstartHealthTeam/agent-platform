@@ -196,7 +196,11 @@ fail clearly, not silently disappear.
 
 ### Isolated Local Executor Preparation
 
-For real-API/local-executor development, create a `self_hosted` session without initial input, then
+This is the optional self-hosted path. Follow the
+[hosted-first connected-test decision](agent-workflow-development.md#hosted-first-connected-execution)
+for normal local-app integration; the instructions here are not a prerequisite to hosted tool setup.
+
+When local execution is explicitly selected, create a `self_hosted` session without initial input, then
 persist the returned session/environment identity in protected application state. The library's
 `selfHostedExecutorConnection` returns a validated argument array for the official executor, not
 a shell string; it preserves the returned remote URL unchanged. Do not log that routing data or

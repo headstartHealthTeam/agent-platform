@@ -126,8 +126,9 @@ Repository ownership does not preselect a control-plane product:
 ## Portable Skills Versus Managed Workflows
 
 Use the [Desktop-to-API development pattern](agent-workflow-development.md) for application-controlled
-workflows. It preserves one canonical workflow across Desktop authoring, actual API/local-executor
-integration and intended-hosted validation without claiming those stages are already implemented.
+workflows. It preserves one canonical workflow across Desktop authoring, normal local applications
+with OpenAI-hosted execution, and deployed-application acceptance. A local executor is an optional
+fallback, not a required intermediate stage; selecting hosted execution is not passing acceptance.
 
 A **workflow skill** is portable agent guidance. It can tell an interactive agent which skills to
 compose, which evidence to gather, which questions to ask, and which output to prepare. The person
