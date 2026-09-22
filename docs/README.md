@@ -114,6 +114,9 @@ flowchart TD
 - Provider packages own bounded read contracts and normalization; workflow-specific deterministic
   analysis remains in its engine package. See
   [reusable data capabilities](reusable-data-capabilities.md).
+- [Google Drive tools and runtime](../packages/google-drive-data/README.md) reuse the shared
+  Google transport for full source reads; [Document Reading](../packages/document-reading/README.md)
+  supplies source-independent text, image/page and original-file views.
 - [Organic reporting runtime](organic-reporting-runtime.md) documents standalone deployment,
   private provider profiles, and synthetic/live end-to-end verification.
 - [`packages/google-read-transport/`](../packages/google-read-transport/README.md) owns sanitized

@@ -13,6 +13,15 @@ a second source connection, read credentials, or use source-system or payer writ
 access is unavailable, report that gap accurately rather than replacing real evidence with fixtures.
 Synthetic cases may use only explicitly supplied synthetic evidence capabilities, never live MCP.
 
+If this executor has the approved Agent Platform Drive runtime and profile provisioned, use its
+supplied CLI entrypoint for Drive investigation and full file views. It is a separately configured
+runtime capability, not a Google tool in Headstart MCP. Do not install a connector, locate login
+secrets or assume desktop Google access. Open its result files and actual evidence artifacts,
+follow all pagination/cursors, and preserve source/version/representation. Google exports are not
+original binaries. A local runtime artifact is not a backend retention receipt: the Salesforce
+capture function below cannot retain Drive files. Report missing runtime access or retention
+honestly; do not fabricate a saved preview or ask Ops to retype retrievable evidence.
+
 For a question that available evidence cannot answer, call `ask_operator` with concise wording and
 the evidence reference. Operator guidance can arrive independently of that question. Treat it as
 context, not approval, verified source evidence or an exact answer to another pending question.

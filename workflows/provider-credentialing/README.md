@@ -26,6 +26,14 @@ input/proposal JSON for canonical validation and durable human review. `ask_oper
 ad hoc human question. General source investigation uses separately configured, permission-aware
 native Headstart MCP tools; the backend functions are not a second source-access API.
 
+New shared Drive tooling lives in [Agent Platform's Drive package](../../packages/google-drive-data/README.md),
+not in a backend MCP module. Its standalone CLI reuses shared Google transport and
+[document parsing](../../packages/document-reading/README.md). It still requires an installed
+runtime artifact and explicit Google profile in the executor; those bindings and a real-source
+agent demonstration are not established by this package relocation. Do not infer availability
+from an employee's desktop connector. Drive-to-review retention is also unfinished: the existing
+capture function below remains Salesforce-specific, and a runtime file is not a retained receipt.
+
 `capture_credentialing_source_document` is the protected original-file retention capability.
 It accepts exact Salesforce link/document/version identifiers discovered through MCP, verifies the
 business-source authority in the backend, and returns artifact identity and digest after retention. No raw

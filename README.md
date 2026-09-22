@@ -90,6 +90,7 @@ contexts, not competing sources of truth.
 | `workflows/`                           | Deployable workflow prompts, schemas, ownership, triggers, and policy |
 | `packages/capability-*/`               | Provider-neutral capability profiles and runtime preflight            |
 | `packages/google-*/`                   | Reusable bounded Google read adapters and normalization               |
+| `packages/document-reading/`           | Source-independent full text, page/image and original-file evidence   |
 | `packages/semrush-data/`               | Reusable provider-neutral Semrush read contracts                      |
 | `packages/organic-performance-engine/` | Deterministic organic reporting evidence analysis                     |
 | `packages/workflow-contracts/`         | Runtime-neutral workflow manifest and run schemas                     |
