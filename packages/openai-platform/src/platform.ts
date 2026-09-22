@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 import { verifyCapabilityPreflight } from '@headstart-health/capability-runtime';
 import OpenAI from 'openai';
 
@@ -11,6 +9,13 @@ import {
   type ResolvedConfig,
   type Target,
 } from './config.js';
+import { fingerprint } from './fingerprint.js';
+import {
+  observationRequestSchema,
+  projectSessionControlEvent,
+  type SessionControlEvent,
+  type SessionObservation,
+} from './observation.js';
 import {
   isBillable,
   parseAction,
@@ -18,22 +23,10 @@ import {
   type Action,
   type ReadOperation,
 } from './operations.js';
+import { OperatorItems } from './operator-items.js';
+import { pendingFunctionCalls } from './pending-functions.js';
 
-function canonical(value: unknown): string {
-  if (Array.isArray(value)) {
-    return `[${value.map(canonical).join(',')}]`;
-  }
-  if (typeof value === 'object' && value !== null) {
-    return `{${Object.entries(value)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, entry]) => `${JSON.stringify(key)}:${canonical(entry)}`)
-      .join(',')}}`;
-  }
-  return value === undefined ? 'null' : JSON.stringify(value);
-}
-export function fingerprint(value: unknown): string {
-  return createHash('sha256').update(canonical(value)).digest('hex');
-}
+export { fingerprint } from './fingerprint.js';
 export interface ActionPlan {
   operation: Action['operation'];
   target: Target;
@@ -60,10 +53,56 @@ export interface PlatformResult {
   data: unknown;
   fingerprint: string;
 }
+export interface DispatchOptions {
+  /** Durable application dispatch journal, after every provider read and before mutation. */
+  beforeDispatch?: () => Promise<void>;
+}
+export class OpenAIResourceMissingError extends Error {
+  constructor() {
+    super('OpenAI read failed; the requested resource was not found.');
+  }
+}
+export class MutationOutcomeUnknownError extends Error {
+  readonly providerRequestId?: string;
+  constructor(error: unknown) {
+    super(
+      'Mutation failed or outcome is unknown. Reconcile the resource before retrying; no automatic retry was attempted.'
+    );
+    if (
+      error instanceof OpenAI.APIError &&
+      typeof error.requestID === 'string' &&
+      /^[A-Za-z0-9_-]{1,200}$/.test(error.requestID)
+    )
+      this.providerRequestId = error.requestID;
+  }
+}
+function sanitizedReadError(error: unknown): Error {
+  // Do not attach an SDK error/cause: provider responses may contain credentials or source data.
+  return error instanceof OpenAI.APIError && error.status === 404
+    ? new OpenAIResourceMissingError()
+    : new Error('OpenAI read failed; no provider payload was emitted.');
+}
+/** Sanitized, definitive provider refusal; unlike an uncertain network/write failure. */
+export class InputNotSteerableError extends Error {
+  constructor() {
+    super('The active turn cannot accept a message. No input was accepted.');
+  }
+}
+function sanitizedMutationError(action: Action, error: unknown): Error {
+  if (
+    action.operation === 'sessions.send' &&
+    error instanceof OpenAI.APIError &&
+    (error.status === 400 || error.status === 409) &&
+    error.code === 'active_turn_not_steerable'
+  )
+    return new InputNotSteerableError();
+  // Never retain SDK errors as causes: they may carry request, response or credential content.
+  return new MutationOutcomeUnknownError(error);
+}
 
 // Never return or serialize an SDK Page: it contains transport state, not just API data.
-function pageData(page: { data: { id: string | null }[]; hasNextPage: () => boolean }): unknown {
-  return { data: page.data, has_more: page.hasNextPage(), last_id: page.data.at(-1)?.id ?? null };
+function pageData(page: { data: { id: string | null }[]; has_more: boolean }): unknown {
+  return { data: page.data, has_more: page.has_more, last_id: page.data.at(-1)?.id ?? null };
 }
 
 /** Supervising caller owns human approval; managed workflows need a separate approval executor. */
@@ -86,9 +125,11 @@ export class OpenAIPlatform {
     });
   }
 
-  public async preflight(): Promise<{ projectId: string; agentsRead: true }> {
+  public async preflight(signal?: AbortSignal): Promise<{ projectId: string; agentsRead: true }> {
     try {
-      const { response } = await this.#client.beta.agents.list({ limit: 1 }).withResponse();
+      const { response } = await this.#client.beta.agents
+        .list({ limit: 1 }, signal === undefined ? {} : { signal })
+        .withResponse();
       const projectId = response.headers.get('openai-project');
       verifyCapabilityPreflight(
         {
@@ -114,6 +155,44 @@ export class OpenAIPlatform {
     }
   }
 
+  /** Opens the real, non-replaying SDK stream; caller owns lifetime, recovery and persistence. */
+  public async openSessionObservation(
+    input: unknown,
+    signal: AbortSignal
+  ): Promise<SessionObservation> {
+    const parsed = observationRequestSchema.safeParse(input);
+    if (!parsed.success || signal.aborted) {
+      throw new Error('Invalid or aborted session observation request.');
+    }
+    const { sessionId } = parsed.data;
+    await this.preflight(signal);
+    try {
+      const stream = await this.#client.beta.agents.sessions.events.stream(sessionId, { signal });
+      async function* events(): AsyncGenerator<SessionControlEvent> {
+        try {
+          for await (const raw of stream) {
+            const event = projectSessionControlEvent(raw, sessionId);
+            if (event !== null) yield event;
+          }
+        } catch {
+          throw new Error(
+            'Session observation interrupted; recover session and turn state before continuing.'
+          );
+        } finally {
+          stream.controller.abort();
+        }
+      }
+      return {
+        events: events(),
+        close: (): void => {
+          stream.controller.abort();
+        },
+      };
+    } catch {
+      throw new Error('Unable to open session observation; no provider payload was emitted.');
+    }
+  }
+
   public async read(input: unknown): Promise<PlatformResult> {
     const parsed = readSchema.safeParse(input);
     if (!parsed.success) {
@@ -123,9 +202,38 @@ export class OpenAIPlatform {
     try {
       const data = await this.query(parsed.data);
       return { data, fingerprint: fingerprint(data) };
-    } catch {
-      throw new Error('OpenAI read failed; no provider payload was emitted.');
+    } catch (error) {
+      throw sanitizedReadError(error);
     }
+  }
+
+  /** One root-turn content observation. Completion/closure never acknowledges executor shutdown. */
+  public async openOperatorObservation(binding: {
+    sessionId: string;
+    turnId: string;
+  }): Promise<{ items: OperatorItems; close: () => void; completion: Promise<void> }> {
+    const sessionId = observationRequestSchema.parse({ sessionId: binding.sessionId }).sessionId;
+    observationRequestSchema.parse({ sessionId: binding.turnId });
+    await this.preflight();
+    const stream = await this.#client.beta.agents.sessions.events.stream(sessionId);
+    const items = new OperatorItems(sessionId, binding.turnId);
+    const completion = (async (): Promise<void> => {
+      try {
+        for await (const raw of stream) items.consume(raw);
+      } catch {
+        throw new Error('Operator observation interrupted; recover saved state');
+      } finally {
+        stream.controller.abort();
+      }
+      throw new Error('Operator observation closed; recover saved state');
+    })();
+    return {
+      items,
+      close: (): void => {
+        stream.controller.abort();
+      },
+      completion,
+    };
   }
 
   private async query(request: ReadOperation): Promise<unknown> {
@@ -141,8 +249,17 @@ export class OpenAIPlatform {
         return pageData(await agents.sessions.list(request.query));
       case 'sessions.get':
         return agents.sessions.retrieve(request.id);
+      case 'sessions.pending-functions':
+        return {
+          data: pendingFunctionCalls(await agents.sessions.retrieve(request.id), {
+            sessionId: request.id,
+            turnId: request.turnId,
+          }),
+        };
       case 'sessions.turns':
         return pageData(await agents.sessions.turns.list(request.id, request.query));
+      case 'sessions.turn.get':
+        return agents.sessions.turns.retrieve(request.turnId, { session_id: request.id });
       case 'sessions.items':
         return pageData(await agents.sessions.items.list(request.id, request.query));
       case 'templates.list':
@@ -152,7 +269,11 @@ export class OpenAIPlatform {
     }
   }
 
-  public async apply(input: unknown, approval: Approval): Promise<PlatformResult> {
+  public async apply(
+    input: unknown,
+    approval: Approval,
+    options?: DispatchOptions
+  ): Promise<PlatformResult> {
     const action = parseAction(input);
     const plan = planAction(this.#config.target, action);
     if (
@@ -164,13 +285,15 @@ export class OpenAIPlatform {
     }
     await this.preflight();
     await this.checkCurrentAgent(action);
+    await this.checkPendingFunction(action);
+    // No further read/preflight may be inserted after this journal boundary. SDK errors after
+    // it remain uncertain; accepting a generic header does not establish create idempotency.
+    await options?.beforeDispatch?.();
     try {
       const data = await this.mutate(action);
       return { data: data ?? null, fingerprint: fingerprint(data) };
-    } catch {
-      throw new Error(
-        'Mutation failed or outcome is unknown. Reconcile the resource before retrying; no automatic retry was attempted.'
-      );
+    } catch (error) {
+      throw sanitizedMutationError(action, error);
     }
   }
 
@@ -188,6 +311,25 @@ export class OpenAIPlatform {
     }
     if (fingerprint(current) !== action.expectedFingerprint) {
       throw new Error('Resource changed since review; obtain a fresh read and approval.');
+    }
+  }
+
+  private async checkPendingFunction(action: Action): Promise<void> {
+    if (action.operation !== 'sessions.tool-result') return;
+    try {
+      const session = await this.#client.beta.agents.sessions.retrieve(action.id);
+      const pending = pendingFunctionCalls(session, {
+        sessionId: action.id,
+        turnId: action.turnId,
+      }).find((call) => call.callId === action.callId);
+      if (
+        pending?.name !== action.functionName ||
+        pending.fingerprint !== action.expectedCallFingerprint
+      ) {
+        throw new Error('Pending function changed.');
+      }
+    } catch {
+      throw new Error('Pending function missing, changed or unverifiable; no result submitted.');
     }
   }
 
@@ -215,6 +357,17 @@ export class OpenAIPlatform {
       case 'sessions.cancel':
         return agents.sessions.events.create(action.id, {
           events: [{ type: 'agent.session.input.cancel' }],
+        });
+      case 'sessions.tool-result':
+        return agents.sessions.events.create(action.id, {
+          events: [
+            {
+              type: 'agent.session.input.tool_result',
+              turn_id: action.turnId,
+              call_id: action.callId,
+              ...action.result,
+            },
+          ],
         });
       case 'sessions.delete':
         return agents.sessions.delete(action.id);
