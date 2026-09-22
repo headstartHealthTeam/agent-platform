@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
 
-import ExcelJS from 'exceljs';
-import mammoth from 'mammoth';
 import { PDFParse } from 'pdf-parse';
 
-export class DocumentReadError extends Error {}
+import { DocumentReadError } from './document-read-error.js';
+import { readOfficeText } from './office-text.js';
+
+export { DocumentReadError, DocumentReadBusyError } from './document-read-error.js';
 export type DocumentContent =
   | { type: 'image'; data: string; mimeType: string }
   | { type: 'resource'; resource: { uri: string; mimeType: string; blob: string } };
@@ -110,46 +111,24 @@ async function readPdf(
     await parser.destroy();
   }
 }
-async function workbookText(bytes: Buffer): Promise<string> {
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(Uint8Array.from(bytes).buffer);
-  const sheets: string[] = [];
-  workbook.eachSheet((sheet) => {
-    const rows: string[] = [`Sheet: ${sheet.name} (${sheet.state})`];
-    sheet.eachRow((row) => {
-      const cells: string[] = [];
-      row.eachCell((cell) => {
-        cells.push(`${cell.address}: ${JSON.stringify(cell.value)}`);
-      });
-      rows.push(cells.join('\t'));
-    });
-    sheets.push(rows.join('\n'));
-  });
-  return sheets.join('\n\n');
-}
-async function extractText(bytes: Buffer, mimeType: string, warnings: string[]): Promise<string> {
-  if (mimeType === DOCX) {
-    const result = await mammoth.extractRawText({ buffer: bytes });
-    warnings.push(
-      'DOCX text omits visual layout and embedded images; original mode retains the full file.'
-    );
-    if (result.messages.length > 0)
-      warnings.push(
-        'The DOCX parser reported unsupported content; inspect the original before claiming completeness.'
-      );
-    return result.value;
-  }
-  if (mimeType === XLSX || mimeType === XLSM) {
-    warnings.push(
-      'All populated cells and sheets are included, including hidden sheets and formulas. Embedded images and visual formatting require the original workbook.'
-    );
-    return workbookText(bytes);
-  }
+function extractText(bytes: Buffer, mimeType: string): string {
   if (mimeType.startsWith('text/') || mimeType === 'application/json')
     return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   throw new DocumentReadError(
     'No deterministic text reader for this format. Use original mode; do not treat an unsupported parser as missing evidence.'
   );
+}
+async function readOffice(
+  bytes: Buffer,
+  document: DocumentReadResult['document'],
+  request: DocumentReadRequest
+): Promise<DocumentReadResult> {
+  const page = await readOfficeText({
+    bytes,
+    format: document.mimeType === DOCX ? 'docx' : 'xlsx',
+    offset: request.offset ?? 0,
+  });
+  return { document: { ...document, ...page }, content: [] };
 }
 /** Deterministic complete views only: no model, credentials, source lookup or domain policy. */
 export async function readDocument(
@@ -206,5 +185,8 @@ export async function readDocument(
     throw new DocumentReadError(
       'Page rendering supports PDF and images. Use text or original for this format.'
     );
-  return textResult(await extractText(bytes, mimeType, document.warnings), document, request);
+  if ([DOCX, XLSX, XLSM].includes(mimeType)) {
+    return readOffice(bytes, document, request);
+  }
+  return textResult(extractText(bytes, mimeType), document, request);
 }

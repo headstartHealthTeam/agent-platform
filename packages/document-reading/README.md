@@ -22,6 +22,20 @@ read; they do not establish source authority or approval. Parsers never execute 
 or use a model to replace source content. Image/Office visual interpretation belongs to the agent
 and the runtime's supported file viewers.
 
+Office text parsing runs in an isolated worker with no inherited environment or Node options,
+a 30-second deadline, a 256 MiB old-generation heap budget, and a 128 MiB actual ZIP-expansion
+budget checked before parsing. Complete parsing and traversal happen before a bounded text page
+is returned. A resource or parser failure is explicit, never a truncated successful result;
+original mode still returns exact bytes. These computational budgets do not filter source access.
+One Office worker may run per process; concurrent extraction requests receive
+`DocumentReadBusyError` and should retry after the active extraction finishes. No waiting queue
+retains source bytes. The Drive CLI reports this as `document-parser-busy`. Original-file access
+does not acquire the parser slot.
+
+The standard build includes `dist/office-worker.js` beside `dist/index.js`; deploy the complete
+package `dist`, not a copied entrypoint alone. Source-checkout execution uses the declared `tsx`
+development loader; the deployed worker is native JavaScript and needs no TypeScript loader.
+
 The package depends only on format libraries. Source adapters, such as
 [Google Drive](../google-drive-data/README.md), own source identity, discovery and consistency.
 An application retaining an artifact still owns its authorization and durable receipt.

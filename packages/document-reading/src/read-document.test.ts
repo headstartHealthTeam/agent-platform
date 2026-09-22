@@ -83,6 +83,19 @@ describe('full deterministic document views', () => {
     expect(result.document.text).toContain('Complete invented CV');
     expect(result.document.warnings.join(' ')).toContain('original');
   });
+  it('keeps exact Office originals available while parsing is busy and after a parser failure', async () => {
+    const bytes = Buffer.from('unsupported synthetic Office bytes');
+    const mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    const pending = readDocument(bytes, mime, { mode: 'text' });
+    const failure = expect(pending).rejects.toThrow('Original mode remains available');
+    await expect(readDocument(bytes, mime, { mode: 'text' })).rejects.toThrow('Retry');
+    const during = await readDocument(bytes, mime, { mode: 'original' });
+    expect(during.content[0]).toMatchObject({ resource: { blob: bytes.toString('base64') } });
+    await failure;
+    const after = await readDocument(bytes, mime, { mode: 'original' });
+    expect(after).toEqual(during);
+    await expect(readDocument(bytes, mime, { mode: 'text' })).rejects.toThrow('extraction failed');
+  });
   it.each(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])(
     'delivers %s itself, not inferred text',
     async (mimeType) => {

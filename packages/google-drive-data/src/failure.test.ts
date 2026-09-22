@@ -1,4 +1,4 @@
-import { DocumentReadError } from '@headstart-health/document-reading';
+import { DocumentReadBusyError, DocumentReadError } from '@headstart-health/document-reading';
 import { GoogleReadError } from '@headstart-health/google-read-transport';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
@@ -7,6 +7,15 @@ import { GoogleDriveReadError } from './contracts.js';
 import { driveRuntimeFailure } from './failure.js';
 
 describe('actionable, sanitized runtime failures', () => {
+  it('distinguishes retryable parser capacity from an unavailable or invalid document', () => {
+    const busy = new DocumentReadBusyError(
+      'Office parser is busy; retry after the active extraction.'
+    );
+    expect(driveRuntimeFailure(busy)).toEqual({
+      code: 'document-parser-busy',
+      message: busy.message,
+    });
+  });
   it('retains source version, identity, transport and format diagnostics', () => {
     for (const error of [
       new GoogleDriveReadError('google-drive-version-changed'),

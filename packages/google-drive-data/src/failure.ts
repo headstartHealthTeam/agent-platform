@@ -1,4 +1,4 @@
-import { DocumentReadError } from '@headstart-health/document-reading';
+import { DocumentReadBusyError, DocumentReadError } from '@headstart-health/document-reading';
 import { GoogleReadError } from '@headstart-health/google-read-transport';
 import { ZodError } from 'zod';
 
@@ -10,6 +10,8 @@ export interface DriveRuntimeFailure {
 }
 /** Only our fixed provider/parser diagnostics cross the CLI boundary, never raw upstream bodies. */
 export function driveRuntimeFailure(error: unknown): DriveRuntimeFailure {
+  if (error instanceof DocumentReadBusyError)
+    return { code: 'document-parser-busy', message: error.message };
   if (error instanceof GoogleDriveReadError)
     return { code: 'drive-source-read-failed', message: error.message };
   if (error instanceof GoogleReadError)
