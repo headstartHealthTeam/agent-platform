@@ -430,6 +430,23 @@ describe('OpenAI access boundary', () => {
     expect(requests.every((request) => request.method === 'GET')).toBe(true);
   });
 
+  it('sanitizes operator stream-open failures without retaining provider causes or retrying', async () => {
+    const { platform, requests } = fixture({
+      refusal: { status: 503, code: 'synthetic_stream_unavailable' },
+    });
+    const observation = platform.openOperatorObservation({
+      sessionId: 'session_synthetic',
+      turnId: 'turn_synthetic',
+    });
+    await expect(observation).rejects.toThrow(
+      'Unable to open operator observation; no provider payload was emitted.'
+    );
+    await expect(observation).rejects.not.toThrow(secret);
+    await expect(observation).rejects.not.toHaveProperty('cause');
+    expect(requests).toHaveLength(2);
+    expect(requests.every((request) => request.method === 'GET')).toBe(true);
+  });
+
   it.each(['close', 'abort'])(
     'tears down a pending observation with %s without cancelling the run',
     async (method) => {

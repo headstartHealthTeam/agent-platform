@@ -47,7 +47,7 @@ JSON file selected by the backend's `AGENT_RUNTIME_EXECUTOR_CONFIG`:
   "imageId": "sha256:<64 lowercase hex characters from the reviewed image>",
   "credential": {
     "account": "headstarthealth.1password.com",
-    "expectedEmail": "mark@headstart.health",
+    "expectedEmail": "developer@example.com",
     "vault": "approved-vault-id",
     "item": "separate-executor-item-id",
     "field": "credential"

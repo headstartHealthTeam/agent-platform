@@ -215,7 +215,9 @@ export class OpenAIPlatform {
     const sessionId = observationRequestSchema.parse({ sessionId: binding.sessionId }).sessionId;
     observationRequestSchema.parse({ sessionId: binding.turnId });
     await this.preflight();
-    const stream = await this.#client.beta.agents.sessions.events.stream(sessionId);
+    const stream = await this.#client.beta.agents.sessions.events.stream(sessionId).catch(() => {
+      throw new Error('Unable to open operator observation; no provider payload was emitted.');
+    });
     const items = new OperatorItems(sessionId, binding.turnId);
     const completion = (async (): Promise<void> => {
       try {
