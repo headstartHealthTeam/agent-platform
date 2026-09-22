@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -78,7 +79,15 @@ export function mcpDocumentFailure(error: unknown): string {
   }
   return 'MCP document read failed. Check CLI arguments, source availability and the runtime connection; no complete receipt produced.';
 }
-if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+function invokedDirectly(): boolean {
+  if (process.argv[1] === undefined) return false;
+  try {
+    return realpathSync(resolve(process.argv[1])) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+if (invokedDirectly()) {
   main(process.argv.slice(2))
     .then((resultFile) => {
       process.stdout.write(`${JSON.stringify({ resultFile })}\n`);
