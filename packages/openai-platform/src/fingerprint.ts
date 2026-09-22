@@ -6,7 +6,7 @@ function canonical(value: unknown): string {
   }
   if (typeof value === 'object' && value !== null) {
     return `{${Object.entries(value)
-      .sort(([left], [right]) => left.localeCompare(right))
+      .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
       .map(([key, entry]) => `${JSON.stringify(key)}:${canonical(entry)}`)
       .join(',')}}`;
   }

@@ -18,6 +18,7 @@ const functionCall = z.object({
 });
 const sessionSchema = z.object({
   id,
+  // AgentSession requires this array. Missing state is not authoritative absence of pending work.
   required_actions: z.array(z.unknown()).max(100),
 });
 

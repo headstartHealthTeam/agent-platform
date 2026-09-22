@@ -226,6 +226,20 @@ describe('OpenAI access boundary', () => {
     ]);
   });
 
+  it('reads an idle empty action list but rejects an omitted list through the actual SDK', async () => {
+    const request = {
+      operation: 'sessions.pending-functions',
+      id: pendingSession.id,
+      turnId: pendingCall.turn_id,
+    };
+    const idle = { id: pendingSession.id, status: 'idle' };
+    const empty = fixture({ session: { ...idle, required_actions: [] } });
+    expect((await empty.platform.read(request)).data).toEqual({ data: [] });
+    const missing = fixture({ session: idle });
+    await expect(missing.platform.read(request)).rejects.toThrow('OpenAI read failed');
+    expect(missing.requests.every((entry) => entry.method === 'GET')).toBe(true);
+  });
+
   it.each([
     { success: true, output: JSON.stringify({ answer: 'Use the corrected synthetic CV.' }) },
     { success: false, error: 'The operator cannot resolve this evidence gap.' },
@@ -256,6 +270,8 @@ describe('OpenAI access boundary', () => {
   );
 
   it.each([
+    { id: pendingSession.id, status: 'idle' },
+    { id: pendingSession.id, status: 'idle', required_actions: null },
     { ...pendingSession, id: 'session_other' },
     { ...pendingSession, required_actions: [] },
     { ...pendingSession, required_actions: [{ ...pendingCall, turn_id: 'turn_other' }] },

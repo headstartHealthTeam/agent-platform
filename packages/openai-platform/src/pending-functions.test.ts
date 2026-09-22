@@ -15,6 +15,17 @@ const call = {
 const session = { id: expected.sessionId, required_actions: [call] };
 
 describe('pending function projection', () => {
+  it.each(['idle', 'in_progress'])(
+    'distinguishes explicit empty actions from unverifiable state in %s sessions',
+    (status) => {
+      const current = { id: expected.sessionId, status };
+      expect(pendingFunctionCalls({ ...current, required_actions: [] }, expected)).toEqual([]);
+      for (const input of [current, { ...current, required_actions: null }])
+        expect(() => pendingFunctionCalls(input, expected)).toThrow(
+          'Invalid pending function state'
+        );
+    }
+  );
   it('accepts complete review packages above the former 100 KB mismatch', () => {
     const arguments_ = {
       inputJson: JSON.stringify({ fact: '\\'.repeat(600000) }),

@@ -24,6 +24,22 @@ const event = (
 });
 
 describe('operator-safe activity projection', () => {
+  it.each([
+    ['constructor', 'Constructor'],
+    ['toString', 'ToString'],
+    ['valueOf', 'ValueOf'],
+    ['__proto__', undefined],
+  ])('does not resolve inherited object labels for the tool %s', (name, readableName) => {
+    for (const type of ['function_call', 'mcp_call']) {
+      const items = new OperatorItems('session_a', 'turn_a');
+      const call = { id: 'tool_a', turn_id: 'turn_a', type, name, status: 'completed' };
+      const label = readableName ?? (type === 'mcp_call' ? 'Source tool' : 'Agent tool');
+      const expected = { id: 'tool_a', kind: 'tool', text: `${label} · Completed`, final: true };
+      items.recover([call]);
+      expect(items.values()).toEqual([expected]);
+      expect(items.finalized(call)).toEqual(expected);
+    }
+  });
   it('shows failed question calls from later roots without exposing arguments or raw errors', () => {
     const items = new OperatorItems('session_a', 'turn_a');
     const call = {

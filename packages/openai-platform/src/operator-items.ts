@@ -168,18 +168,18 @@ export class OperatorItems {
     const item = parsed.data;
     // The separate question projection owns pending question text and reply controls.
     if (item.name === 'ask_operator' && item.status !== 'failed') return null;
-    const labels: Record<string, string> = {
-      describe_salesforce_schema: 'Inspect Salesforce fields and relationships',
-      query_salesforce_records: 'Read Salesforce records',
-      search_salesforce_records: 'Search Salesforce records',
-      get_salesforce_record_files: 'Read source documents',
-    };
+    const labels = new Map<string, string>([
+      ['describe_salesforce_schema', 'Inspect Salesforce fields and relationships'],
+      ['query_salesforce_records', 'Read Salesforce records'],
+      ['search_salesforce_records', 'Search Salesforce records'],
+      ['get_salesforce_record_files', 'Read source documents'],
+    ]);
     const readableName = /^[A-Za-z][A-Za-z0-9_]{0,99}$/.test(item.name)
       ? item.name.replaceAll('_', ' ').replace(/^./, (first) => first.toUpperCase())
       : type === 'mcp_call'
         ? 'Source tool'
         : 'Agent tool';
-    const label = labels[item.name] ?? operatorText(readableName);
+    const label = labels.get(item.name) ?? operatorText(readableName);
     const status = {
       in_progress: 'In progress',
       completed: 'Completed',
