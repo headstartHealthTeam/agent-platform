@@ -42,8 +42,9 @@ guessed case selectors. Then invoke the provisioned entrypoint:
 node <runtime>/packages/headstart-mcp-data/dist/cli.js --profile <private-profile.json> --request <selection.json> --output <fresh-evidence-directory>
 ```
 
-Use absolute paths for profile, request and output. The CLI prints only the result-file path.
-Open that receipt and the saved original. Use the runtime's existing file viewers or
+Use absolute paths for profile, request and output. The CLI prints one JSON object,
+`{"resultFile":"<absolute-receipt-path>"}`. Parse `resultFile`, then open that receipt and the
+saved original. Use the runtime's existing file viewers or
 [`headstart-document`](../document-reading/README.md#local-file-inspection) for full text and page
 images. No model is asked to transcribe base64. The output directory must be fresh to preserve
 earlier evidence. Local files are working evidence, not backend-retained reviewer artifacts.

@@ -146,6 +146,17 @@ export async function packageWorkspaceRuntime(input: {
     root
   );
   await verifyPortableRuntime(target, sourcePackage, input.packageName);
+  const manifest: unknown = JSON.parse(await readFile(resolve(target, 'package.json'), 'utf8'));
+  if (
+    manifest === null ||
+    typeof manifest !== 'object' ||
+    !('name' in manifest) ||
+    manifest.name !== input.packageName ||
+    !('version' in manifest) ||
+    typeof manifest.version !== 'string' ||
+    !manifest.version.trim()
+  )
+    throw new Error('Runtime manifest must match the packaged workspace and declare a version');
   const extraHashes = new Map<string, string>();
   for (const [name, path] of Object.entries(input.extraFileHashes ?? {})) {
     extraHashes.set(
@@ -158,7 +169,7 @@ export async function packageWorkspaceRuntime(input: {
   const receipt = {
     schemaVersion: input.schemaVersion,
     package: input.packageName,
-    version: '0.1.0',
+    version: manifest.version,
     sourceRevision,
     sourceDirty,
     runtime: { node: process.version, platform: process.platform, architecture: process.arch },
