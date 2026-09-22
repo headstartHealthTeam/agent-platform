@@ -86,6 +86,9 @@ const validateAttachment = (
     (item) => item.id === attachment.requirementId
   );
   if (!requirement) return [];
+  if (requirement.required && attachment.disposition === 'not-applicable') {
+    return [`Required attachment cannot be not-applicable: ${requirement.id}`];
+  }
   if (attachment.disposition !== 'proposed') {
     return attachment.artifact === null
       ? []

@@ -203,13 +203,17 @@ remain separately gated.
 
 ### Versioned Preparation Model
 
-The worker and published JSON Schemas accept two explicit pairs; canonical validation rejects
+The worker accepts three explicit pairs; canonical validation rejects
 cross-pair combinations. Existing artifacts and evaluations are not migrated in place.
 
 | Input   | Proposal | Role                                                                   |
 | ------- | -------- | ---------------------------------------------------------------------- |
 | `0.1.0` | `0.2.0`  | Original scalar preparation scenarios and historical artifacts         |
 | `0.2.0` | `0.3.0`  | Repeating records, scoped file proposals and protected-action handoffs |
+| `0.3.0` | `0.3.0`  | Production-read preparation with the same rich proposal contract       |
+
+Production-read input uses `schemas/production-read-input.schema.json`; the workflow's
+`schemas/input.schema.json` covers the synthetic input pairs. Both use the same proposal schema.
 
 `preparation-contracts.ts` is the richer canonical definition. Regenerate the checked-in JSON
 Schemas with the package's `generate:schemas` command, then format and run normal QA. Legacy typed
@@ -239,6 +243,10 @@ exports remain unchanged; artifact consumers use the explicit union exports.
   These are pending handoff requirements, not grants, signatures or a workflow scheduler.
   `prepared-for-review` can include correctly routed, still-unperformed human actions; it cannot
   include unresolved files or actor routing. Those require H-02 and an incomplete/blocked status.
+- A requirement marked `required` cannot be disposed as `not-applicable`. Missing support remains
+  `unresolved` with the existing H-02 handoff. Optional requirements may be `not-applicable` with
+  an explanation; not-applicable source facts remain valid. Applicability and evidence judgment
+  belong to the agent and reviewer, not a payer-specific backend rule.
 
 Artifact digests in the new fixtures are invented metadata; no file bytes are provided. The future
 protected file capability must retrieve and hash actual exact-version bytes, verify transformations

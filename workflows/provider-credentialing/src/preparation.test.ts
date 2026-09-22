@@ -325,7 +325,17 @@ describe('preparation snapshot integrity', () => {
     const input = loadPreparationScenario('ga-preparation');
     input.evidence.push({ ...first(input.evidence), id: 'owner-document', subjectId: 'owner-one' });
     expect(validateSnapshot(input)).toEqual([]);
-    expect(() => createSyntheticTools(input).readEvidence('unrelated-owner')).toThrow('outside');
+    expect(createSyntheticTools(input).readEvidence('owner-document').subjectId).toBe('owner-one');
+
+    const widened = loadPreparationScenario('ga-preparation');
+    widened.evidence.push({
+      ...first(widened.evidence),
+      id: 'unrelated-owner-document',
+      subjectId: 'undeclared-owner',
+    });
+    expect(validateSnapshot(widened)).toContain(
+      'Evidence is outside the work subject scope: unrelated-owner-document'
+    );
   });
   it('rejects malformed dates and unknown fields at both schema boundaries', () => {
     const input = loadPreparationScenario('ga-preparation');
@@ -343,6 +353,40 @@ describe('preparation snapshot integrity', () => {
 });
 
 describe('exact proposed content and human boundaries', () => {
+  it.each(['answer', 'attachment'] as const)(
+    'rejects a required %s as not-applicable while preserving optional and unresolved dispositions',
+    (kind) => {
+      const input = loadPreparationScenario('ga-preparation');
+      const output = proposal();
+      const requirement =
+        kind === 'answer' ? first(input.requirements) : first(input.attachmentRequirements);
+      const disposition = kind === 'answer' ? first(output.answers) : first(output.attachments);
+      requirement.required = true;
+      disposition.disposition = 'not-applicable';
+      if ('value' in disposition) {
+        disposition.value = null;
+        disposition.basis = null;
+      } else {
+        disposition.artifact = null;
+      }
+      expect(validateProposal(input, output).join(' ')).toContain(
+        `Required ${kind} cannot be not-applicable`
+      );
+      expect(() =>
+        validateReviewArtifacts({
+          inputJson: JSON.stringify(input),
+          proposalJson: JSON.stringify(output),
+        })
+      ).toThrow('Artifact validation failed');
+      requirement.required = false;
+      expect(validateProposal(input, output)).toEqual([]);
+      requirement.required = true;
+      disposition.disposition = 'unresolved';
+      output.status = 'needs-information';
+      output.humanStops.push('H-02');
+      expect(validateProposal(input, output)).toEqual([]);
+    }
+  );
   const mutations: {
     name: string;
     mutate: (input: PreparationInput, output: PreparationOutput) => void;

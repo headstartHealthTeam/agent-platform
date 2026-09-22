@@ -832,7 +832,7 @@
       "title": "Invented group-addendum-source",
       "retrieval": "available",
       "validity": "current",
-      "content": "Invented unsigned group-add addendum, preserving affiliation-retained at both locations.",
+      "content": "Invented unsigned group-add addendum, preserving affiliation-retained at location-a while requesting the additive group-add scope at location-a and location-b; location-b is not already covered by affiliation-retained.",
       "observedAt": "2026-09-16T12:00:00Z",
       "source": {
         "system": "synthetic-source",

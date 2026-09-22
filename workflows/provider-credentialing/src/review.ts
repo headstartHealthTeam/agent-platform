@@ -90,8 +90,12 @@ const validateAnswer = (
   answer: ArtifactOutput['answers'][number]
 ): string[] => {
   const issues: string[] = [];
-  if (!input.requirements.some((item) => item.id === answer.requirementId)) {
+  const requirement = input.requirements.find((item) => item.id === answer.requirementId);
+  if (!requirement) {
     issues.push(`Unknown requirement: ${answer.requirementId}`);
+  }
+  if (requirement?.required && answer.disposition === 'not-applicable') {
+    issues.push(`Required answer cannot be not-applicable: ${answer.requirementId}`);
   }
   if (answer.factIds.some((id) => !input.facts.some((fact) => fact.id === id))) {
     issues.push(`Unknown fact: ${answer.requirementId}`);
