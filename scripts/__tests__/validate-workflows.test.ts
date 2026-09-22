@@ -12,15 +12,20 @@ const temporaryDirectories: string[] = [];
 const checkedInRepositoryRoot = (): string =>
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-const copyRepositoryFixture = (): string => {
-  const source = checkedInRepositoryRoot();
+// Repository validation reads source assets, not installed dependency junctions or build output.
+// Copying those into every temporary fixture makes Windows teardown depend on the install tree.
+const generatedDirectories = new Set(['node_modules', 'dist', 'coverage', '.turbo']);
+
+const copyRepositoryFixture = (source = checkedInRepositoryRoot()): string => {
   const destination = fs.mkdtempSync(path.join(os.tmpdir(), 'headstart-workflows-fixture-'));
   temporaryDirectories.push(destination);
   fs.copyFileSync(path.join(source, 'README.md'), path.join(destination, 'README.md'));
-  fs.cpSync(path.join(source, 'skills'), path.join(destination, 'skills'), { recursive: true });
-  fs.cpSync(path.join(source, 'workflows'), path.join(destination, 'workflows'), {
-    recursive: true,
-  });
+  for (const directory of ['skills', 'workflows']) {
+    fs.cpSync(path.join(source, directory), path.join(destination, directory), {
+      recursive: true,
+      filter: (entry) => !generatedDirectories.has(path.basename(entry)),
+    });
+  }
   return destination;
 };
 
@@ -33,6 +38,34 @@ afterEach(() => {
 describe('validateWorkflowRepository', () => {
   it('accepts the checked-in managed workflow packages', () => {
     expect(validateWorkflowRepository(checkedInRepositoryRoot())).toEqual([]);
+  });
+
+  it('copies required workflow and skill sources without generated dependency/build/cache trees', () => {
+    const source = copyRepositoryFixture();
+    const generated = [
+      'workflows/provider-credentialing/node_modules',
+      'workflows/provider-credentialing/dist',
+      'workflows/provider-credentialing/coverage',
+      'skills/headstart-document-review/.turbo',
+    ];
+    for (const relative of generated) {
+      const directory = path.join(source, relative);
+      fs.mkdirSync(directory, { recursive: true });
+      fs.writeFileSync(path.join(directory, 'generated.txt'), 'Not a workflow source.');
+    }
+    const repositoryRoot = copyRepositoryFixture(source);
+    for (const relative of generated) {
+      expect(fs.existsSync(path.join(repositoryRoot, relative)), relative).toBe(false);
+    }
+    expect(validateWorkflowRepository(repositoryRoot)).toEqual([]);
+    for (const relative of [
+      'skills/headstart-document-review/SKILL.md',
+      'workflows/synthetic-read-only-reference/workflow.yaml',
+    ]) {
+      expect(fs.readFileSync(path.join(repositoryRoot, relative), 'utf8')).toBe(
+        fs.readFileSync(path.join(source, relative), 'utf8')
+      );
+    }
   });
 
   it('reports a missing workflows directory', () => {
