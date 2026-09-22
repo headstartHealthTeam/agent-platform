@@ -36,6 +36,9 @@ Before creating files for a new agent task or automation:
 4. Confirm the source systems, trigger, inputs, outputs, human decisions, side effects, failure
    behavior, data classification, and owner before implementing unattended behavior.
 
+For credentialing preparation, load [the canonical skill](skills/headstart-provider-credentialing/SKILL.md);
+its synthetic foundation is not yet proof of connected or hosted execution.
+
 Do not assume that a new request needs a managed workflow. A one-off Codex task, reusable skill, or
 interactive workflow skill using existing MCPs, native connectors, browser control, or CLIs is often
 the correct solution. Add deterministic code when reproducibility or enforced invariants justify it.

@@ -58,6 +58,10 @@ and examples.
 
 ## Concrete Examples
 
+- [Provider credentialing](../workflows/provider-credentialing/README.md) preserves the payer-neutral
+  preparation contracts, investigative skill, synthetic evaluations and application artifacts.
+  Its connected operation also needs the separately reviewed shared runtime and application changes.
+
 - [OpenAI platform development access](openai-platform-access.md) connects local API access,
   approved lifecycle operations and pinned canonical skill preparation. Its
   [provider package](../packages/openai-platform/README.md) does not activate managed workflows.
