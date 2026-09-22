@@ -4,7 +4,7 @@ description: Run, monitor, or hand off the recurring Headstart Intake SLA Review
 compatibility: Requires a reviewed checkout of the private Intake SLA Evidence Engine, authorized Headstart source access, private run storage, and an approved Intake SLA Review Queue. Salesforce remains read-only; Google Sheet publication requires explicit operating authority and every documented gate.
 metadata:
   author: headstart-health
-  version: '0.2.0'
+  version: '0.2.2'
 ---
 
 # Headstart Intake SLA Review
@@ -91,12 +91,18 @@ outcomes.
 5. **Collect the full cohort and required evidence.** Retrieve all eligible active breached Intake
    SLAs and the on-hold cohort according to the current runbook. Resolve structured Salesforce gates
    before conversational evidence. Execute complete portal Authorization Request, Fireflies, Slack,
-   and other stage-required searches; record every planned source outcome. Freeze the source cutoff
+   and other stage-required searches; record every planned source outcome. Include the engine's
+   targeted Client Intake denial-context plan for applicable structured denied IA/TA gates before
+   final validation, not during postpublication closeout. Complete, empty searches are valid;
+   a general Slack sweep does not prove these targeted paths were covered. Freeze the source cutoff
    and resume valid current-run evidence from the engine's on-disk checkpoints. Use
    [Operational Recovery](references/operational-recovery.md) when resuming, mapping a connector
    response, or investigating a slow or failed step. Reuse being off does not authorize a
    whole-inventory Fireflies body experiment.
-6. **Build and validate deterministically.** Use the reviewed engine's documented commands to build
+6. **Interpret, build, and validate.** Apply contextual agent judgment to source meaning; the engine
+   validates and assembles supported findings. Before treating a parser miss or unusual wording as
+   a defect, use [Operational Recovery](references/operational-recovery.md#judgment-versus-engine-defects).
+   Use the reviewed engine's documented commands to build
    the queue, validate source coverage and quality, and prepare publication. Keep snapshots,
    transcripts, identity registries, workbooks, reviewer-state files, and payloads in the private run
    directory. Never place them in Git, issues, pull requests, or shared logs.
@@ -104,7 +110,9 @@ outcomes.
    Opportunity, complete source accounting, passed synthetic and row-level QA, passed workbook and
    formula verification, preserved reviewer state, and a matching live Production automation
    fingerprint. Critical findings, material source gaps, uncertain target identity, or Production
-   drift block publication.
+   drift block publication. Require the engine's recomputed denial-context coverage result; preserve
+   explicitly marked source exceptions under its existing partial-publication rule. Do not invent
+   extra searches for non-applicable rows or treat Slack denial context as authority over Salesforce.
 8. **Recheck before the write.** Immediately before publication, confirm the same approved Sheet,
    the same expected run marker, unchanged reviewer state, and no competing run. Preparing a Google
    batch request is not publication. Present the engine's plan-bound reviewer-preservation receipt
@@ -145,9 +153,11 @@ outcomes.
 - Do not change code, configuration, fingerprints, thresholds, schedules, or source scope merely to
   make a blocked run pass.
 - A publication gate does not prohibit an explicitly authorized, tested engine correction. Log the
-  defect, fix it in its owning source worktree, and rerun affected and full validation without
+  violated invariant and why code owns it, fix it in its owning source worktree, and rerun affected and full validation without
   weakening evidence rules. Preserve legitimate row-level review/exception states under the current
   runbook; do not invent a whole-run blocker or restart solely because a recoverable step failed.
+  A novel phrase, an interpretation correction, or a correctly marked business exception is not by
+  itself an engine defect. Follow the recovery reference before adding a deterministic language rule.
 - Route any Salesforce code or metadata change to the normal release workflow. It is incomplete
   until the exact intended scope is validated and read back in Partial and represented by a matching
   Git branch, commit, and pull request. Production promotion requires separate explicit approval.

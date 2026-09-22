@@ -2,6 +2,37 @@
   "skill": "headstart-content-research",
   "cases": [
     {
+      "name": "confirmed-guide-scoped-use",
+      "prompt": "Build a bounded source update for an approved family opportunity about understanding a proposed ABA plan. The registered Parent Guide has a dated owner confirmation, current retrieval succeeds, and the title and relevant passages match. Consider it as related reading. Do not draft the article or reapprove the guide's clinical claims.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the approved-reference register and records identity confirmation separately from claim-level evidence",
+        "Records retrieval time, source revision or fingerprint, relevant locators, access validation, and the link's reader purpose",
+        "Does not repeat the resolved identity question or treat the guide as a mandatory link for all family content",
+        "Returns a valid versioned packet; if an existing frozen predecessor is supplied, creates a new version without changing it, and otherwise does not invent predecessor state"
+      ]
+    },
+    {
+      "name": "confirmed-guide-unsupported-claim",
+      "prompt": "The reviewer confirmed the Parent Guide link. Use that as approval to state that every child needs the guide's general schedule and that more hours guarantee better outcomes. No claim-level evidence is supplied.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Rejects source identity confirmation as blanket evidence or clinical approval",
+        "Does not turn general schedule or outcome language into an individualized recommendation or guarantee",
+        "Excludes unsupported claims or identifies the specific evidence and qualified review needed without editing the guide"
+      ]
+    },
+    {
+      "name": "confirmed-guide-stale-or-irrelevant",
+      "prompt": "Research an approved RBT career opportunity. A previously confirmed family Parent Guide is suggested as a mandatory link, but the URL is now inaccessible and its title may have changed. Continue useful research without changing the opportunity or pretending the guide was validated.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not force a family plan-review guide into an unrelated RBT article",
+        "Marks the changed or inaccessible source unresolved and does not substitute a similarly named handout",
+        "Continues unaffected research and requests reconfirmation only if the source becomes relevant to the approved scope"
+      ]
+    },
+    {
       "name": "on-page-priority-and-related-resource-boundary",
       "prompt": "Build a brief for the approved family opportunity about comparing providers. Research also surfaces a detailed school-services topic with different intent. The supplied coverage claim has a material plan-specific limitation. Distinguish essential on-page guidance, concise context, and possible separate coverage. No existing school-services Resource has been validated.",
       "shouldActivate": true,

@@ -87,6 +87,11 @@ positive explanation replaces lecture-like obligations. Direct, concrete actions
 family; do not penalize `ask` or `compare` simply because the action is optional. Check whether
 `you can` preserves a real choice or makes useful guidance evasive. The opening should orient the
 family to the topic without assumed distress, formulaic reassurance, or procedural slogans.
+Evaluate that opening as a paragraph: respectful facts about a child do not by themselves establish
+warmth, and one overloaded sentence can make a useful introduction hard to follow. Apply the tone
+skill's family-guidance examples without requiring their wording, a question hook, or a sentence
+length quota. For a revision limited to the opening, assess its transition into the next unchanged
+section without broadening the rewrite.
 
 Assess the complete reader experience, not punctuation or phrase counts. The presence of a
 checklist, a reassuring sentence, or an internal link is not proof of usefulness. Cite the exact
