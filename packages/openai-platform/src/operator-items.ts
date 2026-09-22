@@ -76,8 +76,28 @@ export class OperatorItems {
       })
       .slice(-180);
   }
+  /** Reconcile a complete ordered snapshot; stream-only items may be ahead of saved history. */
   recover(rawItems: unknown[]): void {
-    for (const item of rawItems) this.item(item, false);
+    const streamOnly = new Map(this.items);
+    const recovered = new Map<string, OperatorItem>();
+    for (const raw of rawItems) {
+      const next = this.project(raw, false);
+      if (!next) continue;
+      streamOnly.delete(next.id);
+      recovered.set(next.id, next);
+      if (recovered.size > 180) {
+        const oldest = recovered.keys().next().value;
+        if (oldest) recovered.delete(oldest);
+      }
+    }
+    // Do not replay old items through the live map: that can evict a streamed message and
+    // its delta/redaction state before this snapshot reaches that message again.
+    const window = [...recovered.values(), ...streamOnly.values()].slice(-180);
+    this.items.clear();
+    for (const item of window) this.items.set(item.id, item);
+    for (const keys of [this.liveText, this.withheld]) {
+      for (const key of keys) if (!this.items.has(key)) keys.delete(key);
+    }
   }
   /** One full immutable item for paginated durable recovery, not a UI frame. */
   finalized(raw: unknown): OperatorItem | null {
@@ -127,14 +147,9 @@ export class OperatorItems {
     return this.withheld.has(itemId) ? '[Sensitive content withheld]' : value;
   }
   private item(raw: unknown, live: boolean): void {
-    const base = itemBase.safeParse(raw);
-    if (!base.success || !this.turns.has(base.data.turn_id)) return;
-    const next =
-      base.data.type === 'message' ? this.message(raw, live) : this.tool(raw, base.data.type);
+    const next = this.project(raw, live);
     if (!next) return;
-    const previous = this.items.get(next.id);
-    if (previous?.final) return;
-    if (!previous && this.items.size >= 180) {
+    if (!this.items.has(next.id) && this.items.size >= 180) {
       const oldest = this.items.keys().next().value;
       if (oldest) {
         this.items.delete(oldest);
@@ -143,6 +158,15 @@ export class OperatorItems {
       }
     }
     this.items.set(next.id, next);
+  }
+  private project(raw: unknown, live: boolean): OperatorItem | null {
+    const base = itemBase.safeParse(raw);
+    if (!base.success || !this.turns.has(base.data.turn_id)) return null;
+    const previous = this.items.get(base.data.id);
+    if (previous?.final) return previous;
+    const next =
+      base.data.type === 'message' ? this.message(raw, live) : this.tool(raw, base.data.type);
+    return next ?? previous ?? null;
   }
   private tool(raw: unknown, type: string): OperatorItem | null {
     if (type === 'command_execution') {

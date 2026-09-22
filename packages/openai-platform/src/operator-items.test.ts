@@ -130,7 +130,11 @@ describe('operator-safe activity projection', () => {
     items.recover([message('Original', 'completed'), followup]);
     expect(items.values()).toHaveLength(1);
     items.includeTurns(['turn_a', 'turn_b']);
-    items.recover([followup, { ...followup, id: 'subagent_item', turn_id: 'turn_subagent' }]);
+    items.recover([
+      message('Original', 'completed'),
+      followup,
+      { ...followup, id: 'subagent_item', turn_id: 'turn_subagent' },
+    ]);
     expect(items.values().map((item) => item.text)).toEqual(['Original', 'Follow-up']);
     items.consume(
       event('item.added', {
@@ -163,6 +167,85 @@ describe('operator-safe activity projection', () => {
     items.recover([message('Final saved explanation.', 'completed')]);
     items.consume(event('item.done', { item: message('late event', 'completed') }, 'event_d'));
     expect(items.values()).toMatchObject([{ text: 'Final saved explanation.', final: true }]);
+  });
+  it.each([false, true])(
+    'preserves live text across long history snapshots (saved partial: %s)',
+    (savedPartial) => {
+      const items = new OperatorItems('session_a', 'turn_a');
+      const history = Array.from({ length: 201 }, (_, index) => ({
+        ...message(`Saved ${String(index)}`, 'completed'),
+        id: `saved_${String(index)}`,
+      }));
+      items.recover(history);
+      items.consume(event('item.added', { item: message('Checking') }));
+      const snapshot = savedPartial ? [...history, message('older partial')] : history;
+      for (let index = 0; index < 3; index++) {
+        items.recover(snapshot);
+        items.consume(
+          event(
+            'output_text.delta',
+            {
+              item_id: 'item_a',
+              content_index: 0,
+              delta: ' evidence',
+            },
+            `delta_${String(index)}`
+          )
+        );
+        expect(items.values()).toHaveLength(180);
+        expect(items.values().at(-1)).toMatchObject({
+          id: 'item_a',
+          text: `Checking${' evidence'.repeat(index + 1)}`,
+          final: false,
+        });
+      }
+      items.recover([...history, message('Complete saved explanation.', 'completed')]);
+      expect(items.values().at(-1)).toMatchObject({
+        id: 'item_a',
+        text: 'Complete saved explanation.',
+        final: true,
+      });
+    }
+  );
+  it('keeps live-only tool activity and credential withholding while history catches up', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    const history = Array.from({ length: 201 }, (_, index) => ({
+      ...message('Saved', 'completed'),
+      id: `saved_${String(index)}`,
+    }));
+    items.recover(history);
+    items.consume(event('item.added', { item: message('sk-') }));
+    const tool = {
+      id: 'live_tool',
+      turn_id: 'turn_a',
+      type: 'mcp_call',
+      name: 'get_salesforce_record_files',
+      status: 'in_progress',
+    };
+    items.consume(event('item.added', { item: tool }, 'tool_added'));
+    items.recover(history);
+    expect(items.values().slice(-2)).toMatchObject([
+      { id: 'item_a', text: '[Sensitive content withheld]', final: false },
+      { id: 'live_tool', text: 'Read source documents · In progress', final: false },
+    ]);
+    items.recover([
+      ...history,
+      message('later fragment', 'completed'),
+      { ...tool, status: 'completed' },
+    ]);
+    expect(items.values().slice(-2)).toMatchObject([
+      { id: 'item_a', text: '[Sensitive content withheld]', final: true },
+      { id: 'live_tool', text: 'Read source documents · Completed', final: true },
+    ]);
+    // Raw reasoning/subagent/output records must not displace actual operator activity.
+    items.recover([
+      ...history,
+      message('later fragment', 'completed'),
+      { ...tool, status: 'completed' },
+      ...history.map((item) => ({ ...item, id: `hidden_${item.id}`, type: 'reasoning' })),
+    ]);
+    expect(items.values()).toHaveLength(180);
+    expect(items.values().at(-1)?.id).toBe('live_tool');
   });
   it('does not concatenate overlapping history and stream text after reconnect', () => {
     const items = new OperatorItems('session_a', 'turn_a');
@@ -246,11 +329,16 @@ describe('operator-safe activity projection', () => {
         .map((item) => item.text)
         .join('')
     ).toBe(`${'a'.repeat(10000)}b`);
-    for (let index = 0; index < 179; index++)
-      items.recover([
-        { ...message('final', 'completed'), id: `other_${String(index)}`, phase: 'final_answer' },
-      ]);
-    items.recover([{ ...message(), id: 'overflow' }]);
+    const history = [
+      message(),
+      ...Array.from({ length: 179 }, (_, index) => ({
+        ...message('final', 'completed'),
+        id: `other_${String(index)}`,
+        phase: 'final_answer',
+      })),
+    ];
+    items.recover(history);
+    items.recover([...history, { ...message(), id: 'overflow' }]);
     expect(items.values()).toHaveLength(180);
     expect(items.values().at(-1)?.id).toBe('overflow');
     const bounded = new OperatorItems('session_a', 'turn_a');

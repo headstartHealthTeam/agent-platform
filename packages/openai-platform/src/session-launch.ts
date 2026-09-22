@@ -24,6 +24,7 @@ import {
 } from './platform.js';
 import { selfHostedExecutorConnection } from './self-hosted.js';
 import type { SessionExecutor } from './session-executor.js';
+import { sessionHistory } from './session-history.js';
 import { inspectLaunchCandidate, discoverLaunchCandidates } from './session-recovery.js';
 
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,200}$/);
@@ -299,26 +300,17 @@ export class SessionLaunchPort implements AgentLaunchPort {
   async inspectSession(value: AgentSessionReceipt): Promise<OperatorBinding | null> {
     const receipt = receiptSchema.parse(value);
     await this.session(receipt);
-    const result = await this.platform.read({
-      operation: 'sessions.turns',
-      id: receipt.sessionId,
-      query: { limit: 100, order: 'asc' },
-    });
-    const page = z
-      .object({
-        data: z
-          .array(
-            z.object({
-              id,
-              session_id: z.literal(receipt.sessionId),
-              subagent_id: z.string().nullable(),
-            })
-          )
-          .max(100),
-        has_more: z.literal(false),
-      })
-      .parse(result.data);
-    const roots = page.data.filter((turn) => turn.subagent_id === null);
+    const history = await sessionHistory(this.platform, receipt.sessionId, 'sessions.turns');
+    const turns = z
+      .array(
+        z.object({
+          id,
+          session_id: z.literal(receipt.sessionId),
+          subagent_id: z.string().nullable(),
+        })
+      )
+      .parse(history.data);
+    const roots = turns.filter((turn) => turn.subagent_id === null);
     if (roots.length > 1) throw new Error('Unbound session has unexpected additional roots');
     const root = roots[0];
     return root

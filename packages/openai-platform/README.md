@@ -125,6 +125,9 @@ snapshot request. Call `close()` on application teardown. Session history follow
 projected items and 10,000 event deduplication IDs. Long assistant messages are split into stable
 10,000-character display parts instead of failing observation. Applications retain durable events
 and expose their own history pagination; a recent-activity window must not disable operator controls.
+`OperatorItems.recover` takes a complete, ordered session snapshot, not an appended history page.
+It reconciles the visible tail without discarding newer stream-only activity or the delta state
+of an in-progress message. Paginated durable recovery uses the separate `history` API below.
 `history(binding, cursor)` is the separate lossless finalized-item recovery lane: at most 100 raw
 provider items and 180 projected display parts per page, with a checkpoint inside long messages.
 The application commits returned items, their provider-order ordinals and the next cursor atomically.
@@ -233,7 +236,8 @@ under the application's launch lock before adoption. Metadata is mutable, not pr
 uniqueness; conflicting matches must not be resolved by picking the newest. Recovery needs read
 access, not a source credential, executor, launch profile or fresh inference authorization.
 
-`inspectSession` reads only that known session and returns its first root when available. It never
+`inspectSession` reads only that known session, validates every turn page and returns its first root
+when available; additional roots anywhere in an unbound session still block adoption. It never
 recreates a session or resends input after uncertainty. `cancelSession` validates that same receipt
 and resolves only after a provider session read reports `idle` or `failed`. Already-quiescent
 sessions need no redundant cancel event. Otherwise it submits one cancellation and performs one

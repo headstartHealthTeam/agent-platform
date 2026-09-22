@@ -354,6 +354,75 @@ describe('application session launch', () => {
     await expect(port.inspectSession(receipt)).rejects.toThrow('additional roots');
     expect(platform.apply).not.toHaveBeenCalled();
   });
+  it.each([
+    { scenario: 'valid history', error: null },
+    { scenario: 'additional root', error: 'additional roots' },
+    { scenario: 'foreign session', error: 'session_id' },
+    { scenario: 'invalid turn identity', error: '"id"' },
+    { scenario: 'invalid subagent identity', error: 'subagent_id' },
+    { scenario: 'nonadvancing cursor', error: 'cursor' },
+    { scenario: 'interrupted delivery', error: 'Turn page unavailable' },
+  ])(
+    'inspects every turn page before recovering an unbound session: $scenario',
+    async ({ scenario, error }) => {
+      const { platform, session } = setup();
+      // Recovery needs only the saved receipt, not launch settings or fresh inference authority.
+      const port = new SessionLaunchPort(platform, target, undefined, 0, []);
+      const turns = Array.from({ length: 100 }, (_, index) => ({
+        id: `turn_${String(index)}`,
+        session_id: receipt.sessionId,
+        subagent_id: index === 0 ? null : `subagent_${String(index)}`,
+      }));
+      platform.read.mockImplementation(async (input) => {
+        const operation = readSchema.parse(input);
+        if (operation.operation === 'sessions.get') return { data: session, fingerprint: 'f' };
+        if (operation.operation !== 'sessions.turns') throw new Error('Unexpected operation');
+        if (operation.query.after === undefined)
+          return {
+            data: { data: turns, has_more: true, last_id: 'turn_99' },
+            fingerprint: 'f',
+          };
+        if (operation.query.after !== 'turn_99') throw new Error('Unexpected cursor');
+        if (scenario === 'interrupted delivery') throw new Error('Turn page unavailable');
+        return {
+          data: {
+            data: [
+              {
+                id: scenario === 'invalid turn identity' ? '' : 'turn_100',
+                session_id: scenario === 'foreign session' ? 'other' : receipt.sessionId,
+                subagent_id:
+                  scenario === 'additional root'
+                    ? null
+                    : scenario === 'invalid subagent identity'
+                      ? 100
+                      : 'subagent_100',
+              },
+            ],
+            has_more: scenario === 'nonadvancing cursor',
+            last_id: 'turn_99',
+          },
+          fingerprint: 'f',
+        };
+      });
+      const inspected = port.inspectSession(receipt);
+      if (error === null)
+        await expect(inspected).resolves.toEqual({
+          sessionId: receipt.sessionId,
+          turnId: 'turn_0',
+          target: receipt.target,
+          workflowRevision: receipt.workflowRevision,
+        });
+      else await expect(inspected).rejects.toThrow(error);
+      expect(platform.read).toHaveBeenCalledTimes(3);
+      expect(platform.read).toHaveBeenLastCalledWith({
+        operation: 'sessions.turns',
+        id: receipt.sessionId,
+        query: { limit: 100, order: 'asc', after: 'turn_99' },
+      });
+      expect(platform.apply).not.toHaveBeenCalled();
+      expect(platform.preflight).not.toHaveBeenCalled();
+    }
+  );
   it('waits without resending if the root is not yet visible, and cancels only the owned session', async () => {
     const { port, platform, roots } = setup();
     roots.length = 0;
