@@ -79,6 +79,14 @@ export class OperatorItems {
   recover(rawItems: unknown[]): void {
     for (const item of rawItems) this.item(item, false);
   }
+  /** One full immutable item for paginated durable recovery, not a UI frame. */
+  finalized(raw: unknown): OperatorItem | null {
+    const base = itemBase.safeParse(raw);
+    if (!base.success || !this.turns.has(base.data.turn_id)) return null;
+    const projected =
+      base.data.type === 'message' ? this.message(raw, false) : this.tool(raw, base.data.type);
+    return projected?.final ? projected : null;
+  }
   consume(raw: unknown): void {
     const header = z.object({ type: z.string() }).parse(raw);
     if (

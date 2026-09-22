@@ -31,3 +31,18 @@ export interface OperatorSnapshot {
   items: OperatorItem[];
   pendingQuestionIds: string[];
 }
+
+/** Application-owned checkpoint. Advance atomically with the finalized items in a history page. */
+export interface OperatorHistoryCursor {
+  after: string | null;
+  /** Partial delivery of one immutable provider item; offsets count UTF-16 characters. */
+  itemId: string | null;
+  offset: number;
+  /** Next finalized display-part ordinal, independent of observation/arrival order. */
+  position: number;
+}
+export interface OperatorHistoryPage {
+  items: (OperatorItem & { position: number })[];
+  cursor: OperatorHistoryCursor;
+  hasMore: boolean;
+}

@@ -106,6 +106,17 @@ function fixture(
 afterEach(() => vi.useRealTimers());
 
 describe('operator runtime adapter', () => {
+  it('provides independent read-only history without opening an observer or granting inference', async () => {
+    const f = fixture();
+    expect(await f.port.history(binding, null)).toMatchObject({ items: [], hasMore: false });
+    expect(f.platform.openOperatorObservation).not.toHaveBeenCalled();
+    expect(f.platform.apply).not.toHaveBeenCalled();
+    await expect(f.port.history({ ...binding, target: 'wrong' }, null)).rejects.toThrow(
+      'Wrong runtime target'
+    );
+    f.port.close();
+    await expect(f.port.history(binding, null)).rejects.toThrow('closed');
+  });
   it('keeps application tool arguments out of the operator view and preserves human questions', async () => {
     const f = fixture({
       applicationFunctions: ['read_case'],

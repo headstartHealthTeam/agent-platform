@@ -10,6 +10,8 @@ import type {
   AgentLaunchRequest,
   AgentSessionReceipt,
   AgentSessionCredential,
+  OperatorHistoryCursor,
+  OperatorHistoryPage,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
@@ -21,6 +23,7 @@ import {
   type SessionExecutor,
 } from './docker-executor.js';
 import type { Action } from './operations.js';
+import { operatorHistory } from './operator-history.js';
 import type { OperatorItems } from './operator-items.js';
 import { operatorText } from './operator-items.js';
 import { verifiedOperatorRoots } from './operator-provenance.js';
@@ -146,6 +149,16 @@ export class OperatorRuntimePort {
     } finally {
       this.pending.delete(binding.sessionId);
     }
+  }
+  async history(
+    binding: OperatorBinding,
+    cursor: OperatorHistoryCursor | null
+  ): Promise<OperatorHistoryPage> {
+    this.requireOpen();
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
+    const page = await operatorHistory(this.platform, binding, cursor);
+    this.requireOpen();
+    return page;
   }
   private async observe(binding: OperatorBinding): Promise<OperatorSnapshot> {
     if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);

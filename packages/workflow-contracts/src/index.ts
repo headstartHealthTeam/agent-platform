@@ -33,4 +33,6 @@ export type {
   OperatorItem,
   OperatorItemKind,
   OperatorStatus,
+  OperatorHistoryCursor,
+  OperatorHistoryPage,
 } from './operator.js';

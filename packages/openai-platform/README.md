@@ -125,6 +125,13 @@ snapshot request. Call `close()` on application teardown. Session history follow
 projected items and 10,000 event deduplication IDs. Long assistant messages are split into stable
 10,000-character display parts instead of failing observation. Applications retain durable events
 and expose their own history pagination; a recent-activity window must not disable operator controls.
+`history(binding, cursor)` is the separate lossless finalized-item recovery lane: at most 100 raw
+provider items and 180 projected display parts per page, with a checkpoint inside long messages.
+The application commits returned items, their provider-order ordinals and the next cursor atomically.
+Retry reads after a crash; never advance a cursor before retention succeeds. Mutable items keep
+`hasMore` true and cannot be passed by the checkpoint. Recover finalized questions from their exact
+call identity, not as newly pending questions. Keep recovery independent of live frames/controls,
+and drain outstanding history even after a run reaches terminal status.
 MCP/function activity includes tool names and lifecycle status, never raw arguments/results or
 private reasoning. This follows the official [Agents item contract](https://developers.openai.com/api/reference/typescript/resources/beta/subresources/agents).
 A disconnect never resends input, cancels the agent or proves completion.
