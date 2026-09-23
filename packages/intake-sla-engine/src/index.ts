@@ -158,6 +158,30 @@ export type {
 } from './fireflies-cache-materialize.js';
 export { verifyFirefliesCacheRun } from './fireflies-cache-verify.js';
 export type { VerifiedFirefliesCacheReport } from './fireflies-cache-verify.js';
+export { loadCache, saveCache, readFirefliesDiscovery } from './fireflies-cache-storage.js';
+export type { LoadedFirefliesCache } from './fireflies-cache-storage.js';
+export { checkpointPlan, connectorCheckpoint, requireContract } from './connector-checkpoint.js';
+export type {
+  CheckpointPlan,
+  CheckpointProgress,
+  CheckpointRequest,
+} from './connector-checkpoint.js';
+export { selectFirefliesCollectionMode } from './fireflies-collection-mode.js';
+export {
+  atomicPrivateWrite,
+  localArtifactPath,
+  optionalPrivateJson,
+  privateDirectory,
+  readPrivateJson,
+  requireMutableRun,
+  withCacheLock,
+  withRunCheckpointLock,
+  writeIdenticalOrNew,
+  writePrivateJson,
+} from './private-run-storage.js';
+export type { WriterLockOptions } from './private-run-storage.js';
+export { assessTranscriptInventoryArtifact } from './run-artifact-health.js';
+export type { TranscriptInventoryHealth } from './run-artifact-health.js';
 export {
   interpretationBindingForPacket,
   interpretationValidationBindingForPacket,

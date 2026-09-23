@@ -149,8 +149,17 @@ serialized files need new actual-byte receipts, never copied receipts from prior
   cutoff filtering, exact page exhaustion, shadow fresh reads, explicitly approved reuse, unchanged
   retrieval timestamps, metadata/content changes, bounded age and tampered/transplanted receipt
   rejection. Provider failures translate to Intake command categories without raw payload causes.
-- File persistence, identity-profile replay and collector callers remain to integrate; these pure
-  contracts do not certify a whole collection or operational readiness.
+- `fireflies-cache-storage.mjs` file/lock primitives and `connector-checkpoint.mjs` map to Intake's
+  `private-run-storage.ts` and `connector-checkpoint.ts`; `fireflies-collection-mode.mjs` retains its
+  explicit mutually exclusive mode receipts. These are private run/recovery mechanics, not provider
+  code. Existing packages do not expose a compatible private-run storage contract; no generic
+  framework is introduced for this workflow-owned persistence.
+- Content-addressed cache load/save and raw/normalized discovery proof checks map to Intake's
+  `fireflies-cache-storage.ts`. Inventory health maps to `run-artifact-health.ts`. Synthetic
+  filesystem tests cover concurrent acceptance, bounded lock retention, atomic failure cleanup,
+  exact hashes, failed outcomes, ancestor publication receipts, corrupted objects and provenance.
+- Identity-profile replay, complete `readCacheRunProof` binding and collector callers remain to
+  integrate; these contracts do not certify a whole collection or operational readiness.
 
 ## Five implementation slices
 

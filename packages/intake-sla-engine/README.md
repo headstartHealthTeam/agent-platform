@@ -16,10 +16,12 @@ for prior-run API reuse. These pure contracts still require their full collector
 Fireflies discovery composes the shared provider parser with Intake's exact run/scope/window hashes.
 Cache planning, materialization and replay verification preserve shadow-mode fresh fetches, explicit
 reuse approval, baseline invalidation and original retrieval times. Local receipts bind evidence;
-they do not authenticate a source or make old data fresh. Storage and collector integration remain
-separate migration work.
+they do not authenticate a source or make old data fresh. Private storage and source checkpoint
+persistence preserve atomic writes, bounded writer locks, idempotent captures and publication-receipt
+immutability. Inventory health checks preserve explicit empty bodies and cache-proof freshness.
+Identity-profile replay and collector integration remain separate migration work.
 
-The migration is not yet an operational replacement: source orchestration, checkpoint persistence,
+The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.
 
