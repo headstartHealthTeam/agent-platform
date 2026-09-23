@@ -68,6 +68,12 @@ remain complete. Missing coverage remains a row-level exception under the existi
 Blocked-row/source publication rule. The private verifier reads artifacts without modifying them.
 Full source-adapter, command, workbook and publication composition still require their own parity.
 
+Publication planning foundations preserve capacity-only expansion, consecutive bounded assertion
+read unions, operator presentation and the exact selected stage-plan fingerprint. These functions
+do not perform reads or writes. Presentation affects only its requested ranges; Run History keeps
+existing column widths and prior rows. Shared Google readers remain read-only; Intake still owns
+full write-plan construction, gate evaluation, readback acceptance and uncertain-write recovery.
+
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.

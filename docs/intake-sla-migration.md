@@ -300,6 +300,24 @@ actual source-adapter and full operational composition remain separate work. Thi
 These pure contracts and private readback do not complete the CLI, source-adapter, workbook or final
 publication integration; those consumers still need full reference-case composition.
 
+### Publication planning foundations
+
+- `google-grid.mjs` maps to Intake's required-capacity calculation, retaining numeric conversion and
+  integer-only expansion without shrinking the current grid.
+- `google-read-plan.mjs` maps to Intake's assertion read grouping: only consecutive adjacent value
+  assertions in the same tab/columns can share a bounded read. Original assertions remain unchanged
+  and retain their references; read groups retain extra metadata. Full adapter validation still
+  occurs before dispatch, and each fresh readback sample must perform its own reads.
+- `google-presentation.mjs` maps to Intake's exact bounded presentation requests/assertions. Only
+  wrap/alignment and chosen dimensions are touched. Run History appends retain historical rows and
+  existing column widths; grid/data/filter/reviewer ownership is not broadened.
+- `publication-plan.mjs` maps to the same selected-field stage/final-assertion hash. Extra operator
+  metadata does not enter that hash; payloads, dependencies, flags and assertion order do.
+
+These are pure workflow planning helpers, not new provider write capabilities. Complete plan
+construction, live assertion capture, freshness/binding gates, stage/final readback and recovery
+remain required integration work. No live writes or cutover are authorized by these tests.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

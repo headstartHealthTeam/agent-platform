@@ -491,3 +491,24 @@ export type {
   DenialPublicationResult,
 } from './slack-denial-publication.js';
 export { readDenialContextCoverage } from './slack-denial-storage.js';
+export { requiredGridExpansion } from './google-grid.js';
+export type { GridExpansionInput } from './google-grid.js';
+export { planGoogleAssertionReads } from './google-read-plan.js';
+export type {
+  GoogleReadAssertion,
+  GoogleReadRange,
+  GoogleAssertionReadGroup,
+} from './google-read-plan.js';
+export {
+  googlePresentation,
+  OPERATOR_HEADER_HEIGHT_PX,
+  OPERATOR_ROW_HEIGHT_PX,
+} from './google-presentation.js';
+export type {
+  GooglePresentation,
+  GooglePresentationInput,
+  GooglePresentationAssertion,
+  GooglePresentationRequest,
+} from './google-presentation.js';
+export { publicationPlanHash } from './publication-plan.js';
+export type { PublicationPlanHashStage } from './publication-plan.js';
