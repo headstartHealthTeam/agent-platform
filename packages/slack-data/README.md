@@ -8,6 +8,13 @@ envelope. `normalizeSlackThreadResponse` retains the approved explicit no-replie
 counts and structured completed-pagination contracts. Missing continuation metadata alone never
 proves completeness. Errors are sanitized and incomplete responses return no admitted text.
 
+`normalizeSlackRenderedSearch` decodes a detailed native search page after envelope unwrapping. It
+preserves exact bodies, message/thread identities, explicit continuation and unknown reply counts.
+An empty search body requires one complete identity-bound individual read; the result returns that
+readback by reference so the consumer can apply its capture hashing and collection-time policy.
+Extra continuation signals are retained for the consumer's complete pagination validation. This
+single-page parser does not declare a workflow collection complete.
+
 Extracted from the [pinned Intake source](../../docs/intake-sla-migration.md#behavioral-reference)
 `slack-response.mjs` and the transport part of `slack-plugin-search.mjs`. Intake still owns full-cohort
 search planning, patient assignment, frozen-cutoff bounded/unbounded reconciliation, capture hashes,

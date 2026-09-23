@@ -112,6 +112,32 @@ normalization and offset-chain validation use `fireflies-data`; the Intake wrapp
 the raw/normalized hashes, run, complete discovery scope and frozen cutoff. Provider page validation
 does not itself certify an Intake collection. No business decision moved into those providers.
 
+### Interpretation, coverage and recovery contracts
+
+- `stage-entry.mjs`, `source-outcome.mjs`, `source-requirements.mjs` and the cohort policy from
+  `slack-response.mjs` map to Intake's `stage-entry`, `source-outcome`, `source-requirements` and
+  `slack-coverage`; `source-policy.test.ts` preserves source failure precedence, the existing
+  current-run window, optional enrichment and cohort/denial completeness.
+- `interpretation-binding.mjs`, `interpretation-gate.mjs` and pure/domain portions of
+  `ai-interpretation.mjs` map to Intake's binding, contract, packet, findings and AI composition
+  modules. Golden prompt/schema/packet hashes, legacy semantics, support, identity and date-role
+  regressions live in `interpretation-binding.test.ts` and `ai-interpretation.test.ts`. Vendor
+  execution imports only `openai-platform/responses`, with Intake supplying low reasoning effort.
+- `bounded-worker-pool.mjs` and `bounded-delta-interpretation.mjs` map to the same-named typed Intake
+  modules and tests: retry limits, terminal dispatch, serialized successful in-flight persistence,
+  cancellation and resume/reuse/fresh decisions. Standard callback Errors retain identity; non-Error
+  failures are wrapped with their original cause. Typed transport validation returns sanitized
+  errors for malformed response fields, without changing supported finding admission.
+- The detailed-page parser from `slack-plugin-search.mjs` maps to shared `slack-data/search.ts` and
+  `search.test.ts`. It returns the exact individual readback reference rather than imposing Intake's
+  hashing or collection-time rule. Intake's capture consumer still must hash original responses,
+  validate readback timing, reconcile all continuation signals and apply cutoff/cohort rules.
+
+These contracts do not establish complete workflow parity. The caller integration must preserve
+artifact-byte receipts, leave published artifacts immutable and exercise the original recovery and
+publication tests. Grouped interpretation objects preserve values and canonical hashes; newly
+serialized files need new actual-byte receipts, never copied receipts from prior artifacts.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners
