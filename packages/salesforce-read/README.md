@@ -11,6 +11,9 @@ use `sf data query` with separate argv values, a bounded timeout/output size and
 Only explicitly complete result sets are accepted, including confirmed empty results. A partial,
 failed or malformed response never becomes an empty result. No automatic retry or write command is
 exposed. Caller-supplied Zod schemas validate the queried business records.
+Queries default to the data API; `{ api: 'tooling' }` selects the same bounded read command's
+Tooling API mode for metadata such as Apex and Flow definitions. Organization verification always
+uses the data API. The caller owns which metadata to inspect and what a changed fingerprint means.
 
 The Organization capability receipt establishes only the target and Organization read, not blanket
 object/field visibility. Each actual query must succeed and prove complete output. An injected

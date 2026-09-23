@@ -13,4 +13,5 @@ export {
   connectSalesforceCli,
   type SalesforceReadCommand,
   type SalesforceQueryReader,
+  type SalesforceQueryOptions,
 } from './cli.js';

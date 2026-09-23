@@ -14,6 +14,12 @@ body renders whole seconds, and distinguishes explicit empty transcripts from sp
 It returns vendor-level provenance; the consumer adds its own capture hash and receipt version.
 Failures never include transcript contents or raw error envelopes.
 
+`normalizeFirefliesDiscoveryIdentities` removes only documented null participant entries and
+defaults absent attendee display names. It preserves other supplied metadata and never mutates the
+raw capture. `completeFirefliesDiscoveryPages` validates an explicit offset chain, query-window
+membership, metadata and duplicate identities. Callers select the window and page size; the provider
+does not attach a run, assert access scope, filter by an assessment cutoff or authorize cache reuse.
+
 Intake continues to own discovery-window completeness and frozen-cutoff selection, relevance,
 patient matching, segmentation, cache eligibility, attempt budgets, durable cooldowns, run locks,
 evidence admission and recovery receipts. Native reads are supplied by the authorized host; this

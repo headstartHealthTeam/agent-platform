@@ -63,6 +63,57 @@ describe('Salesforce read binding', () => {
       );
     }
   });
+  it('supports explicitly selected Tooling reads while keeping Organization verification on data API', async () => {
+    const command = vi.fn(async () => result([organization]));
+    const reader = await connectSalesforceCli(target, command);
+    expect(command).toHaveBeenNthCalledWith(1, [
+      'data',
+      'query',
+      '--target-org',
+      target.targetOrg,
+      '--json',
+      '-q',
+      'SELECT Id, IsSandbox FROM Organization LIMIT 1',
+    ]);
+    command.mockResolvedValueOnce(
+      result([{ Name: 'SyntheticClass', Body: 'class SyntheticClass {}' }])
+    );
+    const query = 'SELECT Name, Body FROM ApexClass';
+    expect(
+      await reader.query(query, z.object({ Name: z.string(), Body: z.string() }), {
+        api: 'tooling',
+      })
+    ).toEqual([{ Name: 'SyntheticClass', Body: 'class SyntheticClass {}' }]);
+    expect(command).toHaveBeenLastCalledWith([
+      'data',
+      'query',
+      '--target-org',
+      target.targetOrg,
+      '--json',
+      '-q',
+      query,
+      '--use-tooling-api',
+    ]);
+    command.mockResolvedValueOnce(result([]));
+    await reader.query('SELECT Id FROM Account', z.unknown(), { api: 'data' });
+    expect(command).toHaveBeenLastCalledWith([
+      'data',
+      'query',
+      '--target-org',
+      target.targetOrg,
+      '--json',
+      '-q',
+      'SELECT Id FROM Account',
+    ]);
+    const count = command.mock.calls.length;
+    const invalid: unknown = Reflect.apply(reader.query.bind(reader), undefined, [
+      query,
+      z.unknown(),
+      { api: 'invalid' },
+    ]);
+    await expect(invalid).rejects.toThrow(/query failed/);
+    expect(command).toHaveBeenCalledTimes(count);
+  });
   it('sanitizes malformed, incomplete, failed and host-thrown errors', async () => {
     for (const output of [
       'private body',

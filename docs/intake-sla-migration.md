@@ -97,6 +97,21 @@ Provider extension is still required where source execution needs additional gen
 search or metadata behavior. Do not move that responsibility into Intake merely because the first
 provider contract is already present. Do not claim the whole workflow has parity from this table.
 
+### Typed domain traceability
+
+| Source responsibility                              | Intake destination and regression                                                                                                                                                                                                                               | Integration still required                                                                                      |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `billing-claims.mjs`; billing reconciliation cases | `billing-types`, `billing-normalization`, `billing-claims`, `billing-collection`; `billing.test.ts` preserves cutoff-before-aggregation on raw/normalized paths, partial sessions, explicit completion, relationship conflicts and complete collection receipts | Source adapters, final storyline/recommendation and collector composition; their source tests remain applicable |
+| `evidence.mjs`, `source-result.mjs`, `drift.mjs`   | `evidence`, `source-result`, `drift`; `evidence.test.ts` preserves ranking, specificity, source-empty versus failed/incomplete results and exact fingerprint comparison                                                                                         | Admission, collection and publication consumers                                                                 |
+| `authorization-gate.mjs`                           | `authorization-types`, `authorization-record`, `authorization-gate`; `authorization.test.ts` preserves phase-specific milestones, unresolved coverage, episodes, conflicts and insurance-position priority                                                      | Raw Salesforce/notes mapping and final report                                                                   |
+| `ia-occurrence.mjs`                                | `ia-occurrence-types`, `ia-occurrence`; `ia-occurrence.test.ts` preserves partial completion, future monitoring, passed unverified plans and row-local reconciliation                                                                                           | Final report and source adapter regressions                                                                     |
+| `gate-engine.mjs`, `gate-context.mjs`              | `gate-engine`, `gate-context`; `gates.test.ts` preserves prerequisite ordering, excluded/unknown stages, authoritative authorization evidence and newer contextual non-authorization evidence                                                                   | Full evidence engine, storyline, recommendations and workbook                                                   |
+
+Salesforce metadata queries use the shared reader's explicit Tooling API option. Fireflies identity
+normalization and offset-chain validation use `fireflies-data`; the Intake wrapper must still bind
+the raw/normalized hashes, run, complete discovery scope and frozen cutoff. Provider page validation
+does not itself certify an Intake collection. No business decision moved into those providers.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

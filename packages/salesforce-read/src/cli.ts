@@ -54,17 +54,25 @@ const runSalesforceReadCommand: SalesforceReadCommand = (argv) =>
 
 export interface SalesforceQueryReader {
   readonly organization: SalesforceOrganization;
-  query<T>(soql: string, recordSchema: z.ZodType<T>): Promise<readonly T[]>;
+  query<T>(
+    soql: string,
+    recordSchema: z.ZodType<T>,
+    options?: SalesforceQueryOptions
+  ): Promise<readonly T[]>;
   organizationPreflight(providerId: string, adapterVersion: string): CapabilityPreflightResult;
 }
+const queryOptionsSchema = z.object({ api: z.enum(['data', 'tooling']).optional() }).strict();
+export type SalesforceQueryOptions = z.infer<typeof queryOptionsSchema>;
 
 async function readQuery<T>(
   target: SalesforceTarget,
   command: SalesforceReadCommand,
   soql: string,
-  schema: z.ZodType<T>
+  schema: z.ZodType<T>,
+  options: SalesforceQueryOptions = {}
 ): Promise<readonly T[]> {
   try {
+    const selected = queryOptionsSchema.parse(options);
     const output = await command([
       'data',
       'query',
@@ -73,6 +81,7 @@ async function readQuery<T>(
       '--json',
       '-q',
       soql,
+      ...(selected.api === 'tooling' ? ['--use-tooling-api'] : []),
     ]);
     const parsed: unknown = JSON.parse(output);
     return completeQueryRecords(parsed, schema);
@@ -100,8 +109,11 @@ export async function connectSalesforceCli(
   const organization = assertSalesforceOrganization(records[0], target);
   return {
     organization,
-    query: async <T>(soql: string, schema: z.ZodType<T>): Promise<readonly T[]> =>
-      readQuery(target, command, soql, schema),
+    query: async <T>(
+      soql: string,
+      schema: z.ZodType<T>,
+      options?: SalesforceQueryOptions
+    ): Promise<readonly T[]> => readQuery(target, command, soql, schema, options),
     organizationPreflight: (providerId, adapterVersion) =>
       capabilityPreflightResultSchema.parse({
         capabilityId: SALESFORCE_ORGANIZATION_READ,

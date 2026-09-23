@@ -5,7 +5,8 @@ mechanics belong in the separate provider packages specified by the
 [migration ownership map](../../docs/intake-sla-migration.md), not inside this package.
 
 The [pinned merged Intake reference](../../docs/intake-sla-migration.md#behavioral-reference) governs
-behavior. Typed date/freshness, fingerprint and stage/source contracts are the first domain ports.
+behavior. Typed contracts cover date/freshness and fingerprints, billing reconciliation, evidence
+ranking, source results, authorization prerequisites, assessment occurrence and stage-gate context.
 The migration is not yet an operational replacement: source orchestration, interpretation workers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.
