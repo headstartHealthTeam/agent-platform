@@ -7,7 +7,13 @@ mechanics belong in the separate provider packages specified by the
 The [pinned merged Intake reference](../../docs/intake-sla-migration.md#behavioral-reference) governs
 behavior. Typed contracts cover date/freshness and fingerprints, billing reconciliation, evidence
 ranking, source results, authorization prerequisites, assessment occurrence and stage-gate context.
-The migration is not yet an operational replacement: source orchestration, interpretation workers,
+Source requirement/coverage rules, exact interpretation bindings, the approved prompt/schema,
+packet construction and supported findings are typed. Interpretation uses the shared isolated
+Responses entry point with explicit low effort; bounded workers and exact-bound delta planning keep
+Intake's retry, checkpoint and reuse rules. Fresh current-run Codex interpretations are not eligible
+for prior-run API reuse. These pure contracts still require their full collector/recovery consumers.
+
+The migration is not yet an operational replacement: source orchestration, checkpoint persistence,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.
 

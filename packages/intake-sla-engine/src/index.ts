@@ -88,6 +88,95 @@ export { resolveGate } from './gate-engine.js';
 export type { ActiveGate, ExcludedGate, GateInput, ResolvedGate } from './gate-engine.js';
 export { categoryForGate, isVobRelevantGate, refineGateWithEvidence } from './gate-context.js';
 export type { GateContext, GateOpportunity, GateRefinement } from './gate-context.js';
+export { resolveStageEntryDate } from './stage-entry.js';
+export type { StageEntryOpportunity, StageTransition } from './stage-entry.js';
+export { isUsableStageEvidence, sourceOutcome } from './source-outcome.js';
+export type {
+  SourceCheck,
+  SourceOutcome,
+  SourceOutcomeInput,
+  StageEvidence,
+} from './source-outcome.js';
+export {
+  applyStageSourceRequirements,
+  blockingRequiredSources,
+  enforceConversationInterpretationRequirement,
+  isProviderFacingStage,
+  requiredSourcesForContext,
+} from './source-requirements.js';
+export type { SourceContext, SourceRequirementResult } from './source-requirements.js';
+export { slackSweepCoverage } from './slack-coverage.js';
+export type { SlackSweepCoverage, SlackSweepExecution, SlackSweepRow } from './slack-coverage.js';
+export {
+  APPROVED_INTERPRETER_MODEL,
+  APPROVED_INTERPRETER_PROVIDER,
+  INTERPRETATION_BINDING_VERSION,
+  assertInterpretationBinding,
+  createInterpretationBinding,
+  createInterpretationValidationBinding,
+  interpretationBindingDiff,
+  interpreterConfigFromEnv,
+} from './interpretation-binding.js';
+export type {
+  InterpretationBinding,
+  InterpretationBindingInput,
+  InterpretationValidationBinding,
+  InterpretationValidationInput,
+  InterpreterConfig,
+  InterpreterEnvironment,
+} from './interpretation-binding.js';
+export { runBoundedWorkers } from './bounded-worker-pool.js';
+export type { BoundedWorkerOptions, WorkerProgress } from './bounded-worker-pool.js';
+export {
+  interpretationBindingForPacket,
+  interpretationValidationBindingForPacket,
+  interpretTranscriptPacketWithAI,
+  interpretTranscriptSegmentWithAI,
+} from './ai-interpretation.js';
+export type {
+  PacketBindingInput,
+  PacketInterpretation,
+  PacketInterpretationInput,
+} from './ai-interpretation.js';
+export {
+  INTERPRETER_INSTRUCTIONS,
+  TRANSCRIPT_INTERPRETATION_SCHEMA,
+} from './interpretation-contract.js';
+export {
+  aiFindingAsOperationalFact,
+  validateTranscriptFindings,
+} from './interpretation-findings.js';
+export type {
+  AiOperationalFact,
+  FindingContext,
+  TranscriptFindingInput,
+  ValidatedTranscriptFinding,
+} from './interpretation-findings.js';
+export {
+  buildTranscriptInterpretationPacket,
+  interpretationGateContext,
+} from './interpretation-packet.js';
+export type {
+  InterpretationJson,
+  InterpretationPacketInput,
+  InterpretationProfile,
+  TranscriptInterpretationPacket,
+} from './interpretation-packet.js';
+export {
+  groupInterpretationsByOpportunity,
+  interpretationKey,
+  planInterpretationDelta,
+} from './bounded-delta-interpretation.js';
+export type {
+  CompletedInterpretationItem,
+  InterpretationArtifact,
+  InterpretationDeltaInput,
+  InterpretationDeltaItem,
+  InterpretationDeltaPlan,
+  InterpretationEnvelope,
+  OpportunityInterpretations,
+  SavedInterpretation,
+} from './bounded-delta-interpretation.js';
 export type {
   AssessmentAppointment,
   AssessmentOpportunity,
