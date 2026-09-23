@@ -55,8 +55,18 @@ later replies without admitting their content. The injected reader preserves bou
 spacing, checkpoint recovery and published-run immutability. No desktop binding or direct Slack
 write is introduced. Typed serialization can reorder newly written plan/inventory JSON keys; their
 values and canonical hashes match, and any byte receipt must describe the actual new bytes, never
-be copied from a prior serialization. Cross-version resume preserves existing saved bytes. Denial
-context, source adapters and full workflow composition still require their own parity checks.
+be copied from a prior serialization. Cross-version resume preserves existing saved bytes. The next
+section describes denial-context contracts; full source-adapter and workflow integration remain.
+
+The source authorization adapter maps existing Salesforce fields, standalone versus linked Reviews,
+dated approval notes and opportunity milestones into the existing core resolver. It does not define
+new payer policy. Supported nullable raw fields are retained; null state values that actually reach
+the strict core retain the approved failure behavior, not an implicit approval or empty-string default.
+Denial-context planning uses full identity searches, not redundant keyword-restricted reads. Coverage
+is recomputed from original captures and exact merged/thread evidence; valid terminal empty results
+remain complete. Missing coverage remains a row-level exception under the existing explicit
+Blocked-row/source publication rule. The private verifier reads artifacts without modifying them.
+Full source-adapter, command, workbook and publication composition still require their own parity.
 
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.

@@ -114,8 +114,8 @@ does not itself certify an Intake collection. No business decision moved into th
 
 ### Interpretation, coverage and recovery contracts
 
-- `stage-entry.mjs`, `source-outcome.mjs`, `source-requirements.mjs` and the cohort policy from
-  `slack-response.mjs` map to Intake's `stage-entry`, `source-outcome`, `source-requirements` and
+- `stage-entry.mjs`, `source-outcome.mjs` and `source-requirements.mjs` (including Slack cohort
+  coverage) map to Intake's `stage-entry`, `source-outcome`, `source-requirements` and
   `slack-coverage`; `source-policy.test.ts` preserves source failure precedence, the existing
   current-run window, optional enrichment and cohort/denial completeness.
 - `interpretation-binding.mjs`, `interpretation-gate.mjs` and pure/domain portions of
@@ -271,8 +271,34 @@ composition. They preserve existing rules rather than adding evidence classifica
   lower reply count nor content beyond the cutoff is silently admitted.
 
 Provider tests use synthetic non-Intake responses. Intake tests compose captures, exact readbacks,
-recovery, terminal failures and cutoff threads. Denial-context, actual source-adapter and full
-operational composition are still separate migration work; this slice is not workflow readiness.
+recovery, terminal failures and cutoff threads. The next section maps denial-context contracts;
+actual source-adapter and full operational composition remain separate work. This is not readiness.
+
+### Authorization source projection and denial context
+
+- `scripts/live-collector/authorization-gate.mjs` maps to Intake's source authorization types,
+  normalization, milestone/supersession and gate modules. This is the existing live adapter feeding
+  existing core policy, not a new authorization policy. Preserve direct-denial fallback, linked versus
+  standalone Reviews, phase-specific approvals, source record identity and stage-entry relevance.
+  Supported nullable fields and own undefined projections are modeled explicitly. Null status or
+  determination that reaches the strict core still throws the approved TypeError; the migration does
+  not reinterpret those failures as approval, missing evidence or an empty string.
+- `src/slack-denial-context.mjs` maps to Intake's denial requirements, context verification,
+  publication check and private storage modules. The shared Slack package owns reply metadata and
+  generic decoding; Intake owns required identity searches, selected Review numbers, exact plan and
+  capture bindings, merged/thread evidence and row-level exceptions. Complete empty searches and
+  not-applicable rows do not require invented evidence or extra reads.
+- Private coverage is recomputed from original source artifacts, not a saved success receipt. Missing
+  or invalid raw capture stays row-level incomplete. Optional artifacts are validated only when
+  consumed: zero applicable denials do not inspect unused Slack rows, and empty/no-reply results do
+  not require a thread array. Original raw hashes and file-read/JSON-parse errors remain. Unusable
+  consumed structural inputs receive explicit errors rather than incidental JavaScript failures.
+  No private evidence is rewritten. The
+  publication check retains the existing partial-publication rule: every genuinely missing required
+  row/source must be visibly marked Blocked with denial-context rationale.
+
+These pure contracts and private readback do not complete the CLI, source-adapter, workbook or final
+publication integration; those consumers still need full reference-case composition.
 
 ## Five implementation slices
 

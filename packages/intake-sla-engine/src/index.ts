@@ -461,3 +461,33 @@ export { executeSlackReads, SlackReadError } from './slack-read-executor.js';
 export type { SlackNativeReadRequest, SlackReadOptions } from './slack-read-executor.js';
 export { normalizeSlackThread } from './slack-thread.js';
 export type { IntakeSlackThreadResult } from './slack-thread.js';
+export { resolveSourceAuthorizationGate } from './source-authorization-gate.js';
+export type {
+  SourceAuthorizationRecord,
+  SourceAuthorizationOpportunity,
+  SourceAuthorizationGate,
+  SourceAuthorizationNotRequired,
+  SourceAuthorizationInput,
+} from './source-authorization-types.js';
+export { DENIAL_CONTEXT_CHANNEL, denialContextRequirements } from './slack-denial-requirements.js';
+export type {
+  DenialIdentityProfile,
+  DenialQuery,
+  DenialContextRequirement,
+  DenialRequirementInputs,
+} from './slack-denial-requirements.js';
+export { verifyDenialContext } from './slack-denial-context.js';
+export type {
+  DenialMessage,
+  DenialMergedRow,
+  DenialContextRow,
+  DenialContextCoverage,
+  DenialContextInputs,
+} from './slack-denial-context.js';
+export { denialContextPublicationCheck } from './slack-denial-publication.js';
+export type {
+  DenialPublicationSource,
+  DenialPublicationInputs,
+  DenialPublicationResult,
+} from './slack-denial-publication.js';
+export { readDenialContextCoverage } from './slack-denial-storage.js';

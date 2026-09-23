@@ -1,9 +1,9 @@
-export interface AuthorizationRecord {
+interface AuthorizationRecordFields {
   readonly id?: string;
-  readonly authorizationType?: string;
+  readonly authorizationType?: string | null;
   readonly type?: string;
-  readonly determination?: string;
-  readonly status?: string;
+  readonly determination?: string | null;
+  readonly status?: string | null;
   readonly initialApprovalDate?: string | null;
   readonly initialSubmissionDate?: string | null;
   readonly treatmentApprovalDate?: string | null;
@@ -24,6 +24,11 @@ export interface AuthorizationRecord {
   readonly denialReason?: string | null;
   readonly denialExplanation?: string | null;
 }
+
+// Source projections preserve own undefined fields just as the approved JS producer does.
+export type AuthorizationRecord = {
+  readonly [K in keyof AuthorizationRecordFields]?: AuthorizationRecordFields[K] | undefined;
+};
 
 export type AuthorizationState =
   | 'Missing'

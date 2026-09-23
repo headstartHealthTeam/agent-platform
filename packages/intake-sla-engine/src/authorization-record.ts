@@ -27,7 +27,9 @@ const UNRESOLVED_PRIORITIES = new Map<string, number>([
   ['Pending', 1],
 ]);
 
-export function normalizeAuthorization(value = ''): string {
+export function normalizeAuthorization(value: string | null = ''): string {
+  // Preserve the approved core's null rejection; source projections may resolve nulls first.
+  if (value === null) throw new TypeError("Cannot read properties of null (reading 'toLowerCase')");
   return value.toLowerCase().trim();
 }
 
