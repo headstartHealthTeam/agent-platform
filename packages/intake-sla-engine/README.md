@@ -86,6 +86,12 @@ approved narrow semantics. Final verification uses the durable final-state contr
 stage assertions. These pure functions perform no provider I/O and do not replace independent live
 captures, write authorization or executor recovery.
 
+The original bounded replan helpers retain verified capacity only after a definitive pre-dispatch
+size rejection, or exact completed stages/call prefixes after the supported atomic cell-length
+rejection. Changed already-completed content, uncertain outcomes and mismatched resume bindings are
+not successes.
+These helpers neither execute writes nor replace the independent readback required for recovery.
+
 Google capture composes shared provider format/validation types with Intake's range, extent,
 reviewer, history and concurrency rules. Sparse blanks and formulas retain exact readback meaning.
 Unchanged-file revalidation preserves the original capture timestamp and values while hashing the
@@ -95,7 +101,19 @@ Private state verification consumes required fields from unknown JSON and compar
 projections against the original raw capture without writes. Unrelated tab values are not new input
 requirements. Legacy timestamp values keep their original parsing and raw hash semantics; unknown
 inputs retain unknown timestamp types, while typed capture producers retain string types.
-Capture persistence commands, full planning and executor integration remain unfinished.
+Supplied-capture persistence preserves private atomic projections, writer exclusion, immutable
+published runs and retained raw archives. The raw capture is written last as the transaction marker;
+an interrupted projection fails verification and can resume from the same supplied proof. Provider
+reads, command routing and executor integration remain unfinished.
+
+The complete pure publication planner constructs the original nine ordered stages and separate
+durable final assertions. It preserves exact reviewer values, bounded expanded-JSON requests,
+append-only ledger/history, capacity-only grid expansion, label-bound terminal markers and Run
+History last. A sanitized reviewer proof binds exact prepared cells. The planner performs no I/O
+and does not itself establish authority, freshness, independent readback or operational readiness.
+Pure artifact preparation binds stage/call filenames, exact payload hashes and reviewer proof into
+the prepared manifest. It returns in-memory artifacts only; publication-file persistence, gate
+preparation and command/executor orchestration remain separate work.
 
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.

@@ -572,6 +572,30 @@ export { googleAssertionCapture } from './google-assertion-capture.js';
 export { captureGooglePublicationState } from './google-state-capture.js';
 export type { GooglePublicationStateCapture } from './google-state-capture.js';
 export { verifyGoogleStateCapture } from './google-state-storage.js';
+export { saveGoogleStateCapture } from './google-state-persistence.js';
+export type {
+  SaveGoogleStateCaptureInput,
+  SavedGoogleStateCapture,
+} from './google-state-persistence.js';
+export { prepareGooglePublicationArtifacts } from './google-publication-artifacts.js';
+export type {
+  PreparedPublicationStage,
+  PreparedPublicationManifest,
+  PreparedReviewerProof,
+  PreparedPublicationArtifacts,
+} from './google-publication-artifacts.js';
+export {
+  retainCapacityOnlyReadback,
+  retainRejectedCellReadback,
+  remainingPublicationCalls,
+} from './publication-replan.js';
+export type {
+  PublicationCallBinding,
+  PublicationRejectionResponse,
+  PublicationAcknowledgedCall,
+  PublicationRejection,
+  PublicationResume,
+} from './publication-replan-types.js';
 export type {
   GoogleCapturedCell,
   GoogleCapturedBlock,
@@ -582,3 +606,24 @@ export type {
   GoogleRevalidationCapture,
   GoogleStateCaptureInput,
 } from './google-capture-types.js';
+export { buildGooglePublicationPlan, PUBLICATION_PLAN_VERSION } from './google-publication.js';
+export { REPLACEMENT_SHEETS, TERMINAL_MARKER_FIELDS } from './google-publication-context.js';
+export { googleCellValue, GOOGLE_CELL_CHARACTER_LIMIT } from './google-publication-values.js';
+export { splitStageCalls } from './google-publication-stages.js';
+export type { GooglePublicationCall } from './google-publication-stages.js';
+export type {
+  GooglePublicationRows,
+  GooglePublicationCell,
+  GooglePublicationRange,
+  GooglePublicationUpdate,
+  GooglePublicationColor,
+  GooglePublicationRequest,
+  GooglePublicationPayload,
+  GooglePreparedStage,
+  GooglePublicationMetadataSheet,
+  GooglePublicationStateSheet,
+  GoogleWorkbookSheets,
+  GooglePublicationPlanInputs,
+  ReviewerPreservationProof,
+  GooglePublicationPlan,
+} from './google-publication-types.js';

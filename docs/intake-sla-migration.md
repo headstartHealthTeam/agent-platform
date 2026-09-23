@@ -314,9 +314,10 @@ publication integration; those consumers still need full reference-case composit
 - `publication-plan.mjs` maps to the same selected-field stage/final-assertion hash. Extra operator
   metadata does not enter that hash; payloads, dependencies, flags and assertion order do.
 
-These are pure workflow planning helpers, not new provider write capabilities. Complete plan
-construction, live assertion capture, freshness/binding gates, stage/final readback and recovery
-remain required integration work. No live writes or cutover are authorized by these tests.
+These are pure workflow planning helpers, not new provider write capabilities. The following
+sections record complete pure planning, capture acceptance, gate and readback contracts. Their
+file preparation, executor and operational command integration remain unfinished. No live writes
+or cutover are authorized by these tests.
 
 ### Publication freshness and frozen-snapshot gate
 
@@ -331,8 +332,8 @@ remain required integration work. No live writes or cutover are authorized by th
   Write-lease expiration does not change the assessment cutoff or itself require recollection.
   Binding checks and read-only recovery remain independent of the lease check before further writes.
 
-This gate adds no business requirement. Full plan construction, captured readback, executor and
-operational command integration still require their separate reference-case verification.
+This gate adds no business requirement. The following sections record captured-readback and pure
+planner parity; executor and operational command integration remain separate migration work.
 
 ### Exact stage and final readback contracts
 
@@ -345,8 +346,14 @@ Readonly recovery and binding remain available after the write lease expires. Ch
 keep the original numeric-property behavior; negative/fractional coordinates are not reinterpreted
 as array offsets. Raw values are hash-verified, not accepted from operator-authored actual hashes.
 
-These contracts do not themselves read or write Google. Capture/provider composition, prepared plan
-construction, retries/uncertain outcomes and command integration remain separate migration work.
+These contracts do not themselves read or write Google. The capture and planner composition below
+retain them; provider I/O, retries/uncertain outcomes and command integration remain separate work.
+
+`publication-replan.mjs` maps to the typed replan contracts and helpers. The original capacity-only
+pre-dispatch rejection and definitive atomic cell-length rejection retain only exact verified
+stage/call prefixes. `publication-replan.test.ts` preserves rejection cases, immutable input receipts,
+caller call subtypes and exact resume-prefix comparison. No generic retry of uncertain writes is
+introduced; publication execution and command integration remain separate work.
 
 ### Google capture and retained state
 
@@ -367,9 +374,30 @@ symlinked files are not successful captures. Original unhashed legacy metadata r
 compatibility path. Unknown JSON is consumed field-by-field, not eagerly validated for unused tab
 data. Original timestamp parsing and raw values/hashes remain intact, including legacy non-string
 timestamps; unknown input has unknown timestamp output rather than an unsafe string assertion.
-`google-state-storage.test.ts` covers these saved transactions and retained proof semantics. Capture
-persistence commands, the full planner and executor remain work. Neither pure capture nor private
-transaction verification performs provider calls or authorizes publication.
+`google-state-storage.test.ts` covers these saved transactions and retained proof semantics.
+`capture-google-state.mjs` persistence maps to `saveGoogleStateCapture`: supplied evidence is
+validated before taking the existing writer lock, published runs remain immutable, retained raw
+captures are archived identically, and all projections precede the final raw transaction marker.
+A synthetic mid-projection failure proves old raw/archive retention, failed partial verification,
+lock/temporary-file cleanup and successful same-proof resume. Provider reads, command routing and
+executor remain work. These functions do not make provider calls or authorize publication.
+
+### Complete pure publication planner
+
+`google-publication.mjs` maps to the typed builder and its internal cell, append, reviewer, notes,
+presentation and stage modules. This remains Intake-owned business publication logic, not a shared
+Google writer. `google-publication.test.ts` covers the original nine-stage ordering, exact stale-tail
+clears, reviewer movement/new/removed rows, prepared-cell proof, ledger/history append recovery,
+terminal marker labels, typed cells, UTF-16 limit and expanded UTF-8 request budgets. Calls reconstruct
+the original prepared stage payload; final assertions describe only durable final workbook state.
+Append selection narrows current-run desired ledger/history rows only after filtering; unrelated
+historical entries are not a new matrix-validation requirement. Replacement, notes and live-state
+rows remain fully consumed and checked, and malformed selected current-run entries still fail.
+The pure assembly from `build-google-payloads.mjs` maps to `prepareGooglePublicationArtifacts`:
+exact stage/call filenames, payloads, prepared-manifest hash and bound reviewer proof are returned
+without I/O. Shared Google types remain read-only provider contracts. Publication-file persistence,
+executor/readback I/O, native/REST adapter composition and operational command acceptance remain
+distinct migration work.
 
 ## Five implementation slices
 

@@ -45,7 +45,7 @@ export type GooglePresentationRequest =
 export interface GooglePresentationInput {
   readonly title: string;
   readonly sheetId: number;
-  readonly headers: readonly string[];
+  readonly headers: readonly unknown[];
   readonly startRowIndex?: number;
   readonly endRowIndex: number;
 }
@@ -105,11 +105,15 @@ function dimension(
     expectedHash: sha256Json(Array<number>(endIndex - startIndex).fill(pixelSize)),
   });
 }
-function width(title: string, header: string, index: number): number | undefined {
-  if (['Review Queue', 'On-Hold Review'].includes(title)) return WIDTHS.get(header);
+function headerText(value: unknown): string {
+  return String(value);
+}
+function width(title: string, header: unknown, index: number): number | undefined {
+  if (['Review Queue', 'On-Hold Review'].includes(title))
+    return typeof header === 'string' ? WIDTHS.get(header) : undefined;
   if (title === SOURCE_NOTES_TITLE) return index === 0 ? 240 : 720;
   return /notes|evidence|issues|timeline|coverage|conflict|interpretation|audit|quality|result|summary|gaps|sources checked/i.test(
-    header
+    headerText(header)
   )
     ? 420
     : undefined;
