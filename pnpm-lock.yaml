@@ -404,6 +404,9 @@ importers:
 
   packages/intake-sla-engine:
     dependencies:
+      '@headstart-health/fireflies-data':
+        specifier: workspace:*
+        version: link:../fireflies-data
       '@headstart-health/openai-platform':
         specifier: workspace:*
         version: link:../openai-platform

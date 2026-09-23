@@ -128,6 +128,37 @@ export type {
 export { runBoundedWorkers } from './bounded-worker-pool.js';
 export type { BoundedWorkerOptions, WorkerProgress } from './bounded-worker-pool.js';
 export {
+  FIREFLIES_CACHE_VERSION,
+  FIREFLIES_DISCOVERY_ADAPTER_VERSION,
+  FirefliesCacheError,
+  cacheTimestamp,
+  validateCachePolicy,
+} from './fireflies-cache-contract.js';
+export type {
+  FirefliesCachePolicy,
+  FirefliesCollectionWindow,
+  FirefliesDiscovery,
+} from './fireflies-cache-contract.js';
+export { normalizeFirefliesDiscovery, validateDiscovery } from './fireflies-discovery.js';
+export type { DiscoveryNormalizationReceipt } from './fireflies-discovery.js';
+export { planFirefliesCache, transcriptContentHash } from './fireflies-cache-plan.js';
+export type {
+  FirefliesCachePlan,
+  FirefliesCachePlanInput,
+  FirefliesCachePlanItem,
+} from './fireflies-cache-plan.js';
+export { materializeFirefliesCache } from './fireflies-cache-materialize.js';
+export type {
+  CacheMaterializationInput,
+  CacheTranscriptProvenance,
+  FirefliesCacheMaterialization,
+  FirefliesCacheReport,
+  MaterializedCacheEntry,
+  MaterializedCacheIndex,
+} from './fireflies-cache-materialize.js';
+export { verifyFirefliesCacheRun } from './fireflies-cache-verify.js';
+export type { VerifiedFirefliesCacheReport } from './fireflies-cache-verify.js';
+export {
   interpretationBindingForPacket,
   interpretationValidationBindingForPacket,
   interpretTranscriptPacketWithAI,

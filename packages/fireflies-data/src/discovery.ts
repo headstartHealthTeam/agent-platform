@@ -5,12 +5,20 @@ import type { TranscriptMetadata } from './transcript.js';
 
 export type FirefliesDiscoveryFailure =
   'INVALID_DISCOVERY_IDENTITY' | 'INCOMPLETE_DISCOVERY' | 'INVALID_DISCOVERY_METADATA';
+export type FirefliesDiscoveryReason =
+  | 'unconsumed-next-page'
+  | 'invalid-continuation'
+  | 'conflicting-identity'
+  | 'outside-window'
+  | 'invalid-metadata';
 export class FirefliesDiscoveryError extends Error {
   readonly code: FirefliesDiscoveryFailure;
-  constructor(code: FirefliesDiscoveryFailure) {
+  readonly reason: FirefliesDiscoveryReason | undefined;
+  constructor(code: FirefliesDiscoveryFailure, reason?: FirefliesDiscoveryReason) {
     super(code);
     this.name = 'FirefliesDiscoveryError';
     this.code = code;
+    this.reason = reason;
   }
 }
 const email = z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
@@ -117,7 +125,10 @@ function validatePage(
       ? page.nextOffset !== null || page.meetings.length >= limit
       : page.nextOffset !== (index + 1) * limit || page.meetings.length !== limit
   )
-    throw new FirefliesDiscoveryError('INCOMPLETE_DISCOVERY');
+    throw new FirefliesDiscoveryError(
+      'INCOMPLETE_DISCOVERY',
+      terminal ? 'unconsumed-next-page' : 'invalid-continuation'
+    );
 }
 
 function meetingInWindow(record: unknown, fromDate: string, toDate: string): TranscriptMetadata {
@@ -125,13 +136,13 @@ function meetingInWindow(record: unknown, fromDate: string, toDate: string): Tra
   try {
     meeting = transcriptMetadata(record);
   } catch {
-    throw new FirefliesDiscoveryError('INVALID_DISCOVERY_METADATA');
+    throw new FirefliesDiscoveryError('INVALID_DISCOVERY_METADATA', 'invalid-metadata');
   }
   if (
     Date.parse(meeting.date) < Date.parse(fromDate) ||
     Date.parse(meeting.date) > Date.parse(toDate)
   )
-    throw new FirefliesDiscoveryError('INVALID_DISCOVERY_METADATA');
+    throw new FirefliesDiscoveryError('INVALID_DISCOVERY_METADATA', 'outside-window');
   return meeting;
 }
 
@@ -147,7 +158,7 @@ function discoveryPages(input: unknown, window: FirefliesDiscoveryWindow): Trans
       const meeting = meetingInWindow(record, fromDate, toDate);
       const prior = meetings.get(meeting.transcriptId);
       if (prior !== undefined && JSON.stringify(prior) !== JSON.stringify(meeting))
-        throw new FirefliesDiscoveryError('INVALID_DISCOVERY_METADATA');
+        throw new FirefliesDiscoveryError('INVALID_DISCOVERY_METADATA', 'conflicting-identity');
       meetings.set(meeting.transcriptId, meeting);
     }
   }

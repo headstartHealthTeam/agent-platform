@@ -13,6 +13,12 @@ Responses entry point with explicit low effort; bounded workers and exact-bound 
 Intake's retry, checkpoint and reuse rules. Fresh current-run Codex interpretations are not eligible
 for prior-run API reuse. These pure contracts still require their full collector/recovery consumers.
 
+Fireflies discovery composes the shared provider parser with Intake's exact run/scope/window hashes.
+Cache planning, materialization and replay verification preserve shadow-mode fresh fetches, explicit
+reuse approval, baseline invalidation and original retrieval times. Local receipts bind evidence;
+they do not authenticate a source or make old data fresh. Storage and collector integration remain
+separate migration work.
+
 The migration is not yet an operational replacement: source orchestration, checkpoint persistence,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.

@@ -138,6 +138,20 @@ artifact-byte receipts, leave published artifacts immutable and exercise the ori
 publication tests. Grouped interpretation objects preserve values and canonical hashes; newly
 serialized files need new actual-byte receipts, never copied receipts from prior artifacts.
 
+### Fireflies discovery and cache traceability
+
+- `fireflies-discovery.mjs` maps to Intake's `fireflies-discovery.ts`, composing shared identity and
+  pagination normalization while retaining raw/normalized receipt hashes and current-run scope.
+- Provider-only complete-record validation from `fireflies-cache.mjs` maps to shared
+  `fireflies-data/complete-transcript.ts`; no cache or Intake policy moves into that package.
+- Cache policy, baseline eligibility, planning, materialization and replay proof validation from
+  `fireflies-cache.mjs` map to Intake's `fireflies-cache-*` modules. Discovery and cache tests retain
+  cutoff filtering, exact page exhaustion, shadow fresh reads, explicitly approved reuse, unchanged
+  retrieval timestamps, metadata/content changes, bounded age and tampered/transplanted receipt
+  rejection. Provider failures translate to Intake command categories without raw payload causes.
+- File persistence, identity-profile replay and collector callers remain to integrate; these pure
+  contracts do not certify a whole collection or operational readiness.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

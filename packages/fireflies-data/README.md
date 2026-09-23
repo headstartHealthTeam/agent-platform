@@ -14,6 +14,11 @@ body renders whole seconds, and distinguishes explicit empty transcripts from sp
 It returns vendor-level provenance; the consumer adds its own capture hash and receipt version.
 Failures never include transcript contents or raw error envelopes.
 
+`normalizeCompleteFirefliesTranscript` validates a complete normalized provider record, preserving
+its exact transcript text and explicit empty confirmation. It does not establish workflow freshness
+or cache eligibility. Discovery errors expose typed diagnostic reasons so consumers can retain their
+own command error categories without parsing provider messages.
+
 `normalizeFirefliesDiscoveryIdentities` removes only documented null participant entries and
 defaults absent attendee display names. It preserves other supplied metadata and never mutates the
 raw capture. `completeFirefliesDiscoveryPages` validates an explicit offset chain, query-window

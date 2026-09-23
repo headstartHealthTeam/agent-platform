@@ -8,6 +8,8 @@ export {
   transcriptMetadataSchema,
 } from './transcript.js';
 export type { NormalizedFirefliesBody, TranscriptMetadata } from './transcript.js';
+export { normalizeCompleteFirefliesTranscript } from './complete-transcript.js';
+export type { CompleteFirefliesTranscript } from './complete-transcript.js';
 export {
   FirefliesDiscoveryError,
   completeFirefliesDiscoveryPages,
@@ -16,6 +18,7 @@ export {
 export type {
   DiscoveryIdentityCounts,
   FirefliesDiscoveryFailure,
+  FirefliesDiscoveryReason,
   FirefliesDiscoveryWindow,
   FirefliesDiscoveryIdentityEnvelope,
   FirefliesDiscoveryIdentityMeeting,
