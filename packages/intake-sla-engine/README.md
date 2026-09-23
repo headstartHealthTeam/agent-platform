@@ -24,7 +24,12 @@ their approved ordering and provenance. Shared Fireflies participant parsing is 
 provider never decides identity matches or updates the registry. Collection plans retain primary and
 conditional fallback paths, exact deduplication and cohort membership. Cache replay verifies the
 current identity-derived plan and exact consumed profile/row snapshots, preserving extra hash-bound
-metadata. Full bounded collector execution and evidence replay remain separate migration work.
+metadata. Bounded collection selects candidate bodies within each identity's frozen window, retains
+row-local incomplete searches, verifies conditional fallback skips and derives missing-CSM coverage
+only from usable primary evidence. Raw captures, normalization receipts, body checkpoints and final
+inventories are written in the approved recoverable order. The injected native reader is serial and
+paced, preserves per-tool attempts and provider-wide cooldowns across local recovery, and refuses
+published-run writes. Full evidence replay and operational command integration remain migration work.
 
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.

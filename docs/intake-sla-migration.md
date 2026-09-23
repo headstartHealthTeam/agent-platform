@@ -169,8 +169,19 @@ serialized files need new actual-byte receipts, never copied receipts from prior
 - `readCacheRunProof` maps to `fireflies-cache-replay-proof.ts`. Regressions bind the current
   identity-derived plan, exact consumed profile/row snapshots, discovery and materialization;
   decoders preserve additional hash-bound metadata. No later disk row read replaces the builder's
-  snapshot. Bounded collector callers and evidence replay still remain to integrate; these contracts
-  do not certify a whole collection or operational readiness.
+  snapshot. These contracts do not certify full evidence replay or operational readiness.
+- `fireflies-bounded.mjs` maps to Intake's bounded contract/search/manifest, candidate-body and
+  conditional-coverage modules. Tests retain per-row windows and missing-query exceptions,
+  prior-tier skip receipts, mandatory alternative primary emails, nonempty fresh bodies and the
+  existing missing-CSM resolution without changing the original manifest.
+- `fireflies-bounded-storage.mjs` maps to bounded files/storage/proof modules. Raw captures precede
+  normalization receipts and checkpoints; pending finalization precedes the inventory and complete
+  proof. Tests preserve interrupted/concurrent recovery, idempotent finalization, private files,
+  published-run immutability and exact consumer replay/conditional-coverage bindings.
+- `fireflies-read-executor.mjs` maps to Intake's read-state/executor, composing shared provider error
+  and body normalization. The host supplies the authorized callback. Serial pacing, endpoint budgets,
+  durable provider-wide cooldowns, local raw/accepted recovery and sanitized failures retain their
+  source behavior; no new direct API, credential route or cross-workflow retry policy is introduced.
 
 ## Five implementation slices
 

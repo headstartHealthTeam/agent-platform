@@ -240,6 +240,33 @@ export {
 export type { WriterLockOptions } from './private-run-storage.js';
 export { assessTranscriptInventoryArtifact } from './run-artifact-health.js';
 export type { TranscriptInventoryHealth } from './run-artifact-health.js';
+export { FIREFLIES_BOUNDED_VERSION } from './fireflies-bounded-contract.js';
+export type {
+  BoundedInputs,
+  BoundedRow,
+  BoundedIssue,
+  BoundedSearchAttempt,
+  BoundedFallbackSkip,
+  CandidateMeeting,
+  FirefliesCandidateManifest,
+} from './fireflies-bounded-contract.js';
+export { buildFirefliesCandidateManifest } from './fireflies-bounded.js';
+export { validateCandidateBody, verifyCandidateInventory } from './fireflies-candidate-body.js';
+export { resolveBoundedCoverage } from './fireflies-bounded-coverage.js';
+export type { BoundedCoverage, BoundedCoverageResolution } from './fireflies-bounded-coverage.js';
+export { boundedInputs } from './fireflies-bounded-files.js';
+export { readBoundedRunProof } from './fireflies-bounded-proof.js';
+export type { BoundedRunProof } from './fireflies-bounded-proof.js';
+export {
+  planBoundedCollection,
+  acceptCandidateBodies,
+  captureCandidateResponse,
+  boundedCollectionStatus,
+  finalizeBoundedCollection,
+} from './fireflies-bounded-storage.js';
+export type { BoundedCollectionStatus, PendingCandidate } from './fireflies-bounded-storage.js';
+export { executeFirefliesReads } from './fireflies-read-executor.js';
+export type { FirefliesReadOptions } from './fireflies-read-executor.js';
 export {
   interpretationBindingForPacket,
   interpretationValidationBindingForPacket,
