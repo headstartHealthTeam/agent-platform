@@ -12,13 +12,13 @@ const REUSE_EXACT = 'reuse-exact';
 export interface InterpretationEnvelope {
   readonly opportunityId: string;
   readonly sourceRecordId: string;
-  readonly meetingId?: string;
+  readonly meetingId?: string | undefined;
   readonly packet: TranscriptInterpretationPacket;
 }
 export interface SavedInterpretation {
   readonly opportunityId?: string;
   readonly sourceRecordId: string;
-  readonly meetingId?: string;
+  readonly meetingId?: string | undefined;
   readonly binding?: unknown;
 }
 export interface InterpretationArtifact<T extends SavedInterpretation> {

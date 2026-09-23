@@ -5,25 +5,25 @@ export interface EvidenceEvent {
   readonly eventDate: string;
   readonly category: string;
   readonly text: string;
-  readonly collectionDate: string;
-  readonly matchedIdentities: readonly string[];
+  readonly collectionDate: string | undefined;
+  readonly matchedIdentities: readonly unknown[];
   readonly processRelevance: number;
   readonly matchQuality: string;
   readonly substantive: boolean;
   readonly relationship: string;
-  readonly rawText: string | null;
-  readonly issueKey: string | null;
+  readonly rawText: string | null | undefined;
+  readonly issueKey: string | null | undefined;
   readonly lifecycleState: string | null;
   readonly resolvedByEventId: string | null;
   readonly resolutionDate: string | null;
   readonly narrativeContribution: string;
-  readonly factType?: string | null;
-  readonly gateImpact?: string | null;
-  readonly recommendedAction?: string | null;
-  readonly actionOwner?: string | null;
-  readonly actionType?: string | null;
-  readonly followUpDate?: string | null;
-  readonly milestoneDate?: string | null;
+  readonly factType?: string | null | undefined;
+  readonly gateImpact?: string | null | undefined;
+  readonly recommendedAction?: string | null | undefined;
+  readonly actionOwner?: string | null | undefined;
+  readonly actionType?: string | null | undefined;
+  readonly followUpDate?: string | null | undefined;
+  readonly milestoneDate?: string | null | undefined;
   readonly supportingOnly?: boolean;
 }
 

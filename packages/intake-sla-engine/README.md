@@ -37,6 +37,13 @@ distinctions, competing-client margins, context scores and source-health precede
 empty client registry is retained; the migration does not add or infer aliases. Matching is not a
 replacement for evidence admission, cutoff checks or agent review.
 
+Current-run Codex findings retain packet-validation provenance, without model/provider/API-execution
+claims or prior-run API reuse. Bound note adjudication preserves supported agent judgment and the
+existing parser fallback when a decision is missing; it is not a QA override. Note receipts bind
+source, gate, cutoff and supplied findings, and later verification detects changed inputs. Evidence
+assembly preserves date meaning, provenance and original authoritative events across projections.
+Source adapters and final report composition still need their end-to-end regressions.
+
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.

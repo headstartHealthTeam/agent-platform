@@ -105,6 +105,37 @@ export {
 } from './evidence.js';
 export type { EvidenceEvent, EvidenceInput, RankedEvidence } from './evidence.js';
 export {
+  canonicalEvidenceSource,
+  coreEvidenceEvents,
+  dedupeEvidenceEvents,
+} from './evidence-assembly.js';
+export type { CoreEvidenceRow, AssembledEvidenceEvent } from './evidence-assembly.js';
+export { assertInterpretationCandidate } from './precomputed-candidate.js';
+export type {
+  PrecomputedFinding,
+  PrecomputedCandidate,
+  CandidateTarget,
+} from './precomputed-candidate.js';
+export { finalizeCurrentRunPrecomputed } from './precomputed-interpretation.js';
+export type {
+  PrecomputedCandidateInput,
+  CurrentRunPrecomputedInput,
+  CurrentRunInterpretation,
+  CurrentRunPrecomputedArtifact,
+} from './precomputed-interpretation.js';
+export { createNoteAdjudicator } from './note-adjudication.js';
+export type {
+  NoteGate,
+  NoteAdjudicationInput,
+  NoteAdjudicationPacket,
+  NoteAdjudicationReceipt,
+  NoteAdjudicator,
+  NoteEvidenceEvent,
+} from './note-adjudication-types.js';
+export { verifyNoteAdjudicationArtifacts } from './note-adjudication-storage.js';
+export { adjudicatedNoteFreshnessInput } from './note-freshness.js';
+export type { NoteOpportunity } from './note-freshness.js';
+export {
   createSourceResult,
   materialSourceFailure,
   sourceCoverageComplete,

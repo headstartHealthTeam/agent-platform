@@ -203,6 +203,30 @@ serialized files need new actual-byte receipts, never copied receipts from prior
 These matching contracts still require full source-adapter and report integration. Synthetic
 comparison against the approved reference is not a live interpretation acceptance or cutover.
 
+### Current-run judgment and evidence assembly
+
+- `precomputed-interpretation.mjs` maps to Intake's precomputed candidate validation and finalizer.
+  Findings retain the approved exact-field contract and receive packet-validation bindings without
+  claiming API execution. A compiling integration test feeds the complete artifact into the delta
+  planner and confirms that current-run Codex findings are not eligible for prior-run API reuse.
+  Explicitly undefined meeting IDs remain own properties rather than being removed for typing.
+- Malformed-input disposition: the legacy JavaScript date regex accidentally accepted one-element
+  arrays through string coercion. The typed boundary rejects array dates under the already-approved
+  `string | null` finding schema; it does not coerce them into valid evidence. Null finding members
+  remain rejected with a deliberate schema error instead of an incidental `Object.keys` TypeError.
+  Parity claims cover the approved schema, not identical acceptance of every malformed JS value.
+- `note-adjudication.mjs` maps to Intake's note decision, adjudicator, storage verification and
+  freshness-projection modules. Supported agent judgment remains bound to the current run, cutoff,
+  exact source text and gate. Missing decisions retain parser fallback; administrative judgments
+  cannot dismiss unreviewed segments or create freshness events. Malformed envelopes fail at the
+  typed provenance boundary; retained metadata still participates in exact decision hashes.
+- `evidence-assembly.mjs` maps to the typed evidence projection and deduplication module. Regressions
+  preserve typed semantics/provenance, absent versus explicit unknown milestone meaning, source
+  aliases, audit identities, equivalent timestamps and last-authoritative-event precedence.
+
+These contracts preserve agent judgment, not a new deterministic classification requirement.
+Source-adapter, freshness-analyzer and final report integration remain separate parity work.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners
