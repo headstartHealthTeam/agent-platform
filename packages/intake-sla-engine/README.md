@@ -74,6 +74,12 @@ do not perform reads or writes. Presentation affects only its requested ranges; 
 existing column widths and prior rows. Shared Google readers remain read-only; Intake still owns
 full write-plan construction, gate evaluation, readback acceptance and uncertain-write recovery.
 
+Publication-gate contracts preserve fresh checks separately from frozen assessment. Reviewer hashes
+retain exact own values and ignore unrelated metadata. Stable cohorts and proven, complete post-cutoff
+dispositions follow the approved rule; the exact two-hour lease applies before further writes, not
+to read-only recovery. Gate checks retain their original ordering and plan/Sheet/run bindings.
+Full publication command and executor integration remain unfinished.
+
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.

@@ -8,7 +8,7 @@ export interface PublicationPlanHashStage {
   readonly file?: unknown;
   readonly payloadHash?: unknown;
   readonly calls?: readonly { readonly file?: unknown; readonly payloadHash?: unknown }[] | null;
-  readonly assertions?: readonly unknown[] | null;
+  readonly assertions?: readonly unknown[] | null | undefined;
 }
 /** Fingerprint the approved stage fields; extra operator metadata does not change the write plan. */
 export function publicationPlanHash(

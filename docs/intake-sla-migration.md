@@ -318,6 +318,22 @@ These are pure workflow planning helpers, not new provider write capabilities. C
 construction, live assertion capture, freshness/binding gates, stage/final readback and recovery
 remain required integration work. No live writes or cutover are authorized by these tests.
 
+### Publication freshness and frozen-snapshot gate
+
+- `publication-gate.mjs` maps to the typed publication gate, freshness, cohort and reviewer snapshot
+  modules. `publication-gate.test.ts` retains the original check order, exact two-hour write-lease
+  boundary, future/invalid timestamp rejection, approved Sheet identities, unchanged marker and
+  reviewer state, complete post-cutoff disposition, plan hash and Run History/terminal ordering.
+- Snapshot hashing preserves raw reviewer values, own undefined versus absent fields and
+  non-enumerable own reviewer fields. Unrelated metadata is not read; no trimming, stringification
+  or formula conversion is introduced. Actual Google capture producers compose with the gate.
+- A proven post-cutoff material change remains deferrable under the approved frozen-snapshot rule.
+  Write-lease expiration does not change the assessment cutoff or itself require recollection.
+  Binding checks and read-only recovery remain independent of the lease check before further writes.
+
+This gate adds no business requirement. Full plan construction, captured readback, executor and
+operational command integration still require their separate reference-case verification.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

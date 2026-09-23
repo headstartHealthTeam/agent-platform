@@ -512,3 +512,25 @@ export type {
 } from './google-presentation.js';
 export { publicationPlanHash } from './publication-plan.js';
 export type { PublicationPlanHashStage } from './publication-plan.js';
+export { publicationMarker, reviewerSnapshotHash } from './publication-state.js';
+export type {
+  PublicationCaptureFreshness,
+  PublicationMarkerArtifact,
+  ReviewerSnapshotRow,
+  ReviewerSnapshot,
+} from './publication-state.js';
+export {
+  assertPublicationGateFreshness,
+  DEFAULT_PUBLICATION_MAX_AGE_MS,
+} from './publication-freshness.js';
+export { evaluatePublicationGate, PUBLICATION_GATE_VERSION } from './publication-gate.js';
+export type {
+  PublicationRunManifest,
+  PublicationGatePlan,
+  PublicationPostCutoffDisposition,
+  PublicationCohortChanges,
+  PublicationCohortRefresh,
+  PublicationGateInputs,
+  PublicationCohortDisposition,
+  PublicationGateResult,
+} from './publication-gate-types.js';
