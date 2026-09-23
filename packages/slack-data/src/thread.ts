@@ -26,6 +26,17 @@ export type SlackThreadResult =
 function blocked(error: string): SlackThreadResult {
   return { complete: false, text: '', error };
 }
+function retrievalProblem(row: SlackEnvelope, minimumReplies: number): string | null {
+  if (!Number.isSafeInteger(minimumReplies) || minimumReplies < 0)
+    return 'Slack reply count is invalid.';
+  return failedSlackEnvelope(row, true) || hasSlackContinuation(row)
+    ? 'Slack thread retrieval is blocked or incomplete.'
+    : null;
+}
+/** Receipt-level retrieval failure, before a consumer applies its own temporal reconciliation. */
+export function slackThreadRetrievalProblem(input: unknown, minimumReplies = 0): string | null {
+  return retrievalProblem(slackEnvelope(input), minimumReplies);
+}
 
 function payloadText(payload: unknown): string | null {
   if (typeof payload === 'string') return payload;
@@ -163,11 +174,8 @@ export function normalizeSlackThreadResponse(
   minimumReplies = 0
 ): SlackThreadResult {
   const row = slackEnvelope(input);
-  if (!Number.isSafeInteger(minimumReplies) || minimumReplies < 0)
-    return blocked('Slack reply count is invalid.');
-  if (failedSlackEnvelope(row, true) || hasSlackContinuation(row)) {
-    return blocked('Slack thread retrieval is blocked or incomplete.');
-  }
+  const problem = retrievalProblem(row, minimumReplies);
+  if (problem !== null) return blocked(problem);
   if (typeof row.text !== 'string' || !row.text.trim())
     return blocked('Slack thread response is missing.');
   const payload = parsePayload(row.text);

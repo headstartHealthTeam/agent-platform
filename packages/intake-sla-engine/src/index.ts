@@ -449,3 +449,15 @@ export type {
   StoredGenerationLedgerRow,
   GenerationLedgerBaseline,
 } from './generation-ledger-storage.js';
+export { normalizeSlackSearchPage } from './slack-search-page.js';
+export type { SlackCapturePage, NormalizedSlackCapturePage } from './slack-search-page.js';
+export { materializeSlackSearchCapture } from './slack-search-capture.js';
+export type { SlackSearchPlan, SlackSearchRow } from './slack-search-capture.js';
+export { extendSlackSearchCapture } from './slack-search-resume.js';
+export type { SlackResumeCapture } from './slack-search-resume.js';
+export { mergeSlackDelta } from './slack-delta.js';
+export type { SlackDeltaRecord, SlackMergedDelta } from './slack-delta.js';
+export { executeSlackReads, SlackReadError } from './slack-read-executor.js';
+export type { SlackNativeReadRequest, SlackReadOptions } from './slack-read-executor.js';
+export { normalizeSlackThread } from './slack-thread.js';
+export type { IntakeSlackThreadResult } from './slack-thread.js';

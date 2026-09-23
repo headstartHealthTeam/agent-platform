@@ -49,6 +49,15 @@ exact values without trimming or stringification. Generated-note provenance excl
 text while admitting distinct human additions; frozen ledger storage preserves historical rows and
 replaces only current unpublished drafts. Workbook and publication integration remain unfinished.
 
+Slack capture composes shared provider decoding with Intake's complete-cohort plan, exact receipt
+bindings, connected pagination, cutoff and delta checks. Bounded thread reconciliation accounts for
+later replies without admitting their content. The injected reader preserves bounded retries,
+spacing, checkpoint recovery and published-run immutability. No desktop binding or direct Slack
+write is introduced. Typed serialization can reorder newly written plan/inventory JSON keys; their
+values and canonical hashes match, and any byte receipt must describe the actual new bytes, never
+be copied from a prior serialization. Cross-version resume preserves existing saved bytes. Denial
+context, source adapters and full workflow composition still require their own parity checks.
+
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.

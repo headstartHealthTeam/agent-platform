@@ -410,6 +410,9 @@ importers:
       '@headstart-health/openai-platform':
         specifier: workspace:*
         version: link:../openai-platform
+      '@headstart-health/slack-data':
+        specifier: workspace:*
+        version: link:../slack-data
       zod:
         specifier: ^4.6.5
         version: 4.6.5

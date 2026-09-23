@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { normalizeSlackThreadResponse as normalize } from './thread.js';
+import {
+  normalizeSlackThreadResponse as normalize,
+  slackThreadRetrievalProblem,
+} from './thread.js';
 
 const text =
   '=== THREAD REPLIES (2 total) ===\n--- Reply 1 of 2 ---\nSynthetic first reply.\n--- Reply 2 of 2 ---\nSynthetic second reply.';
@@ -27,6 +30,19 @@ function structuredMessages(): TestMessage[] {
 }
 
 describe('Slack native thread contracts', () => {
+  it('exposes retrieval problems without claiming content completeness or choosing a cutoff', () => {
+    expect(slackThreadRetrievalProblem({})).toBeNull();
+    expect(slackThreadRetrievalProblem({ text: 'Unverified content' }, 2)).toBeNull();
+    for (const minimum of [-1, 0.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(slackThreadRetrievalProblem({}, minimum)).toBe('Slack reply count is invalid.');
+    }
+    for (const flags of [{ ok: false }, { has_more: true }, { next_cursor: 'next' }]) {
+      expect(slackThreadRetrievalProblem(flags)).toBe(
+        'Slack thread retrieval is blocked or incomplete.'
+      );
+    }
+  });
+
   it('establishes no replies only with terminal metadata and the requested identity', () => {
     expect(normalize(row)).toEqual({
       complete: true,

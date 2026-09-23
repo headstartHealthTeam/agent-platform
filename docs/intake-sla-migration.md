@@ -90,7 +90,7 @@ migrated. Existing source test expectations remain the behavioral reference.
 | `google-rest-adapter.mjs`; `google-rest-adapter.test.mjs` HTTP/transport metadata                                                                                                   | `google-read-transport`: `failure-metadata.test.ts` preserves status, retry-after and body-consumption transport failures; no provider retries                                              | Pacing, bounded attempts/waits, coalescing, write authorization and uncertain outcomes                                                     |
 | `google-rest-adapter.mjs` metadata/cell/dimension field masks; `google-capture.mjs` typed values                                                                                    | `google-sheets-data`: `grid-reader.test.ts` preserves exact entered types, whitespace, formulas, formats, validation and metadata with a single bounded sample                              | Coordinate assertion capture, reviewer fields, stable snapshots and exact acceptance                                                       |
 | `fireflies-connector-response.mjs` plus vendor metadata from `fireflies-cache.mjs`; `fireflies-connector-response.test.mjs` and error cases from `fireflies-read-executor.test.mjs` | `fireflies-data`: `transcript.test.ts`, `failure.test.ts` cover listing milliseconds/body seconds, silence versus speech, identity/completeness changes and sanitized quota/read failures   | Raw capture hash/version, discovery scope, cutoff, candidate selection, cache policy, executor state and durable cooldown                  |
-| `slack-response.mjs` single-response normalization and `slack-plugin-search.mjs` transport unwrap; non-cutoff `slack-response.test.mjs` cases                                       | `slack-data`: `thread.test.ts`, `envelope.test.ts` preserve no-reply receipts, explicit count, structured pagination/identity and transport rejection                                       | Rendered search mapping still to extract; run hashes, cutoff reconciliation, cohort queries and admission remain Intake-owned              |
+| `slack-response.mjs` single-response normalization and `slack-plugin-search.mjs` transport unwrap; non-cutoff `slack-response.test.mjs` cases                                       | `slack-data`: `thread.test.ts`, `envelope.test.ts` preserve no-reply receipts, explicit count, structured pagination/identity and transport rejection                                       | Run hashes, cutoff reconciliation, cohort queries and admission remain Intake-owned; see Slack capture traceability below                  |
 | `ai-interpretation.mjs#createOpenAIResponsesClient`; request/failure cases in `ai-interpretation-schema.test.mjs`                                                                   | Isolated `openai-platform/responses`: `responses.test.ts` checks model, explicit reasoning effort, schema name, strict output, non-storage, sanitization and no implicit retry/model switch | Exact prompt/schema, approved AWS credential selection, low effort, preflight, support/binding policy and fresh-current-run Codex fallback |
 
 Provider extension is still required where source execution needs additional generic discovery,
@@ -130,8 +130,8 @@ does not itself certify an Intake collection. No business decision moved into th
   errors for malformed response fields, without changing supported finding admission.
 - The detailed-page parser from `slack-plugin-search.mjs` maps to shared `slack-data/search.ts` and
   `search.test.ts`. It returns the exact individual readback reference rather than imposing Intake's
-  hashing or collection-time rule. Intake's capture consumer still must hash original responses,
-  validate readback timing, reconcile all continuation signals and apply cutoff/cohort rules.
+  hashing or collection-time rule. Intake's capture consumer hashes original responses, validates
+  readback timing, reconciles continuation signals and applies cutoff/cohort rules, as mapped below.
 
 These contracts do not establish complete workflow parity. The caller integration must preserve
 artifact-byte receipts, leave published artifacts immutable and exercise the original recovery and
@@ -245,6 +245,34 @@ Source-adapter, freshness-analyzer and final report integration remain separate 
 
 These projections and persistence contracts still require workbook, source-adapter and publication
 composition. They preserve existing rules rather than adding evidence classifications or gates.
+
+### Slack capture and read recovery traceability
+
+- Shared `slack-data` owns structured and detailed rendered page decoding, reply counts, continuation,
+  response failure status/Retry-After and receipt-level thread failures. Intake imports those public
+  contracts; the provider does not import run files, workflow types or Intake policies. The
+  structured-page, rendered-search and failure-metadata functions sanitize unexpected accessor
+  errors, including errors resembling a public provider error; only private, deliberate validation
+  errors retain diagnostics there. Envelope and thread helpers retain their existing behavior.
+- `slack-search-capture.mjs` maps to Intake's typed capture and page modules; its
+  `extendSlackSearchCapture` and `mergeSlackDelta` functions map to the separate typed resume and
+  delta modules. They retain full-cohort scope, raw hashes, exact readback bindings, connected
+  pagination, duplicate/conflict handling and frozen-cutoff admission. Normalized records retain
+  extra source metadata and use original readbacks for binding; resume/delta preserve underlying
+  page/record references. Later adapters must expose consumed metadata through validated typed
+  contracts, not discard it for narrower types.
+- `slack-read-executor.mjs` maps to Intake's injected reader, composing shared failure metadata with
+  the approved retry bounds, pacing, checkpoints and publication immutability. Typed plan/inventory
+  serialization may reorder JSON keys on new writes; values and canonical hashes are unchanged.
+  New byte receipts must bind actual emitted bytes. Cross-version resume retains existing saved
+  artifacts without reserializing them or duplicating completed reads.
+- The cutoff cases from `slack-response.mjs` remain Intake-owned and compose the shared non-temporal
+  thread parser. Post-cutoff replies require complete bounded/unbounded reconciliation; neither a
+  lower reply count nor content beyond the cutoff is silently admitted.
+
+Provider tests use synthetic non-Intake responses. Intake tests compose captures, exact readbacks,
+recovery, terminal failures and cutoff threads. Denial-context, actual source-adapter and full
+operational composition are still separate migration work; this slice is not workflow readiness.
 
 ## Five implementation slices
 
