@@ -160,6 +160,64 @@ export { verifyFirefliesCacheRun } from './fireflies-cache-verify.js';
 export type { VerifiedFirefliesCacheReport } from './fireflies-cache-verify.js';
 export { loadCache, saveCache, readFirefliesDiscovery } from './fireflies-cache-storage.js';
 export type { LoadedFirefliesCache } from './fireflies-cache-storage.js';
+export { readCacheRunProof } from './fireflies-cache-replay-proof.js';
+export type {
+  CacheReplayVerification,
+  FirefliesCacheRunProof,
+} from './fireflies-cache-replay-proof.js';
+export { parseFirefliesProfiles } from './fireflies-profile.js';
+export { providerIdentityInputFromSources } from './provider-identity-input.js';
+export type { ProviderSourceIdentityInput } from './provider-identity-input.js';
+export {
+  buildProviderIdentityCluster,
+  buildProviderRoleClusters,
+  providerClusterAnchors,
+} from './provider-identity.js';
+export type {
+  IdentityProvider,
+  IdentityValue,
+  ProviderIdentityInput,
+  ProviderIdentityCluster,
+  ProviderIdentityRegistry,
+  ProviderRoleCluster,
+  ProviderSourceIdentity,
+  ProviderValue,
+} from './provider-identity-types.js';
+export {
+  providerFirefliesSearchPlan,
+  providerFirefliesSearchPlans,
+  assessFirefliesIdentityCoverage,
+} from './provider-search.js';
+export type {
+  ProviderSearchInput,
+  ProviderFirefliesSearchPlan,
+  RoleFirefliesSearchPlan,
+  FirefliesIdentityCoverage,
+} from './provider-search.js';
+export { firefliesClientSearchVariants, firefliesStageTerms } from './provider-search-terms.js';
+export { proposeFirefliesParticipantIdentities } from './provider-participant-proposals.js';
+export type {
+  ProviderMeetingIdentityEvidence,
+  ParticipantIdentityProposal,
+} from './provider-participant-proposals.js';
+export {
+  buildFirefliesCollectionPlan,
+  buildRunLevelFirefliesCollectionPlan,
+  buildFirefliesTranscriptRetrievalPlan,
+} from './fireflies-collection.js';
+export type {
+  FirefliesProfile,
+  FirefliesOpportunityPlan,
+  FirefliesMeetingRequest,
+  FirefliesRunCollectionPlan,
+  RunMeetingRequest,
+} from './fireflies-collection.js';
+export { assessFirefliesSearchExecution } from './fireflies-search-execution.js';
+export type {
+  FirefliesSearchAssessment,
+  FirefliesSearchAttempt,
+  FirefliesSearchExecution,
+} from './fireflies-search-execution.js';
 export { checkpointPlan, connectorCheckpoint, requireContract } from './connector-checkpoint.js';
 export type {
   CheckpointPlan,

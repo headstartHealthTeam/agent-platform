@@ -19,7 +19,12 @@ reuse approval, baseline invalidation and original retrieval times. Local receip
 they do not authenticate a source or make old data fresh. Private storage and source checkpoint
 persistence preserve atomic writes, bounded writer locks, idempotent captures and publication-receipt
 immutability. Inventory health checks preserve explicit empty bodies and cache-proof freshness.
-Identity-profile replay and collector integration remain separate migration work.
+Provider identity and source projection, role grouping, search plans and participant proposals retain
+their approved ordering and provenance. Shared Fireflies participant parsing is composed here; the
+provider never decides identity matches or updates the registry. Collection plans retain primary and
+conditional fallback paths, exact deduplication and cohort membership. Cache replay verifies the
+current identity-derived plan and exact consumed profile/row snapshots, preserving extra hash-bound
+metadata. Full bounded collector execution and evidence replay remain separate migration work.
 
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.

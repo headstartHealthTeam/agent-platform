@@ -19,6 +19,11 @@ its exact transcript text and explicit empty confirmation. It does not establish
 or cache eligibility. Discovery errors expose typed diagnostic reasons so consumers can retain their
 own command error categories without parsing provider messages.
 
+`firefliesParticipantIdentities` reads vendor participant names/emails, retaining order, duplicates
+and empty-field precedence. It does not exclude internal or bot domains, match a practice/client,
+score confidence or propose registry changes; those are consumer policy. Malformed inputs return
+sanitized provider errors without raw payload causes.
+
 `normalizeFirefliesDiscoveryIdentities` removes only documented null participant entries and
 defaults absent attendee display names. It preserves other supplied metadata and never mutates the
 raw capture. `completeFirefliesDiscoveryPages` validates an explicit offset chain, query-window

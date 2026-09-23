@@ -158,8 +158,19 @@ serialized files need new actual-byte receipts, never copied receipts from prior
   `fireflies-cache-storage.ts`. Inventory health maps to `run-artifact-health.ts`. Synthetic
   filesystem tests cover concurrent acceptance, bounded lock retention, atomic failure cleanup,
   exact hashes, failed outcomes, ancestor publication receipts, corrupted objects and provenance.
-- Identity-profile replay, complete `readCacheRunProof` binding and collector callers remain to
-  integrate; these contracts do not certify a whole collection or operational readiness.
+- `provider-identity.mjs` maps to Intake's provider identity/source projection, role grouping,
+  search-term, coverage and participant-proposal modules. Generic vendor participant decoding is
+  shared `fireflies-data/participants.ts`; alias matching, confidence and registry proposals stay
+  Intake-owned. No automatic registry write is introduced. Nullable/falsey source-array omissions
+  survive projection until the original normalization step.
+- `fireflies-collection.mjs` maps to `fireflies-collection.ts` and `fireflies-search-execution.ts`:
+  run-wide windows, deduplicated requests, role/cohort membership, fallback phases, pagination and
+  newly discovered participant-email searches retain their source behavior.
+- `readCacheRunProof` maps to `fireflies-cache-replay-proof.ts`. Regressions bind the current
+  identity-derived plan, exact consumed profile/row snapshots, discovery and materialization;
+  decoders preserve additional hash-bound metadata. No later disk row read replaces the builder's
+  snapshot. Bounded collector callers and evidence replay still remain to integrate; these contracts
+  do not certify a whole collection or operational readiness.
 
 ## Five implementation slices
 
