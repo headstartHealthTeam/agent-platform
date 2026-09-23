@@ -13,19 +13,32 @@ import type {
 } from './publication-readback-types.js';
 
 export const PUBLICATION_READBACK_VERSION = 1;
+function observedList(value: unknown): value is readonly unknown[] {
+  return Array.isArray(value);
+}
+function observedAssertion(value: unknown): [unknown, unknown] {
+  if (value === undefined || value === null) throw new TypeError('Invalid observed assertion');
+  if (typeof value !== 'object' && typeof value !== 'function') return [undefined, undefined];
+  const id: unknown = Reflect.get(value, 'id');
+  const hash: unknown = Reflect.get(value, 'actualHash');
+  return [id, hash];
+}
+function hasEvidenceHash(value: unknown): boolean {
+  return /^[a-f0-9]{64}$/.test(String(value));
+}
 function observedStage(
   expected: PublicationStage,
   observed: PublicationStageObservation
 ): PublicationStageStatus {
   if (observed.payloadHash !== expected.payloadHash)
     throw new Error(`Publication payload hash mismatch for ${expected.id}`);
-  if (observed.captureVersion !== 1 || !/^[a-f0-9]{64}$/.test(observed.evidenceHash ?? ''))
+  if (observed.captureVersion !== 1 || !hasEvidenceHash(observed.evidenceHash))
     throw new Error(
       `Publication readback for ${expected.id} was not produced from captured live evidence`
     );
-  const actual = new Map(
-    (observed.assertions ?? []).map((assertion) => [assertion.id, assertion.actualHash])
-  );
+  const assertions = observed.assertions ?? [];
+  if (!observedList(assertions)) throw new TypeError('Invalid observed assertions');
+  const actual = new Map(assertions.map(observedAssertion));
   const mismatches = (expected.assertions ?? []).filter(
     (assertion) => actual.get(assertion.id) !== assertion.expectedHash
   );

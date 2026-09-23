@@ -78,7 +78,8 @@ Publication-gate contracts preserve fresh checks separately from frozen assessme
 retain exact own values and ignore unrelated metadata. Stable cohorts and proven, complete post-cutoff
 dispositions follow the approved rule; the exact two-hour lease applies before further writes, not
 to read-only recovery. Gate checks retain their original ordering and plan/Sheet/run bindings.
-Full publication command and executor integration remain unfinished.
+The injected executor is implemented below; full provider and publication command integration remain
+unfinished.
 
 Stage/final readback contracts hash actual captured values against exact assertions, verify prepared
 call reconstruction and preserve ordered recovery. Checkbox and color normalization retain the
@@ -104,7 +105,7 @@ inputs retain unknown timestamp types, while typed capture producers retain stri
 Supplied-capture persistence preserves private atomic projections, writer exclusion, immutable
 published runs and retained raw archives. The raw capture is written last as the transaction marker;
 an interrupted projection fails verification and can resume from the same supplied proof. Provider
-reads, command routing and executor integration remain unfinished.
+reads and command routing remain unfinished.
 
 The complete pure publication planner constructs the original nine ordered stages and separate
 durable final assertions. It preserves exact reviewer values, bounded expanded-JSON requests,
@@ -113,7 +114,13 @@ History last. A sanitized reviewer proof binds exact prepared cells. The planner
 and does not itself establish authority, freshness, independent readback or operational readiness.
 Pure artifact preparation binds stage/call filenames, exact payload hashes and reviewer proof into
 the prepared manifest. It returns in-memory artifacts only; publication-file persistence, gate
-preparation and command/executor orchestration remain separate work.
+preparation and command orchestration remain separate work.
+
+The injected-adapter publication executor preserves exact-plan authority, payload reconstruction,
+fresh write leases and live concurrency checks, durable per-call journals, and readback-only recovery
+after uncertain writes. Finalization makes two independent samples and remains read-only after lease
+expiry; partial or mismatching captures are retained privately without a Published receipt. It does
+not discover credentials or supply a provider adapter. Provider and command composition remain work.
 
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.

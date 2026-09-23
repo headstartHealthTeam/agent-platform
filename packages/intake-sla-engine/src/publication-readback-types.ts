@@ -35,12 +35,12 @@ export interface PublicationStageObservation {
   readonly id: string;
   readonly payloadHash?: unknown;
   readonly captureVersion?: unknown;
-  readonly evidenceHash?: string | null | undefined;
-  readonly verifiedAt?: string | null | undefined;
-  readonly assertions?: readonly VerifiedPublicationAssertion[] | null | undefined;
+  readonly evidenceHash?: unknown;
+  readonly verifiedAt?: unknown;
+  readonly assertions?: unknown;
 }
 export interface PublicationObservations {
-  readonly schemaVersion?: number;
+  readonly schemaVersion?: unknown;
   readonly runId?: string | undefined;
   readonly spreadsheetId?: string | undefined;
   readonly planHash?: string | undefined;
@@ -73,7 +73,7 @@ export type PublicationStageStatus =
   | {
       readonly id: string;
       readonly verified: true;
-      readonly verifiedAt: string | null;
+      readonly verifiedAt: unknown;
       readonly source: 'stage-readback';
     };
 export interface PublicationReadback {

@@ -53,7 +53,7 @@ export function retainCapacityOnlyReadback<T extends PublicationObservations>(
   capacityReplan: {
     priorPlanHash: string;
     rejectionHash: string;
-    capacityEvidenceHash: string | null | undefined;
+    capacityEvidenceHash: unknown;
   };
 } {
   evaluatePublicationReadback(previous, observations);

@@ -578,6 +578,20 @@ export type {
   SavedGoogleStateCapture,
 } from './google-state-persistence.js';
 export { prepareGooglePublicationArtifacts } from './google-publication-artifacts.js';
+export { advancePublication, finalizePublication } from './publication-executor.js';
+export type {
+  ExecutionStage,
+  ExecutionManifest,
+  PublicationAuthority,
+  PublicationConcurrencyResult,
+  CapturedPublicationActual,
+  IncompletePublicationActual,
+  PublicationReadRequest,
+  PublicationReadAdapter,
+  PublicationWriteRequest,
+  PublicationWriteAdapter,
+  PublicationAdvanceResult,
+} from './publication-executor-types.js';
 export type {
   PreparedPublicationStage,
   PreparedPublicationManifest,
