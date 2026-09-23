@@ -348,6 +348,22 @@ as array offsets. Raw values are hash-verified, not accepted from operator-autho
 These contracts do not themselves read or write Google. Capture/provider composition, prepared plan
 construction, retries/uncertain outcomes and command integration remain separate migration work.
 
+### Google capture and retained state
+
+`google-capture.mjs` maps to the typed capture-values, assertion-capture and state-capture modules.
+Intake composes the shared `google-sheets-data` format/validation contracts; native partial-metadata
+captures and shared reader responses both enter the same exact range/assertion acceptance path.
+`google-capture.test.ts` checks provider -> capture -> readback composition, sparse cells/formulas,
+overlapping grids, exact property indices and dimensions, uniform formats/validation, reviewer
+identity and fields, governed extents, history IDs and independent concurrency. Blank scalar strings
+normalize only in state-table projection; assertion values retain their provider types.
+
+Fresh unchanged-file revalidation binds the original capture and retains its collection timestamp.
+It does not relabel old ledger evidence as a new read. The proof and current concurrency are checked
+under the existing rule. All-sheet duplicate identity checks still apply, while only governed tabs
+are projected. Private JSON consumption/storage, full planner and executor integration remain work;
+these pure captures do not perform provider calls or authorize publication.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

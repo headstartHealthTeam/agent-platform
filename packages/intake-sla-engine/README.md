@@ -86,6 +86,12 @@ approved narrow semantics. Final verification uses the durable final-state contr
 stage assertions. These pure functions perform no provider I/O and do not replace independent live
 captures, write authorization or executor recovery.
 
+Google capture composes shared provider format/validation types with Intake's range, extent,
+reviewer, history and concurrency rules. Sparse blanks and formulas retain exact readback meaning.
+Unchanged-file revalidation preserves the original capture timestamp and values while hashing the
+current envelope and revalidation proof; it does not pretend it recollected the ledger. Native partial metadata and shared grid-reader results compose
+with the same acceptance functions. Private JSON/storage and full executor integration remain.
+
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.

@@ -562,3 +562,22 @@ export type {
   PublicationPayload,
   PublicationLoadedCall,
 } from './publication-readback-types.js';
+export {
+  googleEnteredScalar,
+  normalizeReviewerBlanks,
+  GOVERNED_SHEETS,
+} from './google-capture-values.js';
+export type { GoogleEnteredScalar } from './google-capture-values.js';
+export { googleAssertionCapture } from './google-assertion-capture.js';
+export { captureGooglePublicationState } from './google-state-capture.js';
+export type { GooglePublicationStateCapture } from './google-state-capture.js';
+export type {
+  GoogleCapturedCell,
+  GoogleCapturedBlock,
+  GoogleCapturedSheet,
+  GoogleAssertionCaptureInput,
+  GoogleStateSheet,
+  GoogleConcurrencyCapture,
+  GoogleRevalidationCapture,
+  GoogleStateCaptureInput,
+} from './google-capture-types.js';
