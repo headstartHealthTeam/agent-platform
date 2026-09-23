@@ -404,3 +404,48 @@ export type {
   IaOccurrence,
   IaOccurrenceInput,
 } from './ia-occurrence-types.js';
+export { unicodeLength, unicodeSlice, truncateWithEllipsis } from './text-truncation.js';
+export { linkStaffingByOpportunity } from './staffing-linkage.js';
+export type {
+  StaffingLinkRecord,
+  StaffingLinkRequest,
+  StaffingRequestLink,
+} from './staffing-linkage.js';
+export {
+  firefliesReportCoverage,
+  firefliesIdentityConfidence,
+} from './fireflies-report-coverage.js';
+export type { FirefliesReportCoverage } from './fireflies-report-coverage.js';
+export {
+  REVIEWER_FIELDS,
+  indexReviewerState,
+  restoreReviewerState,
+  reviewerStateDiff,
+} from './reviewer-state.js';
+export type {
+  ReviewerField,
+  ReviewerValues,
+  ReviewerRow,
+  ReviewerStateDifference,
+} from './reviewer-state.js';
+export {
+  generationHash,
+  classifyCurrentSlaNote,
+  createGenerationLedgerRow,
+  GENERATION_LEDGER_HEADERS,
+  generationLedgerRows,
+} from './generation-ledger.js';
+export type {
+  GeneratedNoteLedgerEntry,
+  SlaNoteClassification,
+  GenerationLedgerRow,
+  GenerationLedgerProjection,
+} from './generation-ledger.js';
+export {
+  loadGenerationLedgerBaseline,
+  writeGenerationLedgerState,
+} from './generation-ledger-storage.js';
+export type {
+  StoredGenerationLedgerRow,
+  GenerationLedgerBaseline,
+} from './generation-ledger-storage.js';

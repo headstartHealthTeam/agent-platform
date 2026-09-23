@@ -227,6 +227,25 @@ comparison against the approved reference is not a live interpretation acceptanc
 These contracts preserve agent judgment, not a new deterministic classification requirement.
 Source-adapter, freshness-analyzer and final report integration remain separate parity work.
 
+### Report inputs and historical state
+
+- `staffing-linkage.mjs` and `fireflies-report-coverage.mjs` map to Intake-owned typed projections.
+  Direct/request linkage and the existing capital-ID deduplication behavior remain unchanged.
+  Report coverage consumes revalidated bounded proof; identity resolution cannot erase incomplete
+  retrieval. Tests compose real proof output with required-source outcome and blocking decisions.
+- `reviewer-state.mjs` preserves exact reviewer values, including whitespace, booleans and falsey
+  values. Duplicate-ID precedence and null defaults remain unchanged. This does not route reviewer
+  state through a provider's stringifying table helper or authorize writes.
+- `generation-ledger.mjs` retains canonical summary hashes, sentence/token similarity, generated
+  text exclusion and admission of distinct human additions. `generation-ledger-storage.mjs` freezes
+  historical input, removes only unpublished current-run drafts and replaces draft output without
+  rebasing history. Original extra fields and output bytes survive; published runs stay immutable.
+- `text-truncation.mjs` retains code-point slicing and the approved ellipsis behavior. It is a small
+  Intake report helper, not a speculative new utility package.
+
+These projections and persistence contracts still require workbook, source-adapter and publication
+composition. They preserve existing rules rather than adding evidence classifications or gates.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

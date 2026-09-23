@@ -44,6 +44,11 @@ source, gate, cutoff and supplied findings, and later verification detects chang
 assembly preserves date meaning, provenance and original authoritative events across projections.
 Source adapters and final report composition still need their end-to-end regressions.
 
+Report inputs retain staffing links and bounded Fireflies coverage. Reviewer-state projection keeps
+exact values without trimming or stringification. Generated-note provenance excludes prior generated
+text while admitting distinct human additions; frozen ledger storage preserves historical rows and
+replaces only current unpublished drafts. Workbook and publication integration remain unfinished.
+
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.
