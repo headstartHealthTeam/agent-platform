@@ -65,6 +65,57 @@ function provider(
 }
 
 describe('bounded finalized operator history recovery', () => {
+  it('reads item ownership after the item page so a concurrent new root is not checkpointed away', async () => {
+    let nextRootVisible = false;
+    const initial = provider([]);
+    const read: OpenAIPlatform['read'] = async (input) => {
+      const request = readSchema.parse(input);
+      if (request.operation === 'sessions.items') {
+        nextRootVisible = true;
+        return {
+          fingerprint: '',
+          data: {
+            data: [
+              { ...message(0), turn_id: 'turn_next' },
+              {
+                id: 'question_next',
+                turn_id: 'turn_next',
+                type: 'function_call',
+                name: 'ask_operator',
+                call_id: 'call_next',
+                status: 'completed',
+                arguments: { question: 'Confirm the next office?' },
+              },
+            ],
+            has_more: false,
+          },
+        };
+      }
+      if (request.operation === 'sessions.turns') {
+        const root = {
+          id: binding.turnId,
+          session_id: binding.sessionId,
+          subagent_id: null,
+          status: 'completed',
+        };
+        return {
+          fingerprint: '',
+          data: {
+            data: nextRootVisible ? [root, { ...root, id: 'turn_next' }] : [root],
+            has_more: false,
+          },
+        };
+      }
+      return initial.read(input);
+    };
+    const page = await operatorHistory({ read }, binding, null);
+    expect(page.items.map((item) => [item.id, item.kind, item.position])).toEqual([
+      ['item_0', 'commentary', 0],
+      ['call_next', 'question', 1],
+    ]);
+    expect(page.cursor).toEqual({ after: 'question_next', itemId: null, offset: 0, position: 2 });
+    expect(page.hasMore).toBe(false);
+  });
   it('recovers every item beyond the live 180-item window across fresh calls', async () => {
     const source = Array.from({ length: 241 }, (_, index) => message(index));
     let cursor: OperatorHistoryCursor | null = null;

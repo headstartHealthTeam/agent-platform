@@ -137,14 +137,13 @@ export async function operatorHistory(
       : cursorSchema.parse(checkpoint);
   if ((cursor.itemId === null) !== (cursor.offset === 0))
     throw new Error('Invalid history checkpoint');
-  const [{ roots }, response] = await Promise.all([
-    turns.read(platform, binding),
-    platform.read({
-      operation: 'sessions.items',
-      id: binding.sessionId,
-      query: { limit: 100, order: 'asc', ...(cursor.after ? { after: cursor.after } : {}) },
-    }),
-  ]);
+  const response = await platform.read({
+    operation: 'sessions.items',
+    id: binding.sessionId,
+    query: { limit: 100, order: 'asc', ...(cursor.after ? { after: cursor.after } : {}) },
+  });
+  // Read ownership after items: a concurrently created root must not be skipped by the cursor.
+  const { roots } = await turns.read(platform, binding);
   const page = pageSchema.parse(response.data);
   if (cursor.itemId !== null && page.data.length === 0)
     throw new Error('History checkpoint item missing');
