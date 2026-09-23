@@ -31,6 +31,12 @@ inventories are written in the approved recoverable order. The injected native r
 paced, preserves per-tool attempts and provider-wide cooldowns across local recovery, and refuses
 published-run writes. Full evidence replay and operational command integration remain migration work.
 
+Client alias selection, candidate status priority, identity profiles, roster scoring and transcript
+segmentation remain Intake-owned. Conversation relevance preserves the approved direct/assumed/weak
+distinctions, competing-client margins, context scores and source-health precedence. The approved
+empty client registry is retained; the migration does not add or infer aliases. Matching is not a
+replacement for evidence admission, cutoff checks or agent review.
+
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.

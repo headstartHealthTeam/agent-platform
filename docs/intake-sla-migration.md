@@ -183,6 +183,26 @@ serialized files need new actual-byte receipts, never copied receipts from prior
   durable provider-wide cooldowns, local raw/accepted recovery and sanitized failures retain their
   source behavior; no new direct API, credential route or cross-workflow retry policy is introduced.
 
+### Client and conversation matching traceability
+
+- `client-identity.mjs`, `candidate-match.mjs` and `roster-matching.mjs` map to Intake's client
+  identity/name, candidate-match and roster matching/scoring modules. The approved empty client
+  registry is preserved exactly. Regression coverage retains practice scope, exact-ID precedence,
+  alias provenance, active-candidate ranking, uniqueness thresholds and common-speech exclusions.
+- `matching.mjs` maps to identity-profile, text-match and transcript-segments. Tests retain profile
+  composition, direct and assumed identity distinctions, context and competing-client handling,
+  excerpt overlap and sentence-ID deduplication. The legacy first-name regular-expression semantics
+  (including normalized `.` and `+`) use one documented line-scoped lint exception, not a new
+  matching rule or global lint relaxation. Literal regressions preserve their existing behavior,
+  including the short-name short circuit and malformed-pattern error.
+- `conversation-search-result.mjs` maps to conversation matching, name/anchor scoring, typed search
+  results and source health. Tests retain roster ties and fallback identity, approved confidence
+  thresholds, date contributions, completeness and failure precedence. Provider parsers do not
+  make these workflow-specific relevance or source-admission decisions.
+
+These matching contracts still require full source-adapter and report integration. Synthetic
+comparison against the approved reference is not a live interpretation acceptance or cutover.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

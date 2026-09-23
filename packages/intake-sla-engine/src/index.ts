@@ -28,6 +28,55 @@ export {
 export type { DateValue } from './dates.js';
 export { EVIDENCE_ENGINE_VERSION, INTAKE_SOURCE_REVISION } from './engine-version.js';
 export { canonicalJson, sha256Json } from './json-fingerprint.js';
+export {
+  candidateMatchIsActive,
+  candidateMatchRank,
+  selectCurrentCandidateMatch,
+} from './candidate-match.js';
+export type { CandidateMatch } from './candidate-match.js';
+export {
+  CLIENT_IDENTITY_ALIASES,
+  clientIdentityAliasesFor,
+  clientIdentityRegistryMatches,
+} from './client-identity.js';
+export type {
+  ClientIdentityEntry,
+  ClientIdentityRegistry,
+  ClientIdentityInput,
+} from './client-identity.js';
+export { normalizeClientName, nameEditDistance } from './client-name.js';
+export { matchRosterOpportunity, normalizeRosterValue } from './roster-matching.js';
+export type { RosterCandidate, RosterMatch, RosterMatchInput } from './roster-matching.js';
+export { buildIdentityProfile } from './identity-profile.js';
+export type { IdentityProfile, IdentityProfileInput, ProfileProvider } from './identity-profile.js';
+export { assessTextMatch, stageTerms } from './text-match.js';
+export type { TextMatch, TextMatchIdentity, TextMatchInput } from './text-match.js';
+export { segmentTranscript } from './transcript-segments.js';
+export type {
+  MatchSentence,
+  TranscriptSegment,
+  SegmentTranscriptInput,
+} from './transcript-segments.js';
+export { scoreConversationMatch } from './conversation-match.js';
+export type {
+  ConversationProfile,
+  ConversationProvider,
+  ConversationMatch,
+  ConversationMatchInput,
+  ConversationScoreBreakdown,
+} from './conversation-match-types.js';
+export {
+  createConversationSearchResult,
+  evaluateConversationSourceHealth,
+} from './conversation-search-result.js';
+export type {
+  SearchMatch,
+  ConversationSearchInput,
+  ConversationSearchResult,
+  ConversationHealthInput,
+  ConversationSourceHealth,
+  ConversationMatchCounts,
+} from './conversation-search-result.js';
 export { assessBillingClaims, selectBillingClaimAppointments } from './billing-claims.js';
 export {
   BILLING_EVIDENCE_CONTRACT,
