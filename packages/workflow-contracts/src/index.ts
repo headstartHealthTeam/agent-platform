@@ -14,3 +14,8 @@ export {
   type WorkflowRunResult,
   type WorkflowRunStatus,
 } from './run.js';
+export type {
+  ExactEvidenceReference,
+  EvidenceOrigin,
+  RetainedEvidenceManifest,
+} from './evidence.js';
