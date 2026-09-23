@@ -56,6 +56,17 @@ function fixture(
     preflight: vi.fn<OpenAIPlatform['preflight']>(),
     read: vi.fn<OpenAIPlatform['read']>(async (input) => {
       const parsed = readSchema.parse(input);
+      if (parsed.operation === 'sessions.turns' && parsed.query.after && options.turns) {
+        const index = options.turns.findIndex(
+          (turn) =>
+            typeof turn === 'object' &&
+            turn !== null &&
+            'id' in turn &&
+            turn.id === parsed.query.after
+        );
+        const data = { data: options.turns.slice(index + 1), has_more: false };
+        return { data, fingerprint: fingerprint(data) };
+      }
       const data =
         parsed.operation === 'sessions.get'
           ? (options.session ?? {
@@ -107,6 +118,118 @@ function fixture(
 afterEach(() => vi.useRealTimers());
 
 describe('operator runtime adapter', () => {
+  it.each(['failed', 'cancelled', 'completed'])(
+    'explicitly continues the exact %s root in the same session',
+    async (status) => {
+      const roots = [{ id: 'turn_a', session_id: 'session_a', subagent_id: null, status }];
+      const f = fixture({ expiry: Date.now() + 60_000, turns: roots });
+      const command: OperatorCommand = {
+        id: 'continuation_a',
+        kind: 'continue',
+        expectedTurnId: 'turn_a',
+        questionId: null,
+        callFingerprint: null,
+        text: 'Continue the investigation.',
+      };
+      try {
+        await expect(f.port.send(binding, { ...command, expectedTurnId: 'wrong' })).rejects.toThrow(
+          'exact ended turn'
+        );
+        f.platform.apply.mockRejectedValueOnce(new Error('Lost response'));
+        await expect(f.port.send(binding, command)).rejects.toThrow('Lost response');
+        roots.push({
+          id: 'turn_b',
+          session_id: 'session_a',
+          subagent_id: null,
+          status: 'in_progress',
+        });
+        await f.port.recover(binding, command);
+        expect(f.platform.apply.mock.calls[1]).toEqual(f.platform.apply.mock.calls[0]);
+        expect(f.platform.apply.mock.calls[1]?.[0]).toMatchObject({
+          operation: 'sessions.send',
+          id: binding.sessionId,
+          input: command.text,
+          idempotencyKey: command.id,
+        });
+        await expect(
+          f.port.send(binding, { ...command, id: 'new', expectedTurnId: 'turn_b' })
+        ).rejects.toThrow('exact ended turn');
+      } finally {
+        f.port.close();
+      }
+    }
+  );
+  it('does not turn a present refusal into proof that an earlier message was never delivered', async () => {
+    const f = fixture({ expiry: Date.now() + 60_000 });
+    try {
+      f.platform.apply.mockRejectedValue(new InputNotSteerableError());
+      await expect(
+        f.port.recover(binding, {
+          ...reply,
+          kind: 'guidance',
+          questionId: null,
+          callFingerprint: null,
+        })
+      ).rejects.toThrow('Earlier delivery remains unconfirmed');
+    } finally {
+      f.port.close();
+    }
+  });
+  it('recovers a lost message acknowledgement using the original key and unchanged payload', async () => {
+    const f = fixture({ expiry: Date.now() + 60_000 });
+    const command: OperatorCommand = {
+      ...reply,
+      kind: 'guidance',
+      questionId: null,
+      callFingerprint: null,
+    };
+    try {
+      f.platform.apply.mockRejectedValueOnce(new Error('Lost response'));
+      await expect(f.port.send(binding, command)).rejects.toThrow('Lost response');
+      await f.port.recover(binding, command);
+      expect(f.platform.apply.mock.calls[1]).toEqual(f.platform.apply.mock.calls[0]);
+      expect(f.platform.apply.mock.calls[1]?.[0]).toMatchObject({
+        idempotencyKey: command.id,
+        input: command.text,
+      });
+    } finally {
+      f.port.close();
+    }
+  });
+  it('recovers only an exact pending answer and reports a changed call without claiming delivery', async () => {
+    const f = fixture({ expiry: Date.now() + 60_000 });
+    try {
+      const current = await f.port.snapshot(binding);
+      const command = { ...reply, callFingerprint: current.items.at(-1)?.callFingerprint ?? '' };
+      await f.port.recover(binding, command);
+      expect(f.platform.apply).toHaveBeenCalledOnce();
+      expect(await f.port.recover(binding, reply)).toEqual({
+        status: 'superseded',
+        reason: 'question_closed',
+      });
+      expect(f.platform.apply).toHaveBeenCalledOnce();
+    } finally {
+      f.port.close();
+    }
+  });
+  it('can reconcile a closed question after inference authority expires without sending anything', async () => {
+    const f = fixture({
+      session: {
+        id: 'session_a',
+        metadata: { workflow_revision: 'revision_a' },
+        required_actions: [],
+      },
+    });
+    try {
+      expect(await f.port.recover(binding, reply)).toEqual({
+        status: 'superseded',
+        reason: 'question_closed',
+      });
+      expect(f.platform.apply).not.toHaveBeenCalled();
+    } finally {
+      f.port.close();
+    }
+  });
   it('provides independent read-only history without opening an observer or granting inference', async () => {
     const f = fixture();
     expect(await f.port.history(binding, null)).toMatchObject({ items: [], hasMore: false });

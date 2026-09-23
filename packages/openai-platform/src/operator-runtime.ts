@@ -25,12 +25,12 @@ import type { Action } from './operations.js';
 import { operatorHistory } from './operator-history.js';
 import type { OperatorItems } from './operator-items.js';
 import { operatorText } from './operator-items.js';
-import { verifiedOperatorRoots } from './operator-provenance.js';
+import type { verifiedOperatorRoots } from './operator-provenance.js';
+import { OperatorTurns } from './operator-turns.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 import type { OpenAIPlatform } from './platform.js';
 import { fingerprint, planAction, InputNotSteerableError } from './platform.js';
 import type { SessionExecutor } from './session-executor.js';
-import { sessionHistory } from './session-history.js';
 import { SessionLaunchPort } from './session-launch.js';
 
 export type {
@@ -55,6 +55,7 @@ function operatorStatus(
 
 /** Case records, operator authorization and durable outbox claims remain with the owning service. */
 export class OperatorRuntimePort {
+  private readonly turns = new OperatorTurns();
   private closed = false;
   private opening = 0;
   private readonly pending = new Map<
@@ -161,7 +162,7 @@ export class OperatorRuntimePort {
   ): Promise<OperatorHistoryPage> {
     this.requireOpen();
     if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
-    const page = await operatorHistory(this.platform, binding, cursor);
+    const page = await operatorHistory(this.platform, binding, cursor, this.turns);
     this.requireOpen();
     return page;
   }
@@ -204,16 +205,23 @@ export class OperatorRuntimePort {
       observation = entry;
     }
     observation.expiry.refresh();
-    const [session, turns, history] = await Promise.all([
-      this.platform.read({ operation: sessionGet, id: binding.sessionId }),
-      sessionHistory(this.platform, binding.sessionId, 'sessions.turns'),
-      sessionHistory(this.platform, binding.sessionId, 'sessions.items'),
+    const [{ session, roots, root }, history] = await Promise.all([
+      this.turns.read(this.platform, binding),
+      this.platform.read({
+        operation: 'sessions.items',
+        id: binding.sessionId,
+        query: { limit: 100, order: 'desc' },
+      }),
     ]);
     this.requireOpen();
-    const { roots, root } = verifiedOperatorRoots(binding, session.data, turns);
     observation.items.includeTurns(roots.map((turn) => turn.id));
-    observation.items.recover(history.data);
-    const calls = pendingFunctionCalls(session.data, {
+    const recent = z
+      .object({ data: z.array(z.unknown()).max(100), has_more: z.boolean() })
+      .parse(history.data);
+    if (recent.has_more && !recent.data.length) throw new Error('Invalid recent history page');
+    // Recent saved items repair stream gaps; complete history has its independent durable cursor.
+    observation.items.recover([...recent.data].reverse());
+    const calls = pendingFunctionCalls(session, {
       sessionId: binding.sessionId,
       turnId: root.id,
     });
@@ -247,14 +255,10 @@ export class OperatorRuntimePort {
   async pendingFunctions(binding: OperatorBinding): Promise<AgentFunctionCall[]> {
     this.requireOpen();
     if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
-    const [session, turns] = await Promise.all([
-      this.platform.read({ operation: sessionGet, id: binding.sessionId }),
-      sessionHistory(this.platform, binding.sessionId, 'sessions.turns'),
-    ]);
+    const { session, root } = await this.turns.read(this.platform, binding);
     this.requireOpen();
-    const { root } = verifiedOperatorRoots(binding, session.data, turns);
     if (['completed', 'cancelled', 'failed'].includes(root.status)) return [];
-    return pendingFunctionCalls(session.data, {
+    return pendingFunctionCalls(session, {
       sessionId: binding.sessionId,
       turnId: root.id,
     }).filter((call) => this.appFunctions.includes(call.name));
@@ -291,6 +295,13 @@ export class OperatorRuntimePort {
     });
   }
   async send(binding: OperatorBinding, command: OperatorCommand): Promise<OperatorDelivery> {
+    return this.dispatch(binding, command, false);
+  }
+  private async dispatch(
+    binding: OperatorBinding,
+    command: OperatorCommand,
+    recovering: boolean
+  ): Promise<OperatorDelivery> {
     this.requireOpen();
     if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
     const verified = sessionSchema.parse(
@@ -304,7 +315,7 @@ export class OperatorRuntimePort {
     const action: Action =
       command.kind === 'stop'
         ? { operation: 'sessions.cancel', id: binding.sessionId }
-        : await this.inputAction(binding, command);
+        : await this.inputAction(binding, command, recovering);
     this.requireOpen();
     try {
       await this.platform.apply(action, {
@@ -313,16 +324,65 @@ export class OperatorRuntimePort {
         allowBillable: command.kind !== 'stop',
       });
     } catch (error) {
-      if (command.kind === 'guidance' && error instanceof InputNotSteerableError)
+      if (
+        ['guidance', 'continue'].includes(command.kind) &&
+        error instanceof InputNotSteerableError
+      )
         return { status: 'rejected', reason: 'not_steerable' };
       throw error;
     }
     return undefined;
   }
-  private async inputAction(binding: OperatorBinding, command: OperatorCommand): Promise<Action> {
+  /** Reconcile the SAME durable command; never generate a replacement message or tool result. */
+  async recover(binding: OperatorBinding, command: OperatorCommand): Promise<OperatorDelivery> {
+    if (command.kind === 'reply') {
+      const current = await this.snapshot(binding);
+      const question = current.items.find(
+        (item) =>
+          item.id === command.questionId &&
+          item.callFingerprint === command.callFingerprint &&
+          current.pendingQuestionIds.includes(item.id)
+      );
+      if (!question || ['idle', 'completed', 'cancelled', 'failed'].includes(current.status))
+        return { status: 'superseded', reason: 'question_closed' };
+    }
+    // Message idempotency is provided by the original command.id in inputAction. A reply is
+    // resent only to its exact pending call; apply rechecks that call immediately before I/O.
+    const result = await this.dispatch(binding, command, true);
+    // A present refusal says nothing about the earlier attempt whose acknowledgement was lost.
+    if (result?.status === 'rejected') throw new Error('Earlier delivery remains unconfirmed');
+    return result;
+  }
+  private async inputAction(
+    binding: OperatorBinding,
+    command: OperatorCommand,
+    recovering: boolean
+  ): Promise<Action> {
     if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
     // Subscribe before sending, and recover the latest root rather than replying to the launch turn.
     const current = await this.snapshot(binding);
+    if (command.kind === 'continue') {
+      if (
+        !command.expectedTurnId ||
+        command.questionId !== null ||
+        command.callFingerprint !== null ||
+        !command.text.trim() ||
+        (!recovering &&
+          (current.currentTurnId !== command.expectedTurnId ||
+            !['idle', 'completed', 'cancelled', 'failed'].includes(current.status)))
+      )
+        throw new Error('Continuation requires the exact ended turn');
+      // Recovery uses the original message key even if its first attempt already started a turn.
+      // The application must retain its explicit decision and serialize this against later Stop.
+      return {
+        operation: 'sessions.send',
+        id: binding.sessionId,
+        input: command.text,
+        idempotencyKey: command.id,
+      };
+    }
+    if (command.expectedTurnId !== undefined)
+      throw new Error('Only explicit continuation may carry an ended turn');
     if (current.status === 'cancelled' || current.status === 'failed')
       throw new Error('Stopped or failed work requires a separate continuation decision');
     if (command.kind === 'guidance') {
@@ -358,5 +418,6 @@ export class OperatorRuntimePort {
       observer.close();
     }
     this.observations.clear();
+    this.turns.clear();
   }
 }

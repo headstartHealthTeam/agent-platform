@@ -17,13 +17,19 @@ export interface OperatorItem {
 }
 export interface OperatorCommand {
   id: string;
-  kind: 'reply' | 'guidance' | 'stop';
+  kind: 'reply' | 'guidance' | 'stop' | 'continue';
+  /** Exact ended root acknowledged by an explicit continuation decision, never a new binding. */
+  expectedTurnId?: string;
   questionId: string | null;
   callFingerprint: string | null;
   text: string;
 }
 /** Undefined preserves the v1 accepted-send contract. Rejection must prove no input was accepted. */
-export type OperatorDelivery = undefined | { status: 'rejected'; reason: 'not_steerable' };
+export type OperatorDelivery =
+  | undefined
+  | { status: 'rejected'; reason: 'not_steerable' }
+  /** The original question ended. This does not assert that an earlier answer was accepted. */
+  | { status: 'superseded'; reason: 'question_closed' };
 export interface OperatorSnapshot {
   status: OperatorStatus;
   /** Latest verified root turn. Idle is turn completion, not business-workflow completion. */

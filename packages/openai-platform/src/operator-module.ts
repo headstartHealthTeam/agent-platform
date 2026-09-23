@@ -5,7 +5,7 @@ import { OpenAIPlatform } from './platform.js';
 import type { SessionExecutor } from './session-executor.js';
 
 export const protocol = 'headstart-openai-operator/v1';
-export const adapterVersion = '0.7.0';
+export const adapterVersion = '0.8.0';
 export { OperatorRuntimePort } from './operator-runtime.js';
 export { createLocalOperatorRuntimePort } from './local-operator-runtime.js';
 export { OpenAIPlatform } from './platform.js';

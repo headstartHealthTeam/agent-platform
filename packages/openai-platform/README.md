@@ -103,7 +103,11 @@ an existing later turn foreign or invalidate observation. Reading history neithe
 authorizes continuation; the backend still owns Stop and explicit recovery authority. The latest root owns
 current questions and exact replies. Subagent activity is not projected. A provider-completed turn
 maps to `idle`, not business completion; general input can start another turn in the same session.
-This is not resume after cancellation, failure or a protected business stop.
+Ordinary guidance is not resume after cancellation, failure or a protected business stop.
+An explicit `continue` command names the exact ended root and carries its own durable command ID.
+The owning application must reauthorize it, clear only current Stop intent, retain prior Stop and
+review history, and serialize it with cancellation. It sends one new message in the same session;
+it does not replay tools, recreate the session or claim to resume an interrupted instruction.
 
 The port's `send` delegates to guarded message, tool-result and cancellation operations. General
 messages carry a stable command ID as the SDK idempotency key, never a question ID or approval.
@@ -113,15 +117,17 @@ than automatically retrying or interrupting the agent. Other failures remain unc
 does not prove the agent acknowledged or used a correction. Messages and function replies require
 a bounded caller-authorized inference window;
 observation and cancellation do not create one. A successful send means API acceptance, not a
-completed action. Initial start uses the separate launch boundary below. Controlled resume remains
-unimplemented; local compute uses the retained provisioner below. It is not safe to call its write
+completed action. Initial start uses the separate launch boundary below. Local compute uses the
+retained provisioner below. It is not safe to call its write
 methods directly from an untrusted agent. The owner serializes
 actual provider I/O per run, including Stop, and must not release that serialization on a local
 timeout while a detached send can still run. SDK requests have bounded timeouts and no automatic retries.
 
 Observers are coalesced per binding, limited to 20 sessions and closed after 45 seconds without a
-snapshot request. Call `close()` on application teardown. Session history follows every API page;
-100 is the page size, not a session lifetime limit. The observer keeps a rolling window of 180
+snapshot request. Call `close()` on application teardown. Initial turn verification follows every
+page, then caches immutable ended roots and re-reads only the mutable/new tail. A process restart
+revalidates the chain. Live activity reads the newest 100 saved items alongside its stream; this is
+not the durable history lane or a session lifetime limit. The observer keeps a rolling window of 180
 projected items and 10,000 event deduplication IDs. Long assistant messages are split into stable
 10,000-character display parts instead of failing observation. Applications retain durable events
 and expose their own history pagination; a recent-activity window must not disable operator controls.
@@ -138,6 +144,10 @@ and drain outstanding history even after a run reaches terminal status.
 MCP/function activity includes tool names and lifecycle status, never raw arguments/results or
 private reasoning. This follows the official [Agents item contract](https://developers.openai.com/api/reference/typescript/resources/beta/subresources/agents).
 A disconnect never resends input, cancels the agent or proves completion.
+Explicit `recover` retains the exact command: messages/continuations reuse their original provider
+idempotency key, and answers target only the same still-pending call. A closed question returns
+`superseded`, not a claim of successful delivery. A current refusal cannot prove that an earlier
+unknown attempt was rejected. Recovery never extends inference or source authority.
 `createLocalOperatorRuntimePort` resolves the existing private profile inside trusted application
 composition, never inside the isolated executor. This is a development helper, not production
 credential provisioning. No credential lookup happens merely by importing the package.
@@ -147,7 +157,7 @@ workstation credential resolver. Optional local compute does not define the host
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.7.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.8.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
@@ -198,7 +208,7 @@ are rejected before creation. Authorization is attached only to that session's n
 transport. The owning application provisions the non-human identity, issues and revokes run grants
 and enforces source permissions. This package does not implement employee OAuth or mint Headstart
 credentials. The same attachment path works with hosted and retained local execution; it does not
-make a credential valid at a different MCP deployment/database. Adapter `0.7.0` pins the credential
+make a credential valid at a different MCP deployment/database. Adapter `0.8.0` pins the credential
 and dispatch/recovery contract together, so an older artifact cannot silently ignore either.
 
 Call `preflightLaunch(request, descriptors)` before issuing a run credential. Descriptors contain

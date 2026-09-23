@@ -12,11 +12,11 @@ const page = z.object({
 export async function sessionHistory(
   platform: Pick<OpenAIPlatform, 'read'>,
   sessionId: string,
-  operation: 'sessions.turns' | 'sessions.items'
+  operation: 'sessions.turns' | 'sessions.items',
+  after?: string
 ): Promise<{ data: unknown[]; has_more: false }> {
   const data: unknown[] = [];
   const cursors = new Set<string>();
-  let after: string | undefined;
   for (;;) {
     const result = await platform.read({
       operation,

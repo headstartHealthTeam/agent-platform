@@ -9,10 +9,9 @@ import type {
 import { z } from 'zod';
 
 import { OperatorItems, operatorText } from './operator-items.js';
-import { verifiedOperatorRoots } from './operator-provenance.js';
+import { OperatorTurns } from './operator-turns.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 import type { OpenAIPlatform } from './platform.js';
-import { sessionHistory } from './session-history.js';
 
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,200}$/);
 const cursorSchema = z
@@ -129,7 +128,8 @@ function question(raw: unknown, binding: OperatorBinding): OperatorItem | null {
 export async function operatorHistory(
   platform: Pick<OpenAIPlatform, 'read'>,
   binding: OperatorBinding,
-  checkpoint: OperatorHistoryCursor | null
+  checkpoint: OperatorHistoryCursor | null,
+  turns = new OperatorTurns()
 ): Promise<OperatorHistoryPage> {
   const cursor =
     checkpoint === null
@@ -137,16 +137,14 @@ export async function operatorHistory(
       : cursorSchema.parse(checkpoint);
   if ((cursor.itemId === null) !== (cursor.offset === 0))
     throw new Error('Invalid history checkpoint');
-  const [session, turns, response] = await Promise.all([
-    platform.read({ operation: 'sessions.get', id: binding.sessionId }),
-    sessionHistory(platform, binding.sessionId, 'sessions.turns'),
+  const [{ roots }, response] = await Promise.all([
+    turns.read(platform, binding),
     platform.read({
       operation: 'sessions.items',
       id: binding.sessionId,
       query: { limit: 100, order: 'asc', ...(cursor.after ? { after: cursor.after } : {}) },
     }),
   ]);
-  const { roots } = verifiedOperatorRoots(binding, session.data, turns);
   const page = pageSchema.parse(response.data);
   if (cursor.itemId !== null && page.data.length === 0)
     throw new Error('History checkpoint item missing');
