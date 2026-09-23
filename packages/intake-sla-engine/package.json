@@ -32,6 +32,7 @@
     "clean": "rimraf dist .turbo coverage"
   },
   "dependencies": {
+    "@headstart-health/google-read-transport": "workspace:*",
     "@headstart-health/fireflies-data": "workspace:*",
     "@headstart-health/google-sheets-data": "workspace:*",
     "@headstart-health/openai-platform": "workspace:*",

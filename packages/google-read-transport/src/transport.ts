@@ -87,11 +87,11 @@ function retryDelay(value: string | null, now: number): number | null {
 }
 
 function transportFailure(error: unknown): GoogleReadFailureMetadata {
+  const name: unknown =
+    typeof error === 'object' && error !== null ? Reflect.get(error, 'name') : undefined;
   return {
     kind: 'transport',
-    transient:
-      error instanceof TypeError ||
-      (error instanceof Error && ['AbortError', 'TimeoutError'].includes(error.name)),
+    transient: error instanceof TypeError || name === 'AbortError' || name === 'TimeoutError',
   };
 }
 
@@ -102,18 +102,21 @@ function responseBodyFailure(error: unknown): GoogleReadError {
     : new GoogleReadError('Google returned invalid JSON', { kind: 'invalid-response' });
 }
 
-function httpFailure(response: Response, now: number): GoogleReadFailureMetadata {
-  const status = response.status;
+export function googleHttpFailureMetadata(
+  response: GoogleReadResponse,
+  now: number
+): GoogleReadFailureMetadata {
+  const status = response.status ?? null;
   let kind: GoogleReadFailureKind = 'http';
   if (status === 401) kind = 'authentication';
   else if (status === 403) kind = 'permission';
   else if (status === 429) kind = 'rate-limit';
-  else if (status >= 500) kind = 'server';
+  else if (status !== null && status >= 500) kind = 'server';
   return {
     status,
     kind,
-    retryAfterMs: retryDelay(response.headers.get('retry-after'), now),
-    transient: status === 429 || status >= 500,
+    retryAfterMs: retryDelay(response.headers?.get('retry-after') ?? null, now),
+    transient: status === 429 || (status !== null && status >= 500),
   };
 }
 export class GcloudReadTokenProvider implements GoogleTokenProvider {
@@ -144,7 +147,7 @@ const ALLOWED_HOSTS = new Set([
   'analyticsadmin.googleapis.com',
   'sheets.googleapis.com',
 ]);
-async function failureReason(response: Response, readDetails = true): Promise<string> {
+async function failureReason(response: GoogleReadResponse, readDetails = true): Promise<string> {
   const failure = z
     .object({
       error: z
@@ -154,7 +157,7 @@ async function failureReason(response: Response, readDetails = true): Promise<st
         })
         .loose(),
     })
-    .safeParse(readDetails ? await response.json().catch(() => undefined) : undefined);
+    .safeParse(readDetails ? await response.json?.().catch(() => undefined) : undefined);
   return failure.success
     ? [failure.data.error.status, ...(failure.data.error.details ?? []).map((item) => item.reason)]
         .filter((item) => item !== undefined && /^[A-Z_]+$/.test(item))
@@ -207,8 +210,9 @@ export class GoogleReadTransport implements GoogleJsonReader {
           /^\/v4\/spreadsheets\/[A-Za-z0-9_-]+\/values\/[^/]+$/.test(parsed.pathname)));
     if (!allowedRead) throw new GoogleReadError('Google operation is outside the read allowlist');
     const token = await this.#accessToken();
-    let response: Response;
+    let response: GoogleReadResponse;
     try {
+      await this.#options.beforeFetch?.();
       response = await (this.#options.fetchImpl ?? globalThis.fetch)(url, {
         method: body === undefined ? 'GET' : 'POST',
         headers: {
@@ -230,10 +234,11 @@ export class GoogleReadTransport implements GoogleJsonReader {
       const reason = await failureReason(response, this.#options.readErrorDetails);
       throw new GoogleReadError(
         `Google read returned HTTP ${String(response.status)} from ${parsed.hostname}${reason ? ` (${reason})` : ''}`,
-        httpFailure(response, (this.#options.now ?? Date.now)())
+        googleHttpFailureMetadata(response, (this.#options.now ?? Date.now)())
       );
     }
     try {
+      if (response.json === undefined) throw new TypeError('Google response body is unavailable');
       return await response.json();
     } catch (error: unknown) {
       throw responseBodyFailure(error);
@@ -242,11 +247,21 @@ export class GoogleReadTransport implements GoogleJsonReader {
 }
 
 export interface GoogleReadTransportOptions {
-  readonly fetchImpl?: (url: string, init: RequestInit) => Promise<Response>;
+  readonly fetchImpl?: GoogleReadFetch;
   readonly now?: () => number;
+  /** Consumer-owned pacing before timeout creation; the transport still performs one attempt. */
+  readonly beforeFetch?: () => Promise<void>;
   /** Omit even sanitized body inspection when a consumer requires headers-only failures. */
   readonly readErrorDetails?: boolean;
 }
+/** Minimal injected HTTP surface; native fetch Responses satisfy this contract directly. */
+export interface GoogleReadResponse {
+  readonly ok: boolean;
+  readonly status?: number;
+  readonly headers?: { get(name: string): string | null };
+  readonly json?: () => Promise<unknown>;
+}
+export type GoogleReadFetch = (url: string, init: RequestInit) => Promise<GoogleReadResponse>;
 
 function searchConsoleRead(path: string, post: boolean): boolean {
   if (post) return /^\/webmasters\/v3\/sites\/[^/]+\/searchAnalytics\/query$/.test(path);

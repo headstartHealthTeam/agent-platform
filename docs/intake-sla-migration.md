@@ -422,6 +422,16 @@ coalesced refresh, and sanitized failures. Intake still selects its approved pat
 read-only adapter composition. `bound-adc.test.ts` tests the provider without Intake imports; the
 existing Google/Organic default ADC behavior is unchanged. No credential is read by migration tests.
 
+`google-rest-adapter.mjs` now composes shared transport and raw field-selected Sheets reads in
+Intake's `google-publication-adapter`/`google-publication-http`. The provider packages remain
+read-only; Intake retains exact prepared POST controls, single-attempt writes, 1100ms read pacing,
+five-attempt/60-second wait bounds, per-sample coalescing and assertion capture. Queue wait precedes
+HTTP timeout creation. Raw partial captures narrow only consumed fields, preserving null blanks and
+unused provider metadata without weakening the existing strict grid reader. The read-only facade
+from `google-adc-reader.mjs` exposes no apply operation. Permanent adapter/failure/pacing tests retain
+independent 117-assertion samples, partial failures, transient metadata and construction bindings.
+Operational CLI composition and preparation persistence remain distinct work.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

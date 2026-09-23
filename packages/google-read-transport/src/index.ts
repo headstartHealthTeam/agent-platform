@@ -1,5 +1,6 @@
 export {
   GoogleReadTransport,
+  googleHttpFailureMetadata,
   GoogleReadError,
   GcloudReadTokenProvider,
   type GoogleTokenProvider,
@@ -7,6 +8,8 @@ export {
   type GoogleReadFailureKind,
   type GoogleReadFailureMetadata,
   type GoogleReadTransportOptions,
+  type GoogleReadResponse,
+  type GoogleReadFetch,
 } from './transport.js';
 export { createGoogleAdcTokenProvider, GoogleReaderError } from './bound-adc.js';
 export type {

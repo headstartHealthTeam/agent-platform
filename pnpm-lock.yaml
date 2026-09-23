@@ -407,6 +407,9 @@ importers:
       '@headstart-health/fireflies-data':
         specifier: workspace:*
         version: link:../fireflies-data
+      '@headstart-health/google-read-transport':
+        specifier: workspace:*
+        version: link:../google-read-transport
       '@headstart-health/google-sheets-data':
         specifier: workspace:*
         version: link:../google-sheets-data

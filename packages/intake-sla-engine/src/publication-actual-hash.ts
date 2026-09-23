@@ -1,3 +1,4 @@
+import { captureProperty } from './google-capture-property.js';
 import { sha256Json } from './json-fingerprint.js';
 import type {
   PublicationAssertion,
@@ -114,10 +115,11 @@ export function actualHashForPublicationAssertion(
     case 'values':
       return valuesHash(expected, actual);
     case 'grid-properties': {
-      if (!actual.gridProperties) throw new Error(`${expected.id} requires actual grid properties`);
+      const present = Boolean(actual.gridProperties);
+      if (!present) throw new Error(`${expected.id} requires actual grid properties`);
       return sha256Json({
-        rowCount: Number(actual.gridProperties.rowCount),
-        columnCount: Number(actual.gridProperties.columnCount),
+        rowCount: Number(captureProperty(actual.gridProperties, 'rowCount')),
+        columnCount: Number(captureProperty(actual.gridProperties, 'columnCount')),
       });
     }
     case 'data-validation':

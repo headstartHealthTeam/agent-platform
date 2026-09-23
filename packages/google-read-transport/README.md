@@ -11,6 +11,12 @@ capping the delay. The consuming workflow owns pacing, attempt budgets, maximum 
 this transport makes one request and never adds an automatic retry loop. No response body, token or
 original exception is attached to the error. The operation allowlist remains read-only.
 
+Injected HTTP implementations can use the minimal `GoogleReadFetch`/`GoogleReadResponse` contracts.
+`beforeFetch` lets a consumer finish its own pacing before the request timeout starts; it adds no
+transport retry or scheduling policy. `googleHttpFailureMetadata` is a pure headers/status decoder,
+not a request capability. Native and plain error-like abort/timeout failures retain transient
+classification without retaining their payloads.
+
 The public interface accepts an injected token provider so managed identities can replace local
 ADC without changing an engine. See the [documentation hub](../../docs/README.md).
 

@@ -27,16 +27,16 @@ export interface GoogleCapturedSheet {
   readonly basicFilter?: unknown;
   readonly data?: readonly GoogleCapturedBlock[] | undefined;
 }
-export interface GoogleAssertionCaptureInput {
+export interface GoogleAssertionCaptureInput<
+  Response = {
+    readonly spreadsheetId?: string | undefined;
+    readonly sheets?: readonly GoogleCapturedSheet[] | undefined;
+  },
+> {
   readonly spreadsheetId?: string | undefined;
   readonly complete?: unknown;
   readonly range?: PublicationCoordinates | null | undefined;
-  readonly response?:
-    | {
-        readonly spreadsheetId?: string | undefined;
-        readonly sheets?: readonly GoogleCapturedSheet[] | undefined;
-      }
-    | undefined;
+  readonly response?: Response | undefined;
 }
 export interface GoogleStateSheet {
   readonly title: string;

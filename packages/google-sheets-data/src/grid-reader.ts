@@ -115,6 +115,14 @@ export const googleGridSnapshotSchema = z
 export type GoogleGridSnapshot = z.infer<typeof googleGridSnapshotSchema>;
 export type GoogleGridCell = z.infer<typeof googleGridCellSchema>;
 
+/** Raw field-selected capture: consumers narrow only the fields their assertions consume. */
+export const googleGridCaptureSchema = z
+  .object({
+    spreadsheetId: idSchema,
+  })
+  .catchall(z.unknown());
+export type GoogleGridCapture = z.infer<typeof googleGridCaptureSchema>;
+
 function column(index: number): string {
   let text = '';
   for (let position = index + 1; position > 0; position = Math.floor((position - 1) / 26)) {
@@ -127,8 +135,17 @@ export function googleGridA1(input: GoogleGridRead): string {
   const parsed = googleGridReadSchema.safeParse(input);
   if (!parsed.success) throw new GoogleSheetsDataError('A bounded Google grid read is required');
   const { sheet, range } = parsed.data;
-  const title = `'${sheet.title.replaceAll("'", "''")}'`;
-  return `${title}!${column(range.startColumnIndex)}${String(range.startRowIndex + 1)}:${column(range.endColumnIndex - 1)}${String(range.endRowIndex)}`;
+  return googleBoundedA1(sheet.title, range);
+}
+
+export function googleSheetTitleA1(title: string): string {
+  if (title.length === 0) throw new GoogleSheetsDataError('Invalid metadata title');
+  return `'${title.replaceAll("'", "''")}'`;
+}
+export function googleBoundedA1(title: string, range: GoogleGridRead['range']): string {
+  if (!coordinatesSchema.safeParse(range).success)
+    throw new GoogleSheetsDataError('A bounded Google grid read is required');
+  return `${googleSheetTitleA1(title)}!${column(range.startColumnIndex)}${String(range.startRowIndex + 1)}:${column(range.endColumnIndex - 1)}${String(range.endRowIndex)}`;
 }
 
 function snapshot(value: unknown, spreadsheetId: string): GoogleGridSnapshot {

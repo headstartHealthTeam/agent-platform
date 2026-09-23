@@ -579,6 +579,17 @@ export type {
 } from './google-state-persistence.js';
 export { prepareGooglePublicationArtifacts } from './google-publication-artifacts.js';
 export { advancePublication, finalizePublication } from './publication-executor.js';
+export {
+  assertionA1,
+  createGoogleRestAdapter,
+  createGoogleReadOnlyAdapter,
+  GoogleAdapterError,
+} from './google-publication-adapter.js';
+export type {
+  GooglePublicationAdapter,
+  GooglePublicationAdapterOptions,
+  GooglePublicationReadRequest,
+} from './google-publication-adapter.js';
 export type {
   ExecutionStage,
   ExecutionManifest,

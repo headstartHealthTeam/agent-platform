@@ -34,3 +34,10 @@ Intake owns coordinate-level assertion capture, coalescing, reviewer preservatio
 publication authorization and readback acceptance. This low-level snapshot is not itself an
 accepted publication readback or proof that a whole sheet was read. Existing Organic range reads
 retain their unchanged two-sample content-fingerprint contract.
+
+`GoogleSheetsCaptureReader` supplies the same bounded field masks for consumers that must retain
+raw partial responses. It verifies the spreadsheet target and preserves the original object,
+including absent, null and unused fields. Its result exposes unconsumed fields as `unknown`;
+the consumer narrows only what its exact assertion uses. It does not eagerly reject unused data
+or silently fabricate missing titles/arrays. The stricter `GoogleSheetsGridReader` contract above
+is unchanged. Both readers share quoted-title/bounded-A1 formatting and neither can write.

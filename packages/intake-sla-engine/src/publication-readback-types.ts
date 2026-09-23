@@ -49,8 +49,7 @@ export interface PublicationObservations {
 export interface PublicationActualAssertion extends PublicationCoordinates {
   readonly id: string;
   readonly values?: unknown[][] | null | undefined;
-  readonly gridProperties?:
-    { readonly rowCount?: unknown; readonly columnCount?: unknown } | null | undefined;
+  readonly gridProperties?: unknown;
   readonly rule?: unknown;
   readonly basicFilter?: unknown;
   readonly format?: unknown;

@@ -1,10 +1,6 @@
 import { requireContract as check } from './connector-checkpoint.js';
-import type {
-  GoogleAssertionCaptureInput,
-  GoogleCapturedBlock,
-  GoogleCapturedCell,
-  GoogleCapturedSheet,
-} from './google-capture-types.js';
+import { captureProperty as property } from './google-capture-property.js';
+import type { GoogleAssertionCaptureInput } from './google-capture-types.js';
 import { sha256Json } from './json-fingerprint.js';
 import type {
   PublicationActualAssertion,
@@ -24,9 +20,25 @@ function arrayProperty<T>(array: readonly T[] | undefined, index: number): T | u
   // eslint-disable-next-line security/detect-object-injection -- Numeric read-only array lookup must preserve property semantics, including fractional indices; .at would truncate them.
   return array?.[index];
 }
+function list(value: unknown): value is readonly unknown[] {
+  return Array.isArray(value);
+}
+function optionalList(value: unknown): readonly unknown[] {
+  if (value === undefined || value === null) return [];
+  if (!list(value)) throw new TypeError('Google capture array is invalid');
+  return value;
+}
+function blockOffset(block: unknown, field: string): number {
+  if (block === null || block === undefined) throw new TypeError('Missing Google grid block');
+  return Number(property(block, field) ?? 0);
+}
+function sheetIdentity(sheet: unknown): unknown {
+  if (sheet === null || sheet === undefined) throw new TypeError('Missing Google sheet');
+  return property(property(sheet, 'properties'), 'sheetId');
+}
 function coordinates(
   expected: Expected,
-  capture: GoogleAssertionCaptureInput
+  capture: GoogleAssertionCaptureInput<unknown>
 ): PublicationCoordinates {
   for (const key of COORDINATES.filter((field) => Object.hasOwn(expected, field))) {
     const value: unknown = Reflect.get(expected, key);
@@ -50,20 +62,21 @@ function coordinates(
 }
 function capturedSheet(
   expected: Expected,
-  capture: GoogleAssertionCaptureInput | null | undefined
-): GoogleCapturedSheet {
+  capture: GoogleAssertionCaptureInput<unknown> | null | undefined
+): unknown {
   check(
-    capture?.response?.spreadsheetId === capture?.spreadsheetId && capture?.complete === true,
+    property(capture?.response, 'spreadsheetId') === capture?.spreadsheetId &&
+      capture?.complete === true,
     'Google assertion capture is incomplete'
   );
-  const matches =
-    capture.response?.sheets?.filter((sheet) => sheet.properties?.sheetId === expected.sheetId) ??
-    [];
+  const matches = optionalList(property(capture.response, 'sheets')).filter(
+    (sheet) => sheetIdentity(sheet) === expected.sheetId
+  );
   const sheet = matches[0];
   check(sheet !== undefined && matches.length === 1, 'Google assertion has wrong sheet identity');
   return sheet;
 }
-function dimensionPixels(expected: Expected, blocks: readonly GoogleCapturedBlock[]): number[] {
+function dimensionPixels(expected: Expected, blocks: readonly unknown[]): number[] {
   check(
     ['ROWS', 'COLUMNS'].some((dimension) => dimension === expected.dimension),
     'Invalid dimension assertion'
@@ -74,48 +87,48 @@ function dimensionPixels(expected: Expected, blocks: readonly GoogleCapturedBloc
   return Array.from({ length: end - start }, (_, offset) => {
     const index = start + offset;
     const matches = blocks.flatMap((block) => {
-      const local = index - (rows ? (block.startRow ?? 0) : (block.startColumn ?? 0));
-      const dimensions = rows ? block.rowMetadata : block.columnMetadata;
-      return local >= 0 && local < (dimensions?.length ?? 0)
-        ? [arrayProperty(dimensions, local)?.pixelSize]
+      const local = index - blockOffset(block, rows ? 'startRow' : 'startColumn');
+      const dimensions = optionalList(property(block, rows ? 'rowMetadata' : 'columnMetadata'));
+      return local >= 0 && local < dimensions.length
+        ? [property(arrayProperty(dimensions, local), 'pixelSize')]
         : [];
     });
     const pixels = matches[0];
     check(
-      matches.length === 1 && pixels !== undefined && Number.isSafeInteger(pixels) && pixels > 0,
+      matches.length === 1 &&
+        typeof pixels === 'number' &&
+        Number.isSafeInteger(pixels) &&
+        pixels > 0,
       'Missing, overlapping, or invalid Google dimension capture'
     );
     return pixels;
   });
 }
-function cellAt(
-  blocks: readonly GoogleCapturedBlock[],
-  row: number,
-  column: number
-): GoogleCapturedCell {
+function cellAt(blocks: readonly unknown[], row: number, column: number): unknown {
   const matches = blocks.filter(
     (block) =>
-      row >= (block.startRow ?? 0) &&
-      column >= (block.startColumn ?? 0) &&
-      row < (block.startRow ?? 0) + (block.rowData?.length ?? 0) &&
-      column <
-        (block.startColumn ?? 0) +
-          (arrayProperty(block.rowData, row - (block.startRow ?? 0))?.values?.length ?? 0)
+      row >= blockOffset(block, 'startRow') &&
+      column >= blockOffset(block, 'startColumn') &&
+      row < blockOffset(block, 'startRow') + optionalList(property(block, 'rowData')).length &&
+      column < blockOffset(block, 'startColumn') + blockCells(block, row).length
   );
   check(matches.length <= 1, 'Overlapping Google grid captures');
   const block = matches[0];
   if (block === undefined) return {};
-  return (
-    arrayProperty(
-      arrayProperty(block.rowData, row - (block.startRow ?? 0))?.values,
-      column - (block.startColumn ?? 0)
-    ) ?? {}
+  return arrayProperty(blockCells(block, row), column - blockOffset(block, 'startColumn')) ?? {};
+}
+function blockCells(block: unknown, row: number): readonly unknown[] {
+  return optionalList(
+    property(
+      arrayProperty(optionalList(property(block, 'rowData')), row - blockOffset(block, 'startRow')),
+      'values'
+    )
   );
 }
 function cellMatrix<T>(
   expected: Expected,
-  blocks: readonly GoogleCapturedBlock[],
-  select: (cell: GoogleCapturedCell) => T
+  blocks: readonly unknown[],
+  select: (cell: unknown) => T
 ): T[][] {
   const rows =
     expected.rowCount ??
@@ -135,31 +148,39 @@ function cellMatrix<T>(
     )
   );
 }
-function dataValidation(cell: GoogleCapturedCell): GoogleCapturedCell['dataValidation'] | null {
-  if (!cell.dataValidation) return null;
-  const rule = { ...cell.dataValidation };
-  if (rule.condition?.type === 'BOOLEAN') delete rule.showCustomUi;
+function dataValidation(cell: unknown): unknown {
+  const value = property(cell, 'dataValidation');
+  const present = Boolean(value);
+  if (!present) return null;
+  // Object spread preserves all own enumerable fields, including unknown provider metadata.
+  const entries: [string, unknown][] =
+    value === null || value === undefined ? [] : Object.entries(value);
+  const rule = Object.fromEntries(entries);
+  if (property(rule['condition'], 'type') === 'BOOLEAN') delete rule['showCustomUi'];
   return rule;
 }
 function rangeActual(
   expected: Expected,
-  blocks: readonly GoogleCapturedBlock[]
+  blocks: readonly unknown[]
 ): Partial<PublicationActualAssertion> {
   switch (expected.kind) {
     case 'values':
-      return { values: cellMatrix(expected, blocks, (cell) => cell.userEnteredValue ?? null) };
+      return {
+        values: cellMatrix(expected, blocks, (cell) => property(cell, 'userEnteredValue') ?? null),
+      };
     case 'background-color-styles':
       return {
         backgroundColorStyles: cellMatrix(
           expected,
           blocks,
-          (cell) => cell.userEnteredFormat?.backgroundColorStyle ?? null
+          (cell) => property(property(cell, 'userEnteredFormat'), 'backgroundColorStyle') ?? null
         ),
       };
     case 'text-layout': {
       const formats = cellMatrix(expected, blocks, (cell) => ({
-        wrapStrategy: cell.userEnteredFormat?.wrapStrategy ?? null,
-        verticalAlignment: cell.userEnteredFormat?.verticalAlignment ?? null,
+        wrapStrategy: property(property(cell, 'userEnteredFormat'), 'wrapStrategy') ?? null,
+        verticalAlignment:
+          property(property(cell, 'userEnteredFormat'), 'verticalAlignment') ?? null,
       })).flat();
       check(
         formats.length > 0 &&
@@ -185,19 +206,20 @@ function rangeActual(
 }
 export function googleAssertionCapture(
   expected: Expected,
-  capture: GoogleAssertionCaptureInput
+  capture: GoogleAssertionCaptureInput<unknown>
 ): PublicationActualAssertion {
   const sheet = capturedSheet(expected, capture);
   const base = { id: expected.id, ...coordinates(expected, capture) };
   if (expected.kind === 'grid-properties')
-    return { ...base, gridProperties: sheet.properties?.gridProperties };
+    return { ...base, gridProperties: property(property(sheet, 'properties'), 'gridProperties') };
   if (expected.kind === 'basic-filter') {
-    const filterPresent = Boolean(sheet.basicFilter);
+    const basicFilter = property(sheet, 'basicFilter');
+    const filterPresent = Boolean(basicFilter);
     check(filterPresent, 'Connector does not expose live basic-filter metadata');
-    return { ...base, basicFilter: sheet.basicFilter };
+    return { ...base, basicFilter };
   }
-  check(Array.isArray(sheet.data), 'Google grid data was not captured');
-  const blocks: readonly GoogleCapturedBlock[] = sheet.data;
+  const blocks = property(sheet, 'data');
+  check(list(blocks), 'Google grid data was not captured');
   if (expected.kind === 'dimension-pixels')
     return { ...base, dimension: expected.dimension, pixels: dimensionPixels(expected, blocks) };
   return { ...base, ...rangeActual(expected, blocks) };
