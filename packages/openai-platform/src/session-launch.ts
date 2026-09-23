@@ -24,7 +24,7 @@ import {
 } from './platform.js';
 import { selfHostedExecutorConnection } from './self-hosted.js';
 import type { SessionExecutor } from './session-executor.js';
-import { sessionHistory } from './session-history.js';
+import { visitSessionHistory } from './session-history.js';
 import { inspectLaunchCandidate, discoverLaunchCandidates } from './session-recovery.js';
 
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,200}$/);
@@ -300,23 +300,26 @@ export class SessionLaunchPort implements AgentLaunchPort {
   async inspectSession(value: AgentSessionReceipt): Promise<OperatorBinding | null> {
     const receipt = receiptSchema.parse(value);
     await this.session(receipt);
-    const history = await sessionHistory(this.platform, receipt.sessionId, 'sessions.turns');
-    const turns = z
-      .array(
-        z.object({
-          id,
-          session_id: z.literal(receipt.sessionId),
-          subagent_id: z.string().nullable(),
-        })
-      )
-      .parse(history.data);
-    const roots = turns.filter((turn) => turn.subagent_id === null);
-    if (roots.length > 1) throw new Error('Unbound session has unexpected additional roots');
-    const root = roots[0];
-    return root
+    const checkpoint: { rootId: string | null } = { rootId: null };
+    const schema = z.array(
+      z.object({
+        id,
+        session_id: z.literal(receipt.sessionId),
+        subagent_id: z.string().nullable(),
+      })
+    );
+    await visitSessionHistory(this.platform, receipt.sessionId, 'sessions.turns', (data) => {
+      for (const turn of schema.parse(data)) {
+        if (turn.subagent_id !== null) continue;
+        if (checkpoint.rootId !== null)
+          throw new Error('Unbound session has unexpected additional roots');
+        checkpoint.rootId = turn.id;
+      }
+    });
+    return checkpoint.rootId
       ? {
           sessionId: receipt.sessionId,
-          turnId: root.id,
+          turnId: checkpoint.rootId,
           target: receipt.target,
           workflowRevision: receipt.workflowRevision,
         }

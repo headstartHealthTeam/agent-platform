@@ -8,14 +8,16 @@ const page = z.object({
   last_id: z.string().nullable().optional(),
 });
 
-/** Page size is a transport bound, not a maximum lifetime for a valid session. */
-export async function sessionHistory(
+/** Visit each page without retaining provider payloads. Consumers keep only their compact state;
+ * page size is a transport bound, not a maximum lifetime for a valid session.
+ */
+export async function visitSessionHistory(
   platform: Pick<OpenAIPlatform, 'read'>,
   sessionId: string,
   operation: 'sessions.turns' | 'sessions.items',
+  consume: (data: unknown[]) => void,
   after?: string
-): Promise<{ data: unknown[]; has_more: false }> {
-  const data: unknown[] = [];
+): Promise<void> {
   const cursors = new Set<string>();
   for (;;) {
     const result = await platform.read({
@@ -24,8 +26,8 @@ export async function sessionHistory(
       query: { limit: 100, order: 'asc', ...(after ? { after } : {}) },
     });
     const parsed = page.parse(result.data);
-    data.push(...parsed.data);
-    if (!parsed.has_more) return { data, has_more: false };
+    consume(parsed.data);
+    if (!parsed.has_more) return;
     if (!parsed.data.length || !parsed.last_id || cursors.has(parsed.last_id))
       throw new Error('Session history cursor did not advance');
     after = parsed.last_id;

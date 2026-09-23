@@ -141,6 +141,11 @@ Retry reads after a crash; never advance a cursor before retention succeeds. Mut
 `hasMore` true and cannot be passed by the checkpoint. Recover finalized questions from their exact
 call identity, not as newly pending questions. Keep recovery independent of live frames/controls,
 and drain outstanding history even after a run reaches terminal status.
+Read an item page before refreshing its turn ownership, so a concurrently created root cannot be
+silently checkpointed past. Turn pages are verified and reduced as they arrive: launch recovery
+keeps one root identity; observation retains only compact root identity/status metadata, not full
+provider turn payloads or subagent histories. The root index grows with the number of root turns;
+it is not a fixed-size or lossy cap. Complete operator-item history remains application-persisted.
 MCP/function activity includes tool names and lifecycle status, never raw arguments/results or
 private reasoning. This follows the official [Agents item contract](https://developers.openai.com/api/reference/typescript/resources/beta/subresources/agents).
 A disconnect never resends input, cancels the agent or proves completion.

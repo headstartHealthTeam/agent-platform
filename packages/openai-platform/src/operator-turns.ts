@@ -1,9 +1,9 @@
 import type { OperatorBinding } from '@headstart-health/workflow-contracts';
 
-import { verifiedOperatorRoots } from './operator-provenance.js';
+import { operatorRootPage, verifiedOperatorRoots } from './operator-provenance.js';
 import type { OpenAIPlatform } from './platform.js';
 import { fingerprint } from './platform.js';
-import { sessionHistory } from './session-history.js';
+import { visitSessionHistory } from './session-history.js';
 
 type Roots = ReturnType<typeof verifiedOperatorRoots>;
 
@@ -25,12 +25,21 @@ export class OperatorTurns {
     const previous = this.sessions.get(binding.sessionId);
     if (previous && previous.identity !== identity) throw new Error('Observation binding changed');
     const prefix = previous?.roots ?? [];
-    const [session, tail] = await Promise.all([
+    const tail: Roots['roots'] = [];
+    const [session] = await Promise.all([
       platform.read({ operation: 'sessions.get', id: binding.sessionId }),
-      sessionHistory(platform, binding.sessionId, 'sessions.turns', prefix.at(-1)?.id),
+      visitSessionHistory(
+        platform,
+        binding.sessionId,
+        'sessions.turns',
+        (data) => {
+          tail.push(...operatorRootPage(binding.sessionId, data));
+        },
+        prefix.at(-1)?.id
+      ),
     ]);
     const verified = verifiedOperatorRoots(binding, session.data, {
-      data: [...prefix, ...tail.data],
+      data: [...prefix, ...tail],
       has_more: false,
     });
     const roots = verified.roots.filter((turn) =>

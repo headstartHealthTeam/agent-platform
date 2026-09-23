@@ -8,6 +8,14 @@ const rootSchema = z.object({
   status: z.enum(['queued', 'in_progress', 'waiting', 'completed', 'failed', 'cancelled']),
 });
 
+/** Strip full provider payloads page by page and retain only verified root identity/status. */
+export function operatorRootPage(sessionId: string, data: unknown[]): z.infer<typeof rootSchema>[] {
+  const turns = z.array(rootSchema).parse(data);
+  if (turns.some((turn) => turn.session_id !== sessionId))
+    throw new Error('Run provenance changed');
+  return turns.filter((turn) => turn.subagent_id === null);
+}
+
 /** Shared by read-only observation and application tool delivery; no inference or tool execution. */
 export function verifiedOperatorRoots(
   binding: OperatorBinding,

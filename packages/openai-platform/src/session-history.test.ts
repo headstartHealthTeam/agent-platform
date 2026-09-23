@@ -2,13 +2,15 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { readSchema } from './operations.js';
 import type { OpenAIPlatform } from './platform.js';
-import { sessionHistory } from './session-history.js';
+import { visitSessionHistory } from './session-history.js';
 
 describe('complete session history', () => {
   it('retrieves all pages with the provider cursor', async () => {
+    const consume = vi.fn<(data: unknown[]) => void>();
     const read = vi.fn<OpenAIPlatform['read']>(async (input) => {
       const request = readSchema.parse(input);
       if (request.operation !== 'sessions.items') throw new Error('Wrong operation');
+      if (request.query.after) expect(consume).toHaveBeenCalledTimes(1);
       return {
         fingerprint: 'synthetic',
         data:
@@ -23,7 +25,8 @@ describe('complete session history', () => {
               },
       };
     });
-    expect((await sessionHistory({ read }, 'session_a', 'sessions.items')).data).toHaveLength(101);
+    await visitSessionHistory({ read }, 'session_a', 'sessions.items', consume);
+    expect(consume.mock.calls.map(([data]) => data.length)).toEqual([100, 1]);
     expect(read).toHaveBeenLastCalledWith({
       operation: 'sessions.items',
       id: 'session_a',
@@ -35,7 +38,9 @@ describe('complete session history', () => {
       fingerprint: 'synthetic',
       data: { data: [{}], has_more: true, last_id: 'same' },
     });
-    await expect(sessionHistory({ read }, 'session_a', 'sessions.turns')).rejects.toThrow('cursor');
+    await expect(
+      visitSessionHistory({ read }, 'session_a', 'sessions.turns', () => undefined)
+    ).rejects.toThrow('cursor');
     expect(read).toHaveBeenCalledTimes(2);
   });
 });

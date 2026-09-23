@@ -1,11 +1,24 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { readSchema } from './operations.js';
+import { operatorRootPage } from './operator-provenance.js';
 import { OperatorTurns } from './operator-turns.js';
 import type { OpenAIPlatform } from './platform.js';
 import { fingerprint } from './platform.js';
 
 describe('incremental verified turn history', () => {
+  it('discards provider payloads and subagent records while preserving root metadata', () => {
+    const root = { id: 'turn_a', session_id: 'session_a', subagent_id: null, status: 'completed' };
+    expect(
+      operatorRootPage('session_a', [
+        { ...root, output: 'x'.repeat(1_000_000), provider_metadata: { private: 'not retained' } },
+        { ...root, id: 'child', subagent_id: 'agent_child', output: 'x'.repeat(1_000_000) },
+      ])
+    ).toEqual([root]);
+    expect(() => operatorRootPage('session_a', [{ ...root, session_id: 'foreign' }])).toThrow(
+      'provenance'
+    );
+  });
   it('reads every initial page then only mutable/new turns, preserving the initial anchor', async () => {
     const binding = {
       sessionId: 'session_a',
