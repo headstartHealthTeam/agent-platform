@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -17,12 +18,20 @@ const extensions = new Map([
   ['application/vnd.ms-excel.sheet.macroEnabled.12', '.xlsm'],
 ]);
 
+export interface MaterializedDocument {
+  path: string;
+  mimeType: string;
+  kind: string;
+  /** Identity of THIS file's bytes, not the source document from which a page was rendered. */
+  digest: string;
+  byteLength: number;
+}
 /** Write actual evidence, not base64 console output. Never use source-controlled filenames. */
 export async function materializeDocumentContent(
   content: DocumentContent[],
   directory: string
-): Promise<{ path: string; mimeType: string; kind: string }[]> {
-  const artifacts: { path: string; mimeType: string; kind: string }[] = [];
+): Promise<MaterializedDocument[]> {
+  const artifacts: MaterializedDocument[] = [];
   for (const [index, block] of content.entries()) {
     const mimeType = block.type === 'image' ? block.mimeType : block.resource.mimeType;
     const encoded = block.type === 'image' ? block.data : block.resource.blob;
@@ -30,7 +39,13 @@ export async function materializeDocumentContent(
     if (bytes.toString('base64') !== encoded) throw new Error('Invalid original-file encoding');
     const path = join(directory, `evidence-${String(index)}${extensions.get(mimeType) ?? '.bin'}`);
     await writeFile(path, bytes, { flag: 'wx', mode: 0o600 });
-    artifacts.push({ path, mimeType, kind: block.type });
+    artifacts.push({
+      path,
+      mimeType,
+      kind: block.type,
+      digest: `sha256:${createHash('sha256').update(bytes).digest('hex')}`,
+      byteLength: bytes.length,
+    });
   }
   return artifacts;
 }

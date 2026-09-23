@@ -7,4 +7,4 @@ export {
   type DocumentReadRequest,
   type DocumentReadResult,
 } from './read-document.js';
-export { materializeDocumentContent } from './materialize.js';
+export { materializeDocumentContent, type MaterializedDocument } from './materialize.js';

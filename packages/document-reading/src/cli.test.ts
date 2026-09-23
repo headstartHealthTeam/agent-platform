@@ -1,12 +1,15 @@
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { PDFDocument } from '@cantoo/pdf-lib';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { main, documentFailure } from './cli.js';
 import { DocumentReadError, DocumentReadBusyError } from './document-read-error.js';
 import { materializeDocumentContent } from './materialize.js';
+import { readDocument } from './read-document.js';
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -19,6 +22,22 @@ async function root(): Promise<string> {
 }
 
 describe('agent-side document inspection', () => {
+  it('identifies rendered page bytes independently of the full original PDF', async () => {
+    const pdf = await PDFDocument.create();
+    pdf.addPage([200, 200]).drawText('Fictional license');
+    const original = Buffer.from(await pdf.save());
+    const page = await readDocument(original, 'application/pdf', { mode: 'page', page: 1 });
+    const files = await materializeDocumentContent(page.content, await root());
+    const image = files[0];
+    if (!image) throw new Error('Missing page image');
+    const bytes = await readFile(image.path);
+    expect(image.digest).toBe(`sha256:${createHash('sha256').update(bytes).digest('hex')}`);
+    expect(image.byteLength).toBe(bytes.length);
+    expect(image.digest).not.toBe(page.document.digest);
+    expect(page.document.digest).toBe(
+      `sha256:${createHash('sha256').update(original).digest('hex')}`
+    );
+  });
   it('provides actionable local diagnostics without exposing arbitrary upstream errors', () => {
     expect(documentFailure(new DocumentReadError('Use a positive page number.'))).toContain(
       'positive page'

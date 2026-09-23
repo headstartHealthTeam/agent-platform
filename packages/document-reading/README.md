@@ -55,6 +55,12 @@ The CLI never overwrites prior output. `materializeDocumentContent` is shared wi
 [Headstart MCP client](../headstart-mcp-data/README.md), keeping binary output out of console text.
 Backend MCP supplies originals; it must not install or invoke this parser package.
 
+Each materialized file includes its own byte length and SHA-256 digest. A rendered page image has
+different bytes from its source PDF and must never reuse the PDF's digest. Keep the source reference
+and transformation separately in the [evidence handoff contract](../workflow-contracts/src/evidence.ts).
+The backend verifies transported bytes and retained parent references; it does not parse or recreate
+the file. Application retention is separate from these local paths and runtime-reported provenance.
+
 Run the package's standard `build`, `check-types`, `lint`, `test:coverage` and `format:check`
 commands through the repository's pinned pnpm. Tests include actual PDFs, DOCX and workbooks,
 not just mocked parser summaries.

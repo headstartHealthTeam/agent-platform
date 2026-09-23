@@ -126,10 +126,16 @@ composition must protect the Google secret and terminate runtime work when Stop 
 Connected verification must establish that behavior; this package does not claim per-run Google
 credential revocation or retract already delivered evidence.
 
-Credentialing's existing capture function remains Salesforce-specific. A Drive-derived artifact
-must use a separately implemented trusted upload/retention contract before a saved review package
-can claim it is a backend-retained attachment. Do not make backend retrieve Drive again to fill
-this gap. Normal backend/admin/Agents API acceptance must verify the primary agent's actual file
+Credentialing's named capture function remains Salesforce-specific. Drive originals/exports and
+runtime-derived files use the source-neutral [evidence manifest](../workflow-contracts/src/evidence.ts)
+alongside their actual bytes at the application's trusted retention boundary. An original names
+the discovered file/version; a Google export additionally names its source and exported media
+types. Complete Docs JSON uses `google-docs-structure` and retained media type `application/json`,
+not a mislabeled PDF export. A derived file names exact retained parents and the transformation. Each materialized file
+has its own digest, including rendered pages. Runtime-reported provenance is not independent
+source verification or proof of retention. Hosted artifact delivery must still bind files to the
+actual session/turn and await the application's receipt; never fabricate one from a local path.
+Do not make backend retrieve Drive or parse the document again. Normal backend/admin/Agents API acceptance must verify the primary agent's actual file
 access, saved review evidence and stop/recovery behavior; isolated package tests do not prove that
 connected workflow.
 

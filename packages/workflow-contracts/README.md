@@ -15,6 +15,10 @@ contains no business workflow behavior and performs no external operations.
 - Define durable run requests and results independently of a transient Codex thread.
 - Runtime-parse untrusted run requests before they reach an executor.
 - Fail closed when a manifest omits a required operational boundary.
+- Define the source-neutral `RetainedEvidenceManifest` for original Salesforce/Drive files,
+  explicit Google exports, complete Google Docs structure JSON, and runtime-derived files with exact parent references. This typed
+  handoff is not a storage receipt: the owning application verifies and retains the actual bytes,
+  rechecks case authority, and only then accepts the artifact into a review package.
 
 ## Boundary
 
