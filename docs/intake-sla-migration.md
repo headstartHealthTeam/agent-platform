@@ -334,6 +334,20 @@ remain required integration work. No live writes or cutover are authorized by th
 This gate adds no business requirement. Full plan construction, captured readback, executor and
 operational command integration still require their separate reference-case verification.
 
+### Exact stage and final readback contracts
+
+`publication-readback.mjs` maps to typed readback, actual-value hashing and prepared-payload modules.
+`publication-readback.test.ts` retains ordered stage recovery, exact call reconstruction and control
+hashes, capture-evidence receipts, coordinate checks, range padding, explicitly allowed blank
+checkboxes, float32 color normalization, text/dimension/filter/validation assertions and independent
+durable final assertions. A passed intermediate stage does not substitute for the final live sample.
+Readonly recovery and binding remain available after the write lease expires. Checkbox coordinates
+keep the original numeric-property behavior; negative/fractional coordinates are not reinterpreted
+as array offsets. Raw values are hash-verified, not accepted from operator-authored actual hashes.
+
+These contracts do not themselves read or write Google. Capture/provider composition, prepared plan
+construction, retries/uncertain outcomes and command integration remain separate migration work.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

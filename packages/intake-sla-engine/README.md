@@ -80,6 +80,12 @@ dispositions follow the approved rule; the exact two-hour lease applies before f
 to read-only recovery. Gate checks retain their original ordering and plan/Sheet/run bindings.
 Full publication command and executor integration remain unfinished.
 
+Stage/final readback contracts hash actual captured values against exact assertions, verify prepared
+call reconstruction and preserve ordered recovery. Checkbox and color normalization retain the
+approved narrow semantics. Final verification uses the durable final-state contract, not superseded
+stage assertions. These pure functions perform no provider I/O and do not replace independent live
+captures, write authorization or executor recovery.
+
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.

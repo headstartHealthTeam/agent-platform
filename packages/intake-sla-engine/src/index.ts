@@ -534,3 +534,31 @@ export type {
   PublicationCohortDisposition,
   PublicationGateResult,
 } from './publication-gate-types.js';
+export {
+  PUBLICATION_READBACK_VERSION,
+  evaluatePublicationReadback,
+  nextPublicationStage,
+  verifyPublicationStageActual,
+  verifyFinalPublicationActual,
+  recordPublicationStageReadback,
+} from './publication-readback.js';
+export {
+  assertPublicationStagePayload,
+  assertPublicationGateBinding,
+} from './publication-payload.js';
+export type {
+  PublicationCoordinates,
+  PublicationAssertion,
+  PublicationStage,
+  PublicationManifest,
+  VerifiedPublicationAssertion,
+  PublicationStageObservation,
+  PublicationObservations,
+  PublicationActualAssertion,
+  PublicationActual,
+  PublicationStageStatus,
+  PublicationReadback,
+  PublicationGateBinding,
+  PublicationPayload,
+  PublicationLoadedCall,
+} from './publication-readback-types.js';
