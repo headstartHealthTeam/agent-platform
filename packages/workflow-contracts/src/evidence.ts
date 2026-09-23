@@ -37,7 +37,7 @@ export type EvidenceOrigin =
     }
   | {
       kind: 'runtime-derived';
-      sources: ExactEvidenceReference[];
+      sources: [ExactEvidenceReference, ...ExactEvidenceReference[]];
       transformation: { id: string; revision: string };
     };
 export interface RetainedEvidenceManifest extends ExactEvidenceReference {
