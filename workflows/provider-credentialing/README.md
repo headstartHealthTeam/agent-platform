@@ -36,8 +36,13 @@ not in a backend MCP module. Its standalone CLI reuses shared Google transport a
 [document parsing](../../packages/document-reading/README.md). It still requires an installed
 runtime artifact and explicit Google binding in the selected sandbox; those bindings and a real-source
 agent demonstration are not established by this package relocation. Do not infer availability
-from an employee's desktop connector. Drive-to-review retention is also unfinished: the existing
-capture function below remains Salesforce-specific, and a runtime file is not a retained receipt.
+from an employee's desktop connector. The source-neutral exact-byte retention contract is defined
+in [workflow contracts](../../packages/workflow-contracts/README.md#responsibilities).
+It covers Drive originals, exports, Docs structure and runtime-derived artifacts alongside
+Salesforce originals. A runtime file or manifest is not a retained receipt: the trusted application
+handoff must verify the bytes, case/subject binding and exact parent lineage before publication.
+Binding hosted artifact delivery to that handoff remains a separate integration step; the capture
+function below still accepts Salesforce identifiers only.
 
 `capture_credentialing_source_document` is the protected original-file retention capability.
 It accepts exact Salesforce link/document/version identifiers discovered through MCP, verifies the
@@ -46,11 +51,19 @@ bytes, arbitrary URLs, new source login or search interface are exposed. The bac
 production-read artifacts without a matching case/subject/version receipt. Originals include PDFs,
 images and Office/workbook files; browser rendering is distinct from original availability.
 Pass the discovered `sourceObject` for relevant shared sources. Case assignment is not an exclusive
-source-record blindfold. Conversion artifacts remain an explicit gap, not a fabricated original. This does not
+source-record blindfold. Runtime conversion retains its own digest and exact source parents;
+never label converted bytes as an original. Without a successful retention receipt, the attachment
+remains unresolved. This does not
 change the schema or its payer-neutral semantics, or establish live source/MCP acceptance.
 
 Saved review corrections remain instructions to investigate, not source truth or approval. The
 agent re-reads context, investigates and publishes a new package, which requires renewed review.
+An explicit continuation after a failed or stopped turn stays in the same session and case. It
+does not erase pending corrections, reuse approval, replay uncertain tools or create new source
+authority. The application retains the original command identity when recovering an uncertain
+message. The agent should read current review context after continuation, not assume the previous
+turn completed its work. Shared delivery and continuation behavior is owned by the operator runtime,
+not a credentialing-specific retry loop.
 Native source access, exact source-file handoff, hosted environment setup and real-agent
 acceptance are not established by building this artifact. Missing byte access must be reported as
 missing; a file summary must not become an invented digest or fabricated original document.
