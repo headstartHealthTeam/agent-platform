@@ -361,8 +361,15 @@ normalize only in state-table projection; assertion values retain their provider
 Fresh unchanged-file revalidation binds the original capture and retains its collection timestamp.
 It does not relabel old ledger evidence as a new read. The proof and current concurrency are checked
 under the existing rule. All-sheet duplicate identity checks still apply, while only governed tabs
-are projected. Private JSON consumption/storage, full planner and executor integration remain work;
-these pure captures do not perform provider calls or authorize publication.
+are projected. `google-state-storage.mjs` maps to the read-only `verifyGoogleStateCapture` transaction
+verifier: all five saved projections must match the raw envelope; missing, changed, malformed or
+symlinked files are not successful captures. Original unhashed legacy metadata retains its existing
+compatibility path. Unknown JSON is consumed field-by-field, not eagerly validated for unused tab
+data. Original timestamp parsing and raw values/hashes remain intact, including legacy non-string
+timestamps; unknown input has unknown timestamp output rather than an unsafe string assertion.
+`google-state-storage.test.ts` covers these saved transactions and retained proof semantics. Capture
+persistence commands, the full planner and executor remain work. Neither pure capture nor private
+transaction verification performs provider calls or authorizes publication.
 
 ## Five implementation slices
 

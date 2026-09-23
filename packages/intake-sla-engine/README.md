@@ -89,8 +89,13 @@ captures, write authorization or executor recovery.
 Google capture composes shared provider format/validation types with Intake's range, extent,
 reviewer, history and concurrency rules. Sparse blanks and formulas retain exact readback meaning.
 Unchanged-file revalidation preserves the original capture timestamp and values while hashing the
-current envelope and revalidation proof; it does not pretend it recollected the ledger. Native partial metadata and shared grid-reader results compose
-with the same acceptance functions. Private JSON/storage and full executor integration remain.
+current envelope and revalidation proof; it does not pretend it recollected the ledger. Native
+partial metadata and shared grid-reader results compose with the same acceptance functions.
+Private state verification consumes required fields from unknown JSON and compares all five saved
+projections against the original raw capture without writes. Unrelated tab values are not new input
+requirements. Legacy timestamp values keep their original parsing and raw hash semantics; unknown
+inputs retain unknown timestamp types, while typed capture producers retain string types.
+Capture persistence commands, full planning and executor integration remain unfinished.
 
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.

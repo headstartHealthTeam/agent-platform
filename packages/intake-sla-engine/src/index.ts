@@ -571,6 +571,7 @@ export type { GoogleEnteredScalar } from './google-capture-values.js';
 export { googleAssertionCapture } from './google-assertion-capture.js';
 export { captureGooglePublicationState } from './google-state-capture.js';
 export type { GooglePublicationStateCapture } from './google-state-capture.js';
+export { verifyGoogleStateCapture } from './google-state-storage.js';
 export type {
   GoogleCapturedCell,
   GoogleCapturedBlock,
