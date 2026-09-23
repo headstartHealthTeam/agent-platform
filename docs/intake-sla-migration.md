@@ -1,0 +1,146 @@
+# Intake SLA migration: package ownership and parity
+
+## Required architecture
+
+This is the supervised Intake SLA workflow moved into Agent Platform's existing typed package
+architecture. **Reusable provider mechanics belong outside `intake-sla-engine`. Internal provider
+folders in that engine are not a substitute for independently consumable packages.**
+
+Follow [HEA-517](https://linear.app/headstarthealth/issue/HEA-517) for delivery scope and
+[reusable data capabilities](reusable-data-capabilities.md) for the platform pattern. This document
+owns Intake's concrete source-to-package decisions, not a second business policy or runbook.
+
+## Behavioral reference
+
+The reference is Intake merged main
+`15b66ac3904fec49c42d60496ff6000cc8f3c60b`, engine `2026-09-22.2`, with canonical operator skill
+`0.2.2`. It includes [PR #5](https://github.com/headstartHealthTeam/intake-sla-evidence-engine/pull/5)
+(authored by Mark, approved by Jimmy, merged by Mark) and Jimmy's subsequently merged
+[PR #6](https://github.com/headstartHealthTeam/intake-sla-evidence-engine/pull/6) and
+[PR #7](https://github.com/headstartHealthTeam/intake-sla-evidence-engine/pull/7).
+The initial Agent Platform target is `7e9d213feece3aa56a3e4adcb25f270663d27649`.
+Refresh later source changes deliberately; never lose a reviewed correction or relabel existing
+interpretation bindings. The superseded migration attempt is not a behavioral or architectural
+reference.
+
+## Final runtime contract
+
+One canonical skill coordinates a versioned local runtime, scoped provider reads, interpretation,
+semantic review and authorized Sheet publication. The runtime works outside either source checkout
+with explicit private configuration and dependency readiness. Installing the skill does not install
+the runtime. Native tools use a supported injected callback or the existing agent read/capture
+protocol, not an assumed Node-to-desktop binding.
+
+Codex retains judgment over contextual evidence and useful additional authorized reads/model calls.
+Code preserves identity, provenance, dates, exact bindings, typed transformations, recovery and
+publication invariants. A new phrase is not automatically a new parser rule. Real uncertainty stays
+Review/Blocked under the existing rules; no new blanket publication ban is introduced.
+
+Preserve frozen-cutoff assessment and bounded recovery separately from fresh publication checks;
+approved model/credential and `store: false` contracts; fresh-current-run Codex fallback provenance;
+reviewer-owned values; immutable published evidence; stage readbacks and Run History last. Salesforce
+remains read-only. No live run, schedule, cloud deployment, service-identity change, cache activation,
+UI or Salesforce operational-context utility is added by this migration.
+
+## Package ownership map
+
+Names for new packages identify concrete boundaries, not one package per source script. A second
+consumer is not required where the vendor-level contract is already coherent. Shared providers must
+not depend on Intake types, filenames, run locks, cohort policy or business decisions.
+
+| Owner                                                                                                 | Reuse / extend / create                           | Source behavior assigned here                                                                                      | Remains in Intake                                                                                            |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `capability-contracts`, `capability-runtime`                                                          | Reuse                                             | Profile, effect, target, binding and readiness contracts                                                           | Workflow-selected requirements and verified Production/Sheet targets                                         |
+| `google-read-transport`                                                                               | Extend                                            | Sanitized HTTP status, retry-after and failure metadata; approved injected credentials                             | Read scheduling, attempt/wait budgets and concurrency policy; no transport retry loop                        |
+| `google-sheets-data`                                                                                  | Extend                                            | Exact bounded grid/metadata/formula/format reads without table coercion                                            | Assertion planning, reviewer reconciliation, write plans, readback acceptance                                |
+| `salesforce-read`                                                                                     | Create                                            | Explicit target and Organization verification, bounded CLI query/metadata reads, pagination and sanitized failures | Cohort SOQL/fields, Production fingerprints, milestone and reconciliation meaning                            |
+| `fireflies-data`                                                                                      | Create                                            | Native discovery/body response contracts, provider identity/pagination/error normalization and cooldown signals    | Candidate relevance, roster matching, segmentation, cache eligibility, checkpoints and sufficiency           |
+| `slack-data`                                                                                          | Create                                            | Native search/message/thread contracts, pagination/visibility and failure normalization                            | Cohort queries, denial context, client assignment and evidence admission                                     |
+| Isolated Responses entry point in `openai-platform`, or a sibling if dependency isolation requires it | Extend or extract after inspecting its exports    | Credential-injected structured request execution and sanitized provider results                                    | AWS selection, exact model, prompts/schema, preflight policy, support checks, bindings, workers and fallback |
+| `intake-sla-engine`                                                                                   | Create                                            | Domain, evidence semantics, recommendation, QA, recovery, workbook, publication and composition                    | All business policy remains here or in the canonical skill/runbooks                                          |
+| Portal/Headstart MCP adapters in Intake                                                               | Port narrowly                                     | Existing product-specific read/capture mapping                                                                     | No speculative generic product SDK                                                                           |
+| Existing Organic runtime packaging approach                                                           | Reuse; extract only actually shared build helpers | Dependency closure, revision/digest receipts and outside-checkout smoke pattern                                    | Intake recovery and installation compatibility                                                               |
+
+The shared Google packages remain read-only. Prepared writes and their authorization, uncertain
+outcome reconciliation and exact acceptance remain Intake-owned. Do not route reviewer state through
+the current Sheets header-table trimming/stringification helper.
+
+## Source inventory and case traceability
+
+Inventory the routine `review:*` entrypoints and their imports, commands, live collectors, source
+modules, contracts, docs and synthetic tests from the pinned reference. Exclude unrelated utilities
+unless a routine import proves the dependency. Record a destination and parity case for each
+migrated responsibility; split mixed modules at the actual provider/policy boundary. Do not copy a
+whole executor into a shared provider when it owns Intake run files or policy.
+
+All applicable baseline cases must survive. Test count alone is not proof. Compare source/target
+cohort, admitted evidence, gates, actions, exceptions, workbook values and exact publication plans;
+normalize only documented version/provenance differences. Test provider contracts independently
+with synthetic non-Intake callers and preserve existing Google/Organic consumers.
+
+### Provider extraction traceability
+
+This table records implemented provider-level extraction, not completion of the Intake callers.
+The later engine must compose these packages before its corresponding source cases are considered
+migrated. Existing source test expectations remain the behavioral reference.
+
+| Source responsibility and baseline case                                                                                                                                             | Provider destination and regression                                                                                                                                                         | Intake remainder                                                                                                                           |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `salesforce-target.mjs`; `salesforce-target.test.mjs`; complete `sf data query` envelope                                                                                            | `salesforce-read`: `contracts.test.ts`, `cli.test.ts` verify actual org/environment, complete counts, valid zero, malformed/partial rejection and bounded CLI execution                     | Production target configuration, business SOQL, fingerprints and cohort                                                                    |
+| `google-rest-adapter.mjs`; `google-rest-adapter.test.mjs` HTTP/transport metadata                                                                                                   | `google-read-transport`: `failure-metadata.test.ts` preserves status, retry-after and body-consumption transport failures; no provider retries                                              | Pacing, bounded attempts/waits, coalescing, write authorization and uncertain outcomes                                                     |
+| `google-rest-adapter.mjs` metadata/cell/dimension field masks; `google-capture.mjs` typed values                                                                                    | `google-sheets-data`: `grid-reader.test.ts` preserves exact entered types, whitespace, formulas, formats, validation and metadata with a single bounded sample                              | Coordinate assertion capture, reviewer fields, stable snapshots and exact acceptance                                                       |
+| `fireflies-connector-response.mjs` plus vendor metadata from `fireflies-cache.mjs`; `fireflies-connector-response.test.mjs` and error cases from `fireflies-read-executor.test.mjs` | `fireflies-data`: `transcript.test.ts`, `failure.test.ts` cover listing milliseconds/body seconds, silence versus speech, identity/completeness changes and sanitized quota/read failures   | Raw capture hash/version, discovery scope, cutoff, candidate selection, cache policy, executor state and durable cooldown                  |
+| `slack-response.mjs` single-response normalization and `slack-plugin-search.mjs` transport unwrap; non-cutoff `slack-response.test.mjs` cases                                       | `slack-data`: `thread.test.ts`, `envelope.test.ts` preserve no-reply receipts, explicit count, structured pagination/identity and transport rejection                                       | Rendered search mapping still to extract; run hashes, cutoff reconciliation, cohort queries and admission remain Intake-owned              |
+| `ai-interpretation.mjs#createOpenAIResponsesClient`; request/failure cases in `ai-interpretation-schema.test.mjs`                                                                   | Isolated `openai-platform/responses`: `responses.test.ts` checks model, explicit reasoning effort, schema name, strict output, non-storage, sanitization and no implicit retry/model switch | Exact prompt/schema, approved AWS credential selection, low effort, preflight, support/binding policy and fresh-current-run Codex fallback |
+
+Provider extension is still required where source execution needs additional generic discovery,
+search or metadata behavior. Do not move that responsibility into Intake merely because the first
+provider contract is already present. Do not claim the whole workflow has parity from this table.
+
+## Five implementation slices
+
+1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners
+   above. No provider replacement or live execution. The map governs each later slice.
+2. **Typed Intake semantics.** Port business/domain/evidence and pure interpretation contracts with
+   case-level parity. Excludes source execution, workbook and publication implementation.
+3. **Shared providers and recovery.** Implement the provider packages/extensions above and compose
+   them with Intake-owned capture, workers, checkpoints and fallback. Excludes new identities,
+   cache activation and consequential writes. Do not postpone extraction until after a monolith.
+4. **Workbook, ledger and publication.** Preserve output, prior-ledger inputs, reviewer state,
+   prepared writes, readbacks and uncertain-write recovery. No live publication or policy change.
+5. **Distribution, instructions and cutover preparation.** Package the complete dependency closure,
+   update canonical setup/runbook links and validate outside-checkout execution. Private replay and
+   supervised live acceptance remain distinct explicitly authorized activities.
+
+The slices define ownership, not an artificial command sequence for operating agents. Provider
+contracts may be established early when required to prevent incorrect dependencies in domain work.
+Only create executable packages when their first real source behavior is being implemented; no
+empty framework or placeholder packages.
+
+## Verification and dependency direction
+
+Before each slice is considered complete, its actual imports, package manifests, source-case mapping
+and parity results must agree with the ownership map. Automated import/dependency checks enforce
+provider independence; review still checks whether the substance contains Intake policy. Do not
+mistake a correctly named empty package for separation.
+
+Use strict TypeScript, existing ESLint/complexity rules, package coverage, normal hooks and full
+`corepack pnpm qa`. No broad assertions, JavaScript islands, test exclusions or weakened checks to
+make a port pass. Preserve existing consumers, native capture/recovery semantics and cross-platform
+behavior. Ordinary tests remain synthetic, network-free and credential-free.
+
+## Workbook provisioning decision
+
+The source uses `@oai/artifact-tool` for export/import, rendering and formula verification. Verify
+either a supported distributable dependency or an explicitly provisioned versioned host capability.
+An external host prerequisite can still support execution outside both source checkouts. Do not
+replace the workbook library incidentally or infer rights from a previous migration note. Any
+necessary replacement needs an explicit disposition and complete parity, not only XLSX creation.
+
+## Related guidance
+
+- [Documentation hub](README.md)
+- [Workflow authoring](workflow-authoring-guide.md)
+- [Reusable data capabilities](reusable-data-capabilities.md)
+- [Testing and release](../standards/testing-and-release.md)
+- [Canonical operator skill](../skills/headstart-intake-sla-review/SKILL.md)

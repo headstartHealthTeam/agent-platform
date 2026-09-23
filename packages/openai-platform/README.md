@@ -44,3 +44,22 @@ to IDs/statuses and exposes content only through `--include-content`.
 See [local setup and action contracts](../../docs/openai-platform-access.md), the
 [documentation hub](../../docs/README.md), [workflow authoring guide](../../docs/workflow-authoring-guide.md),
 and [managed runtime architecture](../../docs/codex-managed-workflow-architecture.md).
+
+## Isolated structured Responses entry point
+
+`@headstart-health/openai-platform/responses` is a separate built entry point for credential-injected
+structured Responses requests. It imports none of the Agents/session lifecycle, 1Password selection,
+project preflight or skill-bundling implementation. It does not read environment credentials.
+
+`createStructuredResponsesClient` sends the caller's explicit model, reasoning effort, instructions,
+text input and JSON Schema with `store: false` and strict output enabled. Input is deliberately
+string-only for the current consumer; callers explicitly serialize packets. Arbitrary JSON objects,
+scalars and message arrays are not accepted or implicitly stringified. It exposes sanitized status and
+retry-after metadata, decoded JSON, usage and response/model identity. There are no automatic retries,
+redirects, model substitutions or stored response sessions. Interpretation and schema validation of
+returned content remain the caller's responsibility.
+
+For Intake, the consuming engine retains its AWS credential selection, exact model, low reasoning
+effort, interpretation prompt/schema, synthetic preflight, content support checks, binding hashes,
+worker budgets and fresh-current-run Codex fallback. This provider split does not impose the separate
+Agents project's lifecycle prerequisites on Intake's already approved API use.

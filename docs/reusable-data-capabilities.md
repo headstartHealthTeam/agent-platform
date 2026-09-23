@@ -35,21 +35,29 @@ or the user's request.
 
 ## Current packages
 
-| Package                                                                          | Reusable responsibility                                                                                                    |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| [`capability-contracts`](../packages/capability-contracts/README.md)             | Logical capability, execution-profile, provider-binding, target, and preflight schemas                                     |
-| [`capability-runtime`](../packages/capability-runtime/README.md)                 | Binding resolution and deterministic readiness verification                                                                |
-| [`google-read-transport`](../packages/google-read-transport/README.md)           | Sanitized ADC resolution and read-operation-only Google HTTP transport                                                     |
-| [`google-search-console`](../packages/google-search-console/README.md)           | Search Analytics validation, exact-property preflight, pagination, immutable snapshot metadata, and supervised ADC binding |
-| [`google-analytics-data`](../packages/google-analytics-data/README.md)           | GA4 Data API report contract, exact-property preflight, and tabular normalization                                          |
-| [`google-sheets-data`](../packages/google-sheets-data/README.md)                 | Exact read-only sheet ranges, revision evidence, and header-to-record mapping                                              |
-| [`semrush-data`](../packages/semrush-data/README.md)                             | Domain and keyword read contracts independent of one MCP or API transport                                                  |
-| [`organic-performance-engine`](../packages/organic-performance-engine/README.md) | Organic-specific KPI, reconciliation, route, outcome, and content-pillar/TAM analysis                                      |
+| Package                                                                                                        | Reusable responsibility                                                                                                    |
+| -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| [`capability-contracts`](../packages/capability-contracts/README.md)                                           | Logical capability, execution-profile, provider-binding, target, and preflight schemas                                     |
+| [`capability-runtime`](../packages/capability-runtime/README.md)                                               | Binding resolution and deterministic readiness verification                                                                |
+| [`google-read-transport`](../packages/google-read-transport/README.md)                                         | Sanitized ADC resolution and read-operation-only Google HTTP transport                                                     |
+| [`google-search-console`](../packages/google-search-console/README.md)                                         | Search Analytics validation, exact-property preflight, pagination, immutable snapshot metadata, and supervised ADC binding |
+| [`google-analytics-data`](../packages/google-analytics-data/README.md)                                         | GA4 Data API report contract, exact-property preflight, and tabular normalization                                          |
+| [`google-sheets-data`](../packages/google-sheets-data/README.md)                                               | Exact read-only sheet ranges, revision evidence, and header-to-record mapping                                              |
+| [`semrush-data`](../packages/semrush-data/README.md)                                                           | Domain and keyword read contracts independent of one MCP or API transport                                                  |
+| [`organic-performance-engine`](../packages/organic-performance-engine/README.md)                               | Organic-specific KPI, reconciliation, route, outcome, and content-pillar/TAM analysis                                      |
+| [`salesforce-read`](../packages/salesforce-read/README.md)                                                     | Explicit Organization verification and complete CLI reads without business-selection policy                                |
+| [`fireflies-data`](../packages/fireflies-data/README.md)                                                       | Transcript metadata/body contracts and provider error/cooldown normalization                                               |
+| [`slack-data`](../packages/slack-data/README.md)                                                               | Native response decoding and explicit thread-completion evidence                                                           |
+| [`openai-platform/responses`](../packages/openai-platform/README.md#isolated-structured-responses-entry-point) | Isolated credential-injected structured Responses execution                                                                |
 
 Future engines should reuse a provider package only when its normalized contract fits. Do not add a
 workflow-specific field to a shared adapter merely to avoid a small local transform.
 
 ## Reuse-first design review
+
+The [Salesforce read package](../packages/salesforce-read/README.md) provides explicit Organization
+verification and complete CLI query results. Workflow-specific queries, environment requirements,
+milestone meanings and reconciliation remain in consuming engines.
 
 Before creating an engine, adapter, provider, transport, utility, or contract:
 

@@ -47,11 +47,74 @@ export interface GoogleTokenProvider {
 export interface GoogleJsonReader {
   request(url: string, body?: Readonly<Record<string, unknown>>): Promise<unknown>;
 }
+export type GoogleReadFailureKind =
+  | 'configuration'
+  | 'authentication'
+  | 'permission'
+  | 'rate-limit'
+  | 'server'
+  | 'http'
+  | 'transport'
+  | 'invalid-response';
+export interface GoogleReadFailureMetadata {
+  readonly status?: number | null;
+  readonly retryAfterMs?: number | null;
+  readonly transient?: boolean;
+  readonly kind?: GoogleReadFailureKind;
+}
 export class GoogleReadError extends Error {
-  public constructor(message: string) {
+  public readonly status: number | null;
+  public readonly retryAfterMs: number | null;
+  public readonly transient: boolean;
+  public readonly kind: GoogleReadFailureKind;
+  public constructor(message: string, metadata: GoogleReadFailureMetadata = {}) {
     super(message);
     this.name = 'GoogleReadError';
+    this.status = metadata.status ?? null;
+    this.retryAfterMs = metadata.retryAfterMs ?? null;
+    this.transient = metadata.transient ?? false;
+    this.kind = metadata.kind ?? 'configuration';
   }
+}
+
+function retryDelay(value: string | null, now: number): number | null {
+  if (value === null || value.trim().length === 0) return null;
+  // Retain the source adapter's fractional-second compatibility as well as HTTP dates.
+  const parts = value.trim().split('.');
+  const numeric = parts.length <= 2 && parts.every((part) => /^\d+$/.test(part));
+  const delay = numeric ? Number(value) * 1000 : Date.parse(value) - now;
+  return Number.isFinite(delay) && delay >= 0 ? Math.ceil(delay) : null;
+}
+
+function transportFailure(error: unknown): GoogleReadFailureMetadata {
+  return {
+    kind: 'transport',
+    transient:
+      error instanceof TypeError ||
+      (error instanceof Error && ['AbortError', 'TimeoutError'].includes(error.name)),
+  };
+}
+
+function responseBodyFailure(error: unknown): GoogleReadError {
+  const failure = transportFailure(error);
+  return failure.transient === true
+    ? new GoogleReadError('Google response body could not be read', failure)
+    : new GoogleReadError('Google returned invalid JSON', { kind: 'invalid-response' });
+}
+
+function httpFailure(response: Response): GoogleReadFailureMetadata {
+  const status = response.status;
+  let kind: GoogleReadFailureKind = 'http';
+  if (status === 401) kind = 'authentication';
+  else if (status === 403) kind = 'permission';
+  else if (status === 429) kind = 'rate-limit';
+  else if (status >= 500) kind = 'server';
+  return {
+    status,
+    kind,
+    retryAfterMs: retryDelay(response.headers.get('retry-after'), Date.now()),
+    transient: status === 429 || status >= 500,
+  };
 }
 export class GcloudReadTokenProvider implements GoogleTokenProvider {
   readonly #run: () => Promise<string>;
@@ -138,9 +201,10 @@ export class GoogleReadTransport implements GoogleJsonReader {
         redirect: 'error',
         signal: AbortSignal.timeout(60_000),
       });
-    } catch {
+    } catch (error: unknown) {
       throw new GoogleReadError(
-        'Google read failed before a response; verify ADC and network access'
+        'Google read failed before a response; verify ADC and network access',
+        transportFailure(error)
       );
     }
     if (!response.ok) {
@@ -160,13 +224,14 @@ export class GoogleReadTransport implements GoogleJsonReader {
             .join(', ')
         : '';
       throw new GoogleReadError(
-        `Google read returned HTTP ${String(response.status)} from ${parsed.hostname}${reason ? ` (${reason})` : ''}`
+        `Google read returned HTTP ${String(response.status)} from ${parsed.hostname}${reason ? ` (${reason})` : ''}`,
+        httpFailure(response)
       );
     }
     try {
       return await response.json();
-    } catch {
-      throw new GoogleReadError('Google returned invalid JSON');
+    } catch (error: unknown) {
+      throw responseBodyFailure(error);
     }
   }
 }

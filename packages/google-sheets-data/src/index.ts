@@ -10,3 +10,12 @@ export {
   type SheetRange,
 } from './google-sheets.js';
 export { GoogleSheetsRestProvider } from './rest-provider.js';
+export {
+  GoogleSheetsGridReader,
+  googleEnteredValueSchema,
+  googleGridA1,
+  googleGridCellSchema,
+  googleGridReadSchema,
+  googleGridSnapshotSchema,
+} from './grid-reader.js';
+export type { GoogleGridCell, GoogleGridRead, GoogleGridSnapshot } from './grid-reader.js';

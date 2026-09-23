@@ -152,6 +152,9 @@ prompt behavior between the two artifacts.
   package inventory and public interfaces. Record a reuse, extend, or create decision; prefer an
   existing compatible contract, and extend a shared package only when the added behavior remains
   independently reusable rather than workflow-specific.
+- For Intake SLA migration changes, read [the package ownership map](docs/intake-sla-migration.md)
+  before selecting a destination. Reusable provider mechanics belong in shared packages, not
+  internal Intake folders; preserve the approved workflow and adaptive agent judgment.
 - When a skill must be selected proactively from a broader task, do not assume installation alone
   guarantees invocation. Include a minimal persistent-routing reference, keep the detailed behavior
   in the skill, and verify fresh-session discovery from representative launch locations.
