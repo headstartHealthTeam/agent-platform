@@ -102,7 +102,7 @@ function responseBodyFailure(error: unknown): GoogleReadError {
     : new GoogleReadError('Google returned invalid JSON', { kind: 'invalid-response' });
 }
 
-function httpFailure(response: Response): GoogleReadFailureMetadata {
+function httpFailure(response: Response, now: number): GoogleReadFailureMetadata {
   const status = response.status;
   let kind: GoogleReadFailureKind = 'http';
   if (status === 401) kind = 'authentication';
@@ -112,7 +112,7 @@ function httpFailure(response: Response): GoogleReadFailureMetadata {
   return {
     status,
     kind,
-    retryAfterMs: retryDelay(response.headers.get('retry-after'), Date.now()),
+    retryAfterMs: retryDelay(response.headers.get('retry-after'), now),
     transient: status === 429 || status >= 500,
   };
 }
@@ -144,10 +144,29 @@ const ALLOWED_HOSTS = new Set([
   'analyticsadmin.googleapis.com',
   'sheets.googleapis.com',
 ]);
+async function failureReason(response: Response, readDetails = true): Promise<string> {
+  const failure = z
+    .object({
+      error: z
+        .object({
+          status: z.string().optional(),
+          details: z.array(z.object({ reason: z.string().optional() }).loose()).optional(),
+        })
+        .loose(),
+    })
+    .safeParse(readDetails ? await response.json().catch(() => undefined) : undefined);
+  return failure.success
+    ? [failure.data.error.status, ...(failure.data.error.details ?? []).map((item) => item.reason)]
+        .filter((item) => item !== undefined && /^[A-Z_]+$/.test(item))
+        .join(', ')
+    : '';
+}
 export class GoogleReadTransport implements GoogleJsonReader {
   readonly #tokens: GoogleTokenProvider;
-  public constructor(tokens: GoogleTokenProvider) {
+  readonly #options: GoogleReadTransportOptions;
+  public constructor(tokens: GoogleTokenProvider, options: GoogleReadTransportOptions = {}) {
     this.#tokens = tokens;
+    this.#options = options;
   }
   async #accessToken(): Promise<string> {
     try {
@@ -190,7 +209,7 @@ export class GoogleReadTransport implements GoogleJsonReader {
     const token = await this.#accessToken();
     let response: Response;
     try {
-      response = await fetch(url, {
+      response = await (this.#options.fetchImpl ?? globalThis.fetch)(url, {
         method: body === undefined ? 'GET' : 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -208,24 +227,10 @@ export class GoogleReadTransport implements GoogleJsonReader {
       );
     }
     if (!response.ok) {
-      const failure = z
-        .object({
-          error: z
-            .object({
-              status: z.string().optional(),
-              details: z.array(z.object({ reason: z.string().optional() }).loose()).optional(),
-            })
-            .loose(),
-        })
-        .safeParse(await response.json().catch(() => undefined));
-      const reason = failure.success
-        ? [failure.data.error.status, ...(failure.data.error.details ?? []).map((x) => x.reason)]
-            .filter((x) => x !== undefined && /^[A-Z_]+$/.test(x))
-            .join(', ')
-        : '';
+      const reason = await failureReason(response, this.#options.readErrorDetails);
       throw new GoogleReadError(
         `Google read returned HTTP ${String(response.status)} from ${parsed.hostname}${reason ? ` (${reason})` : ''}`,
-        httpFailure(response)
+        httpFailure(response, (this.#options.now ?? Date.now)())
       );
     }
     try {
@@ -234,6 +239,13 @@ export class GoogleReadTransport implements GoogleJsonReader {
       throw responseBodyFailure(error);
     }
   }
+}
+
+export interface GoogleReadTransportOptions {
+  readonly fetchImpl?: (url: string, init: RequestInit) => Promise<Response>;
+  readonly now?: () => number;
+  /** Omit even sanitized body inspection when a consumer requires headers-only failures. */
+  readonly readErrorDetails?: boolean;
 }
 
 function searchConsoleRead(path: string, post: boolean): boolean {

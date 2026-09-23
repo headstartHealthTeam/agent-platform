@@ -316,7 +316,8 @@ publication integration; those consumers still need full reference-case composit
 
 These are pure workflow planning helpers, not new provider write capabilities. The following
 sections record complete pure planning, capture acceptance, gate and readback contracts. Their
-file preparation, executor and operational command integration remain unfinished. No live writes
+file preparation persistence, provider and operational command integration remain unfinished. The
+injected executor is described below. No live writes
 or cutover are authorized by these tests.
 
 ### Publication freshness and frozen-snapshot gate
@@ -333,7 +334,7 @@ or cutover are authorized by these tests.
   Binding checks and read-only recovery remain independent of the lease check before further writes.
 
 This gate adds no business requirement. The following sections record captured-readback and pure
-planner parity; executor and operational command integration remain separate migration work.
+planner parity and injected execution; provider and operational command integration remain work.
 
 ### Exact stage and final readback contracts
 
@@ -379,8 +380,8 @@ timestamps; unknown input has unknown timestamp output rather than an unsafe str
 validated before taking the existing writer lock, published runs remain immutable, retained raw
 captures are archived identically, and all projections precede the final raw transaction marker.
 A synthetic mid-projection failure proves old raw/archive retention, failed partial verification,
-lock/temporary-file cleanup and successful same-proof resume. Provider reads, command routing and
-executor remain work. These functions do not make provider calls or authorize publication.
+lock/temporary-file cleanup and successful same-proof resume. Provider reads and command routing
+remain work. These capture functions do not make provider calls or authorize publication.
 
 ### Complete pure publication planner
 
@@ -395,9 +396,31 @@ historical entries are not a new matrix-validation requirement. Replacement, not
 rows remain fully consumed and checked, and malformed selected current-run entries still fail.
 The pure assembly from `build-google-payloads.mjs` maps to `prepareGooglePublicationArtifacts`:
 exact stage/call filenames, payloads, prepared-manifest hash and bound reviewer proof are returned
-without I/O. Shared Google types remain read-only provider contracts. Publication-file persistence,
-executor/readback I/O, native/REST adapter composition and operational command acceptance remain
+without I/O. Shared Google types remain read-only provider contracts. Publication-plan persistence,
+native/REST adapter composition and operational command acceptance remain
 distinct migration work.
+
+### Injected-adapter publication execution
+
+`publication-executor.mjs` maps to typed execution, private loading and capture-retention modules.
+The host supplies explicit read/write capabilities and exact-plan authority. Each stage and call
+retains the approved lease/concurrency checks, payload reconstruction and journal prefix validation.
+An uncertain call is never replayed: only whole-stage live readback can advance it. The finalizer
+requires every stage, makes two independent bounded-interval samples and writes the immutable receipt
+only after both match. Expired write leases do not disable this read-only final verification.
+
+`publication-executor.test.ts` covers stage ordering, write expiry, interrupted acknowledgments,
+authority/capability/concurrency failures, exact saved prefixes, changed local bindings, partial
+captures, second-sample drift and lock cleanup. Raw prepared JSON is narrowed without reconstruction
+so original controls, unknown metadata and saved hashes survive. This ports execution policy, not
+provider mechanics: native/REST composition, preparation persistence and CLI acceptance remain work.
+
+The explicit credential mechanics from `google-adc-reader.mjs` belong in shared
+`google-read-transport`, exposed as `createGoogleAdcTokenProvider`. They preserve private
+file/client/account checks, child-only environment isolation, verified identity, in-memory cache and
+coalesced refresh, and sanitized failures. Intake still selects its approved paths/account and owns
+read-only adapter composition. `bound-adc.test.ts` tests the provider without Intake imports; the
+existing Google/Organic default ADC behavior is unchanged. No credential is read by migration tests.
 
 ## Five implementation slices
 
