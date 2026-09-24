@@ -1067,3 +1067,21 @@ export type {
 } from './report-row-labels.js';
 export { buildReportMetadata } from './report-metadata.js';
 export type { ReportMetadataInput, ReportMetadataInterpretation } from './report-metadata.js';
+export { assembleReport } from './report-assembly.js';
+export type {
+  ReportAssembly,
+  ReportAssemblyInput,
+  ReportMainRow,
+  ReportQueueEntry,
+  ReportRunManifest,
+  ReportSourceCountRow,
+} from './report-assembly.js';
+export { projectReportRow } from './report-row.js';
+export type {
+  ReportRowActionModel,
+  ReportRowAuthorizationGate,
+  ReportRowExpanded,
+  ReportRowInput,
+  ReportRowOpportunity,
+  ReportRowProjection,
+} from './report-row-types.js';

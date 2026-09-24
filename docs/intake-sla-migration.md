@@ -783,6 +783,15 @@ matches. The source's zero-precomputed-row and unavailable-interpretation distin
 These projections consume actual source-health, search and interpretation contracts without making
 provider calls. Complete row, cohort and saved-run assembly remain separate integration work.
 
+Final queue/evidence row projection and cohort table assembly preserve the approved field order,
+reviewer-value handling, issue/timeline text, hold-field insertion, freshness/date/name ordering,
+source count distinctions and current-versus-prior Run History rows. The report binds the original
+frozen cutoff, delay-history digest and note receipts; pending rows do not become published by being
+built. Missing hold duration remains blank, and raw historical ledger/reviewer values are not
+coerced. Actual evidence, packet, renderer, freshness, authorization and source producers compose
+through these typed Intake-owned projections. Saved-artifact orchestration and command integration
+remain separate work; provider mechanics stay in their shared packages.
+
 ## Related guidance
 
 - [Documentation hub](README.md)
