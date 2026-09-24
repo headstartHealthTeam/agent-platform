@@ -35,8 +35,12 @@ The reader rechecks metadata after retrieval and validates original MD5 checksum
 Drive's `version` is a change counter, not a revision-download ID; this does not implement historic
 revision selection. Follow shortcut targets using their own IDs, versions and resource keys.
 
-For Google Docs, `mode: "text"` without an export returns the complete Docs JSON structure,
-including all tabs/child tabs and inline suggestions. Follow `nextOffset` until null; embedded
+For Google Docs, `mode: "text"` without an export returns a paginated view plus a complete JSON
+file resource from the same Docs structure bytes, including all tabs/child tabs and inline
+suggestions. The runtime writes `evidence-0.json` with the matching digest and byte length,
+independently of the text offset. Retain that file rather than reconstructing JSON from text
+chunks. It is labeled `google-docs-structure`, not an original binary or Google export.
+Follow `nextOffset` until null when reading the text view; embedded
 image references in the structure are not automatically downloaded images. Request an explicit
 PDF export for page inspection. A native file has no original binary: its exported MIME type must
 be explicitly selected and its receipt says `google-export`, never original. Spreadsheet exports
@@ -102,7 +106,7 @@ Requests are one of:
 ```
 
 Use one JSON object per request file. Output is a new private directory containing `result.json`
-and actual image/original files, not just base64 on stdout. The CLI prints the result-file path;
+and actual image/original/Docs-structure files, not just base64 on stdout. The CLI prints the result-file path;
 the primary agent must open it, follow text continuations and inspect appropriate image/original
 artifacts. The output directory is runtime evidence, **not** a backend retention receipt.
 Reuse discovered versions and keep source/representation/byte-digest provenance with artifacts.

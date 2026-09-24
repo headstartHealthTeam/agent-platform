@@ -1,4 +1,5 @@
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -121,6 +122,108 @@ describe('deployable Drive runtime CLI', () => {
       runDriveCli({ profile: 'relative', request: 'relative', output: 'relative' })
     ).rejects.toThrow('absolute');
   });
+  it.each([0, 24_000])(
+    'materializes the complete Docs structure independently of text offset %i',
+    async (offset) => {
+      const structure = {
+        documentId: metadata.id,
+        tabs: [
+          {
+            documentTab: {
+              body: { content: [{ text: 'Repeated history — 中文\n'.repeat(3000) }] },
+            },
+            childTabs: [
+              {
+                documentTab: {
+                  body: { content: [{ text: 'Contradiction at the end' }] },
+                  footnotes: { final: { text: 'Unabridged final note' } },
+                },
+              },
+            ],
+          },
+        ],
+        suggestions: { final: { text: 'Keep the suggestion too' } },
+      };
+      const serialized = JSON.stringify(structure);
+      const bytes = Buffer.from(serialized);
+      const digest = `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
+      const fetcher = vi.fn<typeof fetch>().mockImplementation(async (input) => {
+        const url = new URL(input instanceof Request ? input.url : input);
+        if (url.pathname.endsWith('/about'))
+          return json({ user: { emailAddress: 'agent@example.com' } });
+        if (url.pathname.endsWith(`/documents/${metadata.id}`)) {
+          expect(url.searchParams.get('includeTabsContent')).toBe('true');
+          expect(url.searchParams.get('suggestionsViewMode')).toBe('SUGGESTIONS_INLINE');
+          return json(structure);
+        }
+        expect(url.pathname.endsWith(`/files/${metadata.id}`)).toBe(true);
+        return json({ ...metadata, mimeType: 'application/vnd.google-apps.document' });
+      });
+      vi.stubGlobal('fetch', fetcher);
+      const input = await setup({
+        action: 'read',
+        input: { fileId: metadata.id, version: metadata.version, mode: 'text', offset },
+      });
+      const path = await runDriveCli(input);
+      const artifactPath = join(input.output, 'evidence-0.json');
+      expect(await readFile(artifactPath)).toEqual(bytes);
+      const saved: unknown = JSON.parse(await readFile(path, 'utf8'));
+      expect(saved).toMatchObject({
+        document: {
+          mode: 'text',
+          digest,
+          mimeType: 'application/json',
+          byteLength: bytes.length,
+          text: serialized.slice(offset, offset + 24_000),
+          totalCharacters: serialized.length,
+          offset,
+          nextOffset: offset + 24_000,
+        },
+        source: {
+          id: metadata.id,
+          version: metadata.version,
+          mimeType: 'application/vnd.google-apps.document',
+          representation: 'google-docs-structure',
+        },
+        artifacts: [
+          { path: artifactPath, mimeType: 'application/json', digest, byteLength: bytes.length },
+        ],
+      });
+      expect(await readdir(input.output)).toEqual(['evidence-0.json', 'result.json']);
+      expect(await readFile(path, 'utf8')).not.toContain('blob');
+      expect(await readFile(path, 'utf8')).not.toContain('exportMimeType');
+      expect(fetcher).toHaveBeenCalledTimes(4);
+    }
+  );
+  it.each(['version', 'permission', 'invalid-structure'])(
+    'does not materialize Docs bytes after a %s failure',
+    async (failure) => {
+      const file = { ...metadata, mimeType: 'application/vnd.google-apps.document' };
+      vi.stubGlobal(
+        'fetch',
+        vi
+          .fn<typeof fetch>()
+          .mockResolvedValueOnce(json({ user: { emailAddress: 'agent@example.com' } }))
+          .mockResolvedValueOnce(json(file))
+          .mockResolvedValueOnce(
+            json({ documentId: failure === 'invalid-structure' ? 'wrong' : metadata.id, tabs: [] })
+          )
+          .mockResolvedValueOnce(
+            json({
+              ...file,
+              version: failure === 'version' ? '6' : file.version,
+              capabilities: { canDownload: failure !== 'permission' },
+            })
+          )
+      );
+      const input = await setup({
+        action: 'read',
+        input: { fileId: metadata.id, version: metadata.version, mode: 'text' },
+      });
+      await expect(runDriveCli(input)).rejects.toThrow('google-drive-');
+      expect(await readdir(input.output)).toEqual([]);
+    }
+  );
   it('does not read content under the wrong Google identity', async () => {
     const input = await setup({
       action: 'read',
