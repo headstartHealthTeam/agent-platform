@@ -956,6 +956,8 @@ export type {
   DelayHistoryReference,
 } from './delay-history-types.js';
 export { buildFactPacket } from './fact-packet.js';
+export { renderRecommendation, assertNoRawLeakage } from './recommendation.js';
+export type { NarrativeAction, NarrativeFact, NarrativePacket } from './narrative-types.js';
 export type {
   FactPacket,
   FactPacketInput,

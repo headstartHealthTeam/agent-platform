@@ -734,7 +734,12 @@ versus observed dates, required-document and payer-progress actions, conflict/re
 identity caveats and generic provenance on approved facts. Source comparisons cover complete
 packet objects and input nonmutation; tests compose the actual assembled-evidence, gate and
 source-result producers. Recommendations remain supervised proposals, not Salesforce writes.
-Final short/long narrative rendering and whole-workflow operational acceptance remain unfinished.
+The typed short/long renderer retains the original rule priority, complete competing evidence,
+source-date versus assessment-cutoff language, attribution and additive delay history. It does not
+introduce a sentence ceiling or a new publication rule. Original recommendation regressions and
+actual evidence-to-packet-to-render tests cover planned/observed milestones, partial assessment,
+payer progress and conflict, raw-leakage checks and nonmutation. Whole-workflow report/QA and
+operational integration, independent packaging and acceptance remain unfinished.
 
 ## Related guidance
 
