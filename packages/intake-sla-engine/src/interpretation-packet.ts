@@ -9,8 +9,8 @@ export type InterpretationJson =
   | { readonly [key: string]: InterpretationJson | undefined };
 
 interface NamedIdentity {
-  readonly name?: string | null;
-  readonly [key: string]: InterpretationJson | undefined;
+  readonly name?: unknown;
+  readonly [key: string]: unknown;
 }
 export interface InterpretationProfile {
   readonly opportunityId?: string | null;
@@ -26,17 +26,17 @@ export interface InterpretationProfile {
       }[]
     | null;
   readonly currentCsm?: string | NamedIdentity | null;
-  readonly priorCsms?: readonly InterpretationJson[] | null;
+  readonly priorCsms?: readonly unknown[] | null;
   readonly authorizationNumbers?: readonly string[] | null;
   readonly payers?: readonly InterpretationJson[] | null;
   readonly rbtRequests?: readonly InterpretationJson[] | null;
   readonly candidates?: readonly InterpretationJson[] | null;
   readonly providerRoster?:
     | readonly {
-        readonly opportunityId?: string | null;
-        readonly id?: string | null;
-        readonly opportunityName?: string | null;
-        readonly name?: string | null;
+        readonly opportunityId?: string | null | undefined;
+        readonly id?: string | null | undefined;
+        readonly opportunityName?: string | null | undefined;
+        readonly name?: string | null | undefined;
       }[]
     | null;
   readonly stage?: string | null;
@@ -50,15 +50,13 @@ export interface InterpretationPacketInput {
   readonly eventDate?: string;
   readonly segment?: string | null;
   readonly matchQuality?: string;
-  readonly matchContext?: Readonly<Record<string, InterpretationJson>>;
+  readonly matchContext?: Readonly<Record<string, InterpretationJson | undefined>>;
 }
 
 export function compactInterpretationText(value: string | null | undefined = ''): string {
   return (value ?? '').replace(/\s+/g, ' ').trim();
 }
-function identityName(
-  value: string | NamedIdentity | null | undefined
-): string | NamedIdentity | null {
+function identityName(value: string | NamedIdentity | null | undefined): unknown {
   return (typeof value === 'object' ? value?.name : undefined) ?? value ?? null;
 }
 export interface TranscriptInterpretationPacket {
@@ -66,14 +64,14 @@ export interface TranscriptInterpretationPacket {
     readonly id: string | null;
     readonly name: string | null;
     readonly aliases: readonly string[];
-    readonly practice: string | NamedIdentity | null;
+    readonly practice: unknown;
     readonly providerRoles: readonly {
       readonly role: string;
       readonly names: readonly string[];
       readonly emails: readonly string[];
     }[];
-    readonly currentCsm: string | NamedIdentity | null;
-    readonly priorCsms: readonly InterpretationJson[];
+    readonly currentCsm: unknown;
+    readonly priorCsms: readonly unknown[];
     readonly authorizationNumbers: readonly string[];
     readonly payers: readonly InterpretationJson[];
     readonly rbtRequests: readonly InterpretationJson[];
@@ -95,7 +93,7 @@ export interface TranscriptInterpretationPacket {
     readonly recordId: string | undefined;
     readonly eventDate: string | undefined;
     readonly matchQuality: string | undefined;
-    readonly matchContext: Readonly<Record<string, InterpretationJson>>;
+    readonly matchContext: Readonly<Record<string, InterpretationJson | undefined>>;
   };
   readonly transcriptSegment: string;
 }

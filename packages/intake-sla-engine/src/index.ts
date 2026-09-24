@@ -826,3 +826,37 @@ export type {
   SlackEvidenceInput,
   SlackEvidenceEvent,
 } from './slack-evidence-types.js';
+export { adaptFirefliesWithAI } from './fireflies-evidence-api.js';
+export { adaptFirefliesWithPrecomputedAI } from './fireflies-evidence-precomputed.js';
+export type { AcceptedFirefliesInterpretation } from './fireflies-evidence-precomputed.js';
+export type {
+  FirefliesEvidenceProfile,
+  FirefliesEvidenceMeeting,
+  FirefliesEvidenceRow,
+  FirefliesEvidenceInput,
+  FirefliesApiInput,
+  FirefliesSuppliedInterpretation,
+  FirefliesPrecomputed,
+  FirefliesPrecomputedInput,
+  FirefliesEvidenceResult,
+  FirefliesEvidenceEvent,
+} from './fireflies-evidence-types.js';
+export { buildPortalCollectionPlan } from './portal-collection-plan.js';
+export { bindPortalRequestKeys, evaluatePortalSentinel } from './portal-collection-inventory.js';
+export { materializePortalRows } from './portal-collection.js';
+export type { PortalSentinelResult } from './portal-collection-inventory.js';
+export type {
+  PortalCollectionProvider,
+  PortalCollectionProfile,
+  PortalCollectionRequest,
+  PortalCollectionPlan,
+  BuiltPortalCollectionPlan,
+  PortalCollectionChat,
+  PortalInventoryExecution,
+  BoundPortalExecution,
+  PortalInventoryInput,
+  PortalCollectionBaseRow,
+  PortalMaterializationInput,
+  EnrichedPortalChat,
+  MaterializedPortalRow,
+} from './portal-collection-types.js';

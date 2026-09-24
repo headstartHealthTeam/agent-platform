@@ -12,8 +12,8 @@ export interface SemanticFinding extends Partial<FindingSemantics> {
   readonly gateImpact?: string | null;
 }
 interface SemanticGate {
-  readonly processPosition?: string | null;
-  readonly unresolvedGate?: string | null;
+  readonly processPosition?: string | null | undefined;
+  readonly unresolvedGate?: string | null | undefined;
 }
 function authorizations(
   supplied: FindingSemantics,

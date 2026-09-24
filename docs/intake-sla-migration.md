@@ -119,6 +119,20 @@ their hashes remain unchanged. The original distinctions between structured and 
 exclusions and between structured-only and rendered-path deduplication are preserved; the migration
 does not redesign those business rules.
 
+Fireflies report evidence composes the shared-provider-derived meeting records, existing roster
+segmentation, bound API interpretation and current-run Codex validation paths. It preserves the
+approved findings, admitted-match accounting, coverage failures and explicit fallback flag; it does
+not enable fallback or prior-run reuse. Packet context retains the actual identity producer's raw
+metadata and own undefined fields without inventing a closed data shape or changing hashes. Provider
+execution remains in the isolated Responses entry point; Intake owns packets, bindings, provenance,
+support and report meaning.
+
+Portal collection planning and materialization preserve shared-provider request grouping, exact
+parent/child request bindings, frozen chat cutoff, content deduplication, roster admission and
+row-local missing/incomplete results. A legitimately empty planned sentinel may use another complete
+nonempty current-run request, under the existing separate all-zero health rule. This is the approved
+product-specific capture protocol, not new transport, a new source requirement or relaxed coverage.
+
 Inventory the routine `review:*` entrypoints and their imports, commands, live collectors, source
 modules, contracts, docs and synthetic tests from the pinned reference. Exclude unrelated utilities
 unless a routine import proves the dependency. Record a destination and parity case for each
