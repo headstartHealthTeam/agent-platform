@@ -22,6 +22,12 @@ contains no business workflow behavior and performs no external operations.
 
 ## Boundary
 
+`src/operator.ts` additionally owns the portable operator-port v1 types: immutable provider binding,
+safe items/snapshot and human reply/stop command. `openai-platform` consumes these types and keeps
+provider behavior in its adapter. They are distinct from workflow business outcomes and from the
+backend-owned HTTP projection. No SDK, workflow policy, database entity or credential lookup is
+included. See [shared operator integration](../../docs/shared-operator-integration.md).
+
 A portable workflow skill tells an interactive agent how to perform a task. A managed workflow
 manifest makes that behavior deployable by declaring everything the local user previously supplied
 implicitly: identity, trigger, workspace, tools, schemas, permissions, approvals, retries,

@@ -1,3 +1,4 @@
+import { AGENT_FUNCTION_PAYLOAD_LIMIT } from '@headstart-health/workflow-contracts';
 import type { AgentUpdateParams } from 'openai/resources/beta/agents/agents';
 import { z } from 'zod';
 
@@ -39,6 +40,48 @@ const tools = z.array(
       .strict(),
   ])
 );
+
+// Session-only HTTP credentials. Reusable agent definitions deliberately use the narrower schema
+// above. Native MCP performs source reads; application function handlers do not proxy them.
+const sessionMcp = z
+  .object({
+    type: z.literal('mcp'),
+    server_label: z.string().min(1).max(100),
+    connection_origin: z.enum(['service', 'environment']),
+    transport: z
+      .object({
+        type: z.literal('http'),
+        server_url: z.url(),
+        authorization: z
+          .string()
+          .min(1)
+          .max(16_384)
+          .refine((value) => !/[\r\n]/.test(value))
+          .optional(),
+      })
+      .strict()
+      .transform(({ authorization, ...transport }) => ({
+        ...transport,
+        ...(authorization === undefined ? {} : { authorization }),
+      })),
+    allowed_tools: z.array(z.string().min(1)).min(1).max(100),
+    required: z.boolean(),
+  })
+  .strict()
+  .refine((value) => {
+    const url = new URL(value.transport.server_url);
+    return (
+      !url.username &&
+      !url.password &&
+      !url.search &&
+      !url.hash &&
+      (url.protocol === 'https:' ||
+        (value.connection_origin === 'environment' &&
+          url.protocol === 'http:' &&
+          url.hostname === 'localhost'))
+    );
+  });
+const sessionTools = z.array(z.union([tools.element, sessionMcp]));
 
 const id = z
   .string()
@@ -118,6 +161,25 @@ const environment = z.union([
   z.object({ type: z.literal('none') }).strict(),
   z
     .object({
+      type: z.literal('self_hosted'),
+      workspace_directory: z
+        .string()
+        .min(2)
+        .max(4096)
+        .refine(
+          (value) =>
+            value.startsWith('/') &&
+            !value.includes('\\') &&
+            !/\p{Cc}/u.test(value) &&
+            value
+              .split('/')
+              .slice(1)
+              .every((part) => part !== '' && part !== '.' && part !== '..')
+        ),
+    })
+    .strict(),
+  z
+    .object({
       type: z.literal('openai_hosted'),
       environment_template_id: id.optional(),
       network: network.optional(),
@@ -131,6 +193,50 @@ const environment = z.union([
       ...(value.network === undefined ? {} : { network: value.network }),
     })),
 ]);
+// Keep the supervised surface explicit: use one saved agent OR one inline configuration.
+// Overrides, capability-directory mounts and environment credentials are not accepted here.
+const sessionAgent = z
+  .object({
+    model,
+    instructions: z.string().max(100_000).optional(),
+    reasoning: reasoning.optional(),
+    tools: sessionTools.optional(),
+  })
+  .strict()
+  .transform((value) => ({
+    model: value.model,
+    ...(value.instructions === undefined ? {} : { instructions: value.instructions }),
+    ...(value.reasoning === undefined ? {} : { reasoning: value.reasoning }),
+    ...(value.tools === undefined ? {} : { tools: value.tools }),
+  }));
+const sessionFields = {
+  environment,
+  input: z.string().min(1).max(100_000).optional(),
+  metadata: metadata.default({}),
+};
+const sessionCreate = z
+  .union([
+    z.object({ agent_id: id, ...sessionFields }).strict(),
+    z.object({ agent: sessionAgent, ...sessionFields }).strict(),
+  ])
+  .refine((value) => value.environment.type !== 'none' || value.input !== undefined)
+  .refine(
+    (value) =>
+      value.environment.type !== 'none' ||
+      !(
+        'agent' in value &&
+        value.agent.tools?.some(
+          (tool) =>
+            tool.type === 'mcp' &&
+            'connection_origin' in tool &&
+            tool.connection_origin === 'environment'
+        )
+      )
+  )
+  .transform(({ input, ...value }) => ({
+    ...value,
+    ...(input === undefined ? {} : { input }),
+  }));
 const query = z
   .object({ limit: z.number().int().min(1).max(100).default(20), after: id.optional() })
   .strict()
@@ -140,14 +246,42 @@ const query = z
     ...(value.after === undefined ? {} : { after: value.after }),
   }));
 const fingerprint = z.string().regex(/^[a-f0-9]{64}$/);
+const sessionQuery = z
+  .object({
+    limit: z.number().int().min(1).max(100).default(20),
+    after: id.optional(),
+    order: z.enum(['asc', 'desc']).optional(),
+  })
+  .strict()
+  .default({ limit: 20 })
+  .transform((value) => ({
+    limit: value.limit,
+    ...(value.after === undefined ? {} : { after: value.after }),
+    ...(value.order === undefined ? {} : { order: value.order }),
+  }));
+const historyQuery = z
+  .object({
+    limit: z.number().int().min(1).max(100).default(20),
+    after: id.optional(),
+    order: z.enum(['asc', 'desc']).default('asc'),
+  })
+  .strict()
+  .default({ limit: 20, order: 'asc' })
+  .transform((value) => ({
+    limit: value.limit,
+    order: value.order,
+    ...(value.after === undefined ? {} : { after: value.after }),
+  }));
 export const readSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('models.list') }).strict(),
   z.object({ operation: z.literal('agents.list'), query }).strict(),
   z.object({ operation: z.literal('agents.get'), id }).strict(),
-  z.object({ operation: z.literal('sessions.list'), query }).strict(),
+  z.object({ operation: z.literal('sessions.list'), query: sessionQuery }).strict(),
   z.object({ operation: z.literal('sessions.get'), id }).strict(),
-  z.object({ operation: z.literal('sessions.turns'), id, query }).strict(),
-  z.object({ operation: z.literal('sessions.items'), id, query }).strict(),
+  z.object({ operation: z.literal('sessions.pending-functions'), id, turnId: id }).strict(),
+  z.object({ operation: z.literal('sessions.turns'), id, query: historyQuery }).strict(),
+  z.object({ operation: z.literal('sessions.turn.get'), id, turnId: id }).strict(),
+  z.object({ operation: z.literal('sessions.items'), id, query: historyQuery }).strict(),
   z.object({ operation: z.literal('templates.list'), query }).strict(),
   z.object({ operation: z.literal('templates.get'), id }).strict(),
 ]);
@@ -167,14 +301,7 @@ export const actionSchema = z.discriminatedUnion('operation', [
   z
     .object({
       operation: z.literal('sessions.create'),
-      body: z
-        .object({
-          agent_id: id,
-          environment,
-          input: z.string().min(1).max(100_000),
-          metadata: metadata.default({}),
-        })
-        .strict(),
+      body: sessionCreate,
     })
     .strict(),
   z
@@ -186,6 +313,27 @@ export const actionSchema = z.discriminatedUnion('operation', [
     })
     .strict(),
   z.object({ operation: z.literal('sessions.cancel'), id }).strict(),
+  z
+    .object({
+      operation: z.literal('sessions.tool-result'),
+      id,
+      turnId: id,
+      callId: id,
+      functionName: id,
+      expectedCallFingerprint: fingerprint,
+      result: z.discriminatedUnion('success', [
+        z
+          .object({
+            success: z.literal(true),
+            output: z
+              .string()
+              .refine((value) => Buffer.byteLength(value) <= AGENT_FUNCTION_PAYLOAD_LIMIT),
+          })
+          .strict(),
+        z.object({ success: z.literal(false), error: z.string().min(1).max(10_000) }).strict(),
+      ]),
+    })
+    .strict(),
   z.object({ operation: z.literal('sessions.delete'), id }).strict(),
   z.object({ operation: z.literal('templates.create'), body: template }).strict(),
   z
@@ -210,5 +358,9 @@ export function parseAction(input: unknown): Action {
   return parsed.data;
 }
 export function isBillable(action: Action): boolean {
-  return action.operation === 'sessions.create' || action.operation === 'sessions.send';
+  return (
+    action.operation === 'sessions.create' ||
+    action.operation === 'sessions.send' ||
+    action.operation === 'sessions.tool-result'
+  );
 }

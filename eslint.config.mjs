@@ -40,7 +40,11 @@ export default tseslint.config(
       },
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['apps/*/vitest.config.ts', 'packages/*/vitest.config.ts'],
+          allowDefaultProject: [
+            'apps/*/vitest.config.ts',
+            'packages/*/vitest.config.ts',
+            'packages/openai-platform/tsup.config.ts',
+          ],
         },
         tsconfigRootDir: import.meta.dirname,
       },

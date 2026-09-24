@@ -18,6 +18,12 @@ evaluation. [Launch](https://openai.com/index/introducing-the-agents-api/),
 
 ## Preserve The Local-To-Managed Path
 
+For the approved authoring and connected-test sequence, follow
+[Desktop-to-API development](agent-workflow-development.md). Its September 22 clarification selects
+OpenAI-hosted compute for normal local-app integration by default; a local executor is optional.
+That current development decision supersedes the earlier mandatory intermediate stage, not the
+dated evidence limits or unverified deployment claims in this assessment.
+
 A working local workflow still enters Agent Platform through canonical skills and only the
 deterministic code it actually needs. When independent operation is justified, a managed package
 adds owners, inputs/outputs, trigger policy, permitted capabilities, identity, failure handling and
