@@ -3,10 +3,10 @@ import { actualHashForPublicationAssertion } from './publication-actual-hash.js'
 import { publicationPlanHash } from './publication-plan.js';
 import type {
   PublicationActual,
-  PublicationManifest,
+  PublicationManifestInput,
   PublicationObservations,
   PublicationReadback,
-  PublicationStage,
+  PublicationStageInput,
   PublicationStageObservation,
   PublicationStageStatus,
   VerifiedPublicationAssertion,
@@ -27,7 +27,7 @@ function hasEvidenceHash(value: unknown): boolean {
   return /^[a-f0-9]{64}$/.test(String(value));
 }
 function observedStage(
-  expected: PublicationStage,
+  expected: PublicationStageInput,
   observed: PublicationStageObservation
 ): PublicationStageStatus {
   if (observed.payloadHash !== expected.payloadHash)
@@ -54,7 +54,7 @@ function observedStage(
   };
 }
 function observationMap(
-  manifest: PublicationManifest,
+  manifest: PublicationManifestInput,
   observations: PublicationObservations
 ): Map<string, PublicationStageObservation> {
   if (manifest.spreadsheetId !== observations.spreadsheetId)
@@ -75,7 +75,7 @@ function observationMap(
   return byStage;
 }
 export function evaluatePublicationReadback(
-  manifest: PublicationManifest,
+  manifest: PublicationManifestInput,
   observations: PublicationObservations = {}
 ): PublicationReadback {
   const byStage = observationMap(manifest, observations);
@@ -109,8 +109,8 @@ export function evaluatePublicationReadback(
     nextStage: complete ? null : (stages.find((stage) => !stage.verified)?.id ?? null),
   };
 }
-export function nextPublicationStage<T extends PublicationStage>(
-  manifest: Omit<PublicationManifest, 'stages'> & { readonly stages: readonly T[] },
+export function nextPublicationStage<T extends PublicationStageInput>(
+  manifest: Omit<PublicationManifestInput, 'stages'> & { readonly stages: readonly T[] },
   observations: PublicationObservations = {}
 ): { complete: true; stage: null } | { complete: false; stage: T | undefined } {
   const status = evaluatePublicationReadback(manifest, observations);
@@ -121,7 +121,7 @@ export function nextPublicationStage<T extends PublicationStage>(
   };
 }
 export function verifyPublicationStageActual(
-  stage: Pick<PublicationStage, 'assertions'>,
+  stage: Pick<PublicationStageInput, 'assertions'>,
   actual: PublicationActual = {}
 ): VerifiedPublicationAssertion[] {
   const byId = new Map((actual.assertions ?? []).map((assertion) => [assertion.id, assertion]));
@@ -142,7 +142,7 @@ export function verifyPublicationStageActual(
   return assertions;
 }
 export function verifyFinalPublicationActual(
-  manifest: PublicationManifest,
+  manifest: PublicationManifestInput,
   actual: PublicationActual = {}
 ): {
   captureVersion: 1;
@@ -172,7 +172,7 @@ export function recordPublicationStageReadback({
   actual,
   verifiedAt = new Date().toISOString(),
 }: {
-  readonly manifest: PublicationManifest;
+  readonly manifest: PublicationManifestInput;
   readonly observations: PublicationObservations;
   readonly stageId: string;
   readonly appliedPayload: unknown;

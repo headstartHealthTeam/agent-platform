@@ -432,6 +432,19 @@ from `google-adc-reader.mjs` exposes no apply operation. Permanent adapter/failu
 independent 117-assertion samples, partial failures, transient metadata and construction bindings.
 Operational CLI composition and preparation persistence remain distinct work.
 
+The saved-file bodies of `next-publication-stage.mjs`, `capture-publication-stage-readback.mjs`
+and `verify-publication-readback.mjs` map to the exported next-stage/readback command functions.
+They perform no provider calls. The next-stage function checks the same bound lease before and
+after loading selected payloads, including resumed call prefixes; completed state remains
+inspectable after expiry. Recording reads current observations after payload validation so it
+cannot overwrite a newer receipt sampled during that I/O. Final supplied-sample verification also
+reads observations after all payloads, preserves the original incomplete exit status and writes
+the same exact receipt. This manual single-supplied-sample path remains distinct from the executor's
+two independent adapter samples. Raw saved assertion metadata is narrowed only where consumed;
+producer types remain precise and raw plan/evidence hashes are preserved. The permanent saved-file
+tests cover expiry, resume, nullable unused metadata, ordering and interleaved receipt updates.
+CLI routing/distribution and preparation persistence are still pending integration.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

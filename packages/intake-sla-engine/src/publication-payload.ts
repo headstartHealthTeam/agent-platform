@@ -8,7 +8,7 @@ import type {
 } from './publication-readback-types.js';
 
 export function assertPublicationStagePayload(
-  stage: PublicationStage,
+  stage: Pick<PublicationStage, 'id' | 'payloadHash' | 'calls'>,
   stagePayload: PublicationPayload,
   callPayloads: readonly PublicationLoadedCall[] = []
 ): true {

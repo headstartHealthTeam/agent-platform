@@ -549,12 +549,16 @@ export {
 export type {
   PublicationCoordinates,
   PublicationAssertion,
+  PublicationAssertionInput,
   PublicationStage,
+  PublicationStageInput,
   PublicationManifest,
+  PublicationManifestInput,
   VerifiedPublicationAssertion,
   PublicationStageObservation,
   PublicationObservations,
   PublicationActualAssertion,
+  PublicationActualAssertionInput,
   PublicationActual,
   PublicationStageStatus,
   PublicationReadback,
@@ -579,6 +583,16 @@ export type {
 } from './google-state-persistence.js';
 export { prepareGooglePublicationArtifacts } from './google-publication-artifacts.js';
 export { advancePublication, finalizePublication } from './publication-executor.js';
+export { readNextPublicationStage } from './publication-next-command.js';
+export type { NextPreparedPublicationStage } from './publication-next-command.js';
+export {
+  capturePreparedStageReadback,
+  verifyPreparedPublication,
+} from './publication-readback-commands.js';
+export type {
+  RecordedPublicationReadback,
+  VerifiedPreparedPublication,
+} from './publication-readback-commands.js';
 export {
   assertionA1,
   createGoogleRestAdapter,

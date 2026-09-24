@@ -7,7 +7,23 @@ export interface PublicationCoordinates {
   readonly startColumnIndex?: number | undefined;
   readonly endColumnIndex?: number | undefined;
 }
-export interface PublicationAssertion extends PublicationCoordinates {
+export interface PublicationAssertionInput {
+  readonly id: string;
+  readonly expectedHash?: unknown;
+  readonly kind?: unknown;
+  readonly title?: unknown;
+  readonly sheetId?: unknown;
+  readonly startRowIndex?: unknown;
+  readonly endRowIndex?: unknown;
+  readonly startColumnIndex?: unknown;
+  readonly endColumnIndex?: unknown;
+  readonly rowCount?: unknown;
+  readonly columnCount?: unknown;
+  readonly dimension?: unknown;
+  readonly blankBooleanCellsAsFalse?: unknown;
+}
+export interface PublicationAssertion
+  extends Omit<PublicationAssertionInput, keyof PublicationCoordinates>, PublicationCoordinates {
   readonly id: string;
   readonly expectedHash: string;
   readonly kind?: string | undefined;
@@ -17,13 +33,20 @@ export interface PublicationAssertion extends PublicationCoordinates {
   readonly dimension?: string | undefined;
   readonly blankBooleanCellsAsFalse?: readonly (readonly [number, number])[] | null | undefined;
 }
-export interface PublicationStage extends PublicationPlanHashStage {
+export interface PublicationStageInput extends PublicationPlanHashStage {
+  readonly assertions?: readonly PublicationAssertionInput[] | null | undefined;
+}
+export interface PublicationStage extends PublicationStageInput {
   readonly assertions?: readonly PublicationAssertion[] | null | undefined;
 }
-export interface PublicationManifest {
+export interface PublicationManifestInput {
   readonly runId: string;
   readonly spreadsheetId: string;
   readonly planHash: string;
+  readonly stages: readonly PublicationStageInput[];
+  readonly finalAssertions?: readonly PublicationAssertionInput[] | undefined;
+}
+export interface PublicationManifest extends PublicationManifestInput {
   readonly stages: readonly PublicationStage[];
   readonly finalAssertions?: readonly PublicationAssertion[] | undefined;
 }
@@ -46,7 +69,27 @@ export interface PublicationObservations {
   readonly planHash?: string | undefined;
   readonly stages?: readonly PublicationStageObservation[] | null | undefined;
 }
-export interface PublicationActualAssertion extends PublicationCoordinates {
+/** Input boundary: retain raw evidence; each assertion verifier narrows only what it consumes. */
+export interface PublicationActualAssertionInput {
+  readonly id: string;
+  readonly sheetId?: unknown;
+  readonly startRowIndex?: unknown;
+  readonly endRowIndex?: unknown;
+  readonly startColumnIndex?: unknown;
+  readonly endColumnIndex?: unknown;
+  readonly values?: unknown;
+  readonly gridProperties?: unknown;
+  readonly rule?: unknown;
+  readonly basicFilter?: unknown;
+  readonly format?: unknown;
+  readonly dimension?: unknown;
+  readonly pixels?: unknown;
+  readonly backgroundColorStyles?: unknown;
+}
+export interface PublicationActualAssertion
+  extends
+    Omit<PublicationActualAssertionInput, keyof PublicationCoordinates>,
+    PublicationCoordinates {
   readonly id: string;
   readonly values?: unknown[][] | null | undefined;
   readonly gridProperties?: unknown;
@@ -58,9 +101,9 @@ export interface PublicationActualAssertion extends PublicationCoordinates {
   readonly backgroundColorStyles?: readonly (readonly unknown[])[] | null | undefined;
 }
 export interface PublicationActual {
-  readonly runId?: string | undefined;
-  readonly spreadsheetId?: string | undefined;
-  readonly assertions?: readonly PublicationActualAssertion[] | null | undefined;
+  readonly runId?: unknown;
+  readonly spreadsheetId?: unknown;
+  readonly assertions?: readonly PublicationActualAssertionInput[] | null | undefined;
 }
 export type PublicationStageStatus =
   | { readonly id: string; readonly verified: true; readonly source: 'current-state' }

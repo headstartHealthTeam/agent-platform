@@ -1,4 +1,5 @@
 import { requireContract as check } from './connector-checkpoint.js';
+import { captureProperty } from './google-capture-property.js';
 import { sha256Json } from './json-fingerprint.js';
 import { publicationPlanHash } from './publication-plan.js';
 import type {
@@ -12,7 +13,6 @@ import type {
   PublicationAcknowledgedCall,
   PublicationCallBinding,
   PublicationRejection,
-  PublicationResume,
 } from './publication-replan-types.js';
 
 const CAPACITY_FAILURE =
@@ -182,19 +182,31 @@ export function retainRejectedCellReadback<T extends PublicationObservations>(
 export function remainingPublicationCalls<T extends PublicationCallBinding>(
   manifest: Pick<PublicationManifest, 'runId' | 'spreadsheetId' | 'planHash'>,
   stage: { readonly id: string; readonly calls: readonly T[] },
-  resume?: PublicationResume | null
-): readonly T[] {
-  if (resume?.stageId !== stage.id) return stage.calls;
+  resume?: unknown
+): readonly T[];
+export function remainingPublicationCalls<T extends PublicationCallBinding>(
+  manifest: Pick<PublicationManifest, 'runId' | 'spreadsheetId' | 'planHash'>,
+  stage: { readonly id: string; readonly calls?: readonly T[] | null },
+  resume?: unknown
+): readonly T[] | null | undefined;
+export function remainingPublicationCalls<T extends PublicationCallBinding>(
+  manifest: Pick<PublicationManifest, 'runId' | 'spreadsheetId' | 'planHash'>,
+  stage: { readonly id: string; readonly calls?: readonly T[] | null },
+  resume?: unknown
+): readonly T[] | null | undefined {
+  if (captureProperty(resume, 'stageId') !== stage.id) return stage.calls;
+  const applied = captureProperty(resume, 'appliedCalls');
+  const isArray = (value: unknown): value is readonly unknown[] => Array.isArray(value);
   check(
-    resume.runId === manifest.runId &&
-      resume.spreadsheetId === manifest.spreadsheetId &&
-      resume.planHash === manifest.planHash &&
-      /^[a-f0-9]{64}$/.test(resume.rejectionHash ?? '') &&
-      list(resume.appliedCalls) &&
-      resume.appliedCalls.every(
-        (call, index) => sha256Json(call) === sha256Json(stage.calls.at(index))
-      ),
+    captureProperty(resume, 'runId') === manifest.runId &&
+      captureProperty(resume, 'spreadsheetId') === manifest.spreadsheetId &&
+      captureProperty(resume, 'planHash') === manifest.planHash &&
+      /^[a-f0-9]{64}$/.test(text(captureProperty(resume, 'rejectionHash') ?? '')) &&
+      isArray(applied) &&
+      applied.every((call, index) => sha256Json(call) === sha256Json(stage.calls?.at(index))),
     'Publication resume prefix differs from the verified replan'
   );
-  return stage.calls.slice(resume.appliedCalls.length);
+  if (stage.calls === undefined || stage.calls === null)
+    throw new TypeError('Missing publication calls');
+  return stage.calls.slice(applied.length);
 }

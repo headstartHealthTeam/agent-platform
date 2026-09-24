@@ -2,7 +2,7 @@ export const DEFAULT_PUBLICATION_MAX_AGE_MS = 2 * 60 * 60 * 1000;
 
 /** A write lease only: expired gates do not disable read-only reconciliation or final readback. */
 export function assertPublicationGateFreshness(
-  gate?: { readonly evaluatedAt?: string | null | undefined } | null,
+  gate?: { readonly evaluatedAt?: unknown } | null,
   now = Date.now()
 ): true {
   const age = now - Date.parse(String(gate?.evaluatedAt));

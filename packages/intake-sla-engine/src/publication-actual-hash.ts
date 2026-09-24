@@ -1,8 +1,8 @@
 import { captureProperty } from './google-capture-property.js';
 import { sha256Json } from './json-fingerprint.js';
 import type {
-  PublicationAssertion,
-  PublicationActualAssertion,
+  PublicationAssertionInput,
+  PublicationActualAssertionInput,
 } from './publication-readback-types.js';
 
 const COORDINATES = [
@@ -15,7 +15,10 @@ const COORDINATES = [
 function list(value: unknown): value is unknown[] {
   return Array.isArray(value);
 }
-function valuesHash(expected: PublicationAssertion, actual: PublicationActualAssertion): string {
+function valuesHash(
+  expected: PublicationAssertionInput,
+  actual: PublicationActualAssertionInput
+): string {
   const captured = actual.values;
   if (!list(captured)) throw new Error(`${expected.id} requires actual values`);
   const rowCount = Number(expected.rowCount);
@@ -28,42 +31,52 @@ function valuesHash(expected: PublicationAssertion, actual: PublicationActualAss
     )
       throw new Error(`${expected.id} returned values outside its exact range`);
     values = Array.from({ length: rowCount }, (_, row) =>
-      Array.from({ length: columnCount }, (_, column) => captured.at(row)?.at(column) ?? null)
+      Array.from({ length: columnCount }, (_, column) => {
+        const cells = captured.at(row);
+        return list(cells) ? (cells.at(column) ?? null) : null;
+      })
     );
   }
   normalizeCheckboxes(values, expected.blankBooleanCellsAsFalse ?? []);
   return sha256Json(values);
 }
-function normalizeCheckboxes(
-  values: unknown[][],
-  coordinates: readonly (readonly [number, number])[]
-): void {
-  for (const [row, column] of coordinates) {
-    const cells: unknown = Reflect.get(values, String(row));
-    if (cells === null || cells === undefined) continue;
-    if (typeof cells !== 'object' && typeof cells !== 'function') continue;
-    const value: unknown = Reflect.get(cells, String(column));
-    if (
-      value === null ||
-      (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0)
-    ) {
-      // Only an explicitly listed unchecked cell is canonicalized, as in the approved verifier.
-      if (!Reflect.set(cells, String(column), { boolValue: false }))
-        throw new TypeError('Cannot normalize a read-only checkbox cell');
-    }
+function normalizeCheckboxes(values: unknown[], coordinates: unknown): void {
+  if (!list(coordinates) && typeof coordinates !== 'string')
+    throw new TypeError('Invalid checkbox coordinates');
+  for (const pair of coordinates) {
+    if (!list(pair) && typeof pair !== 'string') throw new TypeError('Invalid checkbox coordinate');
+    const [row, column] = pair;
+    normalizeCheckbox(values, row, column);
   }
 }
-function dimensionHash(expected: PublicationAssertion, actual: PublicationActualAssertion): string {
+function normalizeCheckbox(values: unknown[], row: unknown, column: unknown): void {
+  const cells: unknown = Reflect.get(values, String(row));
+  if (cells === null || cells === undefined) return;
+  if (typeof cells !== 'object' && typeof cells !== 'function') return;
+  const value: unknown = Reflect.get(cells, String(column));
+  if (
+    value === null ||
+    (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0)
+  ) {
+    // Only an explicitly listed unchecked cell is canonicalized, as in the approved verifier.
+    if (!Reflect.set(cells, String(column), { boolValue: false }))
+      throw new TypeError('Cannot normalize a read-only checkbox cell');
+  }
+}
+function dimensionHash(
+  expected: PublicationAssertionInput,
+  actual: PublicationActualAssertionInput
+): string {
   const count =
     expected.dimension === 'ROWS'
-      ? (expected.endRowIndex ?? Number.NaN) - (expected.startRowIndex ?? Number.NaN)
-      : (expected.endColumnIndex ?? Number.NaN) - (expected.startColumnIndex ?? Number.NaN);
+      ? Number(expected.endRowIndex) - Number(expected.startRowIndex)
+      : Number(expected.endColumnIndex) - Number(expected.startColumnIndex);
   const pixels = actual.pixels;
   if (
     actual.dimension !== expected.dimension ||
     !list(pixels) ||
     pixels.length !== count ||
-    pixels.some((value) => !Number.isSafeInteger(value) || value <= 0)
+    pixels.some((value) => typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0)
   )
     throw new Error(`${expected.id} requires exact dimension pixels`);
   return sha256Json(pixels);
@@ -81,7 +94,10 @@ function colorStyle(style: unknown): unknown {
     ),
   };
 }
-function colorsHash(expected: PublicationAssertion, actual: PublicationActualAssertion): string {
+function colorsHash(
+  expected: PublicationAssertionInput,
+  actual: PublicationActualAssertionInput
+): string {
   const captured = actual.backgroundColorStyles;
   if (!list(captured)) throw new Error(`${expected.id} requires actual background color styles`);
   const rowCount = Number(expected.rowCount),
@@ -90,9 +106,10 @@ function colorsHash(expected: PublicationAssertion, actual: PublicationActualAss
     throw new Error(`${expected.id} returned colors outside its exact range`);
   return sha256Json(
     Array.from({ length: rowCount }, (_, row) =>
-      Array.from({ length: columnCount }, (_, column) =>
-        colorStyle(captured.at(row)?.at(column) ?? null)
-      )
+      Array.from({ length: columnCount }, (_, column) => {
+        const cells = captured.at(row);
+        return colorStyle(list(cells) ? (cells.at(column) ?? null) : null);
+      })
     )
   );
 }
@@ -102,8 +119,8 @@ function requiredHash(value: unknown, id: string, label: string): string {
   return sha256Json(value);
 }
 export function actualHashForPublicationAssertion(
-  expected: PublicationAssertion,
-  actual: PublicationActualAssertion
+  expected: PublicationAssertionInput,
+  actual: PublicationActualAssertionInput
 ): string {
   for (const field of COORDINATES)
     if (
