@@ -1,14 +1,17 @@
 {
-  "name": "@headstart-health/google-read-transport",
+  "name": "@headstart-health/headstart-mcp-data",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "files": [
     "dist",
     "README.md"
   ],
-  "type": "module",
   "engines": {
     "node": ">=22"
+  },
+  "bin": {
+    "headstart-mcp-document": "dist/cli.js"
   },
   "exports": {
     ".": {
@@ -21,7 +24,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean --target node22",
+    "build": "tsup src/index.ts src/cli.ts --format esm --dts --clean --target node22",
     "check-types": "tsc --noEmit",
     "lint": "eslint --quiet --no-cache src vitest.config.ts",
     "test": "vitest run --silent",
@@ -31,12 +34,11 @@
     "clean": "rimraf dist .turbo coverage"
   },
   "dependencies": {
-    "google-auth-library": "^9.15.1",
-    "cross-spawn": "7.0.6",
+    "@headstart-health/document-reading": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@types/cross-spawn": "6.0.6",
     "@types/node": "^22.20.4",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.11.0",

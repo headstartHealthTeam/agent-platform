@@ -14,6 +14,11 @@ export {
   type WorkflowRunResult,
   type WorkflowRunStatus,
 } from './run.js';
+export type {
+  ExactEvidenceReference,
+  EvidenceOrigin,
+  RetainedEvidenceManifest,
+} from './evidence.js';
 
 export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from './functions.js';
 export { AGENT_FUNCTION_PAYLOAD_LIMIT } from './functions.js';

@@ -1,7 +1,10 @@
 {
-  "name": "@headstart-health/google-read-transport",
+  "name": "@headstart-health/google-drive-data",
   "version": "0.1.0",
   "private": true,
+  "bin": {
+    "headstart-drive-read": "./dist/cli.js"
+  },
   "files": [
     "dist",
     "README.md"
@@ -21,7 +24,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean --target node22",
+    "build": "tsup src/index.ts src/cli.ts --format esm --dts --clean --target node22",
     "check-types": "tsc --noEmit",
     "lint": "eslint --quiet --no-cache src vitest.config.ts",
     "test": "vitest run --silent",
@@ -31,12 +34,12 @@
     "clean": "rimraf dist .turbo coverage"
   },
   "dependencies": {
-    "google-auth-library": "^9.15.1",
-    "cross-spawn": "7.0.6",
+    "@headstart-health/google-read-transport": "workspace:*",
+    "@headstart-health/document-reading": "workspace:*",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@types/cross-spawn": "6.0.6",
+    "exceljs": "^4.4.0",
     "@types/node": "^22.20.4",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.11.0",
