@@ -99,6 +99,18 @@ export interface TranscriptInterpretationPacket {
   };
   readonly transcriptSegment: string;
 }
+/** Fields consumed when validating findings from an already prepared packet; other fields remain hash-bound. */
+export interface PreparedInterpretationPacket {
+  readonly transcriptSegment?: string | null | undefined;
+  readonly opportunity?: { readonly id?: string | null | undefined } | null | undefined;
+  readonly source?:
+    | {
+        readonly matchQuality?: string | null | undefined;
+        readonly eventDate?: string | null | undefined;
+      }
+    | null
+    | undefined;
+}
 export function buildTranscriptInterpretationPacket(
   input: InterpretationPacketInput
 ): TranscriptInterpretationPacket {

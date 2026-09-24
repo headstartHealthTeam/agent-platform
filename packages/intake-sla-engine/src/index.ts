@@ -588,6 +588,8 @@ export type {
   AwsCredentialExecOptions,
 } from './aws-openai-credential.js';
 export { preflightInterpretation } from './interpretation-preflight.js';
+export { finalizeSavedCurrentRunPrecomputed } from './precomputed-storage.js';
+export type { CurrentRunPacketEnvelope } from './precomputed-interpretation.js';
 export type {
   InterpretationPreflightArtifact,
   InterpretationPreflightInput,
@@ -689,3 +691,12 @@ export type {
   ReviewerPreservationProof,
   GooglePublicationPlan,
 } from './google-publication-types.js';
+export { interpretSavedDelta } from './interpretation-delta.js';
+export { runAwsInterpretation } from './aws-interpretation-runner.js';
+export type {
+  AwsInterpretationRunInput,
+  InterpretationChild,
+  InterpretationSpawnOptions,
+} from './aws-interpretation-runner.js';
+export type { InterpretSavedDeltaInput, SavedDeltaArtifact } from './interpretation-delta.js';
+export type { PreparedInterpretationPacket } from './interpretation-packet.js';

@@ -163,8 +163,14 @@ Salesforce remains read-only. No live data, credentials or identifying fixtures 
 The typed AWS handoff preserves explicit private binding and a consumer-only ephemeral key; it
 removes inherited OpenAI credentials from the AWS environment. The `review:ai-preflight` route
 uses the approved synthetic packet and shared non-storing Responses transport, saving only the
-original success/failure receipt. The AWS child-process launcher and complete interpretation
-command remain unfinished; do not treat the callback as an installed operational wrapper.
+original success/failure receipt. `review:finalize-precomputed` binds the current-run Codex candidate
+without API provenance or cross-run reuse. `review:interpret-delta` composes exact-bound reuse,
+current preflight, bounded workers, private checkpoints and signal recovery from saved artifacts.
+It does not refresh sources or change the assessment cutoff. `review:interpret-with-aws` selects
+the preflight or delta route in an isolated child of the built CLI, forwards cancellation and
+preserves sanitized status. It requires explicit profile, region and secret ID; no secret value
+enters arguments or receipts. This runtime composition does not establish complete workflow
+or standalone-installation readiness.
 
 All package checks use the repository's strict TypeScript, ESLint and coverage standards, with full
 `pnpm qa` for acceptance. See the [documentation hub](../../docs/README.md) and

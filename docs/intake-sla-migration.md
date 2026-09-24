@@ -540,9 +540,34 @@ owns this approved binding policy rather than adding an unneeded universal secre
 `preflightInterpretation` and `review:ai-preflight --run-dir <private-run-directory>` preserve the
 synthetic packet, exact model/schema/binding and success/failure receipt. They compose the existing
 isolated shared Responses client, including `store: false`, and do not invent a different model
-or fallback. The AWS subprocess launcher and bounded interpretation command still need composition;
-the typed handoff callback alone is not a finished credential-run command. Tests use injected fake
-AWS and Responses operations only. Separate live acceptance remains explicitly authorized work.
+or fallback. Tests use injected fake AWS and Responses operations only. Separate live acceptance
+remains explicitly authorized work.
+
+The saved `review:finalize-precomputed` route now composes the current-run Codex candidate validator
+and exact-packet binding with the approved file ordering, private output mode and summary. Packet
+hashing retains the original JSON rather than reconstructing a narrower packet. This fallback
+does not claim API execution or make prior-run Codex judgments eligible for reuse. Saved artifacts
+are checked only for the structural fields consumed here; transcript interpretation remains a
+separate consumer. Empty candidate rows remain ignored until they actually contain interpretations.
+Typed callers retain their known meeting-ID type while raw saved metadata remains uncoerced.
+
+`interpretSavedDelta` and `review:interpret-delta` now compose the existing exact-bound reuse plan,
+private writer lock, mutable-run guard, current preflight, bounded workers, serialized checkpoints,
+signal cancellation and final execution receipt. Successful in-flight interpretations survive a
+later failure. Only fresh packets are passed to the shared Responses client; reuse never narrows or
+reconstructs unused packet fields. The API consumer accepts the original optional source/opportunity
+fields and validates only the fields used for finding support. These routes do not collect sources
+or change the frozen cutoff. Complete operational orchestration remains unfinished. Newly
+serialized grouping may differ only in object-key insertion order; all values and
+canonical hashes are retained, and new byte receipts must describe the actual new bytes.
+
+`runAwsInterpretation` and `review:interpret-with-aws` preserve the approved action selection,
+private/mutable current-run check, ephemeral credential handoff, inherited child output, signal
+forwarding and sanitized wrapper failures. The child invokes the selected route in the built local
+CLI instead of a source-repository script; its working directory is that entrypoint's directory.
+This removes the source-checkout dependency without changing provider identity or making a live
+call during testing. A real synthetic Node child supplements injected-process tests; complete
+outside-checkout dependency closure remains a separate migration acceptance.
 
 ## Related guidance
 

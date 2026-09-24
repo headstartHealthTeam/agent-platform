@@ -20,15 +20,15 @@ export interface TranscriptFindingInput {
 }
 export interface FindingContext {
   readonly segment?: string | null;
-  readonly inputMatchQuality?: string;
-  readonly eventDate?: string;
+  readonly inputMatchQuality?: string | null;
+  readonly eventDate?: string | null;
   readonly expectedOpportunityId?: string | null;
 }
 export interface ValidatedTranscriptFinding {
   readonly matchedOpportunityId: string | null;
   readonly synthesizedFact: string;
   readonly gateImpact: string;
-  readonly eventDate: string | undefined;
+  readonly eventDate: string | null | undefined;
   readonly matchQuality: string;
   readonly substantive: boolean;
   readonly relationship: string;

@@ -20,7 +20,7 @@ import type { ValidatedTranscriptFinding } from './interpretation-findings.js';
 import { buildTranscriptInterpretationPacket } from './interpretation-packet.js';
 import type {
   InterpretationPacketInput,
-  TranscriptInterpretationPacket,
+  PreparedInterpretationPacket,
 } from './interpretation-packet.js';
 
 // Decode transport shape only. Evidence support and operational meaning remain the reviewed rules below.
@@ -82,7 +82,7 @@ export function interpretationValidationBindingForPacket({
   });
 }
 export interface PacketInterpretationInput {
-  readonly packet?: TranscriptInterpretationPacket | null;
+  readonly packet?: PreparedInterpretationPacket | null;
   readonly client?: StructuredResponsesClient | null;
   readonly model: string;
   readonly provider?: string;
@@ -123,12 +123,14 @@ export async function interpretTranscriptPacketWithAI({
     throw new Error('Transcript interpretation findings have an invalid transport shape.');
   const findings = validateTranscriptFindings({
     findings: parsed.data?.findings ?? [],
-    segment: packet.transcriptSegment,
-    ...(packet.source.matchQuality === undefined
+    ...(packet.transcriptSegment === undefined ? {} : { segment: packet.transcriptSegment }),
+    ...(packet.source?.matchQuality === undefined
       ? {}
       : { inputMatchQuality: packet.source.matchQuality }),
-    ...(packet.source.eventDate === undefined ? {} : { eventDate: packet.source.eventDate }),
-    expectedOpportunityId: packet.opportunity.id,
+    ...(packet.source?.eventDate === undefined ? {} : { eventDate: packet.source.eventDate }),
+    ...(packet.opportunity?.id === undefined
+      ? {}
+      : { expectedOpportunityId: packet.opportunity.id }),
   });
   return {
     findings,
