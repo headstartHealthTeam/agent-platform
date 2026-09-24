@@ -6,6 +6,7 @@ import {
   runInterpretationDeltaCommand,
 } from './cli-interpretation.js';
 import { runSavedPublicationCommand } from './cli-publication.js';
+import { isRecoveryCommand, runRecoveryCommand } from './cli-recovery.js';
 import { runArtifactPreflightCommand, runWorkbookRuntimeSmokeCommand } from './cli-runtime.js';
 
 const [command = '', ...args] = process.argv.slice(2);
@@ -23,7 +24,9 @@ try {
               ? await runInterpretationDeltaCommand(args)
               : command === 'review:interpret-with-aws'
                 ? await runAwsInterpretationCommand(args)
-                : await runSavedPublicationCommand(command, args);
+                : isRecoveryCommand(command)
+                  ? await runRecoveryCommand(command, args)
+                  : await runSavedPublicationCommand(command, args);
   process.stdout.write(result.stdout);
   process.stderr.write(result.stderr);
   process.exitCode = result.exitCode;

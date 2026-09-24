@@ -1147,3 +1147,26 @@ export type {
 } from './structured-correction.js';
 export { postCutoffDisposition } from './post-cutoff-disposition.js';
 export type { PostCutoffDisposition, PostCutoffRecord } from './post-cutoff-disposition.js';
+export { normalizePortalAuthCapture, PORTAL_AUTH_CSV_HEADERS } from './portal-auth-capture.js';
+export type { PortalAuthInventory, PortalAuthRecord } from './portal-auth-capture.js';
+export { portalExportDate } from './portal-export-date.js';
+export {
+  matchPortalAuthRequestsToOpportunities,
+  portalAuthRequestClientName,
+  portalAuthRequestProviderName,
+  portalAuthRequestType,
+} from './portal-auth-request.js';
+export type {
+  MatchedPortalAuthRequest,
+  PortalAuthRequestIdentity,
+  PortalAuthRequestRecord,
+  UnmatchedPortalAuthRequest,
+} from './portal-auth-request.js';
+export { verifyRecoveryInputs } from './recovery-input-verification.js';
+export {
+  initializeSavedCorrection,
+  savePortalAuthCapture,
+  savePostCutoffCapture,
+  saveStructuredCorrectionDelta,
+} from './recovery-storage.js';
+export { isRecoveryCommand, runRecoveryCommand } from './cli-recovery.js';

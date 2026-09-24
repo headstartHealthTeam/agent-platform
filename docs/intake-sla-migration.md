@@ -837,6 +837,14 @@ a change. Post-cutoff disposition retains complete, explicitly observed modifica
 defers those changes without moving the assessment cutoff or asserting appointment completion.
 These are existing recovery contracts; private command integration remains separate work.
 
+Portal Authorization Request capture retains the approved API/CSV completeness, exact export
+headers, Eastern-time ambiguity checks, raw capture hashes and client/provider matching. Its
+product-specific mapping stays Intake-owned rather than introducing a speculative Portal SDK.
+Saved correction, structured-delta, Portal-capture and post-cutoff commands now compose the existing
+private storage locks and immutable-base protections. Build-input verification recomputes the bound
+Portal/Slack derivations and inherited ledger; it does not force new collection or reinterpretation.
+These local commands accept supplied evidence and emit sanitized failures without provider calls.
+
 ## Related guidance
 
 - [Documentation hub](README.md)

@@ -42,6 +42,7 @@
     "@headstart-health/openai-platform": "workspace:*",
     "@headstart-health/salesforce-read": "workspace:*",
     "@headstart-health/slack-data": "workspace:*",
+    "csv-parse": "7.0.2",
     "zod": "^4.6.5"
   },
   "devDependencies": {

@@ -26,9 +26,9 @@ type PortalAuthField =
 export type PortalAuthorizationEvidenceRecord = Readonly<
   Partial<Record<PortalAuthField, string | null | undefined>>
 > & {
-  readonly requestNumber?: string | number | null;
-  readonly friendlyId?: string | number | null;
-  readonly Id?: string | number | null;
+  readonly requestNumber?: string | number | null | undefined;
+  readonly friendlyId?: string | number | null | undefined;
+  readonly Id?: string | number | null | undefined;
 };
 export interface PortalAuthorizationEvidenceInput extends Omit<
   SourceEvidenceContext,
