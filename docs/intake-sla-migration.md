@@ -755,6 +755,27 @@ distinction and focused search suggestions; these guide agent investigation, not
 provider calls or blanket publication bans. These Intake-owned projections consume collected
 evidence and make no external calls or Salesforce writes.
 
+The complete workbook quality audit now composes delay-history receipts, cell limits, narrative,
+chronology, readiness and cross-row duplication checks. It retains the original finding order,
+Critical-only severity failure, duplicate-cohort failure and No Action owner exception. Review
+and Warning findings do not become new blanket publication bans. Raw spreadsheet identity values
+retain their equality semantics. Synthetic whole-report comparisons cover this pure audit;
+saved-artifact loading and full report/validation command composition remain separate work.
+
+Report source summaries and task display projections preserve the approved source-specific record
+ordering, date precedence, display limits and distinct note formatting. Task Chatter keeps comment
+dates and authors; outstanding-task columns retain direct Opportunity linkage, closed-task exclusions,
+due-date ordering and the original five-item display with the complete count. These display summaries
+do not establish completion or replace normalized evidence. They reuse typed source records and
+remain Intake-owned; no provider mechanics or additional source requirements are added.
+
+Row-level review explanations preserve the existing conflict, freshness, milestone and missing-detail
+priority, along with Complete/Partial/Conflicting/Missing/Blocked status selection. Next-milestone
+display retains active-candidate selection and its original ordered wording. The queue, on-hold,
+evidence and history headers, header notes and data dictionary are copied exactly from the approved
+builder and checked against source-derived digests. They remain report vocabulary, not new business
+requirements; complete row and saved-run assembly is still being composed.
+
 ## Related guidance
 
 - [Documentation hub](README.md)

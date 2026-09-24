@@ -998,3 +998,54 @@ export type {
 } from './specificity-types.js';
 export { deriveActionModel } from './action-model.js';
 export type { ActionModelInput, IntakeActionModel } from './action-model-types.js';
+export { auditWorkbookQuality } from './workbook-quality.js';
+export type {
+  WorkbookQualityFinding,
+  WorkbookQualityInput,
+  WorkbookQualityReport,
+} from './workbook-quality-types.js';
+export {
+  reportAuthorizationSummary,
+  reportAuthorizationReviewSummary,
+  reportClinicalQualitySummary,
+  reportVobSummary,
+} from './report-structured-summaries.js';
+export { reportCandidateSummary, reportRbtSummary } from './report-staffing-summaries.js';
+export {
+  normalizeReportAircall,
+  reportCommunicationsSummary,
+  reportOutstandingTaskFields,
+  reportTaskFeedEvents,
+  resolveReportTaskRelativeDates,
+} from './report-task-display.js';
+export { reportNonNegativeDaysOnHold } from './report-display-values.js';
+export type { ReportHoldRecord } from './report-display-values.js';
+export type {
+  ReportCandidateMatch,
+  ReportCommunication,
+  ReportOutstandingTasks,
+  ReportSourceSummary,
+  ReportTaskFeed,
+  ReportTaskUpdate,
+} from './report-display-types.js';
+export {
+  reportEvidenceReviewStatus,
+  reportMaterialGap,
+  reportNextMilestone,
+} from './report-row-review.js';
+export type {
+  ReportEvidenceStatus,
+  ReportExpandedReview,
+  ReportMaterialGapInput,
+  ReportReviewFreshness,
+} from './report-row-review.js';
+export {
+  REPORT_QUEUE_HEADERS,
+  REPORT_HOLD_HEADERS,
+  REPORT_EVIDENCE_HEADERS,
+  REPORT_HISTORY_HEADERS,
+  REPORT_HOLD_INSERT_INDEX,
+  reportHeaderNotes,
+  reportDataDictionary,
+} from './report-vocabulary.js';
+export type { ReportHeaderNotes } from './report-vocabulary.js';

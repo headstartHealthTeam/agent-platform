@@ -97,44 +97,48 @@ describe('durable serial Fireflies read execution', () => {
     await executeFirefliesReads({ ...h, read });
     expect(calls).toHaveLength(2);
   });
-  it('stops quota dispatch and retains provider cooldown across raw/accepted recovery and endpoint changes', async () => {
-    for (const recovery of ['accepted', 'raw'])
-      for (const status of [429, 503]) {
-        const h = await harness();
-        let calls = 0;
-        await expect(
-          executeFirefliesReads({
-            ...h,
-            read: (): Promise<unknown> =>
-              Promise.resolve({ isError: true, status, retryAfter: '120' }),
-          })
-        ).rejects.toMatchObject({ retryAfterMs: 120000 });
-        const capture = {
-          response: h.response(ID_ONE),
-          retrievedAt: new Date(h.now()).toISOString(),
-          retrievalEndpoint: 'fireflies_fetch',
-        };
-        if (recovery === 'accepted')
-          await captureCandidateResponse(h.runDir, { index: 0, capture });
-        else await writePrivateJson(path.join(h.runDir, 'fireflies_body_raw_0.json'), capture);
-        const read = ({ transcriptId }: { transcriptId: string }): Promise<unknown> => {
-          calls++;
-          return Promise.resolve(h.response(transcriptId));
-        };
-        const options = { ...h, read, retrievalEndpoint: 'fireflies_get_transcript' as const };
-        await expect(executeFirefliesReads(options)).rejects.toMatchObject({
-          status,
-          retryAfterMs: 120000,
-        });
-        expect(calls).toBe(0);
-        expect((await boundedCollectionStatus(h.runDir)).saved).toBe(1);
-        h.advance(119999);
-        await expect(executeFirefliesReads(options)).rejects.toMatchObject({ retryAfterMs: 1 });
-        h.advance(1);
-        expect((await executeFirefliesReads(options)).saved).toBe(2);
-        expect(calls).toBe(1);
-      }
-  });
+  it.each([
+    { recovery: 'accepted', status: 429 },
+    { recovery: 'accepted', status: 503 },
+    { recovery: 'raw', status: 429 },
+    { recovery: 'raw', status: 503 },
+  ])(
+    'retains provider cooldown across $recovery recovery and endpoint changes for $status',
+    async ({ recovery, status }) => {
+      const h = await harness();
+      let calls = 0;
+      await expect(
+        executeFirefliesReads({
+          ...h,
+          read: (): Promise<unknown> =>
+            Promise.resolve({ isError: true, status, retryAfter: '120' }),
+        })
+      ).rejects.toMatchObject({ retryAfterMs: 120000 });
+      const capture = {
+        response: h.response(ID_ONE),
+        retrievedAt: new Date(h.now()).toISOString(),
+        retrievalEndpoint: 'fireflies_fetch',
+      };
+      if (recovery === 'accepted') await captureCandidateResponse(h.runDir, { index: 0, capture });
+      else await writePrivateJson(path.join(h.runDir, 'fireflies_body_raw_0.json'), capture);
+      const read = ({ transcriptId }: { transcriptId: string }): Promise<unknown> => {
+        calls++;
+        return Promise.resolve(h.response(transcriptId));
+      };
+      const options = { ...h, read, retrievalEndpoint: 'fireflies_get_transcript' as const };
+      await expect(executeFirefliesReads(options)).rejects.toMatchObject({
+        status,
+        retryAfterMs: 120000,
+      });
+      expect(calls).toBe(0);
+      expect((await boundedCollectionStatus(h.runDir)).saved).toBe(1);
+      h.advance(119999);
+      await expect(executeFirefliesReads(options)).rejects.toMatchObject({ retryAfterMs: 1 });
+      h.advance(1);
+      expect((await executeFirefliesReads(options)).saved).toBe(2);
+      expect(calls).toBe(1);
+    }
+  );
   it('preserves earlier successes and enforces the original per-tool attempt budget across invocations', async () => {
     const h = await harness();
     const calls: string[] = [];

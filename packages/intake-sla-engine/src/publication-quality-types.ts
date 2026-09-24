@@ -25,19 +25,19 @@ export interface PublicationQualityResult {
   readonly issues: readonly string[];
 }
 
-export interface OperationalSummaryRow {
-  readonly opportunityId?: string | null | undefined;
-  readonly opportunityName?: string | null | undefined;
+export interface OperationalSummaryRow<TId = string, TName = string> {
+  readonly opportunityId?: TId | null | undefined;
+  readonly opportunityName?: TName | null | undefined;
   readonly operationalSummary?: unknown;
 }
 
-export interface DuplicateSummaryRow {
-  readonly opportunityId: string;
-  readonly opportunityName: string;
+export interface DuplicateSummaryRow<TId = string, TName = string> {
+  readonly opportunityId: NonNullable<TId> | '';
+  readonly opportunityName: NonNullable<TName> | '';
   readonly operationalSummary: string;
 }
 
-export interface DuplicateSummary {
+export interface DuplicateSummary<TId = string, TName = string> {
   readonly operationalSummary: string;
-  readonly rows: readonly DuplicateSummaryRow[];
+  readonly rows: readonly DuplicateSummaryRow<TId, TName>[];
 }

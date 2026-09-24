@@ -19,10 +19,10 @@ import type {
   PublicationQualityResult,
 } from './publication-quality-types.js';
 
-export function duplicateOperationalSummaries(
-  rows: readonly OperationalSummaryRow[] = []
-): DuplicateSummary[] {
-  const groups = new Map<string, DuplicateSummaryRow[]>();
+export function duplicateOperationalSummaries<TId = string, TName = string>(
+  rows: readonly OperationalSummaryRow<TId, TName>[] = []
+): DuplicateSummary<TId, TName>[] {
+  const groups = new Map<string, DuplicateSummaryRow<TId, TName>[]>();
   for (const row of rows) {
     const summary = compactQualityText(row.operationalSummary);
     if (!summary) continue;
@@ -37,7 +37,9 @@ export function duplicateOperationalSummaries(
   }
   return [...groups.values()]
     .filter(
-      (group) => new Set(group.map((row) => row.opportunityId || row.opportunityName)).size > 1
+      (group) =>
+        new Set(group.map((row) => [row.opportunityId].find(Boolean) ?? row.opportunityName)).size >
+        1
     )
     .map((group) => ({ operationalSummary: group[0]?.operationalSummary ?? '', rows: group }));
 }
