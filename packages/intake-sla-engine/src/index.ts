@@ -955,3 +955,19 @@ export type {
   DelayHistoryReceiptInput,
   DelayHistoryReference,
 } from './delay-history-types.js';
+export { buildFactPacket } from './fact-packet.js';
+export type {
+  FactPacket,
+  FactPacketInput,
+  RecommendationAction,
+  RecommendationAuthorization,
+  RecommendationDocumentConflict,
+  RecommendationEvent,
+  RecommendationFact,
+  RecommendationGate,
+  RecommendationIdentityReview,
+  RecommendationOpportunity,
+  RecommendationSourceResult,
+  RecommendationStartConflict,
+  RecommendationTimelineFact,
+} from './recommendation-types.js';

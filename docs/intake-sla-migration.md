@@ -720,8 +720,6 @@ Ticket Match composition preserves ordered match/candidate/interview events, dis
 statuses, rejected-path precedence and future-interview monitoring. Its records reuse the candidate
 selection contract, including explicit undefined source fields; no lifecycle decision changes.
 
-## Related guidance
-
 Delay history consumes already admitted storyline findings and retains their source dates,
 identity, lifecycle references, recurrence and unresolved opening context. It does not change
 freshness, readiness or the current action. The receipt binds the complete cohort and narrative
@@ -729,6 +727,16 @@ to the original manifest contract. Its local HTML companion remains escaped, scr
 self-contained, with complete cell text rather than truncated summaries. Synthetic source-output
 comparisons and real mobile/tablet/desktop/wide browser checks cover this port; final recommendation
 composition and complete runtime acceptance remain separate migration work.
+
+The typed fact-packet assembly now composes those storyline findings, source coverage and
+domain action rules. It preserves staffing assignment/candidate precedence, explicit planned
+versus observed dates, required-document and payer-progress actions, conflict/review ordering,
+identity caveats and generic provenance on approved facts. Source comparisons cover complete
+packet objects and input nonmutation; tests compose the actual assembled-evidence, gate and
+source-result producers. Recommendations remain supervised proposals, not Salesforce writes.
+Final short/long narrative rendering and whole-workflow operational acceptance remain unfinished.
+
+## Related guidance
 
 - [Documentation hub](README.md)
 - [Workflow authoring](workflow-authoring-guide.md)

@@ -118,7 +118,10 @@ export function isSupportingOnlySource(source?: string | null): boolean {
   return source !== undefined && source !== null && supportingOnlySources.has(source);
 }
 export function isSupportingOnlyEvidence(
-  eventOrSource?: string | { readonly supportingOnly?: boolean; readonly source?: string } | null
+  eventOrSource?:
+    | string
+    | { readonly supportingOnly?: boolean | undefined; readonly source?: string | undefined }
+    | null
 ): boolean {
   if (typeof eventOrSource === 'string') return isSupportingOnlySource(eventOrSource);
   return Boolean(eventOrSource?.supportingOnly) || isSupportingOnlySource(eventOrSource?.source);
