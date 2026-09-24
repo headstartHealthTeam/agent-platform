@@ -91,18 +91,25 @@ export interface GooglePublicationLiveSheet {
   readonly values: unknown[][];
 }
 export type GoogleWorkbookSheets = Readonly<Record<string, readonly unknown[] | undefined>>;
+/** Planner hashes metadata without interpreting freshness; freshness-owning consumers stay strict. */
+export interface GooglePublicationReviewerState extends Pick<ReviewerSnapshot, 'rows'> {
+  readonly capturedAt?: unknown;
+  readonly revalidatedAt?: unknown;
+  readonly revalidationHash?: unknown;
+  readonly spreadsheetId?: unknown;
+}
 export interface GooglePublicationPlanInputs {
-  readonly workbook: GoogleWorkbookSheets | { readonly sheets: GoogleWorkbookSheets };
+  readonly workbook: unknown;
   readonly manifest: { readonly runId: string };
   readonly metadata: {
     readonly spreadsheetId: string;
-    readonly sheets?: readonly GooglePublicationMetadataSheet[] | null;
+    readonly sheets?: readonly unknown[] | null;
   };
   readonly liveState: {
     readonly spreadsheetId: string;
-    readonly sheets?: readonly GooglePublicationStateSheet[] | null;
+    readonly sheets?: readonly unknown[] | null;
   };
-  readonly currentReviewerState: ReviewerSnapshot;
+  readonly currentReviewerState: GooglePublicationReviewerState;
   readonly maxRequestBytes?: number;
 }
 export interface ReviewerPreservationProof {

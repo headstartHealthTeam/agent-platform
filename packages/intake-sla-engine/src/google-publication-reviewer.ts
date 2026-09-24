@@ -5,6 +5,7 @@ import type {
   GoogleWorkbookSheets,
   ReviewerPreservationProof,
   GooglePublicationUpdate,
+  GooglePublicationReviewerState,
 } from './google-publication-types.js';
 import {
   googleCellValue,
@@ -15,7 +16,7 @@ import {
   workbookSheet,
 } from './google-publication-values.js';
 import { sha256Json } from './json-fingerprint.js';
-import type { ReviewerSnapshot, ReviewerSnapshotRow } from './publication-state.js';
+import type { ReviewerSnapshotRow } from './publication-state.js';
 
 function opportunityIdFromRow(row: readonly unknown[], headers: readonly unknown[]): string | null {
   return (
@@ -41,7 +42,7 @@ function checkReviewerCell(
 export function reviewerSafeReadbackRows(
   title: string,
   rows: GooglePublicationRows,
-  currentReviewerState: ReviewerSnapshot
+  currentReviewerState: GooglePublicationReviewerState
 ): GooglePublicationRows {
   const headers = rows[0];
   if (headers === undefined) throw new TypeError('Missing reviewer headers');
@@ -108,7 +109,7 @@ function rowValues(
 export function reviewerPreservationProof(
   sheets: GoogleWorkbookSheets,
   stages: readonly GooglePreparedStage[],
-  currentReviewerState: ReviewerSnapshot
+  currentReviewerState: GooglePublicationReviewerState
 ): ReviewerPreservationProof {
   const priorIds = new Set((currentReviewerState.rows ?? []).map((row) => row.opportunityId));
   const currentIds = new Set<unknown>();

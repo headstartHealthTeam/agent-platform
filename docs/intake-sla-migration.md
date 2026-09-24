@@ -443,7 +443,18 @@ the same exact receipt. This manual single-supplied-sample path remains distinct
 two independent adapter samples. Raw saved assertion metadata is narrowed only where consumed;
 producer types remain precise and raw plan/evidence hashes are preserved. The permanent saved-file
 tests cover expiry, resume, nullable unused metadata, ordering and interleaved receipt updates.
-CLI routing/distribution and preparation persistence are still pending integration.
+CLI routing/distribution and the higher-level validation/gate preparation command remain work.
+
+`build-google-payloads.mjs` saved-file persistence maps to `prepareSavedGooglePublication`,
+composing the existing typed planner and pure artifact assembler. It reads prior receipts before
+building, removes the obsolete monolithic payload only after a valid plan, validates every archived
+stage/call, archives the exact prior manifest/gate/receipts/rejection before replacements, and writes
+the new manifest last. Capacity-only and definitive rejected-cell replans retain only the original
+verified prefixes; same-plan preparation leaves receipts unchanged. Published runs remain immutable.
+Raw input metadata is narrowed at consumption and retains its original reviewer hash. Synthetic
+filesystem tests cover exact files, modes, unused inputs, replan failures and interrupted writes.
+The higher-level validation/gate preparation command, CLI routing and distribution remain work;
+this local file builder performs no provider calls and does not establish publication readiness.
 
 ## Five implementation slices
 

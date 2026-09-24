@@ -113,14 +113,18 @@ append-only ledger/history, capacity-only grid expansion, label-bound terminal m
 History last. A sanitized reviewer proof binds exact prepared cells. The planner performs no I/O
 and does not itself establish authority, freshness, independent readback or operational readiness.
 Pure artifact preparation binds stage/call filenames, exact payload hashes and reviewer proof into
-the prepared manifest. It returns in-memory artifacts only; publication-file persistence, gate
-preparation and command orchestration remain separate work.
+the prepared manifest. Saved-file preparation composes it with the existing planner, validates and
+archives prior rejected plans before replacements, retains only verified recovery prefixes, and
+writes the new manifest last. Higher-level validation/gate preparation and CLI routing remain work.
 
 The injected-adapter publication executor preserves exact-plan authority, payload reconstruction,
 fresh write leases and live concurrency checks, durable per-call journals, and readback-only recovery
 after uncertain writes. Finalization makes two independent samples and remains read-only after lease
 expiry; partial or mismatching captures are retained privately without a Published receipt. It does
-not discover credentials or supply a provider adapter. Provider and command composition remain work.
+not discover credentials. The Google adapter composes shared read-only transport/Sheets capabilities
+with Intake-owned bounded read retries and single-attempt exact prepared writes. Explicit ADC binding
+is supplied by the host through the shared provider. Saved-file next-stage/readback functions retain
+their source behavior; CLI and end-to-end command composition remain work.
 
 The migration is not yet an operational replacement: source orchestration and checkpoint consumers,
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.

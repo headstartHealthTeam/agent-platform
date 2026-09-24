@@ -582,6 +582,7 @@ export type {
   SavedGoogleStateCapture,
 } from './google-state-persistence.js';
 export { prepareGooglePublicationArtifacts } from './google-publication-artifacts.js';
+export { prepareSavedGooglePublication } from './google-publication-storage.js';
 export { advancePublication, finalizePublication } from './publication-executor.js';
 export { readNextPublicationStage } from './publication-next-command.js';
 export type { NextPreparedPublicationStage } from './publication-next-command.js';
@@ -662,6 +663,7 @@ export type {
   GooglePublicationMetadataSheet,
   GooglePublicationStateSheet,
   GoogleWorkbookSheets,
+  GooglePublicationReviewerState,
   GooglePublicationPlanInputs,
   ReviewerPreservationProof,
   GooglePublicationPlan,

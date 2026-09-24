@@ -1,8 +1,6 @@
 import { captureProperty } from './google-capture-property.js';
 import type {
   GooglePublicationLiveSheet,
-  GooglePublicationMetadataSheet,
-  GooglePublicationStateSheet,
   GooglePublicationPlanInputs,
   GoogleWorkbookSheets,
   GooglePublicationRows,
@@ -26,28 +24,40 @@ export interface GooglePublicationContext {
 }
 function requireSheet(
   title: string,
-  metadataByTitle: ReadonlyMap<string, GooglePublicationMetadataSheet>,
-  stateByTitle: ReadonlyMap<string, GooglePublicationStateSheet>
+  metadataByTitle: ReadonlyMap<unknown, unknown>,
+  stateByTitle: ReadonlyMap<unknown, unknown>
 ): GooglePublicationLiveSheet {
   const metadata = metadataByTitle.get(title),
     state = stateByTitle.get(title);
   if (metadata === undefined || state === undefined)
     throw new Error(`Current live state is missing ${title}`);
-  if (Number(metadata.sheetId) !== Number(state.sheetId))
+  if (Number(captureProperty(metadata, 'sheetId')) !== Number(captureProperty(state, 'sheetId')))
     throw new Error(`Sheet ID changed for ${title}`);
-  if (!Number.isInteger(Number(state.usedRowCount)) || Number(state.usedRowCount) < 1)
+  const usedRowCount = Number(captureProperty(state, 'usedRowCount'));
+  if (!Number.isInteger(usedRowCount) || usedRowCount < 1)
     throw new Error(`Current used row count is missing for ${title}`);
-  const rowCount = Number(metadata.rowCount ?? metadata.gridProperties?.rowCount);
-  const columnCount = Number(metadata.columnCount ?? metadata.gridProperties?.columnCount);
+  const grid = captureProperty(metadata, 'gridProperties');
+  const rowCount = Number(
+    captureProperty(metadata, 'rowCount') ?? captureProperty(grid, 'rowCount')
+  );
+  const columnCount = Number(
+    captureProperty(metadata, 'columnCount') ?? captureProperty(grid, 'columnCount')
+  );
   if (!Number.isInteger(rowCount) || !Number.isInteger(columnCount))
     throw new Error(`Current grid dimensions are missing for ${title}`);
+  const values = captureProperty(state, 'values') ?? [];
+  if (!isRows(values)) throw new TypeError('Invalid consumed live rows');
   return {
-    sheetId: Number(metadata.sheetId),
+    sheetId: Number(captureProperty(metadata, 'sheetId')),
     rowCount,
     columnCount,
-    usedRowCount: Number(state.usedRowCount),
-    values: normalizePublicationRows(state.values ?? []),
+    usedRowCount,
+    values: normalizePublicationRows(publicationMatrix(values)),
   };
+}
+function sheetEntry(sheet: unknown): [unknown, unknown] {
+  if (sheet === null || sheet === undefined) throw new TypeError('Missing sheet entry');
+  return [captureProperty(sheet, 'title'), sheet];
 }
 function isRows(value: unknown): value is readonly unknown[] {
   return Array.isArray(value);
@@ -56,8 +66,8 @@ export function publicationContext(input: GooglePublicationPlanInputs): GooglePu
   const { workbook, metadata, liveState } = input;
   if (metadata.spreadsheetId !== liveState.spreadsheetId)
     throw new Error('Google metadata and current publication state target different spreadsheets');
-  const metadataByTitle = new Map((metadata.sheets ?? []).map((sheet) => [sheet.title, sheet]));
-  const stateByTitle = new Map((liveState.sheets ?? []).map((sheet) => [sheet.title, sheet]));
+  const metadataByTitle = new Map((metadata.sheets ?? []).map(sheetEntry));
+  const stateByTitle = new Map((liveState.sheets ?? []).map(sheetEntry));
   const raw = captureProperty(workbook, 'sheets') ?? workbook;
   const states = new Map<string, GooglePublicationLiveSheet>();
   const sheets: [string, readonly unknown[]][] = [];

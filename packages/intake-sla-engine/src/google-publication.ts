@@ -30,10 +30,10 @@ import type {
   GooglePublicationPlan,
   GooglePublicationPlanInputs,
   GooglePublicationRequest,
+  GooglePublicationReviewerState,
 } from './google-publication-types.js';
 import { publicationPlanHash } from './publication-plan.js';
 import type { PublicationAssertion } from './publication-readback-types.js';
-import type { ReviewerSnapshot } from './publication-state.js';
 
 export const PUBLICATION_PLAN_VERSION = 1;
 const LEDGER = 'Generation Ledger',
@@ -121,7 +121,7 @@ function replacementStage(
   title: string,
   position: number,
   prior: string,
-  reviewer: ReviewerSnapshot,
+  reviewer: GooglePublicationReviewerState,
   maxBytes: number
 ): GooglePreparedStage {
   const state = contextState(context, title),

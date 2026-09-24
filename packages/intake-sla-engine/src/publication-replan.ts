@@ -4,22 +4,19 @@ import { sha256Json } from './json-fingerprint.js';
 import { publicationPlanHash } from './publication-plan.js';
 import type {
   PublicationManifest,
+  PublicationManifestInput,
   PublicationObservations,
-  PublicationStage,
+  PublicationStageInput,
   PublicationStageObservation,
 } from './publication-readback-types.js';
 import { evaluatePublicationReadback } from './publication-readback.js';
-import type {
-  PublicationAcknowledgedCall,
-  PublicationCallBinding,
-  PublicationRejection,
-} from './publication-replan-types.js';
+import type { PublicationCallBinding } from './publication-replan-types.js';
 
 const CAPACITY_FAILURE =
   'Capacity-only replan requires unchanged verified capacity and a pre-dispatch size rejection';
 const CELL_FAILURE =
   'Rejected-cell replan requires exact completed stages/calls and a definitive atomic Google validation rejection';
-function list<T>(value: readonly T[] | null | undefined): value is readonly T[] {
+function list(value: unknown): value is readonly unknown[] {
   return Array.isArray(value);
 }
 function text(value: unknown): string {
@@ -30,12 +27,15 @@ function stages(observations: PublicationObservations): readonly PublicationStag
     throw new TypeError('Missing observed stages');
   return observations.stages;
 }
-function calls(stage: PublicationStage): readonly PublicationCallBinding[] {
+function calls(stage: PublicationStageInput): readonly PublicationCallBinding[] {
   if (stage.calls === null || stage.calls === undefined)
     throw new TypeError('Missing publication calls');
   return stage.calls;
 }
-function sameTargetAndValidPlan(previous: PublicationManifest, next: PublicationManifest): boolean {
+function sameTargetAndValidPlan(
+  previous: PublicationManifestInput,
+  next: PublicationManifestInput
+): boolean {
   return (
     previous.runId === next.runId &&
     previous.spreadsheetId === next.spreadsheetId &&
@@ -44,10 +44,10 @@ function sameTargetAndValidPlan(previous: PublicationManifest, next: Publication
 }
 /** Only the exact verified capacity stage survives a definitive pre-dispatch size rejection. */
 export function retainCapacityOnlyReadback<T extends PublicationObservations>(
-  previous: PublicationManifest,
-  next: PublicationManifest,
+  previous: PublicationManifestInput,
+  next: PublicationManifestInput,
   observations: T,
-  rejection: PublicationRejection | null | undefined
+  rejection: unknown
 ): T & {
   planHash: string;
   capacityReplan: {
@@ -62,19 +62,10 @@ export function retainCapacityOnlyReadback<T extends PublicationObservations>(
       stages(observations).length === 1 &&
       stages(observations)[0]?.id === '01-capacity' &&
       sha256Json(previous.stages[0]) === sha256Json(next.stages[0]) &&
-      rejection?.priorPlanHash === previous.planHash &&
-      rejection.stageId === '02-review-queue' &&
-      rejection.callIndex === 0 &&
-      rejection.response?.isError === true &&
-      Boolean(
-        rejection.response.content?.some(
-          (block) =>
-            block.type === 'text' &&
-            String(block.text).includes(
-              'Automatic approval review failed: Guardian action exceeds the 200000-byte review limit'
-            )
-        )
-      ),
+      captureProperty(rejection, 'priorPlanHash') === previous.planHash &&
+      captureProperty(rejection, 'stageId') === '02-review-queue' &&
+      captureProperty(rejection, 'callIndex') === 0 &&
+      capacityRejectionResponse(captureProperty(rejection, 'response')),
     CAPACITY_FAILURE
   );
   const retained = {
@@ -89,42 +80,63 @@ export function retainCapacityOnlyReadback<T extends PublicationObservations>(
   evaluatePublicationReadback(next, retained);
   return retained;
 }
+function capacityRejectionResponse(response: unknown): boolean {
+  if (captureProperty(response, 'isError') !== true) return false;
+  const content = captureProperty(response, 'content');
+  if (content === null || content === undefined) return false;
+  if (!list(content)) throw new TypeError('Invalid rejection content');
+  return content.some((block) => {
+    if (block === null || block === undefined)
+      throw new TypeError('Missing rejection content block');
+    return (
+      captureProperty(block, 'type') === 'text' &&
+      text(captureProperty(block, 'text')).includes(
+        'Automatic approval review failed: Guardian action exceeds the 200000-byte review limit'
+      )
+    );
+  });
+}
 function definitiveCellRejection(
-  rejection: PublicationRejection | null | undefined,
-  previous: PublicationManifest,
+  rejection: unknown,
+  previous: PublicationManifestInput,
   nextStage: string | null
 ): boolean {
+  const response = captureProperty(rejection, 'response');
+  const structured = captureProperty(response, 'structuredContent');
   return (
-    rejection?.priorPlanHash === previous.planHash &&
-    rejection.stageId === nextStage &&
+    captureProperty(rejection, 'priorPlanHash') === previous.planHash &&
+    captureProperty(rejection, 'stageId') === nextStage &&
     nextStage === '04-evidence-detail' &&
-    rejection.response?.isError === true &&
-    rejection.response.structuredContent?.error_code === 'INVALID_ARGUMENT' &&
-    text(rejection.response.structuredContent.error ?? '').includes(
+    captureProperty(response, 'isError') === true &&
+    captureProperty(structured, 'error_code') === 'INVALID_ARGUMENT' &&
+    text(captureProperty(structured, 'error') ?? '').includes(
       'maximum of 50000 characters in a single cell'
     )
   );
 }
 function exactAcknowledgedPrefix(
-  applied: readonly PublicationAcknowledgedCall[],
-  oldStage: PublicationStage,
-  newStage: PublicationStage,
+  applied: readonly unknown[],
+  oldStage: PublicationStageInput,
+  newStage: PublicationStageInput,
   spreadsheetId: string
 ): boolean {
   return applied.every(
     (call, index) =>
-      call.file === calls(oldStage).at(index)?.file &&
-      call.payloadHash === calls(oldStage).at(index)?.payloadHash &&
+      captureProperty(call, 'file') === calls(oldStage).at(index)?.file &&
+      captureProperty(call, 'payloadHash') === calls(oldStage).at(index)?.payloadHash &&
       sha256Json(calls(oldStage).at(index)) === sha256Json(calls(newStage).at(index)) &&
-      call.response?.isError === false &&
-      call.response.structuredContent?.spreadsheetId === spreadsheetId
+      captureProperty(captureProperty(call, 'response'), 'isError') === false &&
+      captureProperty(
+        captureProperty(captureProperty(call, 'response'), 'structuredContent'),
+        'spreadsheetId'
+      ) === spreadsheetId
   );
 }
 export function retainRejectedCellReadback<T extends PublicationObservations>(
-  previous: PublicationManifest,
-  next: PublicationManifest,
+  previous: PublicationManifestInput,
+  next: PublicationManifestInput,
   observations: T,
-  rejection: PublicationRejection | null | undefined
+  rejection: unknown
 ): {
   observations: T & {
     planHash: string;
@@ -143,15 +155,16 @@ export function retainRejectedCellReadback<T extends PublicationObservations>(
   const status = evaluatePublicationReadback(previous, observations);
   const oldStage = previous.stages.find((stage) => stage.id === status.nextStage);
   const newStage = next.stages.find((stage) => stage.id === status.nextStage);
-  const applied = rejection?.appliedCalls;
+  const applied = captureProperty(rejection, 'appliedCalls');
+  const callIndex = captureProperty(rejection, 'callIndex');
   check(
     sameTargetAndValidPlan(previous, next) &&
       definitiveCellRejection(rejection, previous, status.nextStage) &&
       list(applied) &&
-      applied.length === rejection?.callIndex &&
+      applied.length === callIndex &&
       oldStage !== undefined &&
       newStage !== undefined &&
-      rejection.callIndex < calls(oldStage).length &&
+      callIndex < calls(oldStage).length &&
       exactAcknowledgedPrefix(applied, oldStage, newStage, previous.spreadsheetId) &&
       stages(observations).every(
         (observed) =>
@@ -174,7 +187,10 @@ export function retainRejectedCellReadback<T extends PublicationObservations>(
       spreadsheetId: next.spreadsheetId,
       planHash: next.planHash,
       stageId: newStage.id,
-      appliedCalls: applied.map(({ file, payloadHash }) => ({ file, payloadHash })),
+      appliedCalls: applied.map((call) => ({
+        file: captureProperty(call, 'file'),
+        payloadHash: captureProperty(call, 'payloadHash'),
+      })),
       rejectionHash: sha256Json(rejection),
     },
   };
