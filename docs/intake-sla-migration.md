@@ -68,6 +68,13 @@ the current Sheets header-table trimming/stringification helper.
 
 ## Source inventory and case traceability
 
+Transcript selection now composes the typed provider identity and conversation scoring contracts
+with the approved roster-aware context windows. Meeting indexes remain distinct from explicitly
+collective updates, competing-client boundaries are preserved, and direct/assumed identity metadata
+is retained. This is Intake evidence admission, not vendor transport behavior; it lives in the
+engine and does not change the agent's interpretation or additional-tool judgment. Conversation
+scoring accepts the original Date-object and numeric date inputs as well as serialized dates.
+
 Inventory the routine `review:*` entrypoints and their imports, commands, live collectors, source
 modules, contracts, docs and synthetic tests from the pinned reference. Exclude unrelated utilities
 unless a routine import proves the dependency. Record a destination and parity case for each

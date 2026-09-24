@@ -1,3 +1,4 @@
+import type { DateValue } from './dates.js';
 import type { IdentityValue } from './provider-identity-types.js';
 
 export interface ConversationProvider {
@@ -47,9 +48,9 @@ export interface ConversationMatchInput {
   readonly providerRoster?: readonly ConversationProfile[] | undefined;
   readonly providerRelationshipConfirmed?: boolean | undefined;
   readonly linkedOpportunityId?: string | null | undefined;
-  readonly eventDate?: string | null | undefined;
-  readonly storyStartDate?: string | null | undefined;
-  readonly asOf?: string | null | undefined;
+  readonly eventDate?: DateValue;
+  readonly storyStartDate?: DateValue;
+  readonly asOf?: DateValue;
 }
 export interface ConversationScoreBreakdown {
   name: number;

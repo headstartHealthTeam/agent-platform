@@ -3,6 +3,7 @@ import {
   normalizeConversationValue as normalize,
   uniqueConversationValues as unique,
 } from './conversation-name.js';
+import type { DateValue } from './dates.js';
 
 function digits(value = ''): string {
   return value.replace(/\D/g, '').slice(-10);
@@ -115,16 +116,21 @@ export function conversationStageTerms(stage: string | null | undefined = ''): s
     '97153',
   ];
 }
+function hasConversationDate(value: DateValue): value is Exclude<DateValue, null | undefined> {
+  return Boolean(value);
+}
 export function conversationInStoryWindow(
-  eventDate: string | null,
-  storyStartDate: string | null,
-  asOf: string | null
+  eventDate: DateValue,
+  storyStartDate: DateValue,
+  asOf: DateValue
 ): boolean {
-  if (!eventDate) return true;
+  if (!hasConversationDate(eventDate)) return true;
   const value = new Date(eventDate).valueOf();
-  const start = storyStartDate ? new Date(storyStartDate).valueOf() : null;
-  const end = asOf
-    ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(asOf) ? `${asOf}T23:59:59.999Z` : asOf).valueOf()
+  const start = hasConversationDate(storyStartDate) ? new Date(storyStartDate).valueOf() : null;
+  const end = hasConversationDate(asOf)
+    ? new Date(
+        /^\d{4}-\d{2}-\d{2}$/.test(String(asOf)) ? `${String(asOf)}T23:59:59.999Z` : asOf
+      ).valueOf()
     : Date.now();
   if (!Number.isFinite(value)) return false;
   return (start === null || !Number.isFinite(start) || value >= start) && value <= end;

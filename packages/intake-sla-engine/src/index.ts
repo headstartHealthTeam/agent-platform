@@ -58,6 +58,15 @@ export type {
   SegmentTranscriptInput,
 } from './transcript-segments.js';
 export { scoreConversationMatch } from './conversation-match.js';
+export { discoverFirefliesMeeting, segmentFirefliesMeeting } from './meeting-segmentation.js';
+export type {
+  MeetingSegmentProfile,
+  SegmentableMeeting,
+  MeetingSegmentationInput,
+  MeetingMatchAssessment,
+  FirefliesMeetingSegment,
+  FirefliesMeetingDiscovery,
+} from './meeting-segment-types.js';
 export type {
   ConversationProfile,
   ConversationProvider,
