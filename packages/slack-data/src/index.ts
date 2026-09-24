@@ -16,3 +16,4 @@ export { slackReplyCount, normalizeSlackSearchPageResponse } from './search-page
 export type { SlackReplyMetadata, SlackPageRecord, SlackSearchPageResult } from './search-page.js';
 export { slackReadFailureMetadata } from './read-failure.js';
 export type { SlackFailureMetadata } from './read-failure.js';
+export { slackDisplayText, slackDisplayTimestamp } from './display-text.js';

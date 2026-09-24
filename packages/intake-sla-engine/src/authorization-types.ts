@@ -9,7 +9,7 @@ interface AuthorizationRecordFields {
   readonly treatmentApprovalDate?: string | null;
   readonly treatmentSubmissionDate?: string | null;
   readonly portalSubmissionDate?: string | null;
-  readonly lastSubstantiveDate?: string | null;
+  readonly lastSubstantiveDate?: string | Date | null;
   readonly createdDate?: string | null;
   readonly authStartDate?: string | null;
   readonly authExpirationDate?: string | null;
@@ -72,5 +72,5 @@ export interface AuthorizationGate extends Partial<DenialDetails> {
 export interface AuthorizationGateInput {
   readonly phase: string;
   readonly authorizations?: readonly AuthorizationRecord[];
-  readonly asOf?: string;
+  readonly asOf?: string | Date;
 }

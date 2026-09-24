@@ -100,6 +100,25 @@ and bounded SMS request/response pairing. These consume already collected Salesf
 reuse the engine's identity and conversation contracts; they introduce no provider read, new text
 matching policy, or automatic Salesforce action.
 
+Routine authorization report evidence retains phase-specific field meaning, current record and
+coverage selection, individual-coverage progress versus whole-prerequisite completion, expiration,
+and dated post-approval confirmations or corrections. It composes the existing core resolver but
+does not replace its distinct report-evidence normalization with the live prerequisite projection.
+The actual report producer's Date cutoff and nullable gate fields remain supported.
+
+Portal report evidence retains the original capture-envelope precedence, content/sender deduplication
+across channel labels, direct lookup and relationship admission, and roster-clause selection in
+provider-wide conversations. Channel labels remain non-authoritative; original messages remain raw
+evidence while the target-specific segment supplies interpretation. These are Intake-owned product
+and evidence rules, not a new generic provider SDK or source-health gate.
+
+Slack report evidence composes shared `slack-data` markup and display-timestamp projection with
+Intake-owned client/roster segmentation, structured and legacy captured-input selection, automated
+stage-post exclusion, supporting-only denial context and historical hold dates. Source captures and
+their hashes remain unchanged. The original distinctions between structured and rendered channel
+exclusions and between structured-only and rendered-path deduplication are preserved; the migration
+does not redesign those business rules.
+
 Inventory the routine `review:*` entrypoints and their imports, commands, live collectors, source
 modules, contracts, docs and synthetic tests from the pinned reference. Exclude unrelated utilities
 unless a routine import proves the dependency. Record a destination and parity case for each

@@ -32,6 +32,10 @@ run receipts, denial-context interpretation and evidence sufficiency. A consumer
 vendor response before applying those policies; this package does not choose or change a cutoff.
 
 No API credentials, Slack writes or direct desktop bindings. Authorized callers supply responses.
+`slackDisplayText` projects native message markup, and `slackDisplayTimestamp` accepts complete ISO
+timestamps or the last native EDT/EST display stamp. They do not establish chronology, completeness,
+identity, relevance or completion. The original capture remains unchanged. Native display fields
+retain their existing verbatim offset behavior; this projection does not add calendar validation.
 Synthetic tests exercise provider shapes without patient information or network access. Package
 checks use the usual build, lint, check-types and test:coverage scripts; full acceptance is `pnpm qa`.
 

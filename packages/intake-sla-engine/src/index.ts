@@ -801,3 +801,28 @@ export type {
   TasksEvidenceInput,
   TaskEvidenceIdentity,
 } from './task-evidence-types.js';
+export { adaptAuthorizations } from './authorization-source-evidence.js';
+export type {
+  AuthorizationEvidenceRecord,
+  AuthorizationEvidenceGate,
+  AuthorizationsEvidenceInput,
+  AuthorizationEvidenceEvent,
+} from './authorization-evidence-types.js';
+export { adaptPortal } from './portal-evidence.js';
+export type {
+  PortalMessage,
+  PortalChat,
+  PortalRows,
+  PortalSearchRow,
+  PortalProfile,
+  PortalEvidenceInput,
+  PortalEvidenceEvent,
+} from './portal-evidence-types.js';
+export { adaptSlack } from './slack-evidence.js';
+export type {
+  SlackEvidenceProfile,
+  SlackEvidenceRecord,
+  SlackEvidenceRow,
+  SlackEvidenceInput,
+  SlackEvidenceEvent,
+} from './slack-evidence-types.js';

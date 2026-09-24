@@ -50,17 +50,17 @@ export function authorizationPhase(record: AuthorizationRecord): string {
 export function authorizationRecordDate(
   record: AuthorizationRecord,
   phase: string
-): string | undefined {
+): string | Date | undefined {
   const phaseDates =
     phase === 'Initial'
       ? [record.initialApprovalDate, record.initialSubmissionDate]
       : [record.treatmentApprovalDate, record.treatmentSubmissionDate];
   return [...phaseDates, record.lastSubstantiveDate, record.createdDate]
-    .filter((value): value is string => Boolean(value))
+    .filter((value): value is string | Date => Boolean(value))
     .sort((left, right) => new Date(right).valueOf() - new Date(left).valueOf())[0];
 }
 
-export function authorizationCurrent(record: AuthorizationRecord, asOf: string): boolean {
+export function authorizationCurrent(record: AuthorizationRecord, asOf: string | Date): boolean {
   const at = new Date(asOf);
   if (record.superseded) return false;
   if (
