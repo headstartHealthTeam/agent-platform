@@ -722,6 +722,14 @@ selection contract, including explicit undefined source fields; no lifecycle dec
 
 ## Related guidance
 
+Delay history consumes already admitted storyline findings and retains their source dates,
+identity, lifecycle references, recurrence and unresolved opening context. It does not change
+freshness, readiness or the current action. The receipt binds the complete cohort and narrative
+to the original manifest contract. Its local HTML companion remains escaped, script-free and
+self-contained, with complete cell text rather than truncated summaries. Synthetic source-output
+comparisons and real mobile/tablet/desktop/wide browser checks cover this port; final recommendation
+composition and complete runtime acceptance remain separate migration work.
+
 - [Documentation hub](README.md)
 - [Workflow authoring](workflow-authoring-guide.md)
 - [Reusable data capabilities](reusable-data-capabilities.md)

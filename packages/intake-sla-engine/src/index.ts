@@ -932,3 +932,26 @@ export type {
   StoryWindow,
   StoryWindowInput,
 } from './story-types.js';
+export {
+  CURRENT_POSITION_MARKER,
+  buildDelayHistory,
+  currentNarrative,
+  delayHistoryOmissions,
+  historyEntryText,
+  renderDelayHistory,
+  reviewExplanation,
+} from './delay-history.js';
+export { validateDelayHistoryReceipt } from './delay-history-receipt.js';
+export { renderCaseHistoryReview } from './case-history-review.js';
+export type { CaseHistoryReviewInput, CaseHistoryTable } from './case-history-review.js';
+export type {
+  DelayHistory,
+  DelayHistoryEntry,
+  DelayHistoryEvent,
+  DelayHistoryFinding,
+  DelayHistoryInput,
+  DelayHistoryOmission,
+  DelayHistoryReceipt,
+  DelayHistoryReceiptInput,
+  DelayHistoryReference,
+} from './delay-history-types.js';
