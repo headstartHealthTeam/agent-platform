@@ -84,18 +84,18 @@ export function isExcludedStage(stage = ''): boolean {
 }
 
 export interface SlaDisposition {
-  readonly Reason_for_Delay__c?: string | null;
-  readonly reasonForDelay?: string | null;
-  readonly Reason_for_Delay_Notes__c?: string | null;
-  readonly reasonForDelayNotes?: string | null;
+  readonly Reason_for_Delay__c?: string | null | undefined;
+  readonly reasonForDelay?: string | null | undefined;
+  readonly Reason_for_Delay_Notes__c?: string | null | undefined;
+  readonly reasonForDelayNotes?: string | null | undefined;
 }
 export interface OpportunityDisposition {
-  readonly StageName?: string | null;
-  readonly stage?: string | null;
-  readonly Current_SLA__r?: SlaDisposition | null;
-  readonly currentSla?: SlaDisposition | null;
-  readonly Close_Suggestion__c?: string | null;
-  readonly closeSuggestion?: string | null;
+  readonly StageName?: string | null | undefined;
+  readonly stage?: string | null | undefined;
+  readonly Current_SLA__r?: SlaDisposition | null | undefined;
+  readonly currentSla?: SlaDisposition | null | undefined;
+  readonly Close_Suggestion__c?: string | null | undefined;
+  readonly closeSuggestion?: string | null | undefined;
 }
 
 export function isExcludedOpportunity(opportunity: OpportunityDisposition = {}): boolean {

@@ -68,6 +68,15 @@ the current Sheets header-table trimming/stringification helper.
 
 ## Source inventory and case traceability
 
+Structured report collection now composes `salesforce-read` for verified reads while Intake owns
+the exact cohort and related-record queries, chunking, frozen saved-input reuse, record projections
+and artifact order. Saved mode makes no provider calls. Report-specific identities remain distinct
+from the generic identity builder: provider/practice roster scope, raw family contact values,
+CSM history, search windows and billing reconciliation retain the approved report behavior. Actual
+producer-to-adapter contracts are readonly structural projections, not casts or invented fields.
+Saved-source health, full report-loop composition and complete command acceptance remain separate
+integration work; these collection modules do not authorize operational cutover.
+
 Transcript selection now composes the typed provider identity and conversation scoring contracts
 with the approved roster-aware context windows. Meeting indexes remain distinct from explicitly
 collective updates, competing-client boundaries are preserved, and direct/assumed identity metadata

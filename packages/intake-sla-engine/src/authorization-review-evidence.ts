@@ -31,7 +31,7 @@ export function evidenceAuthorizationPhase(
   return null;
 }
 export type AuthorizationReviewEvidenceRecord = SourceAuthorizationRecord & {
-  readonly Review_Status__c?: string | null;
+  readonly Review_Status__c?: string | null | undefined;
 };
 export interface AuthorizationReviewEvidenceInput extends SourceEvidenceContext {
   readonly records?: readonly AuthorizationReviewEvidenceRecord[] | null;

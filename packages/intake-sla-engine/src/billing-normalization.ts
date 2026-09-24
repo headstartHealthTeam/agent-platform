@@ -9,7 +9,10 @@ export function billingCutoff(asOf?: string): { readonly day: string; readonly i
 }
 
 export function availableAtCutoff(
-  record: { readonly CreatedDate?: string | null; readonly createdDate?: string | null },
+  record: {
+    readonly CreatedDate?: string | null | undefined;
+    readonly createdDate?: string | null | undefined;
+  },
   instant: number
 ): boolean {
   const createdAt = Date.parse(record.CreatedDate ?? record.createdDate ?? '');

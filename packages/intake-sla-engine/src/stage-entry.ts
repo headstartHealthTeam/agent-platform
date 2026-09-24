@@ -1,19 +1,19 @@
 export interface StageEntryOpportunity {
-  readonly StageName?: string | null;
-  readonly stage?: string | null;
-  readonly LastStageChangeDate?: string | null;
-  readonly SLA_Entry_Date__c?: string | null;
-  readonly TA_Approval_Checked_Timestamp__c?: string | null;
-  readonly Treatment_Auth_Approval_Date__c?: string | null;
-  readonly Active_RBT_Checked_At__c?: string | null;
+  readonly StageName?: string | null | undefined;
+  readonly stage?: string | null | undefined;
+  readonly LastStageChangeDate?: string | null | undefined;
+  readonly SLA_Entry_Date__c?: string | null | undefined;
+  readonly TA_Approval_Checked_Timestamp__c?: string | null | undefined;
+  readonly Treatment_Auth_Approval_Date__c?: string | null | undefined;
+  readonly Active_RBT_Checked_At__c?: string | null | undefined;
 }
 export interface StageTransition {
-  readonly Field?: string | null;
-  readonly field?: string | null;
-  readonly NewValue?: string | number | boolean | null;
-  readonly newValue?: string | number | boolean | null;
-  readonly CreatedDate?: string | null;
-  readonly eventDate?: string | null;
+  readonly Field?: string | null | undefined;
+  readonly field?: string | null | undefined;
+  readonly NewValue?: string | number | boolean | null | undefined;
+  readonly newValue?: string | number | boolean | null | undefined;
+  readonly CreatedDate?: string | null | undefined;
+  readonly eventDate?: string | null | undefined;
 }
 function timestamp(value?: string | null): number {
   const time = value ? new Date(value).valueOf() : Number.NaN;

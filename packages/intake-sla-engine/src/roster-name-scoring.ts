@@ -1,7 +1,6 @@
 import { nameEditDistance, normalizeClientName } from './client-name.js';
 
 export interface RosterCandidate {
-  readonly [key: string]: unknown;
   readonly opportunityId?: string | null | undefined;
   readonly opportunityName?: string | null | undefined;
   readonly knownNameVariants?: readonly string[] | null;

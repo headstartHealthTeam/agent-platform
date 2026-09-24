@@ -30,23 +30,26 @@ export type SourceAuthorizationRecord = Readonly<
   Partial<Record<SourceDates | NullableStrings, string | null | undefined>>
 > &
   Readonly<Partial<Record<SourceStrings, string | undefined>>> & {
-    readonly No_Auth_Needed__c?: boolean | null;
-    readonly Payor_Name__r?: { readonly Name?: string | null } | null;
+    readonly No_Auth_Needed__c?: boolean | null | undefined;
+    readonly Payor_Name__r?: { readonly Name?: string | null | undefined } | null | undefined;
   };
 export interface SourceAuthorizationOpportunity {
   readonly Id?: string | undefined;
-  readonly StageName?: string | null;
-  readonly Current_SLA__r?: {
-    readonly Stage__c?: string | null;
-    readonly CreatedDate?: string | null;
-  } | null;
-  readonly Has_IA_Approved__c?: boolean | null;
-  readonly Initial_Auth_Approval_Date__c?: string | null;
-  readonly Treatment_Auth_Approval_Date__c?: string | null;
-  readonly IA_Approval_Checked_Timestamp__c?: string | null;
-  readonly TA_Approval_Checked_Timestamp__c?: string | null;
-  readonly LastStageChangeDate?: string | null;
-  readonly SLA_Entry_Date__c?: string | null;
+  readonly StageName?: string | null | undefined;
+  readonly Current_SLA__r?:
+    | {
+        readonly Stage__c?: string | null | undefined;
+        readonly CreatedDate?: string | null | undefined;
+      }
+    | null
+    | undefined;
+  readonly Has_IA_Approved__c?: boolean | null | undefined;
+  readonly Initial_Auth_Approval_Date__c?: string | null | undefined;
+  readonly Treatment_Auth_Approval_Date__c?: string | null | undefined;
+  readonly IA_Approval_Checked_Timestamp__c?: string | null | undefined;
+  readonly TA_Approval_Checked_Timestamp__c?: string | null | undefined;
+  readonly LastStageChangeDate?: string | null | undefined;
+  readonly SLA_Entry_Date__c?: string | null | undefined;
 }
 export interface SourceAuthorizationGate<T extends SourceAuthorizationRecord> {
   readonly phase: string;

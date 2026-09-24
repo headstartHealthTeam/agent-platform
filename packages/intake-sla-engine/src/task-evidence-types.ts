@@ -1,8 +1,7 @@
 import type { EvidenceDate } from './evidence.js';
 import type { GateContext } from './gate-context.js';
-import type { IdentityProfile } from './identity-profile.js';
 import type { DatedTaskRecord } from './source-task-dates.js';
-import type { TextMatch } from './text-match.js';
+import type { TextMatch, TextMatchIdentity } from './text-match.js';
 
 type TaskTextField =
   | 'Id'
@@ -36,8 +35,8 @@ export type TaskEvidenceRecord = DatedTaskRecord &
     readonly FeedComments?: readonly TaskEvidenceRecord[] | null | undefined;
     readonly ChatterComments?: readonly TaskEvidenceRecord[] | null | undefined;
   };
-export type TaskEvidenceProfile = Pick<IdentityProfile, 'opportunityId' | 'opportunityName'> &
-  Partial<IdentityProfile>;
+export type TaskEvidenceProfile = Pick<TextMatchIdentity, 'opportunityId' | 'opportunityName'> &
+  Partial<TextMatchIdentity>;
 export interface TasksEvidenceInput {
   readonly records?: readonly TaskEvidenceRecord[] | null | undefined;
   readonly profile: TaskEvidenceProfile;

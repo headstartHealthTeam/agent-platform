@@ -29,9 +29,12 @@ interface OpportunityProjection {
   readonly Headstart_Practice__r: CollectionPractice;
   readonly Intake_Notes__c: string;
 }
+type CollectionProjection<T, P> = {
+  readonly [K in keyof T as K extends keyof P ? never : K]: T[K];
+} & P;
 export function normalizeCollectedOpportunities<T extends CollectionOpportunity>(
   records: readonly T[]
-): (Omit<T, keyof OpportunityProjection> & OpportunityProjection)[] {
+): CollectionProjection<T, OpportunityProjection>[] {
   return records
     .map((opp) => {
       const providerPractice = reportPreferred(
@@ -70,7 +73,7 @@ interface AuthorizationProjection {
 export function normalizeCollectedAuthorizations<T extends SourceAuthorizationRecord>(
   authorizations: readonly T[],
   reviews: readonly SourceAuthorizationRecord[]
-): (Omit<T, keyof AuthorizationProjection> & AuthorizationProjection)[] {
+): CollectionProjection<T, AuthorizationProjection>[] {
   const byAuthorization = new Map<string, SourceAuthorizationRecord>();
   for (const review of [...reviews].sort(
     (left, right) =>
@@ -122,7 +125,7 @@ export type CollectionRbtRequest = RbtRequestEvidenceRecord & {
 };
 export function normalizeCollectedRbtRequests<T extends CollectionRbtRequest>(
   records: readonly T[]
-): (Omit<T, 'Date_Closed__c'> & { readonly Date_Closed__c: string | null | undefined })[] {
+): CollectionProjection<T, { readonly Date_Closed__c: string | null | undefined }>[] {
   return records.map((row) => ({
     ...row,
     Date_Closed__c: reportPreferred(
@@ -134,9 +137,12 @@ export function normalizeCollectedRbtRequests<T extends CollectionRbtRequest>(
 export function normalizeCollectedStaffing<T extends StaffingEvidenceRecord>(
   records: readonly T[],
   assignedLookup = false
-): (Omit<T, 'Billable_Start_Date__c'> & {
-  readonly Billable_Start_Date__c: string | null | undefined;
-})[] {
+): CollectionProjection<
+  T,
+  {
+    readonly Billable_Start_Date__c: string | null | undefined;
+  }
+>[] {
   return records.map((row) => ({
     ...row,
     Billable_Start_Date__c: assignedLookup

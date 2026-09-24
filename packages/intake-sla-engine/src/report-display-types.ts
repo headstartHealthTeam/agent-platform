@@ -75,14 +75,14 @@ export interface ReportTaskFeed {
 }
 export interface ReportTaskUpdate {
   readonly WhatId: string;
-  readonly TaskId: string | null | undefined;
-  readonly FeedItemId: string | null | undefined;
+  readonly TaskId?: string | null | undefined;
+  readonly FeedItemId?: string | null | undefined;
   readonly TaskSubject: string;
   readonly TaskDescription: string;
   readonly TaskStatus: string;
   readonly TaskActivityDate: string;
-  readonly CreatedDate: ReportSourceDate;
-  readonly LastModifiedDate: ReportSourceDate;
+  readonly CreatedDate?: ReportSourceDate;
+  readonly LastModifiedDate?: ReportSourceDate;
   readonly Author: string;
   readonly Source: 'Task update' | 'Task Chatter';
   readonly Summary: string;

@@ -1170,3 +1170,21 @@ export {
   saveStructuredCorrectionDelta,
 } from './recovery-storage.js';
 export { isRecoveryCommand, runRecoveryCommand } from './cli-recovery.js';
+export { collectStructuredEvidence, type StructuredCollection } from './structured-collection.js';
+export {
+  buildReportIdentityProfiles,
+  reportConversationSearchPathways,
+} from './report-identity.js';
+export type { ReportIdentityProfile } from './report-identity-types.js';
+export {
+  buildReportBillingRows,
+  reportBillingReconciliation,
+  prepareCollectedReportContext,
+} from './report-billing.js';
+export type { ReportBillingRow, BillingReconciliationReport } from './report-billing.js';
+export {
+  stageRelativeSearchWindow,
+  type CollectionSearchWindow,
+} from './collection-search-window.js';
+export type { StructuredCollectionSource } from './collection-initial.js';
+export type { StructuredCollectionArtifacts } from './collection-decoding.js';

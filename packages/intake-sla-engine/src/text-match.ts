@@ -1,9 +1,13 @@
 import { nameEditDistance } from './client-name.js';
-import type { IdentityProfile } from './identity-profile.js';
-import type { IdentityValue } from './provider-identity-types.js';
+import type {
+  IdentityValue,
+  ProviderIdentityCluster,
+  ProviderIdentityInput,
+} from './provider-identity-types.js';
 import { normalizeIdentityValue as normalize } from './provider-identity-values.js';
 import { buildProviderIdentityCluster, providerClusterAnchors } from './provider-identity.js';
 import { matchRosterOpportunity } from './roster-matching.js';
+import type { RosterCandidate } from './roster-matching.js';
 
 const STAGE_TERMS = {
   ia: [
@@ -38,11 +42,25 @@ export function stageTerms(stage: IdentityValue): string[] {
   if (value.includes('ta approved') || value.includes('97153')) return STAGE_TERMS.staffing;
   return [...new Set(Object.values(STAGE_TERMS).flat())];
 }
-export type TextMatchIdentity = Pick<
-  IdentityProfile,
-  'opportunityId' | 'opportunityName' | 'authorizationNumbers' | 'familyPhones'
-> &
-  Partial<IdentityProfile>;
+export interface TextMatchIdentity extends Pick<
+  ProviderIdentityInput,
+  'providers' | 'providerRoles' | 'practice' | 'currentCsm' | 'priorCsms'
+> {
+  readonly opportunityId: string;
+  readonly opportunityName: string;
+  readonly authorizationNumbers: readonly string[];
+  readonly familyPhones: readonly string[];
+  readonly stage?: string | null | undefined;
+  readonly salesforceRecordIds?: readonly string[] | undefined;
+  readonly familyEmails?: readonly string[] | undefined;
+  readonly clientAliases?: readonly string[] | undefined;
+  readonly providerNames?: readonly string[] | undefined;
+  readonly providerIdentity?: ProviderIdentityCluster | undefined;
+  readonly providerRoster?: readonly RosterCandidate[] | undefined;
+  readonly practiceAliases?: readonly string[] | undefined;
+  readonly csmNames?: readonly string[] | undefined;
+  readonly csmEmails?: readonly string[] | undefined;
+}
 export interface TextMatchInput {
   readonly text: string;
   readonly sourceContext?: string;

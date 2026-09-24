@@ -8,10 +8,7 @@ export type InterpretationJson =
   | readonly InterpretationJson[]
   | { readonly [key: string]: InterpretationJson | undefined };
 
-interface NamedIdentity {
-  readonly name?: unknown;
-  readonly [key: string]: unknown;
-}
+type NamedIdentity = { readonly name?: unknown } | Readonly<Record<string, unknown>>;
 export interface InterpretationProfile {
   readonly opportunityId?: string | null;
   readonly opportunityName?: string | null;
@@ -39,8 +36,8 @@ export interface InterpretationProfile {
         readonly name?: string | null | undefined;
       }[]
     | null;
-  readonly stage?: string | null;
-  readonly stageEntryDate?: string | null;
+  readonly stage?: string | null | undefined;
+  readonly stageEntryDate?: string | null | undefined;
 }
 export interface InterpretationPacketInput {
   readonly profile?: InterpretationProfile | null;
