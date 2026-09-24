@@ -42,7 +42,7 @@ export interface OperationalSourceContext {
 export interface OperationalFactInput {
   readonly text: string;
   readonly category: string;
-  readonly eventDate: string;
+  readonly eventDate: DateValue;
   readonly asOf?: DateValue;
   readonly context?: OperationalSourceContext | undefined;
 }
@@ -50,7 +50,7 @@ export interface OperationalFactContext {
   readonly text: string;
   readonly value: string;
   readonly category: string;
-  readonly eventDate: string;
+  readonly eventDate: DateValue;
   readonly asOf: DateValue;
   readonly context: OperationalSourceContext;
   readonly currentSlaNote: boolean;

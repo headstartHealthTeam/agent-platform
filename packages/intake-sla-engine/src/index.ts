@@ -758,6 +758,19 @@ export { parseConversationSentences, readableConversationList } from './conversa
 export type { ConversationSentence } from './conversation-sentences.js';
 export { explicitConversationDate, dateFromRelativeWord } from './conversation-dates.js';
 export { extractDenialReason, cleanDenialReason } from './denial-reason.js';
+export { extractOperationalFacts } from './operational-facts.js';
+export type {
+  OperationalFact,
+  DatedOperationalFact,
+  OperationalFactInput,
+  OperationalSourceContext,
+} from './operational-fact-context.js';
+export { interpretConversation, isAutomatedCommunication } from './conversation-interpretation.js';
+export type {
+  ConversationInterpretationInput,
+  ConversationIdentity,
+  ConversationEvidenceEvent,
+} from './conversation-interpretation.js';
 export { adaptClinicalQuality } from './clinical-quality-evidence.js';
 export type {
   ClinicalQualityEvidenceRecord,

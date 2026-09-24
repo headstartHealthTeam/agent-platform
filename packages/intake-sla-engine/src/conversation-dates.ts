@@ -1,5 +1,6 @@
 import { normalizeOperationalText } from './conversation-text.js';
 import { isoDate, toDate } from './dates.js';
+import type { DateValue } from './dates.js';
 
 const WEEKDAYS = new Map([
   ['sunday', 0],
@@ -37,7 +38,7 @@ const MONTHS = new Map([
   ['dec', 12],
 ]);
 
-export function dateFromRelativeWord(word: string, eventDate: string): string | null {
+export function dateFromRelativeWord(word: string, eventDate: DateValue): string | null {
   const base = toDate(eventDate);
   if (!base) return null;
   const value = normalizeOperationalText(word);
@@ -51,14 +52,18 @@ export function dateFromRelativeWord(word: string, eventDate: string): string | 
   return isoDate(base);
 }
 
-function numericDate(match: RegExpExecArray, eventDate: string): string {
+function nativeConversationDate(value: DateValue): Date {
+  if (value instanceof Date) return new Date(value.valueOf());
+  return new Date(value === null ? 0 : (value ?? Number.NaN));
+}
+function numericDate(match: RegExpExecArray, eventDate: DateValue): string {
   const year = match[3]
     ? Number(match[3].length === 2 ? `20${match[3]}` : match[3])
-    : new Date(eventDate).getUTCFullYear();
+    : nativeConversationDate(eventDate).getUTCFullYear();
   return `${String(year)}-${String(Number(match[1])).padStart(2, '0')}-${String(Number(match[2])).padStart(2, '0')}`;
 }
 
-export function explicitConversationDate(text: unknown, eventDate: string): string | null {
+export function explicitConversationDate(text: unknown, eventDate: DateValue): string | null {
   const value = String(text);
   const operational =
     /\b(?:start date|first day|first session|97153 appointment|assessment date|ia date|completion target|complete|completed|submit|submitted|submission)\b.{0,24}\b(0?[1-9]|1[0-2])[/-](0?[1-9]|[12]\d|3[01])(?:[/-](20\d\d|\d\d))?\b/i.exec(
@@ -78,14 +83,14 @@ export function explicitConversationDate(text: unknown, eventDate: string): stri
       withoutPrefix
     );
   if (named) {
-    return `${String(new Date(eventDate).getUTCFullYear())}-${String(MONTHS.get((named[1] ?? '').toLowerCase())).padStart(2, '0')}-${String(Number(named[2])).padStart(2, '0')}`;
+    return `${String(nativeConversationDate(eventDate).getUTCFullYear())}-${String(MONTHS.get((named[1] ?? '').toLowerCase())).padStart(2, '0')}-${String(Number(named[2])).padStart(2, '0')}`;
   }
   const ordinal =
     /\b(?:on|for|until|through|starting|start|scheduled|schedule|by)\s+(?:the\s+(\d{1,2})|(\d{1,2}))(?:st|nd|rd|th)\b/i.exec(
       withoutPrefix
     );
   if (ordinal) {
-    const base = new Date(eventDate);
+    const base = nativeConversationDate(eventDate);
     return `${String(base.getUTCFullYear())}-${String(base.getUTCMonth() + 1).padStart(2, '0')}-${String(Number(ordinal[1] ?? ordinal[2])).padStart(2, '0')}`;
   }
   const relative =

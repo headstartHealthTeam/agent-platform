@@ -75,11 +75,13 @@ is retained. This is Intake evidence admission, not vendor transport behavior; i
 engine and does not change the agent's interpretation or additional-tool judgment. Conversation
 scoring accepts the original Date-object and numeric date inputs as well as serialized dates.
 
-The existing conversation fact extractor is being migrated in category-sized internal modules.
-Its initial-assessment and RBT/first-service projections preserve the source's branch priority,
-default follow-up dates, reported-versus-verified completion and supported wording. These are
-partial internal components until the complete extractor and source adapters are composed; they
-do not replace current-run interpretation or introduce a new deterministic fallback mode.
+The existing conversation fact extractor composes typed common, initial-assessment, treatment-plan,
+insurance and RBT/first-service modules. It preserves source branch priority, ordered append and
+relevance-based deduplication, default follow-up dates, reported-versus-verified completion and
+supported wording. `interpretConversation` projects those facts into the original evidence contract,
+preserving identity metadata, source-record suffixes and explicit unknown milestone fields. These
+are existing deterministic semantics, not a replacement for current-run interpretation or a new
+fallback mode. Full source-adapter and report composition remains separate work.
 
 Inventory the routine `review:*` entrypoints and their imports, commands, live collectors, source
 modules, contracts, docs and synthetic tests from the pinned reference. Exclude unrelated utilities
