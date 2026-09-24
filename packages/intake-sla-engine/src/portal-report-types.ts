@@ -20,8 +20,8 @@ interface PortalReportEnvelope {
 export type PortalReportResponses =
   PortalReportEnvelope | readonly PortalReportResponses[] | null | undefined;
 export interface PortalReportInput {
-  readonly opportunity?: { readonly StageName?: string | null } | null;
-  readonly sla?: { readonly Stage__c?: string | null } | null;
+  readonly opportunity?: { readonly StageName?: string | null | undefined } | null | undefined;
+  readonly sla?: { readonly Stage__c?: string | null | undefined } | null | undefined;
   readonly responses?: PortalReportResponses;
 }
 export interface PortalReportSummary {

@@ -138,6 +138,23 @@ message fallback and decoding order, date sorting, channel-conflict deduplicatio
 stage-relevance accounting, and unchecked versus confirmed-empty results. It supplies the approved
 builder/freshness contract without changing the stronger evidence adapter or adding source reads.
 
+Supplemental search pathways retain the original name variants, provider/CSM/authorization/staffing
+anchors, query order and conversation admission scores. They consume real identity profiles and
+prepared pathways, preserving direct-lookup precedence, weak/competing matches and country-prefix
+phone matching. This Intake-specific relevance policy is distinct from generic provider search and
+from the engine's separate conversation-window scorer; neither is substituted for the other.
+
+Freshness note and candidate helpers retain the approved administrative-pattern exclusions,
+generated-draft signatures, embedded-note dates, date-prefix display, family-specific substantive
+evidence tests, relevance priorities and summary wording. These are the existing report's rules,
+not new agent constraints. Routine freshness assembly composes those helpers with the typed source
+projections and current interpreted events. It retains the frozen cutoff, current-gate evidence
+window, source/relevance ranking, provenance and own unknown milestone fields, distinct audit and
+substantive views, elapsed-day freshness and chronological changes. Search bundles stay auditable
+without independently establishing freshness. The approved routine builder supplies no raw
+Fireflies/Aloha/Claims/Slack inputs here; unreferenced raw-transcript fallback and standalone
+file-processing CLI are excluded. Final recommendation/report composition remains separate work.
+
 Inventory the routine `review:*` entrypoints and their imports, commands, live collectors, source
 modules, contracts, docs and synthetic tests from the pinned reference. Exclude unrelated utilities
 unless a routine import proves the dependency. Record a destination and parity case for each

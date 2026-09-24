@@ -869,3 +869,49 @@ export type {
   PortalReportSummary,
   ParsedPortalReport,
 } from './portal-report-types.js';
+export { buildSearchPathways } from './search-pathways.js';
+export { evaluateConversationMatch } from './search-pathway-match.js';
+export {
+  buildNameVariants,
+  compactPhone,
+  hasCompetingNamedClient,
+  normalizeSearchText,
+  stageSearchVernacular,
+} from './search-pathway-values.js';
+export type {
+  SearchPathwayProvider,
+  SearchPathwayIdentity,
+  SearchPathways,
+  PathwayMatchInput,
+  PathwayConversationMatch,
+} from './search-pathway-types.js';
+export { isAdministrativeOnly } from './freshness-administrative.js';
+export {
+  extractLatestSubstantiveNote,
+  isGeneratedSlaDraft,
+  isSubstantiveHumanSlaNote,
+  stripGeneratedSlaDraft,
+} from './freshness-notes.js';
+export type { SubstantiveFreshnessNote } from './freshness-notes.js';
+export { dateAnchoredSummary } from './freshness-values.js';
+export { analyzeOpportunityFreshness } from './freshness-analysis.js';
+export type { FreshnessAnalysis } from './freshness-analysis.js';
+export type { FreshnessEvidenceRow } from './freshness-evidence.js';
+export type { FreshnessChange, FreshnessDatedFact } from './freshness-selection.js';
+export type {
+  FreshnessInput,
+  FreshnessOpportunity,
+  FreshnessAuthorizationGate,
+  FreshnessAuthorization,
+  FreshnessVob,
+  FreshnessClinicalQuality,
+  FreshnessRbt,
+  FreshnessStaffing,
+  FreshnessTicketMatch,
+  FreshnessInterview,
+  FreshnessTask,
+  FreshnessCall,
+  FreshnessBilling,
+  FreshnessInterpretedEvent,
+  FreshnessSupplemental,
+} from './freshness-source-types.js';
