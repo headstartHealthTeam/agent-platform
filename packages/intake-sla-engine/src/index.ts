@@ -1085,3 +1085,20 @@ export type {
   ReportRowOpportunity,
   ReportRowProjection,
 } from './report-row-types.js';
+export { connectIntakeSalesforce, intakeSalesforceTargetFromEnv } from './salesforce-reader.js';
+export type { IntakeSalesforceTarget } from './salesforce-reader.js';
+export { checkIntakeProductionFingerprint } from './production-fingerprint.js';
+export type {
+  IntakeProductionBaseline,
+  IntakeProductionCheck,
+  IntakeProductionObservation,
+  IntakeSlaMetadata,
+} from './production-fingerprint.js';
+export {
+  mergeCollectedStaffing,
+  normalizeCollectedAuthorizations,
+  normalizeCollectedOpportunities,
+  normalizeCollectedRbtRequests,
+  normalizeCollectedStaffing,
+} from './collection-normalization.js';
+export type { CollectionOpportunity, CollectionRbtRequest } from './collection-normalization.js';

@@ -40,6 +40,7 @@
     "@headstart-health/fireflies-data": "workspace:*",
     "@headstart-health/google-sheets-data": "workspace:*",
     "@headstart-health/openai-platform": "workspace:*",
+    "@headstart-health/salesforce-read": "workspace:*",
     "@headstart-health/slack-data": "workspace:*",
     "zod": "^4.6.5"
   },

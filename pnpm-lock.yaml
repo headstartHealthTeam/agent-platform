@@ -446,6 +446,9 @@ importers:
       '@headstart-health/openai-platform':
         specifier: workspace:*
         version: link:../openai-platform
+      '@headstart-health/salesforce-read':
+        specifier: workspace:*
+        version: link:../salesforce-read
       '@headstart-health/slack-data':
         specifier: workspace:*
         version: link:../slack-data

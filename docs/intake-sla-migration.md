@@ -792,6 +792,19 @@ coerced. Actual evidence, packet, renderer, freshness, authorization and source 
 through these typed Intake-owned projections. Saved-artifact orchestration and command integration
 remain separate work; provider mechanics stay in their shared packages.
 
+The Production fingerprint reader composes `salesforce-read`'s organization-verified, schema-checked
+data and Tooling queries. Intake retains explicit Production target configuration, the approved Apex
+and Flow selection, source-body hashes, ordered SLA metadata and baseline comparison. Query order,
+null handling and complete outputs match the original drift checker; no business metadata policy or
+write capability moves into the provider. The private baseline is supplied by the caller.
+
+Salesforce collection projections preserve practice/provider fallback, original cohort exclusions,
+latest linked Authorization Review enrichment, phase-specific Master date fallback, inactive RBT
+close dates and direct-versus-assigned staffing merge behavior. These transformations retain raw
+metadata and input identity where the approved builder does. They do not establish completion,
+replace evidence normalization or expand collection scope. Live and saved-source orchestration
+remain separate integration work.
+
 ## Related guidance
 
 - [Documentation hub](README.md)
