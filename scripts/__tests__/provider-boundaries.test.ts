@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 const root = resolve(import.meta.dirname, '../..');
 const providers = [
+  'artifact-workbook',
   'google-read-transport',
   'google-sheets-data',
   'salesforce-read',

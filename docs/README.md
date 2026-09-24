@@ -116,6 +116,8 @@ flowchart TD
   native body validation and sanitized failure/cooldown signals.
 - [`packages/slack-data/`](../packages/slack-data/README.md) owns native transport decoding and
   explicit thread-completion contracts.
+- [`packages/artifact-workbook/`](../packages/artifact-workbook/README.md) owns injected local
+  workbook library operations without report layout or acceptance policy.
 - [`openai-platform/responses`](../packages/openai-platform/README.md#isolated-structured-responses-entry-point)
   owns credential-injected, non-storing structured Responses execution independently of lifecycle policy.
 - [`packages/google-search-console/`](../packages/google-search-console/README.md),

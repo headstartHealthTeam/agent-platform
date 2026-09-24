@@ -93,6 +93,7 @@ contexts, not competing sources of truth.
 | `packages/salesforce-read/`            | Explicit-target Salesforce organization verification and read queries |
 | `packages/fireflies-data/`             | Fireflies native transcript contracts and failure normalization       |
 | `packages/slack-data/`                 | Slack native response and complete-thread contracts                   |
+| `packages/artifact-workbook/`          | Injected local workbook library operations without report policy      |
 | `packages/openai-platform/`            | Supervised lifecycle access and isolated structured Responses         |
 | `packages/semrush-data/`               | Reusable provider-neutral Semrush read contracts                      |
 | `packages/organic-performance-engine/` | Deterministic organic reporting evidence analysis                     |

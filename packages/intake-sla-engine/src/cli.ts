@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 import { runSavedPublicationCommand } from './cli-publication.js';
-import { runArtifactPreflightCommand } from './cli-runtime.js';
+import { runArtifactPreflightCommand, runWorkbookRuntimeSmokeCommand } from './cli-runtime.js';
 
 const [command = '', ...args] = process.argv.slice(2);
 try {
   const result =
     command === 'review:runtime-preflight'
       ? await runArtifactPreflightCommand(args)
-      : await runSavedPublicationCommand(command, args);
+      : command === 'review:workbook-runtime-smoke'
+        ? await runWorkbookRuntimeSmokeCommand(args)
+        : await runSavedPublicationCommand(command, args);
   process.stdout.write(result.stdout);
   process.stderr.write(result.stderr);
   process.exitCode = result.exitCode;

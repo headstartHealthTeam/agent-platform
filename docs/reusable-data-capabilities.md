@@ -48,6 +48,7 @@ or the user's request.
 | [`salesforce-read`](../packages/salesforce-read/README.md)                                                     | Explicit Organization verification and complete CLI reads without business-selection policy                                |
 | [`fireflies-data`](../packages/fireflies-data/README.md)                                                       | Transcript metadata/body contracts and provider error/cooldown normalization                                               |
 | [`slack-data`](../packages/slack-data/README.md)                                                               | Native response decoding and explicit thread-completion evidence                                                           |
+| [`artifact-workbook`](../packages/artifact-workbook/README.md)                                                 | Injected artifact-tool workbook operations; consumers own layout and acceptance                                            |
 | [`openai-platform/responses`](../packages/openai-platform/README.md#isolated-structured-responses-entry-point) | Isolated credential-injected structured Responses execution                                                                |
 
 Future engines should reuse a provider package only when its normalized contract fits. Do not add a

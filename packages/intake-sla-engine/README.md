@@ -141,7 +141,20 @@ another working directory; that does not establish a complete independently inst
 through `SLA_ARTIFACT_TOOL_PATH` or package resolution. It checks the existing minimal runtime
 contract and can save `runtime_preflight.json` with `--run-dir`; it does not install or redistribute
 the library or certify provider/workflow readiness. Missing/incompatible library diagnostics retain
-no machine path. Workbook composition and full installation acceptance remain incomplete.
+no machine path. Full installation acceptance remains incomplete.
+
+Workbook export and verification compose the shared `artifact-workbook` package. Intake owns the
+existing seven-tab layout, field widths, operator sizing, sixteen preview ranges and formula scan;
+the shared adapter owns only injected library operations. Upstream report assembly and the complete
+validation command are still being migrated.
+
+For separate manual provisioning acceptance, run
+`headstart-intake-sla review:workbook-runtime-smoke --output-dir <new-directory>` after selecting
+the provisioned library. It creates a synthetic workbook, reimports it, renders the existing
+previews and saves `workbook-verification.json`. It never reads sources or publishes, is not a new
+daily workflow gate, and refuses to overwrite an existing directory. Record the library version
+and host-loader identity separately; resolver stdout does not independently verify the vendor
+version. Do not confuse this host check with complete runtime dependency-closure acceptance.
 
 Codex retains contextual evidence judgment and additional authorized source reads. This package
 does not turn new wording into mandatory keyword rules or impose a new blanket publication gate.
