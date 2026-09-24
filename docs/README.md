@@ -58,6 +58,11 @@ and examples.
 
 ## Concrete Examples
 
+- [Shared operator integration](shared-operator-integration.md) defines reusable runtime and
+  application contracts; [agent workflow development](agent-workflow-development.md) explains
+  desktop authoring and normal-application acceptance with hosted execution. The
+  [local executor](local-agent-executor.md) remains an optional diagnostic fallback.
+
 - [OpenAI platform development access](openai-platform-access.md) connects local API access,
   approved lifecycle operations and pinned canonical skill preparation. Its
   [provider package](../packages/openai-platform/README.md) does not activate managed workflows.

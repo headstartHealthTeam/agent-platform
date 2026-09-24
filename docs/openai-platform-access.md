@@ -143,9 +143,13 @@ headstart-openai read --config PRIVATE_CONFIG.json --request PRIVATE_READ.json
 
 A read request is, for example, `{"operation":"agents.list","query":{"limit":20}}`.
 Supported reads: `models.list`, `agents.list`, `agents.get`, `sessions.list`, `sessions.get`,
-`sessions.turns`, `sessions.items`, `templates.list`, `templates.get`. Resource reads use `id`;
+`sessions.pending-functions`, `sessions.turns`, `sessions.turn.get`, `sessions.items`, `templates.list`, `templates.get`. Resource reads use `id`;
 page reads accept `query.limit` and `query.after`. Inspect content only when authorized and needed,
 using `--include-content`. Never persist raw private session items as routine diagnostics.
+`sessions.turn.get` takes the session `id` and exact `turnId`. Turn/item history reads also accept
+`query.order` and default to ascending order. They return one bounded page, with `has_more` and
+`last_id`; one page is not complete history. The pinned SDK does not expose a turn filter for item
+listing; do not silently assume all returned items belong to the active turn.
 
 Repeat preflight in a fresh local session after changing the desktop login. Report that test
 separately; a successful current-session probe does not prove both account configurations work.
@@ -164,16 +168,17 @@ target. Add `--allow-billable` only when execution charges and the intended inpu
 Planning, capability, and key scope are not that approval. Request files may contain private prompts;
 keep them in approved local storage, out of Git and normal tool-output transcripts.
 
-| Action                                  | Required request fields                                               |
-| --------------------------------------- | --------------------------------------------------------------------- |
-| `agents.create`                         | `body.model`; optional name, instructions, metadata, reasoning, tools |
-| `agents.update`                         | `id`, `expectedFingerprint` from a current read, nonempty `body`      |
-| `agents.delete`                         | `id`, `expectedFingerprint` from a current read                       |
-| `templates.create`                      | `body` with optional name, network and prepared inline skills         |
-| `templates.update` / `templates.delete` | `id`, `expectedFingerprint`; update also takes `body`                 |
-| `sessions.create`                       | `body.agent_id`, explicit environment, input; optional metadata       |
-| `sessions.send`                         | `id`, input, stable `idempotencyKey`                                  |
-| `sessions.cancel` / `sessions.delete`   | `id`                                                                  |
+| Action                                  | Required request fields                                                                                                 |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `agents.create`                         | `body.model`; optional name, instructions, metadata, reasoning, tools                                                   |
+| `agents.update`                         | `id`, `expectedFingerprint` from a current read, nonempty `body`                                                        |
+| `agents.delete`                         | `id`, `expectedFingerprint` from a current read                                                                         |
+| `templates.create`                      | `body` with optional name, network and prepared inline skills                                                           |
+| `templates.update` / `templates.delete` | `id`, `expectedFingerprint`; update also takes `body`                                                                   |
+| `sessions.create`                       | Either `body.agent_id` or inline `body.agent.model`, explicit environment; input required for `none`; optional metadata |
+| `sessions.send`                         | `id`, input, stable `idempotencyKey`                                                                                    |
+| `sessions.tool-result`                  | `id`, `turnId`, `callId`, `functionName`, `expectedCallFingerprint`, and `result`                                       |
+| `sessions.cancel` / `sessions.delete`   | `id`                                                                                                                    |
 
 Example create: `{"operation":"agents.create","body":{"model":"APPROVED_MODEL","name":"Example","instructions":"Use synthetic inputs only."}}`.
 Updates preserve omitted fields; supplied arrays/objects replace the whole field. Review existing
@@ -182,10 +187,113 @@ functions, and credential-free HTTPS MCP with explicit tool allowlists. Declarin
 not install its responder. Credential vault provisioning and secret-bearing tool configuration are
 not implemented here.
 
-The initial CLI environment surface supports `none` and `openai_hosted` with an optional approved
-`environment_template_id` and explicit network policy. Templates can carry prepared inline skills.
-No automatic fallback creates compute or widens network access. Additional SDK capabilities need
-a reviewed typed adapter extension; unsupported fields fail clearly, not silently disappear.
+The CLI environment surface supports `none`, `openai_hosted` with an optional approved
+`environment_template_id` and explicit network policy, and `self_hosted` with an explicit normalized
+absolute POSIX `workspace_directory`. Hosted templates can carry prepared inline skills; templates
+do not apply to self-hosted environments. No automatic fallback creates compute or widens network
+access. Additional SDK capabilities need a reviewed typed adapter extension; unsupported fields
+fail clearly, not silently disappear.
+
+### Isolated Local Executor Preparation
+
+This is the optional self-hosted path. Follow the
+[hosted-first connected-test decision](agent-workflow-development.md#hosted-first-connected-execution)
+for normal local-app integration; the instructions here are not a prerequisite to hosted tool setup.
+
+When local execution is explicitly selected, create a `self_hosted` session without initial input, then
+persist the returned session/environment identity in protected application state. The library's
+`selfHostedExecutorConnection` returns a validated argument array for the official executor, not
+a shell string; it preserves the returned remote URL unchanged. Do not log that routing data or
+put it in the admin activity feed. A workspace path is configuration, not isolation or proof that
+the files and tools were materialized.
+
+The [official self-hosted guide](https://developers.openai.com/api/docs/guides/agents-api/environments/self-hosted)
+requires a separate restricted environment key belonging to the same organization, project and
+user/service account as the session. Keep the application credential outside the executor. The
+provisioner supplies only the restricted key as `CODEX_API_KEY` inside its isolated environment;
+do not pass it in command arguments, embed it in an image, or copy desktop auth caches. This
+package does not provision that key or launch the environment.
+
+Open the real session event stream before connecting the executor and sending work. Verify the
+environment connection and intended turn outcome; creating a session or accepting input proves
+neither execution nor success. Streams do not replay missed events: recover session/turn/items
+state after disconnect, not by creating another session or resubmitting a possibly accepted action.
+See [session behavior](https://developers.openai.com/api/docs/guides/agents-api/sessions).
+The library's `openSessionObservation({ sessionId }, signal)` opens the official SDK stream after
+exact-project preflight. Await it before sending input; consume its single-use `events` iterable
+and always call `close()` during teardown, including when input dispatch fails before consumption.
+Closing the observer or aborting its signal never sends session cancellation. End-of-stream,
+disconnect, session idle and a cancellation request are not confirmed run termination. Use
+`observedRootTurnOutcome` only with the intended session/turn IDs; it excludes subagent turns and
+is not proof of successful tools, durable effects or a completed business case.
+
+This is a metadata-only control projection: explicit IDs and allowlisted session/environment/turn
+states. It excludes messages, reasoning, tool arguments/results, errors and environment routing
+data. Operator commentary, structured questions and artifacts require their own reviewed content
+projection; this is not the complete C-09 activity feed. Unknown event types are ignored. Malformed
+known control events fail safely and require recovery. No SDK retries or automatic resubmission are
+introduced.
+
+For reconnect, open a new stream before fetching saved session/turn/items state and buffer incoming
+events while reconciling. Paginate the saved history, key items by ID, retain final items over stale
+updates, and verify the intended root turn. Streams do not replay. The application must implement
+bounded buffering, durable cursors/state and authority checks; the adapter's raw read results must
+not be exposed directly to an operator. See the [official recovery contract](https://developers.openai.com/api/docs/guides/agents-api/sessions/events).
+
+These creation/connection/observation boundaries have deterministic tests and a bounded real-API
+synthetic smoke with an isolated official executor. Application recovery, retained provisioning,
+approval authority and connected-admin/hosted acceptance remain follow-through work; the supervised
+adapter is not the business control plane. The provisioner must include a valid standard CA trust
+store and keep TLS verification enabled; a minimal container image may omit that trust store.
+
+### Pending Functions And Human Replies
+
+Read `sessions.pending-functions` with the session `id` and exact `turnId` to project current
+`required_actions`. A historical function item is not a pending question. The bounded projection
+ignores environment-connection requests and other turns, rejects malformed/unknown actions and
+duplicates, and returns only function identity, arguments and a call fingerprint. CLI default
+output continues to omit arguments; content inspection is explicit. These arguments can contain
+sensitive, model-authored content: validate and sanitize them before display or dispatch.
+
+Use `sessions.tool-result` to return one result to the exact pending call:
+
+```json
+{
+  "operation": "sessions.tool-result",
+  "id": "session_synthetic",
+  "turnId": "turn_synthetic",
+  "callId": "call_synthetic",
+  "functionName": "ask_operator",
+  "expectedCallFingerprint": "FINGERPRINT_FROM_PENDING_READ",
+  "result": { "success": true, "output": "A separately authorized synthetic answer" }
+}
+```
+
+The placeholder must be replaced with the actual 64-character fingerprint before planning.
+Success requires a string `output` (serialize structured JSON); failure requires
+`{ "success": false, "error": "Sanitized failure explanation" }`. Mixed success/error payloads,
+unsupported content and oversized results are rejected. The exact plan covers the result as well
+as the target/call. `--allow-billable` is required because a result can resume inference.
+
+Before POST, the adapter retrieves the session again and requires matching turn/call/name/arguments.
+Missing, changed or unverifiable pending state stops without a POST. This freshness check is not
+atomic compare-and-set, a cross-process lock or proof of business authority. The owning service
+must bind the question to its case/run, enforce permissions and stop state, serialize responders,
+persist the answer and delivery disposition, and validate the function's allowed name/schema.
+Question wording may be ad hoc; typed routing does not require a fixed question catalogue.
+
+No automatic retry occurs, and message idempotency is not assumed for tool results. On an uncertain
+POST, retrieve pending state and saved items before deciding whether the same saved result needs
+delivery; disappearance alone is not proof of successful processing or completed business work.
+Never re-execute a side-effecting function merely to recover its result. See the
+[official function/recovery contract](https://developers.openai.com/api/docs/guides/agents-api/tools/functions).
+
+The pure projector and SDK boundary have deterministic tests. A bounded, authorized synthetic API
+smoke additionally verified an agent-authored question, a durably saved synthetic harness response
+and completion of the intended root turn. This was not an Ops response through the admin console,
+the canonical credentialing workflow or a cancellation/reconnect test. Durable application question
+records, operator presentation and full reconnect/control behavior remain connected-implementation
+work. Do not promote one successful transport exchange into workflow or production acceptance.
 
 ## Canonical Source To Agent Environment
 
