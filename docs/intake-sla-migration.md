@@ -529,6 +529,21 @@ with the manual acceptance evidence; its stdout reports resolver identity, not a
 verified vendor version. A different working directory is not proof that dependency closure has
 been packaged independently of this checkout.
 
+## Credential handoff and interpretation preflight
+
+The typed `withAwsOpenAICredential` preserves the source's explicit profile/region/secret selection,
+early model/provider validation, credential removal from the AWS subprocess environment, sanitized
+lookup failure and ephemeral consumer-only key. It injects a caller-provided process operation;
+it neither hard-codes an organizational secret nor retrieves credentials at import time. Intake
+owns this approved binding policy rather than adding an unneeded universal secrets package.
+
+`preflightInterpretation` and `review:ai-preflight --run-dir <private-run-directory>` preserve the
+synthetic packet, exact model/schema/binding and success/failure receipt. They compose the existing
+isolated shared Responses client, including `store: false`, and do not invent a different model
+or fallback. The AWS subprocess launcher and bounded interpretation command still need composition;
+the typed handoff callback alone is not a finished credential-run command. Tests use injected fake
+AWS and Responses operations only. Separate live acceptance remains explicitly authorized work.
+
 ## Related guidance
 
 - [Documentation hub](README.md)

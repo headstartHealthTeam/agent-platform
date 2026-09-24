@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { runInterpretationPreflightCommand } from './cli-interpretation.js';
 import { runSavedPublicationCommand } from './cli-publication.js';
 import { runArtifactPreflightCommand, runWorkbookRuntimeSmokeCommand } from './cli-runtime.js';
 
@@ -9,7 +10,9 @@ try {
       ? await runArtifactPreflightCommand(args)
       : command === 'review:workbook-runtime-smoke'
         ? await runWorkbookRuntimeSmokeCommand(args)
-        : await runSavedPublicationCommand(command, args);
+        : command === 'review:ai-preflight'
+          ? await runInterpretationPreflightCommand(args)
+          : await runSavedPublicationCommand(command, args);
   process.stdout.write(result.stdout);
   process.stderr.write(result.stderr);
   process.exitCode = result.exitCode;

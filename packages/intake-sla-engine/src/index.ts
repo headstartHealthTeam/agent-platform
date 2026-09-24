@@ -582,6 +582,16 @@ export type {
   SavedGoogleStateCapture,
 } from './google-state-persistence.js';
 export { resolveArtifactRuntime, preflightArtifactRuntime } from './artifact-runtime.js';
+export { withAwsOpenAICredential } from './aws-openai-credential.js';
+export type {
+  AwsOpenAICredentialInput,
+  AwsCredentialExecOptions,
+} from './aws-openai-credential.js';
+export { preflightInterpretation } from './interpretation-preflight.js';
+export type {
+  InterpretationPreflightArtifact,
+  InterpretationPreflightInput,
+} from './interpretation-preflight.js';
 export { populateIntakeWorkbook, INTAKE_WORKBOOK_SHEETS } from './workbook-layout.js';
 export type { IntakeWorkbookTables } from './workbook-layout.js';
 export { exportIntakeWorkbook, INTAKE_WORKBOOK_FILENAME } from './workbook-export.js';

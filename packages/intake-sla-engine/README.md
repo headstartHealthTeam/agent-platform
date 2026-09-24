@@ -160,6 +160,12 @@ Codex retains contextual evidence judgment and additional authorized source read
 does not turn new wording into mandatory keyword rules or impose a new blanket publication gate.
 Salesforce remains read-only. No live data, credentials or identifying fixtures belong here.
 
+The typed AWS handoff preserves explicit private binding and a consumer-only ephemeral key; it
+removes inherited OpenAI credentials from the AWS environment. The `review:ai-preflight` route
+uses the approved synthetic packet and shared non-storing Responses transport, saving only the
+original success/failure receipt. The AWS child-process launcher and complete interpretation
+command remain unfinished; do not treat the callback as an installed operational wrapper.
+
 All package checks use the repository's strict TypeScript, ESLint and coverage standards, with full
 `pnpm qa` for acceptance. See the [documentation hub](../../docs/README.md) and
 [operator skill](../../skills/headstart-intake-sla-review/SKILL.md).
