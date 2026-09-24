@@ -584,6 +584,20 @@ and Salesforce-owner reconciliation exceptions. The adapter does not infer compl
 or write Salesforce. Its synthetic regressions and source comparisons establish adapter parity;
 the final storyline/recommendation consumers still require integration and their own parity checks.
 
+Opportunity milestone, stage-history, Aloha appointment and claim evidence projections retain
+their existing source selection, field precedence, timestamps, actions and audit defaults. A
+recorded 97151 start remains separate from assessment completion, and scheduled appointments
+retain their planned dates. These are Intake-specific projections of already collected records,
+not provider transport or new completion policy. Source admission and final report composition
+remain separate consumers; no additional collection or publication gate is introduced here.
+
+Authorization Review and VOB projections preserve the original phase relevance and business
+event dates, including exclusion of status-only modified timestamps from payer-update evidence.
+Portal treatment-authorization request evidence keeps the original frozen submitted-date selection,
+downstream-record suppression and correction/reconciliation routing. Provider submission is not
+relabeled as payer submission. These report projections make no provider calls and do not repair
+Salesforce; the main authorization-record and final report consumers remain separate migration work.
+
 ## Related guidance
 
 - [Documentation hub](README.md)

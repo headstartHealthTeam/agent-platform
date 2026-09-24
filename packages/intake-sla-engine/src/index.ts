@@ -80,6 +80,33 @@ export type {
 export { assessBillingClaims, selectBillingClaimAppointments } from './billing-claims.js';
 export { adaptBillingClaims } from './billing-evidence.js';
 export type { BillingEvidenceEvent, BillingEvidenceInput } from './billing-evidence.js';
+export { adaptOpportunityMilestones } from './opportunity-milestones.js';
+export type {
+  OpportunityMilestoneRecord,
+  OpportunityMilestonesInput,
+} from './opportunity-milestones.js';
+export { adaptStageHistory } from './stage-history-evidence.js';
+export type { StageHistoryEvidenceInput, StageHistoryRecord } from './stage-history-evidence.js';
+export { adaptAlohaAppointments, adaptClaims } from './appointment-evidence.js';
+export type {
+  AlohaAppointment,
+  AlohaEvidenceInput,
+  ClaimEvidenceRecord,
+  ClaimsEvidenceInput,
+} from './appointment-evidence.js';
+export type { SourceEvidenceContext } from './source-evidence-context.js';
+export { adaptAuthorizationReviews, adaptVob } from './authorization-review-evidence.js';
+export type {
+  AuthorizationReviewEvidenceInput,
+  AuthorizationReviewEvidenceRecord,
+  VobEvidenceInput,
+  VobEvidenceRecord,
+} from './authorization-review-evidence.js';
+export { adaptPortalTreatmentAuthorizationRequests } from './portal-authorization-evidence.js';
+export type {
+  PortalAuthorizationEvidenceInput,
+  PortalAuthorizationEvidenceRecord,
+} from './portal-authorization-evidence.js';
 export {
   BILLING_EVIDENCE_CONTRACT,
   assertBillingCollectionReceipt,
