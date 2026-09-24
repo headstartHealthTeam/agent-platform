@@ -915,3 +915,20 @@ export type {
   FreshnessInterpretedEvent,
   FreshnessSupplemental,
 } from './freshness-source-types.js';
+export { buildSlaStory } from './storyline.js';
+export { inferIssueKey } from './story-issues.js';
+export { storyWindowStart } from './story-window.js';
+export type {
+  AnnotatedStoryEvent,
+  SlaStory,
+  StoryEvent,
+  StoryFact,
+  StoryGate,
+  StoryGateOverride,
+  StoryInput,
+  StoryIssueView,
+  StoryOpportunity,
+  StorySourceResult,
+  StoryWindow,
+  StoryWindowInput,
+} from './story-types.js';

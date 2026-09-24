@@ -155,6 +155,13 @@ without independently establishing freshness. The approved routine builder suppl
 Fireflies/Aloha/Claims/Slack inputs here; unreferenced raw-transcript fallback and standalone
 file-processing CLI are excluded. Final recommendation/report composition remains separate work.
 
+Storyline assembly retains the approved frozen story window, evidence admission, issue inference,
+explicit and implied resolution, restatement/supersession and conflict rules, current-gate succession,
+unresolved authorization precedence, future milestone monitoring and narrative/source projections.
+Typed lifecycle modules preserve the original rule order and arbitrary producer metadata without
+mutating inputs. These remain Intake-specific report semantics; no new provider capability or agent
+judgment constraint is introduced. Final recommendation and rendered-report composition remain separate.
+
 Inventory the routine `review:*` entrypoints and their imports, commands, live collectors, source
 modules, contracts, docs and synthetic tests from the pinned reference. Exclude unrelated utilities
 unless a routine import proves the dependency. Record a destination and parity case for each
