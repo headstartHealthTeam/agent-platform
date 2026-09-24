@@ -456,6 +456,15 @@ filesystem tests cover exact files, modes, unused inputs, replan failures and in
 The higher-level validation/gate preparation command, CLI routing and distribution remain work;
 this local file builder performs no provider calls and does not establish publication readiness.
 
+The local `headstart-intake-sla` executable begins routing the saved-file commands through these
+same functions: `review:next-publish-stage`, `review:capture-publish-readback`,
+`review:verify-publish`, `review:google-capture`, and the positional `build-google-payloads` helper.
+Existing successful JSON, incomplete-verification exit status 2, and capture-specific sanitized
+failures are retained. Usage text names the compiled executable; other uncaught failures use a
+concise error line instead of a Node stack. Synthetic subprocess tests run from a separate working
+directory with no provider access. Other command routes and standalone dependency-closure packaging
+remain incomplete; this executable is not a replacement for the approved operational runtime yet.
+
 ## Five implementation slices
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners

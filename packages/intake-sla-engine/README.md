@@ -130,6 +130,13 @@ The migration is not yet an operational replacement: source orchestration and ch
 workbook, publication and standalone packaging must pass their own source-case parity before cutover.
 Do not launch a daily run from this partial package or infer approval from a successful unit test.
 
+The built `headstart-intake-sla` entrypoint currently exposes the saved-file routes
+`review:next-publish-stage`, `review:capture-publish-readback`, `review:verify-publish`,
+`review:google-capture`, and `build-google-payloads <run-directory> [rejection-file]`. These routes
+compose the functions above; they do not dispatch provider writes. The remaining CLI and standalone
+runtime packaging are still being migrated. Synthetic tests exercise the source entrypoint from
+another working directory; that does not establish a complete independently installed runtime.
+
 Codex retains contextual evidence judgment and additional authorized source reads. This package
 does not turn new wording into mandatory keyword rules or impose a new blanket publication gate.
 Salesforce remains read-only. No live data, credentials or identifying fixtures belong here.
