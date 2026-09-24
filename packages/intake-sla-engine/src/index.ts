@@ -1128,3 +1128,22 @@ export type {
   PreparedIntakePublicationGate,
   SavedPublicationPreparationInput,
 } from './publication-preparation.js';
+export { prepareCorrection } from './correction-run.js';
+export type {
+  CorrectionBaseManifest,
+  CorrectionProvenance,
+  CorrectionRunInput,
+  PublishedCorrectionLedgerRow,
+} from './correction-run.js';
+export {
+  STRUCTURED_CORRECTION_ARTIFACTS,
+  structuredCorrectionDelta,
+} from './structured-correction.js';
+export type {
+  StructuredCorrectionChange,
+  StructuredCorrectionDelta,
+  StructuredCorrectionRecord,
+  StructuredCorrectionSnapshot,
+} from './structured-correction.js';
+export { postCutoffDisposition } from './post-cutoff-disposition.js';
+export type { PostCutoffDisposition, PostCutoffRecord } from './post-cutoff-disposition.js';

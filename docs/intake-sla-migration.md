@@ -830,6 +830,13 @@ change the frozen assessment, or write a Sheet. The original required artifacts,
 rejection, post-cutoff disposition and Run History-last ordering remain intact. Full command-level
 self-validation remains a separate prerequisite; the artifact preparation function does not replace it.
 
+Correction initialization verifies the published base's staged and final assertions, exact ledger
+hashes and Published cell coverage before deriving a new run. Structured deltas traverse both
+snapshots' indirect relationships; unresolved ownership expands affected scope rather than dropping
+a change. Post-cutoff disposition retains complete, explicitly observed modification evidence and
+defers those changes without moving the assessment cutoff or asserting appointment completion.
+These are existing recovery contracts; private command integration remains separate work.
+
 ## Related guidance
 
 - [Documentation hub](README.md)
