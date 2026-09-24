@@ -569,6 +569,14 @@ This removes the source-checkout dependency without changing provider identity o
 call during testing. A real synthetic Node child supplements injected-process tests; complete
 outside-checkout dependency closure remains a separate migration acceptance.
 
+Source-adapter foundations now retain the approved `interpretedFindingSemantics` projection and
+`structuredEvidenceEvent` defaults. Explicit interpreter semantics, including an intentionally
+empty semantic result, bypass the legacy untyped-finding fallback. That fallback retains its
+existing category priority and qualified treatment-plan milestone meaning; gate implications are
+not separate completion evidence. Structured events preserve default metadata and explicit falsy
+values. These functions remain Intake-owned and do not independently admit provider evidence;
+their full adapter and report consumers are still being migrated.
+
 ## Related guidance
 
 - [Documentation hub](README.md)

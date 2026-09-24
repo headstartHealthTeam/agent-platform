@@ -700,3 +700,7 @@ export type {
 } from './aws-interpretation-runner.js';
 export type { InterpretSavedDeltaInput, SavedDeltaArtifact } from './interpretation-delta.js';
 export type { PreparedInterpretationPacket } from './interpretation-packet.js';
+export { interpretedFindingSemantics } from './interpretation-semantics.js';
+export type { FindingSemantics, SemanticFinding } from './interpretation-semantics.js';
+export { structuredEvidenceEvent } from './structured-evidence.js';
+export type { StructuredEvidenceInput, StructuredEvidenceEvent } from './structured-evidence.js';
