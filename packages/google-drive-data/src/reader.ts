@@ -157,10 +157,14 @@ export class GoogleDriveReader {
       throw new GoogleDriveReadError('google-drive-content-checksum-mismatch');
     }
     const result = await readDocument(download.bytes, download.mimeType, documentRequest(request));
-    if (download.representation === 'google-docs-structure')
+    if (download.representation === 'google-docs-structure') {
+      // A text cursor is an inspection view, not the complete artifact used for retention.
+      const structure = await readDocument(download.bytes, download.mimeType, { mode: 'original' });
+      result.content = structure.content;
       result.document.warnings.push(
-        'Complete Google Docs JSON structure, including all tabs/child tabs and inline suggestions. Follow text cursors to completion. Use explicit PDF export for visual inspection; this is not an original binary.'
+        'Complete Google Docs JSON structure, including all tabs/child tabs and inline suggestions, is also supplied as a file resource. Text views remain paginated. Use explicit PDF export for visual inspection; this is not an original binary.'
       );
+    }
     if (download.representation === GOOGLE_EXPORT)
       result.document.warnings.push(
         'Google-generated export, not original bytes. Verify required tabs/sheets and layout; export limits are not evidence of absence.'
