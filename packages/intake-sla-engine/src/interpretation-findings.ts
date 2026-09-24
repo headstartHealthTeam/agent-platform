@@ -1,3 +1,4 @@
+import type { EvidenceDate } from './evidence.js';
 import { compactInterpretationText } from './interpretation-packet.js';
 
 export interface TranscriptFindingInput {
@@ -21,14 +22,14 @@ export interface TranscriptFindingInput {
 export interface FindingContext {
   readonly segment?: string | null;
   readonly inputMatchQuality?: string | null;
-  readonly eventDate?: string | null;
+  readonly eventDate?: EvidenceDate | null;
   readonly expectedOpportunityId?: string | null;
 }
 export interface ValidatedTranscriptFinding {
   readonly matchedOpportunityId: string | null;
   readonly synthesizedFact: string;
   readonly gateImpact: string;
-  readonly eventDate: string | null | undefined;
+  readonly eventDate: EvidenceDate | null | undefined;
   readonly matchQuality: string;
   readonly substantive: boolean;
   readonly relationship: string;

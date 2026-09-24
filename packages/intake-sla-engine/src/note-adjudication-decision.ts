@@ -78,8 +78,8 @@ export function adjudicateNoteDecision(
     compact(decision.rationale).length < 12 ||
     compact(decision.supportSpan).length < 8 ||
     !compact(packet.text).includes(compact(decision.supportSpan)) ||
-    !Number.isFinite(Date.parse(packet.eventDate)) ||
-    Date.parse(packet.eventDate) > Date.parse(packet.sourceCutoff)
+    !Number.isFinite(Date.parse(String(packet.eventDate))) ||
+    Date.parse(String(packet.eventDate)) > Date.parse(packet.sourceCutoff)
   )
     throw new Error('Note adjudication lacks supported disposition, rationale or source date');
   assertInterpretationCandidate(decision, packet);

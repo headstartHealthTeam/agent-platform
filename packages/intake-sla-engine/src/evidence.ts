@@ -1,8 +1,9 @@
+export type EvidenceDate = string | Date;
 export interface EvidenceEvent {
   readonly opportunityId: string;
   readonly source: string;
   readonly sourceRecordId: string;
-  readonly eventDate: string;
+  readonly eventDate: EvidenceDate;
   readonly category: string;
   readonly text: string;
   readonly collectionDate: string | undefined;
@@ -107,7 +108,8 @@ export function createEvidenceEvent<T extends EvidenceInput>(input: T): Evidence
     text: input.text,
   };
   for (const [field, value] of Object.entries(required)) {
-    if (!value) throw new Error(`EvidenceEvent missing ${field}`);
+    const present = Boolean(value);
+    if (!present) throw new Error(`EvidenceEvent missing ${field}`);
   }
   return {
     collectionDate: new Date().toISOString(),

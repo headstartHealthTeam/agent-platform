@@ -24,6 +24,7 @@ export interface StructuredEvidenceInput {
   readonly issueKey?: string | null;
 }
 export interface StructuredEvidenceEvent extends EvidenceEvent {
+  readonly eventDate: string;
   readonly requestedInformation: string | null;
   readonly specificityMissing: boolean;
   readonly candidateStep: string | null;

@@ -1,15 +1,16 @@
-import { firstEvidenceText } from './source-evidence-context.js';
+import type { EvidenceDate } from './evidence.js';
+import { firstEvidenceDate } from './source-evidence-context.js';
 import { sourceHtmlText } from './source-html-text.js';
 
 export interface DatedTaskRecord {
   readonly Description?: string | null | undefined;
   readonly TaskDescription?: string | null | undefined;
-  readonly CreatedDate?: string | null | undefined;
-  readonly LastModifiedDate?: string | null | undefined;
+  readonly CreatedDate?: EvidenceDate | null | undefined;
+  readonly LastModifiedDate?: EvidenceDate | null | undefined;
 }
 export interface DatedTaskLine {
   readonly text: string;
-  readonly eventDate: string;
+  readonly eventDate: EvidenceDate;
 }
 const UPDATE_PREFIX =
   /^(?:Authorization|Treatment plan|Staffing and scheduling|Initial-assessment) update\s*:\s*/i;
@@ -59,10 +60,10 @@ function taskChunks(description: string): string[] {
   });
 }
 /** Preserve dated operational updates without splitting dates belonging to an appointment or commitment. */
-export function datedTaskLines(record: DatedTaskRecord, asOf: string): DatedTaskLine[] {
+export function datedTaskLines(record: DatedTaskRecord, asOf: EvidenceDate): DatedTaskLine[] {
   const description = sourceHtmlText(record.Description ?? record.TaskDescription ?? '');
   if (!description) return [];
-  const fallback = firstEvidenceText(record.CreatedDate, record.LastModifiedDate, asOf) ?? '';
+  const fallback = firstEvidenceDate(record.CreatedDate, record.LastModifiedDate, asOf) ?? '';
   return taskChunks(description)
     .map((text) => {
       const match = /^\b(0?[1-9]|1[0-2])\/(0?[1-9]|[12]\d|3[01])\b/i.exec(
@@ -100,7 +101,10 @@ function submittedDateMatch(text: string): RegExpExecArray | null {
   }
   return null;
 }
-export function explicitTaskOccurrenceDate(text: string, referenceDate: string): string | null {
+export function explicitTaskOccurrenceDate(
+  text: string,
+  referenceDate: EvidenceDate
+): string | null {
   const match = submittedDateMatch(text);
   const reference = new Date(referenceDate);
   if (Number.isNaN(reference.valueOf())) return null;

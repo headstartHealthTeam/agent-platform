@@ -1,3 +1,4 @@
+import type { EvidenceDate } from './evidence.js';
 import type { GateContext } from './gate-context.js';
 import type { IdentityProfile } from './identity-profile.js';
 
@@ -19,6 +20,11 @@ export function firstEvidenceText(
   ...values: readonly (string | null | undefined)[]
 ): string | undefined {
   return values.find((value): value is string => Boolean(value));
+}
+export function firstEvidenceDate(
+  ...values: readonly (EvidenceDate | null | undefined)[]
+): EvidenceDate | undefined {
+  return values.find((value): value is EvidenceDate => Boolean(value));
 }
 export function requiredEvidenceValue(value: string | null | undefined, field: string): string {
   if (!value) throw new Error(`EvidenceEvent missing ${field}`);

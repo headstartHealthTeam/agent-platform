@@ -135,7 +135,7 @@ export function dedupeEvidenceEvents<T extends DedupeEvent>(
       events
         .filter((event): event is T => Boolean(event))
         .map((event) => {
-          const time = Date.parse(event.eventDate);
+          const time = Date.parse(String(event.eventDate));
           const date = Number.isFinite(time) ? new Date(time).toISOString() : event.eventDate;
           return [
             JSON.stringify([

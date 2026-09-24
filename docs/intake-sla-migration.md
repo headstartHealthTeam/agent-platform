@@ -83,6 +83,23 @@ preserving identity metadata, source-record suffixes and explicit unknown milest
 are existing deterministic semantics, not a replacement for current-run interpretation or a new
 fallback mode. Full source-adapter and report composition remains separate work.
 
+Opportunity notes retain source date and identity precedence and compose the current-run note
+adjudicator: an accepted empty result stays empty, while an absent
+decision retains the original parser fallback. Public producer contracts accept the report builder's
+Date cutoff and nullable gate fields without changing callback values, packet hashes or frozen-date
+semantics. This adapter remains Intake-owned evidence admission, not generic provider behavior.
+
+Routine reachability is required before porting an original export. The original unused
+`adaptAlohaAppointments`, `adaptClaims`, `adaptNormalizedNotes`, `adaptEscalationMessages` and
+non-AI `adaptFireflies` exports have no routine callers and are excluded. Linked Billing / Claims
+and current-run Fireflies interpretation remain required and are not replaced by those legacy paths.
+
+Routine call/text and task adapters preserve approved line and relationship selection, the lower
+confidence of call summaries, Task/flattened/embedded Chatter evidence, reported occurrence dates,
+and bounded SMS request/response pairing. These consume already collected Salesforce records and
+reuse the engine's identity and conversation contracts; they introduce no provider read, new text
+matching policy, or automatic Salesforce action.
+
 Inventory the routine `review:*` entrypoints and their imports, commands, live collectors, source
 modules, contracts, docs and synthetic tests from the pinned reference. Exclude unrelated utilities
 unless a routine import proves the dependency. Record a destination and parity case for each
@@ -599,10 +616,9 @@ and Salesforce-owner reconciliation exceptions. The adapter does not infer compl
 or write Salesforce. Its synthetic regressions and source comparisons establish adapter parity;
 the final storyline/recommendation consumers still require integration and their own parity checks.
 
-Opportunity milestone, stage-history, Aloha appointment and claim evidence projections retain
+Opportunity milestone and stage-history evidence projections retain
 their existing source selection, field precedence, timestamps, actions and audit defaults. A
-recorded 97151 start remains separate from assessment completion, and scheduled appointments
-retain their planned dates. These are Intake-specific projections of already collected records,
+recorded 97151 start remains separate from assessment completion. These are Intake-specific projections of already collected records,
 not provider transport or new completion policy. Source admission and final report composition
 remain separate consumers; no additional collection or publication gate is introduced here.
 

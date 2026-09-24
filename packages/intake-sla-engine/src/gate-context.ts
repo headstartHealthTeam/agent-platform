@@ -4,12 +4,12 @@ import { approvedEvidence, evidenceSpecificity } from './evidence.js';
 import type { EvidenceEvent } from './evidence.js';
 
 export interface GateContext {
-  readonly excluded?: boolean;
-  readonly gateCategory?: string;
-  readonly unresolvedGate?: string;
-  readonly processPosition?: string;
-  readonly owner?: string | null;
-  readonly confidence?: string;
+  readonly excluded?: boolean | null | undefined;
+  readonly gateCategory?: string | null | undefined;
+  readonly unresolvedGate?: string | null | undefined;
+  readonly processPosition?: string | null | undefined;
+  readonly owner?: string | null | undefined;
+  readonly confidence?: string | null | undefined;
 }
 export interface GateOpportunity {
   readonly csm?: string | null;
@@ -17,14 +17,14 @@ export interface GateOpportunity {
 }
 export interface GateRefinement {
   readonly gateCategory: string;
-  readonly unresolvedGate: string | undefined;
+  readonly unresolvedGate: string | null | undefined;
   readonly contextualBlocker: string;
   readonly contextualEvidenceId: string;
   readonly owner: string | null | undefined;
   readonly recommendedAction: string | null;
   readonly recommendedActionType: string | null;
   readonly recommendedFollowUpDate: string | null;
-  readonly confidence: string | undefined;
+  readonly confidence: string | null | undefined;
 }
 type ContextualEvidence = EvidenceEvent & { readonly gateImpact: string };
 

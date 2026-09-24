@@ -1,4 +1,4 @@
-import type { EvidenceEvent } from './evidence.js';
+import type { EvidenceDate, EvidenceEvent } from './evidence.js';
 import type { GateContext } from './gate-context.js';
 
 export type NoteGate = { readonly [K in keyof GateContext]?: GateContext[K] | null | undefined };
@@ -8,7 +8,7 @@ export interface NoteAdjudicationInput {
   readonly source: string;
   readonly sourceRecordId: string;
   readonly noteRecordId: string;
-  readonly eventDate: string;
+  readonly eventDate: EvidenceDate;
   readonly rawText: string;
   readonly stageEntryDate?: string | null | undefined;
   readonly gate: NoteGate;
@@ -22,7 +22,7 @@ export interface NoteAdjudicationPacket {
   source: string;
   sourceRecordId: string;
   noteRecordId: string;
-  eventDate: string;
+  eventDate: EvidenceDate;
   text: string;
   stageEntryDate: string | null | undefined;
   gate: NoteAdjudicationInput['gate'];

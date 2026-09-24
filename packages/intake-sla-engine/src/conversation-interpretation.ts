@@ -1,7 +1,7 @@
 import { normalizeOperationalText } from './conversation-text.js';
 import type { DateValue } from './dates.js';
 import { createEvidenceEvent } from './evidence.js';
-import type { EvidenceEvent } from './evidence.js';
+import type { EvidenceDate, EvidenceEvent } from './evidence.js';
 import { categoryForGate } from './gate-context.js';
 import type { GateContext } from './gate-context.js';
 import type { DatedOperationalFact, OperationalSourceContext } from './operational-fact-context.js';
@@ -17,7 +17,7 @@ export interface ConversationInterpretationInput<
   readonly opportunityId: string;
   readonly source: string;
   readonly sourceRecordId: string;
-  readonly eventDate: string;
+  readonly eventDate: EvidenceDate;
   readonly text: string;
   readonly rawText?: string | null | undefined;
   readonly matchQuality: string;

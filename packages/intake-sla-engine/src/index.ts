@@ -96,13 +96,6 @@ export type {
 } from './opportunity-milestones.js';
 export { adaptStageHistory } from './stage-history-evidence.js';
 export type { StageHistoryEvidenceInput, StageHistoryRecord } from './stage-history-evidence.js';
-export { adaptAlohaAppointments, adaptClaims } from './appointment-evidence.js';
-export type {
-  AlohaAppointment,
-  AlohaEvidenceInput,
-  ClaimEvidenceRecord,
-  ClaimsEvidenceInput,
-} from './appointment-evidence.js';
 export type { SourceEvidenceContext } from './source-evidence-context.js';
 export { datedTaskLines, explicitTaskOccurrenceDate } from './source-task-dates.js';
 export type { DatedTaskLine, DatedTaskRecord } from './source-task-dates.js';
@@ -144,7 +137,7 @@ export {
   evidenceSpecificity,
   newestRelevantEvidence,
 } from './evidence.js';
-export type { EvidenceEvent, EvidenceInput, RankedEvidence } from './evidence.js';
+export type { EvidenceDate, EvidenceEvent, EvidenceInput, RankedEvidence } from './evidence.js';
 export {
   canonicalEvidenceSource,
   coreEvidenceEvents,
@@ -792,3 +785,19 @@ export type {
   TicketMatchEvidenceInput,
   TicketMatchEvidenceRecord,
 } from './ticket-match-evidence.js';
+export { adaptOpportunityNotes } from './opportunity-note-evidence.js';
+export type {
+  OpportunityNoteRecord,
+  OpportunityNoteProfile,
+  OpportunityNoteAdjudicationInput,
+  OpportunityNotesInput,
+} from './opportunity-note-evidence.js';
+export { adaptCallsAndTexts } from './call-text-evidence.js';
+export type { CallTextRecord, CallsAndTextsInput, CallTextIdentity } from './call-text-evidence.js';
+export { adaptTasks } from './task-evidence.js';
+export type {
+  TaskEvidenceRecord,
+  TaskEvidenceProfile,
+  TasksEvidenceInput,
+  TaskEvidenceIdentity,
+} from './task-evidence-types.js';
