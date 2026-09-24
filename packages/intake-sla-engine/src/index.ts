@@ -78,6 +78,8 @@ export type {
   ConversationMatchCounts,
 } from './conversation-search-result.js';
 export { assessBillingClaims, selectBillingClaimAppointments } from './billing-claims.js';
+export { adaptBillingClaims } from './billing-evidence.js';
+export type { BillingEvidenceEvent, BillingEvidenceInput } from './billing-evidence.js';
 export {
   BILLING_EVIDENCE_CONTRACT,
   assertBillingCollectionReceipt,

@@ -577,6 +577,13 @@ not separate completion evidence. Structured events preserve default metadata an
 values. These functions remain Intake-owned and do not independently admit provider evidence;
 their full adapter and report consumers are still being migrated.
 
+`source-adapters.mjs#adaptBillingClaims` now composes the typed billing resolver with report
+evidence. It preserves cutoff-before-aggregation, completed sessions without asserting whole-assessment
+completion, remaining assessment/support sessions, future monitoring dates, past unverified work,
+and Salesforce-owner reconciliation exceptions. The adapter does not infer completion from dates
+or write Salesforce. Its synthetic regressions and source comparisons establish adapter parity;
+the final storyline/recommendation consumers still require integration and their own parity checks.
+
 ## Related guidance
 
 - [Documentation hub](README.md)
