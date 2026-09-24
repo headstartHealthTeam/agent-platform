@@ -741,6 +741,13 @@ actual evidence-to-packet-to-render tests cover planned/observed milestones, par
 payer progress and conflict, raw-leakage checks and nonmutation. Whole-workflow report/QA and
 operational integration, independent packaging and acceptance remain unfinished.
 
+Publication row quality and timeline formatting retain the approved finding order, readiness
+relationships, specificity and raw-leakage checks, date-prefix semantics and future-versus-completed
+distinction. Timeline compaction changes repeated metadata only; every admitted fact stays literal
+and ordered, and a still-oversized cell remains a failure rather than being truncated. These are
+existing Intake report contracts, not generic provider rules or new limits on agent investigation.
+Full workbook audit and saved validation-command composition remain separate work.
+
 ## Related guidance
 
 - [Documentation hub](README.md)

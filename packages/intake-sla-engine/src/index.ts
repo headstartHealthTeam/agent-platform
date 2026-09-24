@@ -973,3 +973,18 @@ export type {
   RecommendationStartConflict,
   RecommendationTimelineFact,
 } from './recommendation-types.js';
+export { narrativeSentenceCount } from './publication-narrative.js';
+export {
+  duplicateOperationalSummaries,
+  readyToCopyForEvidenceStatus,
+  validatePublicationRow,
+} from './publication-quality.js';
+export type {
+  DuplicateSummary,
+  DuplicateSummaryRow,
+  OperationalSummaryRow,
+  PublicationQualityInput,
+  PublicationQualityResult,
+} from './publication-quality-types.js';
+export { formatLifecycleTimeline, oversizedWorkbookCells } from './publication-timeline.js';
+export type { LifecycleTimelineEvent } from './publication-timeline.js';
