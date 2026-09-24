@@ -748,6 +748,13 @@ and ordered, and a still-oversized cell remains a failure rather than being trun
 existing Intake report contracts, not generic provider rules or new limits on agent investigation.
 Full workbook audit and saved validation-command composition remain separate work.
 
+The report action model retains its distinct Eastern-calendar date handling, owner and action
+priority, explicit follow-up precedence and future-milestone monitoring. It is not substituted with
+the engine's different UTC date helpers. Specificity auditing retains the approved Review/Error
+distinction and focused search suggestions; these guide agent investigation, not mandatory new
+provider calls or blanket publication bans. These Intake-owned projections consume collected
+evidence and make no external calls or Salesforce writes.
+
 ## Related guidance
 
 - [Documentation hub](README.md)

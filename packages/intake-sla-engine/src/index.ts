@@ -988,3 +988,13 @@ export type {
 } from './publication-quality-types.js';
 export { formatLifecycleTimeline, oversizedWorkbookCells } from './publication-timeline.js';
 export type { LifecycleTimelineEvent } from './publication-timeline.js';
+export { auditRecommendationSpecificity } from './specificity-audit.js';
+export { SPECIFICITY_SEARCH_PATHWAYS } from './specificity-pathways.js';
+export type {
+  SpecificityAudit,
+  SpecificityInput,
+  SpecificityIssue,
+  SpecificityPacket,
+} from './specificity-types.js';
+export { deriveActionModel } from './action-model.js';
+export type { ActionModelInput, IntakeActionModel } from './action-model-types.js';
