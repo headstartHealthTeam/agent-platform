@@ -505,6 +505,14 @@ An external host prerequisite can still support execution outside both source ch
 replace the workbook library incidentally or infer rights from a previous migration note. Any
 necessary replacement needs an explicit disposition and complete parity, not only XLSX creation.
 
+The typed `resolveArtifactRuntime` and `review:runtime-preflight` route preserve the approved
+resolution/check contract and optional private identity receipt. They check Node 22+, the explicit
+entry or package fallback, and the same minimal library factories; they do not add a full workbook
+validation gate. Factory results remain unknown until workbook consumers narrow their actual
+contracts. No vendor package is copied or redistributed by this preflight. Workstation-specific
+paths stay in private operator configuration, not the receipt. Host provisioning documentation,
+workbook export/render/formula composition and complete outside-checkout acceptance remain work.
+
 ## Related guidance
 
 - [Documentation hub](README.md)

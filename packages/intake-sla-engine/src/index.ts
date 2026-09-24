@@ -581,6 +581,12 @@ export type {
   SaveGoogleStateCaptureInput,
   SavedGoogleStateCapture,
 } from './google-state-persistence.js';
+export { resolveArtifactRuntime, preflightArtifactRuntime } from './artifact-runtime.js';
+export type {
+  ArtifactRuntimeModule,
+  ArtifactRuntimeIdentity,
+  ArtifactRuntimeOptions,
+} from './artifact-runtime.js';
 export { prepareGooglePublicationArtifacts } from './google-publication-artifacts.js';
 export { prepareSavedGooglePublication } from './google-publication-storage.js';
 export { advancePublication, finalizePublication } from './publication-executor.js';

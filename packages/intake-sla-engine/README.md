@@ -137,6 +137,12 @@ compose the functions above; they do not dispatch provider writes. The remaining
 runtime packaging are still being migrated. Synthetic tests exercise the source entrypoint from
 another working directory; that does not establish a complete independently installed runtime.
 
+`review:runtime-preflight` preserves the original operator-provisioned `@oai/artifact-tool` check
+through `SLA_ARTIFACT_TOOL_PATH` or package resolution. It checks the existing minimal runtime
+contract and can save `runtime_preflight.json` with `--run-dir`; it does not install or redistribute
+the library or certify provider/workflow readiness. Missing/incompatible library diagnostics retain
+no machine path. Workbook composition and full installation acceptance remain incomplete.
+
 Codex retains contextual evidence judgment and additional authorized source reads. This package
 does not turn new wording into mandatory keyword rules or impose a new blanket publication gate.
 Salesforce remains read-only. No live data, credentials or identifying fixtures belong here.
