@@ -189,7 +189,7 @@ describe('deployable Drive runtime CLI', () => {
           { path: artifactPath, mimeType: 'application/json', digest, byteLength: bytes.length },
         ],
       });
-      expect(await readdir(input.output)).toEqual(['evidence-0.json', 'result.json']);
+      expect((await readdir(input.output)).sort()).toEqual(['evidence-0.json', 'result.json']);
       expect(await readFile(path, 'utf8')).not.toContain('blob');
       expect(await readFile(path, 'utf8')).not.toContain('exportMimeType');
       expect(fetcher).toHaveBeenCalledTimes(4);
