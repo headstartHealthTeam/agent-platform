@@ -1049,3 +1049,21 @@ export {
   reportDataDictionary,
 } from './report-vocabulary.js';
 export type { ReportHeaderNotes } from './report-vocabulary.js';
+export {
+  reportConversationMatchAudit,
+  reportCurrentActionItem,
+  reportCurrentSlaSummary,
+  reportFinalReadiness,
+  reportInterpretationGap,
+  reportInterpretationStatus,
+  reportRelevantProvider,
+} from './report-row-labels.js';
+export type {
+  ReportInterpretationLabelInput,
+  ReportProviderOpportunity,
+  ReportSearchAudit,
+  ReportSlaComparison,
+  ReportWeakMatch,
+} from './report-row-labels.js';
+export { buildReportMetadata } from './report-metadata.js';
+export type { ReportMetadataInput, ReportMetadataInterpretation } from './report-metadata.js';

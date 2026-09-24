@@ -776,6 +776,13 @@ evidence and history headers, header notes and data dictionary are copied exactl
 builder and checked against source-derived digests. They remain report vocabulary, not new business
 requirements; complete row and saved-run assembly is still being composed.
 
+Report comparison fields, interpretation/coverage audit labels, final row readiness and run-note
+metadata retain their original values and precedence. Existing action items stay comparison-only;
+the display text does not enable deterministic interpretation fallback or promote weak conversation
+matches. The source's zero-precomputed-row and unavailable-interpretation distinctions remain intact.
+These projections consume actual source-health, search and interpretation contracts without making
+provider calls. Complete row, cohort and saved-run assembly remain separate integration work.
+
 ## Related guidance
 
 - [Documentation hub](README.md)
