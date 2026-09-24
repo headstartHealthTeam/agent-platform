@@ -1,14 +1,17 @@
 export interface CandidateMatch {
-  readonly Ticket_Match_Status__c?: string | null;
-  readonly Rejection_Reason__c?: string | null;
-  readonly Reason_for_Decline__c?: string | null;
-  readonly Candidate__r?: {
-    readonly Applicant_Status__c?: string | null;
-    readonly HDS_Rejection_Reason__c?: string | null;
-    readonly Provider_Rejection_Reason__c?: string | null;
-  } | null;
-  readonly LastModifiedDate?: string | null;
-  readonly CreatedDate?: string | null;
+  readonly Ticket_Match_Status__c?: string | null | undefined;
+  readonly Rejection_Reason__c?: string | null | undefined;
+  readonly Reason_for_Decline__c?: string | null | undefined;
+  readonly Candidate__r?:
+    | {
+        readonly Applicant_Status__c?: string | null | undefined;
+        readonly HDS_Rejection_Reason__c?: string | null | undefined;
+        readonly Provider_Rejection_Reason__c?: string | null | undefined;
+      }
+    | null
+    | undefined;
+  readonly LastModifiedDate?: string | null | undefined;
+  readonly CreatedDate?: string | null | undefined;
 }
 export function candidateMatchIsActive(match: CandidateMatch = {}): boolean {
   const text = [

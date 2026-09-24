@@ -604,6 +604,29 @@ original greedy date selection without nested optional regex quantifiers; it doe
 date window or add recognized phrases. These helpers support the remaining note/task/authorization
 adapters, which must still compose them with evidence identity and the existing interpretation path.
 
+Conversation text, sentence segmentation, mentioned dates, requested information and denial-reason
+helpers preserve the approved interpretation's existing vocabulary, ordering, cleanup and date
+precedence. HTML normalization remains distinct where the two original source paths differ.
+Equivalent flattened regexes satisfy platform security lint without truncating source text or
+introducing new policy. These are existing Intake semantics, not generic provider mechanics or a
+replacement for current-run Codex judgment; full operational fact extraction remains separate work.
+
+Clinical Quality evidence composes the requested-information helper with existing status and
+signature precedence. Requested edits take priority; signed plans still require the recorded review
+outcome and payer submission. Pending review does not become premature signature outreach. Source
+timestamps, owners, narratives and fact types retain the original projection; this does not change
+the underlying Salesforce lifecycle or complete final-report integration.
+
+Staffing, Talent Acquisition and first-interview evidence preserve existing direct/candidate-map
+linkage, inactive-path priority, candidate availability versus client milestones, and future-interview
+monitoring. Known planned interview dates are excluded from event freshness until they occur, as in
+the approved source. These are Intake-specific interpretations of collected records; shared provider
+packages do not acquire staffing policy. RBT requests now retain closed-event freshness, later
+replacement selection, cancellation-versus-restored-coverage handling and candidate-count meaning.
+Ticket Match composition preserves ordered match/candidate/interview events, distinct active
+statuses, rejected-path precedence and future-interview monitoring. Its records reuse the candidate
+selection contract, including explicit undefined source fields; no lifecycle decision changes.
+
 ## Related guidance
 
 - [Documentation hub](README.md)

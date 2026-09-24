@@ -736,3 +736,37 @@ export { interpretedFindingSemantics } from './interpretation-semantics.js';
 export type { FindingSemantics, SemanticFinding } from './interpretation-semantics.js';
 export { structuredEvidenceEvent } from './structured-evidence.js';
 export type { StructuredEvidenceInput, StructuredEvidenceEvent } from './structured-evidence.js';
+export {
+  normalizeOperationalText,
+  stripConversationHtml,
+  cleanConversationSentence,
+  isTreatmentPlanStatusInquiry,
+  reportsTreatmentPlanSubmission,
+  treatmentPlanRevisionTopics,
+} from './conversation-text.js';
+export { extractRequestedInformation } from './requested-information.js';
+export { parseConversationSentences, readableConversationList } from './conversation-sentences.js';
+export type { ConversationSentence } from './conversation-sentences.js';
+export { explicitConversationDate, dateFromRelativeWord } from './conversation-dates.js';
+export { extractDenialReason, cleanDenialReason } from './denial-reason.js';
+export { adaptClinicalQuality } from './clinical-quality-evidence.js';
+export type {
+  ClinicalQualityEvidenceRecord,
+  ClinicalQualityEvidenceInput,
+} from './clinical-quality-evidence.js';
+export { adaptStaffing } from './staffing-evidence.js';
+export type { StaffingEvidenceInput, StaffingEvidenceRecord } from './staffing-evidence.js';
+export { adaptTalentAcquisition, adaptRbtFirstInterviews } from './candidate-evidence.js';
+export type {
+  CandidateEvidenceRecord,
+  InterviewEvidenceRecord,
+  TalentAcquisitionEvidenceInput,
+  FirstInterviewEvidenceInput,
+} from './candidate-evidence.js';
+export { adaptRbtRequests } from './rbt-request-evidence.js';
+export type { RbtRequestEvidenceInput, RbtRequestEvidenceRecord } from './rbt-request-evidence.js';
+export { adaptTicketMatches } from './ticket-match-evidence.js';
+export type {
+  TicketMatchEvidenceInput,
+  TicketMatchEvidenceRecord,
+} from './ticket-match-evidence.js';
