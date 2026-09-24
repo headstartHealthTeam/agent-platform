@@ -805,6 +805,16 @@ metadata and input identity where the approved builder does. They do not establi
 replace evidence normalization or expand collection scope. Live and saved-source orchestration
 remain separate integration work.
 
+Saved reviewer and Run History loading preserve exact raw values, key precedence, original header
+equality and the 99-row window before current-run filtering. Reviewer capture age at build time
+remains relative to the frozen cutoff, not a new ban on later captures; the publication gate owns
+live freshness. Saved-report validation composes the existing complete quality audit, sixteen workbook
+previews and formula scan, note-input bindings, cohort count equality and recomputed denial-context
+coverage. Marked blocked exceptions retain the approved partial-publication rule. Wrong-shaped saved
+artifacts fail at the typed boundary without promoting them as valid evidence. The final validation
+command must still run distribution safety and the complete synthetic self-tests; this artifact-level
+function does not replace that prerequisite.
+
 ## Related guidance
 
 - [Documentation hub](README.md)

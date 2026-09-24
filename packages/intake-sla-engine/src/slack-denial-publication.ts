@@ -3,9 +3,9 @@ import type { DenialContextCoverage } from './slack-denial-context.js';
 export interface DenialPublicationSource {
   readonly opportunityId: string;
   readonly source: string;
-  readonly required?: boolean;
-  readonly status?: string;
-  readonly detail?: string | null;
+  readonly required?: boolean | undefined;
+  readonly status?: string | undefined;
+  readonly detail?: string | null | undefined;
 }
 export interface DenialPublicationInputs {
   readonly coverage: DenialContextCoverage;

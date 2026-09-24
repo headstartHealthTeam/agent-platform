@@ -16,11 +16,14 @@ async function optionalNoteArtifact(file: string): Promise<unknown> {
 export async function verifyNoteAdjudicationArtifacts(
   runDirectory: string,
   manifest: {
-    readonly noteAdjudications?: {
-      readonly inputHash: string;
-      readonly receiptsHash: string;
-      readonly accepted: number;
-    } | null;
+    readonly noteAdjudications?:
+      | {
+          readonly inputHash: string;
+          readonly receiptsHash: string;
+          readonly accepted: number;
+        }
+      | null
+      | undefined;
   }
 ): Promise<true> {
   const artifact = await optionalNoteArtifact(path.join(runDirectory, 'note_adjudications.json'));

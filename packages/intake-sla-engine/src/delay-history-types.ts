@@ -30,15 +30,15 @@ export interface DelayHistoryReference {
   readonly source: string;
   readonly sourceRecordId: string;
   readonly date: string | null;
-  readonly lifecycleState: string | null | undefined;
+  readonly lifecycleState?: string | null | undefined;
   readonly resolutionDate: string | null;
   readonly resolvedByEventId: string | null;
 }
 
 export interface DelayHistoryEntry {
   readonly key: string;
-  readonly issueKey: string | null | undefined;
-  readonly factType: string | null | undefined;
+  readonly issueKey?: string | null | undefined;
+  readonly factType?: string | null | undefined;
   readonly fact: string;
   readonly firstDate: string | null;
   lastDate: string | null;

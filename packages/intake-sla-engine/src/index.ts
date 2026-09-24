@@ -1102,3 +1102,12 @@ export {
   normalizeCollectedStaffing,
 } from './collection-normalization.js';
 export type { CollectionOpportunity, CollectionRbtRequest } from './collection-normalization.js';
+export {
+  indexReportReviewerState,
+  loadReportReviewerState,
+  loadReportRunHistory,
+  selectReportRunHistory,
+} from './report-saved-state.js';
+export type { ReportHistorySnapshot } from './report-saved-state.js';
+export { auditSavedIntakeReport, validateSavedIntakeReport } from './report-validation.js';
+export type { SavedIntakeValidationResult } from './report-validation.js';
