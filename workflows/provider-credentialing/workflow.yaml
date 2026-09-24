@@ -1,0 +1,53 @@
+apiVersion: headstart.health/v1alpha1
+kind: ManagedAgentWorkflow
+metadata:
+  id: provider-credentialing
+  displayName: Provider credentialing
+  version: 0.3.0
+  description: Draft preparation contracts and synthetic investigation; no live access or execution.
+  lifecycle: draft
+  owners:
+    business:
+      name: Mark Krasner
+      team: Product
+    technical:
+      name: Mark Krasner
+      team: Engineering
+spec:
+  execution:
+    entrypoint: prompts/run.md
+    sandbox: read-only
+    networkAccess: disabled
+    timeoutSeconds: 300
+    model:
+      id: configured-at-evaluation
+      reasoningEffort: high
+  skills:
+    source:
+      repository: headstartHealthTeam/agent-platform
+      revision: workspace
+    required:
+      - headstart-provider-credentialing
+  identity:
+    serviceProfile: credentialing-synthetic-only
+    requiredSecrets: []
+  workspace:
+    repositories: []
+  tools:
+    mcpServers: []
+    cliCommands: []
+  triggers:
+    - type: manual
+  contracts:
+    inputSchema: schemas/input.schema.json
+    outputSchema: schemas/output.schema.json
+  sideEffects:
+    mode: propose-only
+    approvalRequired: true
+  retry:
+    maxAttempts: 1
+    initialBackoffSeconds: 5
+  observability:
+    dataClassification: internal
+    retentionDays: 7
+    emitCodexEvents: false

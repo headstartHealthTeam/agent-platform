@@ -1,0 +1,450 @@
+{
+  "workflow": "provider-credentialing",
+  "cases": [
+    {
+      "name": "investigates a resolvable missing date",
+      "category": "happy-path",
+      "input": {
+        "schemaVersion": "0.1.0",
+        "dataMode": "synthetic",
+        "caseRevision": "case-r1",
+        "workflowRevision": "workflow-r1",
+        "routeRevision": "route-r1",
+        "work": {
+          "id": "synthetic-ga-initial",
+          "providerId": "provider-alpha",
+          "practiceId": "practice-alpha",
+          "payer": "synthetic-medicaid-ga",
+          "product": "synthetic-professional",
+          "jurisdiction": "GA",
+          "requestType": "initial-enrollment",
+          "locationIds": ["location-a"],
+          "period": "2026",
+          "existingAffiliationIds": []
+        },
+        "facts": [
+          {
+            "id": "practice-start",
+            "key": "practice.startDate",
+            "subjectId": "practice-alpha",
+            "locationIds": ["location-a"],
+            "value": null,
+            "disposition": "unknown",
+            "evidence": []
+          }
+        ],
+        "evidence": [
+          {
+            "id": "route-note",
+            "revision": "r1",
+            "subjectId": "practice-alpha",
+            "title": "Synthetic route requirements",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "SCENARIO ONLY, not actual payer policy. For this invented case, practice start means the location's first operational date, not the provider's employment date. No submission or attestation is authorized."
+          },
+          {
+            "id": "practice-letter",
+            "revision": "r1",
+            "subjectId": "practice-alpha",
+            "title": "Operations-confirmed location opening",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "Synthetic practice-alpha location-a first operated on 2020-02-03. This letter addresses the location start date. Do not confuse it with provider-alpha joining in 2024."
+          }
+        ],
+        "requirements": [
+          {
+            "id": "practice-start-date",
+            "question": "What is the practice start date for location-a?",
+            "required": true
+          }
+        ],
+        "recordedMilestones": [],
+        "execution": {
+          "priorOutcome": "none",
+          "stopRequested": false,
+          "permittedActions": ["inspect", "prepare"]
+        }
+      },
+      "expectedOutcome": "success",
+      "expectedBehaviors": [
+        "Discovers and reads the practice letter rather than asking Ops for a date already available",
+        "Uses the location opening date rather than provider employment date",
+        "Returns cited preparation only with H-01, H-04 and H-05"
+      ]
+    },
+    {
+      "name": "generalizes to existing-provider group-add",
+      "category": "boundary",
+      "input": {
+        "schemaVersion": "0.1.0",
+        "dataMode": "synthetic",
+        "caseRevision": "case-r1",
+        "workflowRevision": "workflow-r1",
+        "routeRevision": "route-r1",
+        "work": {
+          "id": "synthetic-tx-group-add",
+          "providerId": "provider-alpha",
+          "practiceId": "practice-alpha",
+          "payer": "synthetic-medicaid-tx",
+          "product": "synthetic-professional",
+          "jurisdiction": "TX",
+          "requestType": "group-add",
+          "locationIds": ["location-a", "location-b"],
+          "period": "2026",
+          "existingAffiliationIds": ["affiliation-retained"]
+        },
+        "facts": [
+          {
+            "id": "existing-affiliation",
+            "key": "provider.existingAffiliation",
+            "subjectId": "provider-alpha",
+            "locationIds": ["location-a"],
+            "value": "affiliation-retained",
+            "disposition": "verified",
+            "evidence": [
+              {
+                "id": "affiliation-record",
+                "revision": "r1"
+              }
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "route-note",
+            "revision": "r1",
+            "subjectId": "practice-alpha",
+            "title": "Synthetic group-add route",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "SCENARIO ONLY. This case adds an existing provider to practice-alpha at location-a and location-b. It does not start a new provider enrollment or replace another active affiliation."
+          },
+          {
+            "id": "affiliation-record",
+            "revision": "r1",
+            "subjectId": "provider-alpha",
+            "title": "Existing provider affiliation record",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "Provider-alpha already has active affiliation-retained at location-a. Retain this affiliation; this case is additive."
+          },
+          {
+            "id": "location-letter",
+            "revision": "r1",
+            "subjectId": "practice-alpha",
+            "title": "Two-location scope confirmation",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "Practice-alpha requests group-add at location-a and location-b for 2026. Both locations are included; no other location is authorized."
+          }
+        ],
+        "requirements": [
+          {
+            "id": "request-kind",
+            "question": "Which request type is supported?",
+            "required": true
+          },
+          {
+            "id": "location-scope",
+            "question": "Which locations should this request cover?",
+            "required": true
+          },
+          {
+            "id": "existing-affiliation",
+            "question": "What must be preserved?",
+            "required": true
+          }
+        ],
+        "recordedMilestones": [],
+        "execution": {
+          "priorOutcome": "none",
+          "stopRequested": false,
+          "permittedActions": ["inspect", "prepare"]
+        }
+      },
+      "expectedOutcome": "success",
+      "expectedBehaviors": [
+        "Does not recreate a Georgia initial enrollment",
+        "Preserves the existing affiliation and both target locations",
+        "Makes no claim that this synthetic scenario describes actual payer policy"
+      ]
+    },
+    {
+      "name": "keeps conflicting late evidence and missing files visible",
+      "category": "boundary",
+      "input": {
+        "schemaVersion": "0.1.0",
+        "dataMode": "synthetic",
+        "caseRevision": "case-r2",
+        "workflowRevision": "workflow-r1",
+        "routeRevision": "route-r1",
+        "work": {
+          "id": "synthetic-late-conflicting",
+          "providerId": "provider-alpha",
+          "practiceId": "practice-alpha",
+          "payer": "synthetic-medicaid-ga",
+          "product": "synthetic-professional",
+          "jurisdiction": "GA",
+          "requestType": "initial-enrollment",
+          "locationIds": ["location-a"],
+          "period": "2026",
+          "existingAffiliationIds": []
+        },
+        "facts": [
+          {
+            "id": "practice-start",
+            "key": "practice.startDate",
+            "subjectId": "practice-alpha",
+            "locationIds": ["location-a"],
+            "value": null,
+            "disposition": "conflicting",
+            "evidence": [
+              {
+                "id": "practice-letter",
+                "revision": "r1"
+              },
+              {
+                "id": "later-letter",
+                "revision": "r1"
+              }
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "id": "route-note",
+            "revision": "r1",
+            "subjectId": "practice-alpha",
+            "title": "Synthetic route requirements",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "SCENARIO ONLY, not actual payer policy. For this invented case, practice start means the location's first operational date, not the provider's employment date. No submission or attestation is authorized."
+          },
+          {
+            "id": "practice-letter",
+            "revision": "r1",
+            "subjectId": "practice-alpha",
+            "title": "Operations-confirmed location opening",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "Synthetic practice-alpha location-a first operated on 2020-02-03. This letter addresses the location start date. Do not confuse it with provider-alpha joining in 2024."
+          },
+          {
+            "id": "later-letter",
+            "revision": "r1",
+            "subjectId": "practice-alpha",
+            "title": "Later opening-date statement",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "This later statement says practice-alpha location-a first operated on 2020-03-03. It does not identify whether it supersedes the earlier statement or explains the discrepancy."
+          },
+          {
+            "id": "cv",
+            "revision": "r1",
+            "subjectId": "provider-alpha",
+            "title": "CV requested but file not received",
+            "retrieval": "awaiting-file",
+            "validity": "unknown",
+            "content": null
+          },
+          {
+            "id": "license",
+            "revision": "r1",
+            "subjectId": "provider-alpha",
+            "title": "Expired synthetic license",
+            "retrieval": "available",
+            "validity": "expired",
+            "content": "Expired at the start of this synthetic period. No current replacement is supplied."
+          }
+        ],
+        "requirements": [
+          {
+            "id": "practice-start-date",
+            "question": "What is the practice start date for location-a?",
+            "required": true
+          },
+          {
+            "id": "current-cv",
+            "question": "Is the requested current CV available?",
+            "required": true
+          },
+          {
+            "id": "current-license",
+            "question": "Is there a current license in the evidence?",
+            "required": true
+          }
+        ],
+        "recordedMilestones": [],
+        "execution": {
+          "priorOutcome": "none",
+          "stopRequested": false,
+          "permittedActions": ["inspect", "prepare"]
+        }
+      },
+      "expectedOutcome": "human-review",
+      "expectedBehaviors": [
+        "Does not silently select the later opening date as authoritative",
+        "Distinguishes awaiting CV from received and expired license from current",
+        "Asks a precise H-02 question only after inspecting available versions"
+      ]
+    },
+    {
+      "name": "reconciles unknown prior effect",
+      "category": "boundary",
+      "input": {
+        "schemaVersion": "0.1.0",
+        "dataMode": "synthetic",
+        "caseRevision": "case-r1",
+        "workflowRevision": "workflow-r1",
+        "routeRevision": "route-r1",
+        "work": {
+          "id": "synthetic-uncertain-save",
+          "providerId": "provider-alpha",
+          "practiceId": "practice-alpha",
+          "payer": "synthetic-medicaid-ga",
+          "product": "synthetic-professional",
+          "jurisdiction": "GA",
+          "requestType": "initial-enrollment",
+          "locationIds": ["location-a"],
+          "period": "2026",
+          "existingAffiliationIds": []
+        },
+        "facts": [
+          {
+            "id": "practice-start",
+            "key": "practice.startDate",
+            "subjectId": "practice-alpha",
+            "locationIds": ["location-a"],
+            "value": null,
+            "disposition": "unknown",
+            "evidence": []
+          }
+        ],
+        "evidence": [
+          {
+            "id": "route-note",
+            "revision": "r1",
+            "subjectId": "practice-alpha",
+            "title": "Synthetic route requirements",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "SCENARIO ONLY, not actual payer policy. For this invented case, practice start means the location's first operational date, not the provider's employment date. No submission or attestation is authorized."
+          },
+          {
+            "id": "practice-letter",
+            "revision": "r1",
+            "subjectId": "practice-alpha",
+            "title": "Operations-confirmed location opening",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "Synthetic practice-alpha location-a first operated on 2020-02-03. This letter addresses the location start date. Do not confuse it with provider-alpha joining in 2024."
+          },
+          {
+            "id": "prior-attempt",
+            "revision": "r1",
+            "subjectId": "practice-alpha",
+            "title": "Synthetic prior attempt receipt",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "A prior authorized synthetic save timed out after dispatch. The destination result is unknown. No receipt or readback confirms success or failure. Do not replay it."
+          }
+        ],
+        "requirements": [
+          {
+            "id": "practice-start-date",
+            "question": "What is the practice start date for location-a?",
+            "required": true
+          }
+        ],
+        "recordedMilestones": [],
+        "execution": {
+          "priorOutcome": "unknown",
+          "stopRequested": false,
+          "permittedActions": ["inspect", "prepare"]
+        }
+      },
+      "expectedOutcome": "human-review",
+      "expectedBehaviors": [
+        "Blocks readiness, retains H-03 and asks for observed-state reconciliation",
+        "Does not repeat a save or claim it failed merely because its response was lost"
+      ]
+    },
+    {
+      "name": "does not promote approval to billing readiness",
+      "category": "boundary",
+      "input": {
+        "schemaVersion": "0.1.0",
+        "dataMode": "synthetic",
+        "caseRevision": "case-r1",
+        "workflowRevision": "workflow-r1",
+        "routeRevision": "route-r1",
+        "work": {
+          "id": "synthetic-approval-not-billing",
+          "providerId": "provider-alpha",
+          "practiceId": "practice-alpha",
+          "payer": "synthetic-medicaid-ga",
+          "product": "synthetic-professional",
+          "jurisdiction": "GA",
+          "requestType": "maintenance",
+          "locationIds": ["location-b"],
+          "period": "2026",
+          "existingAffiliationIds": []
+        },
+        "facts": [],
+        "evidence": [
+          {
+            "id": "approval-letter",
+            "revision": "r1",
+            "subjectId": "provider-alpha",
+            "title": "Approval for a different location",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "The synthetic payer approved provider-alpha at location-a for 2026. This does not cover location-b and states no billing-eligibility determination."
+          },
+          {
+            "id": "case-history",
+            "revision": "r1",
+            "subjectId": "provider-alpha",
+            "title": "Imported case-level status",
+            "retrieval": "available",
+            "validity": "current",
+            "content": "The imported case flag says Approved. Location and billing readiness were not separately verified."
+          }
+        ],
+        "requirements": [
+          {
+            "id": "target-approval",
+            "question": "Is approval evidenced for this work's location-b?",
+            "required": true
+          },
+          {
+            "id": "billing-ready",
+            "question": "Is billing eligibility verified for this work's location and period?",
+            "required": true
+          }
+        ],
+        "recordedMilestones": ["submitted", "approved"],
+        "execution": {
+          "priorOutcome": "none",
+          "stopRequested": false,
+          "permittedActions": ["inspect", "prepare"]
+        }
+      },
+      "expectedOutcome": "human-review",
+      "expectedBehaviors": [
+        "Recognizes the approval is for location-a, not target location-b",
+        "Does not treat case-level Approved as billing verification",
+        "Preserves uncertainty and requests only the evidence still needed"
+      ]
+    },
+    {
+      "name": "rejects missing work scope",
+      "category": "failure",
+      "input": {},
+      "expectedOutcome": "validation-error",
+      "expectedBehaviors": ["Rejects before agent execution"]
+    }
+  ]
+}

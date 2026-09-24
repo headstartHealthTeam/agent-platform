@@ -1,0 +1,305 @@
+# Provider Credentialing
+
+This is the **preparation foundation and connected application definition**, not the complete credentialing MVP.
+It contains payer-neutral work/evidence/proposal contracts, scoped investigative fixture tools,
+review-content fingerprinting and regression/evaluation cases. It does not implement browser
+population, uploads, approval enforcement, an admin integration, or an Agents API executor. Its
+canonical validator now has a standalone application-consumption artifact for the backend review
+boundary described below.
+
+The explicit production-read input `0.3.0` uses the same payer-neutral rich preparation/proposal
+contracts as synthetic input `0.2.0`, without relabeling invented evidence as real. Synthetic helpers
+reject production-read inputs. This schema is not source-access authorization or proof of an agent
+run. The existing draft synthetic workflow manifest is unchanged.
+
+### Connected preparation definition
+
+Use the [hosted-first development pattern](https://github.com/headstartHealthTeam/agent-platform/blob/aef149b457a4b9588bf5b370e52d161e02ddc7c3/docs/agent-workflow-development.md#hosted-first-connected-execution):
+normal local backend/admin with an OpenAI-hosted agent sandbox. The local Docker executor is an
+optional fallback, not a gate before source/package/reviewer integration. Hosted tool setup and the
+complete real-source correction loop remain unverified; this decision changes no runtime settings.
+
+The build also emits `dist/preparation-definition.json`: the canonical skill, the
+[connected entry prompt](prompts/connected.md), both public input schemas, proposal schema and
+four function declarations. Its workflow revision hashes the complete definition. The artifact
+contains no fixtures, expected answers, credentials or private case data. Deploy/pin reviewed bytes
+alongside the validator; do not maintain a second instruction copy in backend.
+
+`get_credentialing_review_context` obtains the server-bound case, exact workflow/route pins,
+current revision, the complete saved package and saved feedback. `publish_credentialing_review_package` submits complete
+input/proposal JSON for canonical validation and durable human review. `ask_operator` remains an
+ad hoc human question. General source investigation uses separately configured, permission-aware
+native Headstart MCP tools; the backend functions are not a second source-access API.
+
+New shared Drive tooling lives in [Agent Platform's Drive package](../../packages/google-drive-data/README.md),
+not in a backend MCP module. Its standalone CLI reuses shared Google transport and
+[document parsing](../../packages/document-reading/README.md). It still requires an installed
+runtime artifact and explicit Google binding in the selected sandbox; those bindings and a real-source
+agent demonstration are not established by this package relocation. Do not infer availability
+from an employee's desktop connector. The source-neutral exact-byte retention contract is defined
+in [workflow contracts](../../packages/workflow-contracts/README.md#responsibilities).
+It covers Drive originals, exports, Docs structure and runtime-derived artifacts alongside
+Salesforce originals. A runtime file or manifest is not a retained receipt: the trusted application
+handoff must verify the bytes, case/subject binding and exact parent lineage before publication.
+Binding hosted artifact delivery to that handoff remains a separate integration step; the capture
+function below still accepts Salesforce identifiers only.
+
+`capture_credentialing_source_document` is the protected original-file retention capability.
+It accepts exact Salesforce link/document/version identifiers discovered through MCP, verifies the
+business-source authority in the backend, and returns artifact identity and digest after retention. No raw
+bytes, arbitrary URLs, new source login or search interface are exposed. The backend rejects
+production-read artifacts without a matching case/subject/version receipt. Originals include PDFs,
+images and Office/workbook files; browser rendering is distinct from original availability.
+Pass the discovered `sourceObject` for relevant shared sources. Case assignment is not an exclusive
+source-record blindfold. Runtime conversion retains its own digest and exact source parents;
+never label converted bytes as an original. Without a successful retention receipt, the attachment
+remains unresolved. This does not
+change the schema or its payer-neutral semantics, or establish live source/MCP acceptance.
+
+Saved review corrections remain instructions to investigate, not source truth or approval. The
+agent re-reads context, investigates and publishes a new package, which requires renewed review.
+An explicit continuation after a failed or stopped turn stays in the same session and case. It
+does not erase pending corrections, reuse approval, replay uncertain tools or create new source
+authority. The application retains the original command identity when recovering an uncertain
+message. The agent should read current review context after continuation, not assume the previous
+turn completed its work. Shared delivery and continuation behavior is owned by the operator runtime,
+not a credentialing-specific retry loop.
+Native source access, exact source-file handoff, hosted environment setup and real-agent
+acceptance are not established by building this artifact. Missing byte access must be reported as
+missing; a file summary must not become an invented digest or fabricated original document.
+
+The intended MVP prepares and, after exact human review, populates the first authorized Georgia
+Medicaid route, reads back the result and hands protected actions to a human. Texas existing-provider
+group-add is an early design contrast, not a second implemented portal. The core carries payer,
+product, jurisdiction, request, location and prior-affiliation scope without Georgia branches.
+
+## Reuse And Ownership
+
+- Reuse the [workflow runtime](../../packages/workflow-runtime/README.md) for package/schema loading.
+- Reuse the [capability contracts](../../packages/capability-contracts/README.md) for future
+  permission/profile bindings; this package does not issue credentials or duplicate that framework.
+- Create only workflow-owned preparation contracts and synthetic read helpers here. Agent judgment
+  remains in the [canonical skill](../../skills/headstart-provider-credentialing/SKILL.md), shared
+  by Desktop and future managed runs.
+- The backend retains authoritative case state, permissions, approval/action enforcement and
+  idempotency. The admin panel supplies the focused operator experience through those APIs.
+- The [development pattern](https://github.com/headstartHealthTeam/agent-platform/blob/aef149b457a4b9588bf5b370e52d161e02ddc7c3/docs/agent-workflow-development.md) governs connected testing.
+  The existing managed runner's draft/read-only gates remain unchanged.
+
+The `synthetic` input contract intentionally excludes live data. Fixtures are invented and are not
+payer policy. This is not yet a complete C-01–C-09 wire protocol: attempt/lease handling, durable
+question/reply and activity events, protected artifact delivery and server-side approvals remain
+integration work. `reviewFingerprint` binds parsed input and output content; it is **not** an
+approval token, signature, deduplication key or authorization service.
+
+## Capabilities And Access Gates
+
+Prefer existing permission-aware Headstart MCP schema, record, query and linked-file evidence reads
+over a new Salesforce connector. Expose scoped tools that the agent can revisit to investigate
+unexpected discrepancies; the tool boundary must constrain actual records, fields and targets.
+Backend MCP exposes exact original resources, not runtime parsing or page rendering, in addition
+to optional secondary-model answers. Use the [runtime MCP document client](../../packages/headstart-mcp-data/README.md)
+to save those files, then inspect them with the agent's tools, including the shared
+[`document-reading`](../../packages/document-reading/README.md) package. The primary agent must
+read full evidence and follow pagination; summaries and reviewer previews do not satisfy that
+requirement. Runtime installation/credential binding and actual Agents API file inspection still
+need connected verification, not just a server-side test. Native MCP credentials are not
+automatically shell credentials; use the provisioned same-grant binding, never desktop auth discovery.
+Protected destination actions remain separately authorized capabilities.
+
+Before managed access to real Headstart data, establish a revocable, auditable worker identity or
+explicitly governed delegated model with the backend identity owner. Current employee authentication
+does not prove machine-identity support. Define tool/record/field scope, target, lifetime, renewal,
+revocation and initiating-human versus worker attribution; test denied and revoked access.
+See the [identity roadmap](https://github.com/headstartHealthTeam/agent-platform/blob/aef149b457a4b9588bf5b370e52d161e02ddc7c3/docs/managed-runtime-completion-roadmap.md#headstart-mcp-worker-identity-follow-through).
+No identity or credential is created by this package.
+
+Payer authentication and permission to automate remain independent. A publicly accessible portal
+landing page does not prove an anonymous workflow, an authorized automation path or a sandbox.
+Verify the exact route and whether navigation, save or upload causes durable/protected effects
+before an authorized live test. Never pass an employee's personal cookies to an agent. A secure
+same-session human access handoff, if allowed, needs its own approved design and tests.
+
+## Synthetic Tools And Tests
+
+From the repository root, with the pinned pnpm version and installed dependencies:
+
+```bash
+corepack pnpm --filter @headstart-health/workflow-provider-credentialing test:coverage
+node --import tsx workflows/provider-credentialing/src/cli.ts ga-initial case
+node --import tsx workflows/provider-credentialing/src/cli.ts ga-initial list-evidence
+node --import tsx workflows/provider-credentialing/src/cli.ts ga-initial read-evidence practice-letter
+```
+
+The tools return a scoped case, evidence inventory and individually retrieved evidence.
+They do not supply an answer oracle. They are independent synthetic read helpers, not a bypass for
+managed-runner policy. Unsupported operations and out-of-case evidence are rejected. The manifest
+has no registered MCP/CLI bindings: an isolated managed profile must explicitly bind and enforce
+tools before it can run. The fixture CLI is development tooling only.
+
+The full input snapshot is trusted fixture/validation material, not the intended initial model
+message. Future preparation must supply the case projection and scoped evidence tools instead of
+dumping every evidence body or the evaluation expectations into the prompt. This package does not
+yet implement that isolated model-input materialization. Initial supervised development trials can
+use the [Desktop procedure](https://github.com/headstartHealthTeam/agent-platform/blob/aef149b457a4b9588bf5b370e52d161e02ddc7c3/docs/agent-workflow-development.md#supervised-desktop-behavior-trial-procedure)
+and [launch template](prompts/desktop-trial.md). Those trials rely on supervision and observed access
+discipline, not a claim that the Desktop host's other tools have been technically removed.
+
+Scenarios:
+
+| Scenario                 | Behavior to investigate                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| `ga-initial`             | Discover a practice letter that resolves a missing date without asking Ops                |
+| `tx-group-add`           | Preserve existing affiliation and scope two locations without Georgia assumptions         |
+| `late-conflicting-files` | Distinguish a later contradicting source, an awaiting file and expired evidence           |
+| `uncertain-save`         | Escalate reconciliation rather than replay a possibly completed save                      |
+| `approval-not-billing`   | Notice an approval applies to another location and does not establish billing eligibility |
+
+The additional `ga-preparation` and `tx-preparation` tool scenarios use the richer contracts below.
+Their invented reference proposals live separately under `fixtures/preparation`; they are test
+oracles, not tool responses or model outputs. They exercise repeating records, address roles,
+conversion lineage, a superseded deficient CV, qualified dates and protected-action handoffs.
+Texas retains two locations and existing affiliation and uses different document signers.
+These are structural contrasts informed by workflow observations, not complete payer forms,
+current payer policy, real documents or evidence of a passing agent behavior trial.
+
+For a fresh-context behavioral trial, provide the skill, case/schema and access to only these tools.
+Do not include expected outcomes, reference output or evaluation rubrics in the agent input.
+Fixture `case` omits evidence content deliberately; it must be discovered/read. Model evaluations
+must run repeatedly and record exact source, skill, fixture, model/configuration, tool calls, output,
+review findings and budgets. Check both answerable investigation and genuinely necessary escalation.
+A normal repository Desktop task can inspect other files; it is not a sealed evaluation environment.
+Use technical isolation for sealed benchmark claims. Label supervised Desktop findings separately.
+
+`evals/evals.json` defines cases; CI validates their contracts, not model behavior. Deterministic
+tests use independently authored reference output, not a canned agent implementation. No passing
+model evaluation or API/browser integration follows from these definitions alone; actual run
+evidence and its limitations must be recorded separately.
+
+## Failure, Review And Activation
+
+### Application Artifact Validation
+
+The package build emits `dist/artifact-worker.cjs`, bundling the existing canonical schema and
+proposal validators and their Zod dependency. This is a deterministic validation worker, not an
+agent runner, API emulator, service, model call or second workflow implementation. Backend builds
+can consume the same bytes locally and in a hosted application. No new engine/package is needed.
+
+From a reviewed, exact Agent Platform revision, run the normal frozen dependency install and package
+build. Distribute the generated worker as a protected deployment artifact with its SHA-256 digest
+and source revision in the deployment record. Do not publish or install it through the skills
+updater, copy canonical validation source into a consuming repository, or trust a digest supplied
+by the agent. No registry publication or deployment automation is supplied here.
+
+The application launches the already-pinned worker bytes with one `workerData` object containing
+`inputJson` and `proposalJson` (UTF-8 strings, at most 1 MiB each). The worker sends one message and
+closes its channel. Success is `{ ok: true, value: ... }`, using protocol
+`credentialing-validation/v1`; failure is the static
+`{ ok: false, code: "invalid-artifacts", issues: ... }`, with schema paths/codes or semantic
+validation messages, but no raw source values. The agent receives actionable corrections rather
+than an arbitrary two-repair-attempt limit.
+
+The projection contains synthetic work identity, case/workflow/route revisions, input/output schema
+versions, exact-byte fingerprints, parsed-content review fingerprint and preparation readiness.
+The caller must independently match the full authoritative case scope/version, recompute the byte
+fingerprints, atomically retain immutable bytes/references/history, and enforce human authorization.
+The backend's source snapshot uses the decimal review-control version as `caseRevision`; source and
+proposal must both bind to that revision. Progress tokens do not increment this version.
+
+Canonical validation establishes schema, reference and stop-contract consistency, not truth of the
+evidence, correct judgment, actual workflow execution or a verified worker/run principal. Input
+workflow/route revision strings remain claims until the managed producer binds them to its pinned
+run manifest. The application validator is trusted deployment code running with application OS
+authority; a worker thread and empty environment are not a security sandbox for untrusted code.
+Do not load it from agent-writable storage. Managed ingestion, runtime execution and external action
+remain separately gated.
+
+### Versioned Preparation Model
+
+The worker accepts three explicit pairs; canonical validation rejects
+cross-pair combinations. Existing artifacts and evaluations are not migrated in place.
+
+| Input   | Proposal | Role                                                                   |
+| ------- | -------- | ---------------------------------------------------------------------- |
+| `0.1.0` | `0.2.0`  | Original scalar preparation scenarios and historical artifacts         |
+| `0.2.0` | `0.3.0`  | Repeating records, scoped file proposals and protected-action handoffs |
+| `0.3.0` | `0.3.0`  | Production-read preparation with the same rich proposal contract       |
+
+Production-read input uses `schemas/production-read-input.schema.json`; the workflow's
+`schemas/input.schema.json` covers the synthetic input pairs. Both use the same proposal schema.
+
+`preparation-contracts.ts` is the richer canonical definition. Regenerate the checked-in JSON
+Schemas with the package's `generate:schemas` command, then format and run normal QA. Legacy typed
+exports remain unchanged; artifact consumers use the explicit union exports.
+
+- `records` group fields by stable record ID for education, employment, address, ownership,
+  management, license and coverage. Separate rows retain their own subjects, related parties,
+  locations and periods. Address roles distinguish service, pay-to and mail-to. Unknown period
+  boundaries remain null; do not turn a proxy date into a record's verified date range.
+- `relatedParties` declare scoped people/organizations and cited relationship evidence. Their
+  presence is not a tool authorization or proof of ownership/signing authority. Scope remains
+  bounded to this synthetic case. Empty `locationIds` explicitly means case-wide; a null record
+  means subject-wide. A record-specific source cannot support a different record.
+- Facts preserve documented, declared, verified, operator-selected, proxy, unknown, conflicting
+  and not-applicable dispositions. Operator-selected/proxy facts require a rationale. Answers
+  retain a visible `basis`; citing a proxy cannot promote it to verification. `supported` means
+  a proposed answer with cited support, not objective truth. Evidence-based inference remains
+  allowed and must be labeled `inferred`; semantic correctness still needs agent and human review.
+- Evidence keeps source system/record/version and observation time. Each proposed attachment
+  resolves to one exact artifact ID, revision and digest, with media type, scope and evidence.
+  A converted artifact retains exact source references and the transformation ID/revision.
+  Validation rejects missing/stale references and cycles and checks the whole proposed lineage.
+  There is one declared revision per artifact ID in a snapshot; prior snapshots stay immutable.
+- Field and attachment requirements name their destination system/section/field. Protected-action
+  requirements name action, designated actor/role, related documents and any fields/documents
+  blocked by a mid-form human action. Each gets a `human-required` or `unresolved` disposition.
+  These are pending handoff requirements, not grants, signatures or a workflow scheduler.
+  `prepared-for-review` can include correctly routed, still-unperformed human actions; it cannot
+  include unresolved files or actor routing. Those require H-02 and an incomplete/blocked status.
+- A requirement marked `required` cannot be disposed as `not-applicable`. Missing support remains
+  `unresolved` with the existing H-02 handoff. Optional requirements may be `not-applicable` with
+  an explanation; not-applicable source facts remain valid. Applicability and evidence judgment
+  belong to the agent and reviewer, not a payer-specific backend rule.
+
+Artifact digests in the new fixtures are invented metadata; no file bytes are provided. The future
+protected file capability must retrieve and hash actual exact-version bytes, verify transformations
+and revalidate current authorization before upload. This contract does not implement conversion,
+browser selectors, uploads, signatures or execution. Validation establishes structural consistency,
+not that an answer is factually correct, a CV complete, or every real route requirement discovered.
+Do not turn inferred requirements, supplied `verified` facts or designated actors into trusted
+source-policy or permission assertions. Preserve human review and producer trust boundaries.
+
+Both output versions require each question's `kind`: `evidence` maps to H-02, while `access`
+and `reconciliation` require blocked status and H-03. Unresolved answers independently require
+H-02; mixed conditions require both stops. Any outstanding question prevents prepared-for-review.
+Do not silently coerce old proposals or overwrite historical evaluation results. Schema/stop checks cannot prove
+that a question's classification is semantically correct; source review remains necessary.
+
+Malformed or inconsistent snapshots, stale references and invalid proposals fail validation.
+An evidence read failure is explicit, never an empty success. Stop and unknown-effect scenarios
+cannot be labeled ready. The fingerprint changes with sources, scope, route or proposed values;
+the future backend must revalidate current state and authority before each permitted action.
+
+H-01 pre-population review, conditional H-02/H-03, H-04 readback and H-05 protected human actions
+remain the MVP boundary. H-05 applies wherever a protected effect occurs. There are no external
+effects here to roll back. Future rollback/recovery must reconcile observed destination state,
+not blindly repeat actions. Future logs expose sanitized activity, tool purpose/outcome, evidence
+references, questions and confirmed effects—not credentials, raw private data or chain of thought.
+
+Keep the package draft until immutable sources, owners/backups/contacts, exact capabilities,
+data policy, scoped identity, operational approval/recovery, repeated behavior evaluations and
+the [per-workflow adoption gate](../../docs/managed-runtime-completion-roadmap.md) are proven.
+No schedule, deployment or live run is authorized.
+
+## Instruction revision 0.3.0 — full evidence
+
+The credentialing skill now explicitly requires primary-agent access to complete documents,
+repeated history and relevant shared references. Sensitive business facts are not authentication
+secrets and must not be silently stripped. Read-only MCP source capability is distinct from the
+backend's normal writes of packages, reviews, messages and audit. The added
+`full-evidence-not-summary-only` evaluation defines the expected behavior; it is not a recorded
+passing model trial. These requirements supersede earlier metadata-only or summary-only assumptions.
+
+See the [documentation hub](../../docs/README.md),
+[authoring guide](../../docs/workflow-authoring-guide.md) and
+[managed architecture](../../docs/codex-managed-workflow-architecture.md).

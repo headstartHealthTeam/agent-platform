@@ -58,6 +58,9 @@ and examples.
 
 ## Concrete Examples
 
+- [Provider credentialing](../workflows/provider-credentialing/README.md) preserves the payer-neutral
+  preparation contracts, investigative skill, synthetic evaluations and application artifacts.
+  Its connected operation also needs the separately reviewed shared runtime and application changes.
 - [Shared operator integration](shared-operator-integration.md) defines reusable runtime and
   application contracts; [agent workflow development](agent-workflow-development.md) explains
   desktop authoring and normal-application acceptance with hosted execution. The
