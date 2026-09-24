@@ -95,6 +95,9 @@ export type {
   ClaimsEvidenceInput,
 } from './appointment-evidence.js';
 export type { SourceEvidenceContext } from './source-evidence-context.js';
+export { datedTaskLines, explicitTaskOccurrenceDate } from './source-task-dates.js';
+export type { DatedTaskLine, DatedTaskRecord } from './source-task-dates.js';
+export { isAdministrativeEmail, isAdministrativeTaskReminder } from './task-administrative.js';
 export { adaptAuthorizationReviews, adaptVob } from './authorization-review-evidence.js';
 export type {
   AuthorizationReviewEvidenceInput,

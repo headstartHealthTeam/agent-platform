@@ -598,6 +598,12 @@ downstream-record suppression and correction/reconciliation routing. Provider su
 relabeled as payer submission. These report projections make no provider calls and do not repair
 Salesforce; the main authorization-record and final report consumers remain separate migration work.
 
+Dated-task projection and administrative-template filters retain the existing update-marker,
+appointment-date, relative submission and frozen-cutoff handling. Bounded parsing preserves the
+original greedy date selection without nested optional regex quantifiers; it does not extend the
+date window or add recognized phrases. These helpers support the remaining note/task/authorization
+adapters, which must still compose them with evidence identity and the existing interpretation path.
+
 ## Related guidance
 
 - [Documentation hub](README.md)
