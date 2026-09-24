@@ -152,6 +152,9 @@ or promoting it. The [managed runtime completion roadmap](docs/managed-runtime-c
 defines the workflow-independent path through shared preparation, execution compatibility and the
 remaining operations decision. Evaluate Agents API with OpenAI-hosted execution first; self-hosted
 API execution or SDK hosting is conditional on a verified unmet requirement. The
+[development pattern](docs/agent-workflow-development.md#hosted-first-connected-execution) applies
+this to connected testing too: normal local backend/admin may use hosted agent compute directly.
+Installing tool packages does not require a custom executor. The
 [compatibility assessment](docs/agents-api-compatibility.md) explains how the existing local workflow
 packages are reused and where adapters, policy enforcement and recovery need work. A thin integration
 or an operations service such as Windmill may cover the remaining controls. No provider is deployed
