@@ -1111,3 +1111,20 @@ export {
 export type { ReportHistorySnapshot } from './report-saved-state.js';
 export { auditSavedIntakeReport, validateSavedIntakeReport } from './report-validation.js';
 export type { SavedIntakeValidationResult } from './report-validation.js';
+export {
+  exportSavedIntakeReportWorkbook,
+  finalizeIntakeReportArtifacts,
+} from './report-finalization.js';
+export type {
+  FinalizedReportArtifacts,
+  ReportCollectedSourceOutcome,
+  ReportFinalizationInput,
+  ReportInterpretationExecution,
+  ReportInterpretationRecord,
+} from './report-finalization.js';
+export { readSavedPublicationGateInputs } from './publication-gate-storage.js';
+export { prepareIntakePublication } from './publication-preparation.js';
+export type {
+  PreparedIntakePublicationGate,
+  SavedPublicationPreparationInput,
+} from './publication-preparation.js';

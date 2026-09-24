@@ -815,6 +815,21 @@ artifacts fail at the typed boundary without promoting them as valid evidence. T
 command must still run distribution safety and the complete synthetic self-tests; this artifact-level
 function does not replace that prerequisite.
 
+Report finalization composes the evaluated rows, source outcomes, note receipts, protected ledger,
+interpretation audit and table/metadata projections into the original private artifacts. Normalized
+evidence retains collection order while operator tables use report order. Assessment and note packets
+retain the frozen cutoff; workbook generation time remains separate. No collection, interpretation
+or publication occurs in this step. Workbook export consumes the exact persisted seven-table JSON:
+empty cells are null, false/zero/whitespace stay literal, and supported vendor cells are not coerced
+to strings. Synthetic checks against the provisioned vendor establish equivalent raw-undefined and
+persisted-null empty cells. The shared workbook package still owns vendor mechanics, not Intake files.
+
+Saved publication preparation composes report validation, the bound Google capture proof, staged
+payload generation and the existing live-observation gate. It does not refresh or re-date captures,
+change the frozen assessment, or write a Sheet. The original required artifacts, stale/future-check
+rejection, post-cutoff disposition and Run History-last ordering remain intact. Full command-level
+self-validation remains a separate prerequisite; the artifact preparation function does not replace it.
+
 ## Related guidance
 
 - [Documentation hub](README.md)
