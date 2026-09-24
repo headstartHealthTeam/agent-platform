@@ -860,3 +860,12 @@ export type {
   EnrichedPortalChat,
   MaterializedPortalRow,
 } from './portal-collection-types.js';
+export { parsePortalChats, noPortalData } from './portal-report.js';
+export type {
+  PortalReportMessage,
+  PortalReportChat,
+  PortalReportResponses,
+  PortalReportInput,
+  PortalReportSummary,
+  ParsedPortalReport,
+} from './portal-report-types.js';

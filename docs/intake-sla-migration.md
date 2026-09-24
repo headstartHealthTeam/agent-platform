@@ -133,6 +133,11 @@ row-local missing/incomplete results. A legitimately empty planned sentinel may 
 nonempty current-run request, under the existing separate all-zero health rule. This is the approved
 product-specific capture protocol, not new transport, a new source requirement or relaxed coverage.
 
+The existing Portal report-summary projection remains distinct from evidence admission. It preserves
+message fallback and decoding order, date sorting, channel-conflict deduplication, system-noise and
+stage-relevance accounting, and unchecked versus confirmed-empty results. It supplies the approved
+builder/freshness contract without changing the stronger evidence adapter or adding source reads.
+
 Inventory the routine `review:*` entrypoints and their imports, commands, live collectors, source
 modules, contracts, docs and synthetic tests from the pinned reference. Exclude unrelated utilities
 unless a routine import proves the dependency. Record a destination and parity case for each
