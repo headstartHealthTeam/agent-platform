@@ -4,8 +4,11 @@ import { isAbsolute, join } from 'node:path';
 import { materializeDocumentContent } from '@headstart-health/document-reading';
 import {
   GcloudReadTokenProvider,
+  GoogleEndpointTokenProvider,
   GoogleFileTokenProvider,
   GoogleReadTransport,
+  googleTokenEndpointConfigSchema,
+  type GoogleTokenProvider,
 } from '@headstart-health/google-read-transport';
 import { z } from 'zod';
 
@@ -27,6 +30,7 @@ export const driveRuntimeProfileSchema = z
         .object({ kind: z.literal('credential-file'), path: z.string().refine(isAbsolute) })
         .strict(),
       z.object({ kind: z.literal('operator-adc') }).strict(),
+      googleTokenEndpointConfigSchema.extend({ kind: z.literal('token-endpoint') }),
     ]),
   })
   .strict();
@@ -45,13 +49,25 @@ export const driveRuntimeRequestSchema = z.discriminatedUnion('action', [
 export type DriveRuntimeRequest = z.infer<typeof driveRuntimeRequestSchema>;
 export function createDriveRuntime(profile: DriveRuntimeProfile): GoogleDriveReader {
   const parsed = driveRuntimeProfileSchema.parse(profile);
-  const tokens =
-    parsed.authentication.kind === 'credential-file'
-      ? new GoogleFileTokenProvider(parsed.authentication.path, [
-          'https://www.googleapis.com/auth/drive.readonly',
-        ])
-      : new GcloudReadTokenProvider();
+  const tokens = createTokens(parsed.authentication);
   return new GoogleDriveReader(new GoogleDriveRestProvider(new GoogleReadTransport(tokens)));
+}
+function createTokens(authentication: DriveRuntimeProfile['authentication']): GoogleTokenProvider {
+  const scopes = ['https://www.googleapis.com/auth/drive.readonly'];
+  switch (authentication.kind) {
+    case 'credential-file':
+      return new GoogleFileTokenProvider(authentication.path, scopes);
+    case 'operator-adc':
+      return new GcloudReadTokenProvider();
+    case 'token-endpoint':
+      return new GoogleEndpointTokenProvider(
+        {
+          endpoint: authentication.endpoint,
+          authorizationEnvironmentVariable: authentication.authorizationEnvironmentVariable,
+        },
+        scopes
+      );
+  }
 }
 export type DriveRuntimeResult =
   | { kind: 'read'; data: DriveReadResult }

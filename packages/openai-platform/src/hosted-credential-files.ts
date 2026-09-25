@@ -1,3 +1,4 @@
+import { isIP } from 'node:net';
 import { posix } from 'node:path';
 
 import type { AgentHostedCredentialFile } from '@headstart-health/workflow-contracts';
@@ -21,6 +22,30 @@ export const credentialFilePaths = z.array(privatePath).max(50);
 const filesSchema = z
   .array(z.object({ path: privatePath, content: z.string().min(1) }).strict())
   .max(50);
+const exactHostname = z.hostname().refine((domain) => {
+  if (!domain.includes('.') || domain.includes('*') || domain.endsWith('.')) return false;
+  // URL normalization also recognizes abbreviated, octal and hexadecimal IPv4 literals.
+  try {
+    return isIP(new URL(`https://${domain}`).hostname) === 0;
+  } catch {
+    return false;
+  }
+});
+
+function persistentGoogleCredential(content: string): boolean {
+  if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(content)) return true;
+  try {
+    const value: unknown = JSON.parse(content);
+    if (value === null || typeof value !== 'object') return false;
+    return (
+      'private_key' in value ||
+      'refresh_token' in value ||
+      ('type' in value && ['service_account', 'authorized_user'].includes(String(value.type)))
+    );
+  } catch {
+    return false;
+  }
+}
 
 /** Secrets join the SDK request only at the execution boundary; profiles declare paths only. */
 export function bindHostedCredentialFiles(
@@ -39,18 +64,19 @@ export function bindHostedCredentialFiles(
     provided.data.some((file) => !paths.includes(file.path))
   )
     throw new Error('Hosted credential-file binding mismatch');
+  // Domain restrictions do not stop uploads to an allowed provider. Google signing/refresh
+  // credentials stay with a trusted issuer; the runtime uses a renewable token provider instead.
+  if (provided.data.some((file) => persistentGoogleCredential(file.content)))
+    throw new Error('Persistent Google credentials must not enter a hosted sandbox');
   const environment = action.body.environment;
   if (environment.type !== 'openai_hosted')
     throw new Error('Credential files require a hosted environment');
   if (
     environment.network?.access !== 'restricted' ||
     !environment.network.allowed_domains?.length ||
-    environment.network.allowed_domains.some(
-      (domain) =>
-        !z.hostname().safeParse(domain.startsWith('*.') ? domain.slice(2) : domain).success
-    )
+    environment.network.allowed_domains.some((domain) => !exactHostname.safeParse(domain).success)
   )
-    throw new Error('Credential files require an explicit restricted network allowlist');
+    throw new Error('Credential files require an explicit restricted exact-host allowlist');
   if (environment.environment_template_id && environment.files === undefined)
     throw new Error('Template credential files require an explicit complete input-file list');
   const existing = environment.files ?? [];

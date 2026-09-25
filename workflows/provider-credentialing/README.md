@@ -36,12 +36,17 @@ not in a backend MCP module. Its standalone CLI reuses shared Google transport a
 [document parsing](../../packages/document-reading/README.md). It still requires an installed
 runtime artifact and explicit Google binding in the selected sandbox; those bindings and a real-source
 agent demonstration are not established by this package relocation. Do not infer availability
-from an employee's desktop connector. The source-neutral exact-byte retention contract is defined
+from an employee's desktop connector. Google authentication is a replaceable runtime binding: local ADC or an
+operator-controlled credential file works without backend; hosted execution uses renewable
+read-only tokens without putting the long-lived key in the sandbox. An optional deployment issuer
+does not own document reading/parsing and is not a mandatory workflow dependency. See
+[the shared credential boundary](../../docs/reusable-data-capabilities.md#runtime-credentials-without-application-coupling).
+The source-neutral exact-byte retention contract is defined
 in [workflow contracts](../../packages/workflow-contracts/README.md#responsibilities).
 It covers Drive originals, exports, Docs structure and runtime-derived artifacts alongside
 Salesforce originals. A runtime file or manifest is not a retained receipt: the trusted application
 handoff must verify the bytes, case/subject binding and exact parent lineage before publication.
-`queue_credentialing_hosted_review_package` queues a complete package plus exact output paths for
+`queue_credentialing_review_package` queues a complete package plus exact output paths for
 the application's after-turn delivery worker. Queue admission is not successful retention or
 publication: the agent must end the turn so the provider can publish immutable outputs, then the
 application validates bytes, lineage and current case authority. The capture function below

@@ -48,7 +48,7 @@ async function retainCredentialProtection(
   action: Extract<Action, { operation: 'sessions.create' }>,
   paths: string[] | undefined,
   retain: AgentSessionCreateOptions['retainCredentialProtection']
-): Promise<'validation' | 'before-dispatch' | null> {
+): Promise<'validation' | 'credential-protection' | null> {
   if (!paths?.length || action.body.environment.type !== 'openai_hosted') return null;
   if (!retain) return 'validation';
   try {
@@ -61,7 +61,7 @@ async function retainCredentialProtection(
     });
     return null;
   } catch {
-    return 'before-dispatch';
+    return 'credential-protection';
   }
 }
 const receiptSchema = z

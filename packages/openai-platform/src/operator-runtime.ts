@@ -110,8 +110,7 @@ export class OperatorRuntimePort {
     turnId: string
   ): Promise<'pending' | 'completed' | 'failed' | 'cancelled'> {
     this.requireOpen();
-    if (binding.target !== fingerprint(this.target))
-      throw new HostedArtifactError(artifactIdentity);
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
     const observed = await this.turns.read(this.platform, binding).catch((error: unknown) => {
       if (error instanceof OperatorProvenanceError) throw new HostedArtifactError(artifactIdentity);
       throw error;
@@ -130,7 +129,8 @@ export class OperatorRuntimePort {
     if (status === 'failed' || status === 'cancelled')
       throw new HostedArtifactError(artifactIdentity);
     if (status !== 'completed') throw new Error('Hosted artifact turn has not completed');
-    if (!this.platform.readHostedArtifact) throw new HostedArtifactError(artifactIdentity);
+    if (!this.platform.readHostedArtifact)
+      throw new Error('Hosted artifact transport is not configured');
     this.requireOpen();
     return this.platform.readHostedArtifact(binding.sessionId, request);
   }

@@ -116,9 +116,17 @@ describe('native hosted artifact transport', () => {
     await expect(downloadHostedArtifact(client, 'session', request)).rejects.toThrow('unavailable');
   });
   it('classifies body overflow as a permanent capacity failure', async () => {
-    const { client } = setup([[artifact]], 'longer-than-eight');
+    const { client } = setup([[artifact]], 'x'.repeat(request.maxBytes + 1));
     await expect(downloadHostedArtifact(client, 'session', request)).rejects.toMatchObject({
       code: 'artifact-capacity',
+    });
+  });
+  it('classifies body overflow within capacity as a permanent metadata mismatch', async () => {
+    const { client } = setup([[artifact]], 'longer-than-eight');
+    await expect(downloadHostedArtifact(client, 'session', request)).rejects.toMatchObject({
+      code: 'artifact-identity',
+      message:
+        'Published file size does not match artifact metadata; the original was not substituted.',
     });
   });
   it.each([
@@ -137,7 +145,7 @@ describe('native hosted artifact transport', () => {
     const controller = new AbortController();
     const cancel = vi.fn();
     const response = new Response(new ReadableStream({ cancel }));
-    const result = readHostedArtifactBody(response, 10, controller.signal);
+    const result = readHostedArtifactBody(response, 10, 100, controller.signal);
     const assertion = expect(result).rejects.toThrow();
     controller.abort();
     await assertion;

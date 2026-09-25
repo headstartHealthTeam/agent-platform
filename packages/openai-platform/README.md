@@ -246,7 +246,9 @@ setup scripts, prompts or files. OpenAI supplies a placeholder in the hosted env
 substitutes the credential only on HTTPS requests to the existing MCP audience's host. The
 hosted network policy must permit that host (port 443 or 8443); this is credential delivery,
 not another source-permission policy. The runtime profile refers to the environment variable.
-Google credentials are separate and are **not** supplied by this mapping.
+Google token issuance remains a separate, explicit authority. A runtime token provider may reuse
+this protected authorization header to call an approved authentication-only issuer on that same
+host; possessing MCP access alone must not grant Google access.
 With a template, runtime credentials require explicit complete `env` and `network` overrides:
 omitted settings cannot prove collision-free names or reachable destinations. Explicit `env: {}`
 or `null` intentionally replaces template variables. Template network overrides cannot broaden
@@ -273,40 +275,53 @@ The published vault documentation does not specify the project's vault quota. Co
 and an owner-approved retention/cleanup procedure before hosted activation; do not invent a quota
 or delete vaults belonging to other sessions.
 
-For tools that must locally sign or refresh credentials (the existing Google Drive reader), a
-native-vault placeholder is insufficient. Trusted composition may separately provide ephemeral
+For Google reads, use the [Drive runtime's renewable token provider](../google-drive-data/README.md),
+not a service-account key in the sandbox. Local supervised ADC/file authentication remains independent
+of any backend; hosted deployment may select an optional token issuer behind the same provider port.
+The issuer keeps signing/refresh credentials outside compute and returns only short-lived read-only
+tokens. Native-vault placeholders authenticate to the issuer, not perform local Google signing.
+See [credential ownership](../../docs/reusable-data-capabilities.md#runtime-credentials-without-application-coupling).
+
+For other explicitly approved ephemeral file credentials, trusted composition may provide
 `credentialFiles: [{ path, content }]` to the operator factory; the launch profile declares only
 matching `credentialFiles: [path]`. These files enter the native hosted `environment.files` request,
 not durable launch input or receipts. Output paths, duplicate/colliding files, unsupported compute
 types and native size/count overflows are rejected before dispatch. No personal ADC or alternate
-identity is discovered. Google uses its existing credential-file provider and token refresh.
+identity is discovered. Persistent Google service-account/user credentials and private-key PEM
+material are rejected at this boundary even with an exact Google host allowlist. This is a guard
+on trusted deployment input, not a universal detector of disguised or transformed secrets.
 The factory also accepts a launch-only async resolver for these files. Resolve them at launch
 preflight and creation, not operator construction: a source credential outage must not disable
 observation, recovery or cancellation of existing sessions. A later launch can retry resolution.
 When using an environment template, supply the complete explicit `environment.files` list (or
 explicit `null`/empty list when intentionally overriding inherited files); credential injection
 will not silently replace omitted/inherited runtime inputs.
-Every credential-file launch requires `network.access: "restricted"` and a nonempty explicit domain
-allowlist, even with a template. The approved profile must include all tool, installation and source
-endpoints needed by the workflow: for the current Google transport that includes
-`oauth2.googleapis.com`, `www.googleapis.com`, `drive.googleapis.com` and `docs.googleapis.com`, plus
+Every credential-file launch requires `network.access: "restricted"` and a nonempty explicit
+allowlist of exact DNS hosts, even with a template. Wildcards, single-label names and IP literals
+are rejected. The approved profile must include all tool, installation and source
+endpoints needed by the workflow: for the current Google reader that includes
+`www.googleapis.com` and `docs.googleapis.com`, plus the selected token issuer,
 the bound MCP host and any other reviewed investigation/tool destinations. This is an egress control,
 not a record/field/evidence restriction; do not silently remove necessary source access.
 
 `retainCredentialProtection` must durably acknowledge the exact injected-file SHA-256 digests before
 any credential installation or session dispatch. Preserve/union these non-secret digests through
 proven-undispatched retries and rotation; existing-run controls do not reread current Google keys.
+Failure to retain those digests returns `credential-protection` before the separate
+`beforeDispatch` journal callback runs.
 The shared `workflow-contracts` credential-material guard checks exact copies and unambiguous private
-key markers in original bytes and structured function input/output (including one base64 wrapper).
+key markers in original bytes and structured function input/output. Structured string values also
+check one canonical base64 wrapper; the binary-byte guard does not decode base64.
 Applications apply it before persistence and retention, not merely before reviewer display. It does
 not redact ordinary sensitive business evidence, and it is not an exhaustive transformed-secret or
 prompt-injection detector. Keep the network and identity boundaries as independent protections.
 
-These are real secrets visible to sandbox code, not vault placeholders. Provision a read-only
-Google identity with Viewer visibility to all required evidence and no broader roles/delegation.
-The helper's requested OAuth scope alone does not restrict possession of a private key. Stop does
-not revoke that key. Identity approval, rotation and hosted-environment lifecycle remain explicit
-deployment responsibilities. Keep secret contents out of the repository, profile, output directory,
+Ephemeral file secrets and issued Google tokens are visible to sandbox code, unlike vault
+placeholders. The Google issuer fixes the approved identity and `drive.readonly` scope; provide
+Viewer visibility to all required evidence. Stop prevents further issuance through the owning
+authority but does not revoke a token already issued by Google; its actual expiry bounds that
+exposure. Identity approval, rotation and hosted-environment lifecycle remain explicit deployment
+responsibilities. Keep secret contents out of the repository, profile, output directory,
 model input, logs and application journal.
 The pinned SDK's session-read contract returns input-file metadata, excluding inline contents;
 `--include-content` does not add fields omitted by that API. This is documented/schema evidence,
@@ -322,8 +337,11 @@ including stalled bodies. It never fetches arbitrary URLs or backend paths.
 A successful complete listing without the requested completed-turn output is an invalid reference,
 not an indefinite network retry. The application saves correction feedback so a corrected request
 can proceed; transport failures remain retryable.
-Failed/cancelled roots, non-root references and actual byte overflow are permanent identity/capacity
-failures; pending turns and interrupted/truncated transport remain retryable. The official guide
+Failed/cancelled roots and non-root references are permanent identity failures. Actual bytes above
+the delivery limit are a permanent capacity failure; bytes above the declared size but within that
+limit are a permanent artifact-metadata mismatch. Pending turns and interrupted/truncated transport
+remain retryable. Runtime target or missing-transport configuration errors require operator setup
+repair and do not produce agent file-reference correction feedback. The official guide
 matches completed turn plus path and raises absence after listing; it does not document eventual
 listing lag or fallback to an earlier turn's unchanged file. Likewise the content API is a binary
 download, not a documented signed-URL redirect. The actual shared-client tests preserve

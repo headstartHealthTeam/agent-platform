@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { HostedArtifactError } from './hosted-artifact-error.js';
 import { readSchema } from './operations.js';
 import { OperatorRuntimePort } from './operator-runtime.js';
 import { fingerprint, type OpenAIPlatform } from './platform.js';
@@ -15,7 +16,8 @@ const request = { turnId: 'root', path: '/workspace/outputs/evidence.pdf', maxBy
 
 function fixture(
   status: string,
-  requestedTurn = 'root'
+  requestedTurn = 'root',
+  hasTransport = true
 ): {
   port: OperatorRuntimePort;
   download: ReturnType<typeof vi.fn<OpenAIPlatform['readHostedArtifact']>>;
@@ -61,7 +63,7 @@ function fixture(
         apply: vi.fn(),
         preflight: vi.fn(),
         openOperatorObservation: vi.fn(),
-        readHostedArtifact: download,
+        ...(hasTransport ? { readHostedArtifact: download } : {}),
       },
       target
     ),
@@ -110,11 +112,19 @@ describe('artifact root provenance gates', () => {
     expect(download).not.toHaveBeenCalled();
     port.close();
   });
-  it('rejects the wrong target before downloading', async () => {
+  it('reports the wrong target as a setup error without artifact-correction feedback', async () => {
     const { port, download } = fixture('completed');
-    await expect(port.readArtifact({ ...binding, target: 'wrong' }, request)).rejects.toMatchObject(
-      { code: 'artifact-identity' }
-    );
+    const result = port.readArtifact({ ...binding, target: 'wrong' }, request);
+    await expect(result).rejects.toThrow('Wrong runtime target');
+    await expect(result).rejects.not.toBeInstanceOf(HostedArtifactError);
+    expect(download).not.toHaveBeenCalled();
+    port.close();
+  });
+  it('reports a missing artifact transport as a setup error without artifact-correction feedback', async () => {
+    const { port, download } = fixture('completed', 'root', false);
+    const result = port.readArtifact(binding, request);
+    await expect(result).rejects.toThrow('Hosted artifact transport is not configured');
+    await expect(result).rejects.not.toBeInstanceOf(HostedArtifactError);
     expect(download).not.toHaveBeenCalled();
     port.close();
   });

@@ -77,7 +77,7 @@ export async function downloadHostedArtifact(
       { session_id: sessionId },
       { signal }
     );
-    const bytes = await readHostedArtifactBody(response, match.size, signal);
+    const bytes = await readHostedArtifactBody(response, match.size, request.maxBytes, signal);
     return { id: match.id, turnId: request.turnId, path: request.path, bytes };
   } catch (error) {
     throw sanitizedFailure(error);

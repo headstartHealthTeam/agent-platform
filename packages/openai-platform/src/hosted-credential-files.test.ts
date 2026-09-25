@@ -12,15 +12,18 @@ const request = {
   input: 'Invented',
   definition: { instructions: 'Invented', tools: [] },
 };
-const path = '/workspace/.credentials/google.json';
-const secret = '{"private_key":"invented-secret-only"}';
+const path = '/workspace/.credentials/ephemeral.json';
+const secret = '{"access_token":"invented-secret-only"}';
 const files = [{ path, content: secret }];
 const settings = {
   model: 'synthetic',
   reasoning: { effort: 'high' },
   environment: {
     type: 'openai_hosted',
-    network: { access: 'restricted', allowed_domains: ['googleapis.com', '*.googleapis.com'] },
+    network: {
+      access: 'restricted',
+      allowed_domains: ['oauth2.googleapis.com', 'www.googleapis.com', 'docs.googleapis.com'],
+    },
   },
   credentialFiles: [path],
 };
@@ -74,6 +77,20 @@ function setup(
   };
 }
 describe('ephemeral hosted credential files', () => {
+  it.each([
+    { type: 'service_account', private_key: 'synthetic-private-key' },
+    { type: 'authorized_user', refresh_token: 'synthetic-refresh-token' },
+    { private_key: 'synthetic-private-key' },
+    { refresh_token: 'synthetic-refresh-token' },
+  ])('refuses persistent Google credentials even on exact Google hosts: %j', async (value) => {
+    const { port, platform } = setup(settings, [{ path, content: JSON.stringify(value) }]);
+    await expect(port.preflightLaunch(request)).rejects.toThrow('preflight failed');
+    expect(await port.createSession(request, undefined, options)).toEqual({
+      status: 'not-attempted',
+      reason: 'validation',
+    });
+    expect(platform.apply).not.toHaveBeenCalled();
+  });
   it('resolves launch files lazily and retries source availability without dispatching a failed launch', async () => {
     const resolve = vi
       .fn()
@@ -153,6 +170,18 @@ describe('ephemeral hosted credential files', () => {
     { access: 'restricted' },
     { access: 'restricted', allowed_domains: [] },
     { access: 'restricted', allowed_domains: ['*'] },
+    { access: 'restricted', allowed_domains: ['*.googleapis.com'] },
+    { access: 'restricted', allowed_domains: ['googleapis.*'] },
+    { access: 'restricted', allowed_domains: ['localhost'] },
+    { access: 'restricted', allowed_domains: ['localhost.'] },
+    { access: 'restricted', allowed_domains: ['googleapis.com.'] },
+    { access: 'restricted', allowed_domains: ['127.0.0.1'] },
+    { access: 'restricted', allowed_domains: ['127.1'] },
+    { access: 'restricted', allowed_domains: ['0177.0.0.1'] },
+    { access: 'restricted', allowed_domains: ['0x7f.0x0.0x0.0x1'] },
+    { access: 'restricted', allowed_domains: ['[::1]'] },
+    { access: 'restricted', allowed_domains: ['host.123'] },
+    { access: 'restricted', allowed_domains: ['oauth2.googleapis.com', '*.example.com'] },
   ])(
     'refuses credential-file dispatch without an explicit restricted allowlist: %j',
     async (network) => {
@@ -170,6 +199,7 @@ describe('ephemeral hosted credential files', () => {
   );
   it('requires durable non-secret protection before dispatch and stops on retention failure', async () => {
     const { port, platform } = setup();
+    const beforeDispatch = vi.fn();
     expect(
       await port.createSession(request, undefined, { expectedTarget: fingerprint(target) })
     ).toEqual({ status: 'not-attempted', reason: 'validation' });
@@ -181,9 +211,11 @@ describe('ephemeral hosted credential files', () => {
       await port.createSession(request, undefined, {
         ...options,
         retainCredentialProtection: retain,
+        beforeDispatch,
       })
-    ).toEqual({ status: 'not-attempted', reason: 'before-dispatch' });
+    ).toEqual({ status: 'not-attempted', reason: 'credential-protection' });
     expect(retain).toHaveBeenCalledWith({ contentSha256: [credentialContentSha256(secret)] });
     expect(platform.apply).not.toHaveBeenCalled();
+    expect(beforeDispatch).not.toHaveBeenCalled();
   });
 });

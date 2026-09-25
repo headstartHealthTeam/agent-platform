@@ -79,7 +79,10 @@ export interface AgentSessionCreateOptions {
 
 export type AgentSessionCreateResult =
   | { status: 'created'; receipt: AgentSessionReceipt; providerRequestId?: string }
-  | { status: 'not-attempted'; reason: 'validation' | 'preflight' | 'before-dispatch' }
+  | {
+      status: 'not-attempted';
+      reason: 'validation' | 'credential-protection' | 'preflight' | 'before-dispatch';
+    }
   | {
       status: 'unknown';
       reason: 'provider-outcome' | 'invalid-response';

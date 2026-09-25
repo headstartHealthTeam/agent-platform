@@ -4,6 +4,7 @@ import { HostedArtifactError } from './hosted-artifact-error.js';
 export async function readHostedArtifactBody(
   response: Response,
   size: number,
+  maxBytes: number,
   signal: AbortSignal
 ): Promise<Uint8Array> {
   const reader = response.body?.getReader();
@@ -21,7 +22,8 @@ export async function readHostedArtifactBody(
       signal.throwIfAborted();
       if (part.done) break;
       length += part.value.byteLength;
-      if (length > size) throw new HostedArtifactError('artifact-capacity');
+      if (length > maxBytes) throw new HostedArtifactError('artifact-capacity');
+      if (length > size) throw new HostedArtifactError('artifact-identity', 'size-mismatch');
       chunks.push(part.value);
     }
     if (length !== size) throw new Error('Artifact truncated');
