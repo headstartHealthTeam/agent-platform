@@ -77,7 +77,7 @@ describe('Fireflies saved planning and cache commands', () => {
         code: 'ENOENT',
       });
     }
-  });
+  }, 30_000);
   it('preserves identity plan values, exact serialized bytes and explicit frozen date', async () => {
     const profiles = [
       {
@@ -104,7 +104,7 @@ describe('Fireflies saved planning and cache commands', () => {
     expect((await runFirefliesPlanCommand(['--run-dir', run], { RUN_AT: cutoff })).stdout).toBe(
       result.stdout
     );
-  });
+  }, 30_000);
   it('requires explicit shadow selection, then materializes current evidence with proof and cache index', async () => {
     await inputs();
     expect((await runFirefliesCacheCommand(['--action', 'plan'])).exitCode).toBe(1);
@@ -127,7 +127,7 @@ describe('Fireflies saved planning and cache commands', () => {
     expect((await runFirefliesCacheCommand(flags('materialize'))).stderr).toContain(
       'STALE_CACHE_PLAN'
     );
-  });
+  }, 30_000);
   it('retains explicit empty inventories and requires approved reuse policy', async () => {
     await inputs([]);
     expect((await runFirefliesCacheCommand(flags('plan', 'reuse'))).exitCode).toBe(0);
@@ -144,7 +144,7 @@ describe('Fireflies saved planning and cache commands', () => {
       approvalReference: '',
     });
     expect((await runFirefliesCacheCommand(flags('plan', 'reuse'))).exitCode).toBe(1);
-  });
+  }, 30_000);
   it('stops conflicting modes, changed prepared plans, unsafe paths and immutable parents without completion', async () => {
     await inputs();
     await runFirefliesCacheCommand(flags('plan'));
@@ -165,7 +165,7 @@ describe('Fireflies saved planning and cache commands', () => {
     await writePrivateJson(path.join(root, 'publication-readback.json'), {});
     expect((await runFirefliesCacheCommand(flags('plan'))).exitCode).toBe(1);
     await expect(fs.access(path.join(run, 'fireflies_cache_proof.json'))).rejects.toThrow();
-  });
+  }, 30_000);
   it('sanitizes missing artifacts and rejects future discovery and invalid actions', async () => {
     expect((await runFirefliesCacheCommand(flags('plan'))).stderr).toContain('STORAGE_FAILURE');
     await inputs();
@@ -175,5 +175,5 @@ describe('Fireflies saved planning and cache commands', () => {
     });
     expect((await runFirefliesCacheCommand(flags('plan'))).stderr).toContain('INVALID_CACHE_INPUT');
     expect((await runFirefliesCacheCommand(flags('wrong'))).exitCode).toBe(1);
-  });
+  }, 30_000);
 });

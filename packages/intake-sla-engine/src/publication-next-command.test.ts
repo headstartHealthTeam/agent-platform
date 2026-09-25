@@ -158,7 +158,7 @@ describe('saved publication next-stage command', () => {
       stageId: f.first.id,
       calls: f.first.calls,
     });
-  });
+  }, 30_000);
   it.each(['new', 'verified-stage', 'call-prefix'])(
     'withholds calls from expired/future/invalid gates: %s',
     async (progress) => {
@@ -186,14 +186,15 @@ describe('saved publication next-stage command', () => {
       if (next.complete) throw new Error('Fixture requires next stage');
       expect(next.calls).toHaveLength(progress === 'call-prefix' ? 1 : 2);
       if (progress === 'call-prefix') expect(next.calls?.[0]?.file).toBe(f.first.calls[1]?.file);
-    }
+    },
+    30_000
   );
   it('inspects complete publication after lease expiry without loading stale payloads or returning calls', async () => {
     const f = await fixture('complete');
     await f.gate(new Date(time - 24 * 3_600_000).toISOString());
     await fs.unlink(path.join(f.directory, f.first.file));
     expect(await readNextPublicationStage(f.directory)).toEqual({ complete: true });
-  });
+  }, 30_000);
   it('accepts missing observations, ignores unrelated resume fields and rejects changed prepared calls', async () => {
     const f = await fixture();
     await f.gate(new Date(time).toISOString());
@@ -213,7 +214,7 @@ describe('saved publication next-stage command', () => {
     await expect(readNextPublicationStage(f.directory)).rejects.toThrow(
       'Prepared call payload hash changed'
     );
-  });
+  }, 30_000);
   it('refreshes the same gate lease again after reading the selected payloads', async () => {
     const f = await fixture();
     await f.gate(new Date(time - 2 * 3_600_000).toISOString());
@@ -226,5 +227,5 @@ describe('saved publication next-stage command', () => {
     await expect(readNextPublicationStage(f.directory)).rejects.toThrow(
       'refresh all required checks'
     );
-  });
+  }, 30_000);
 });

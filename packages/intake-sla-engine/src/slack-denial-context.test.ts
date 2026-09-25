@@ -372,5 +372,5 @@ describe('approved denial-context coverage', () => {
     } finally {
       await fs.rm(directory, { recursive: true, force: true });
     }
-  });
+  }, 30_000);
 });

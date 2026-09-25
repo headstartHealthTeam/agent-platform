@@ -81,7 +81,7 @@ describe('Slack saved full-sweep commands', () => {
       cohortComplete: true,
       blocked: 0,
     });
-  });
+  }, 30_000);
   it('keeps numeric story anchors as epoch milliseconds and never drops an unresolved thread through the fallback window', () => {
     const result = merge({
       identityRows: [{ ...profile, stageEntryDate: Date.parse('2025-01-01') }],
@@ -150,7 +150,7 @@ describe('Slack saved full-sweep commands', () => {
     await expect(call('review:slack-plan')).rejects.toThrow('differs');
     await write('publication-readback.json', {});
     await expect(call('review:slack-plan')).rejects.toThrow('immutable');
-  });
+  }, 30_000);
   it('preserves optional query defaults, stage fallback and existing malformed identity failures', () => {
     const inputs = {
       opportunities: [{ Id: 'synthetic' }],
@@ -226,7 +226,7 @@ describe('Slack saved full-sweep commands', () => {
     expect(await readPrivateJson(path.join(root, 'slack_rows.json'))).toMatchObject([
       { opportunityId: profile.opportunityId, blocked: false },
     ]);
-  });
+  }, 30_000);
   it('keeps unknown current reply coverage blocked until a counted thread is captured', () => {
     const unknown = { ...record, replyCount: undefined };
     const missing = merge({ exactRows: [{ ...exact, records: [unknown] }] });
@@ -306,5 +306,5 @@ describe('Slack saved full-sweep commands', () => {
     });
     await expect(runSlackPlanningCommand('review:slack-plan', [], {})).rejects.toThrow('required');
     await expect(call('wrong')).rejects.toThrow('Unknown');
-  });
+  }, 30_000);
 });

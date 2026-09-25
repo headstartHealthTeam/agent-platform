@@ -129,7 +129,7 @@ describe('complete local publication preparation', () => {
       manifestBefore
     );
     await absent(input.runDirectory, 'publication-readback.json');
-  });
+  }, 30_000);
   it.each([
     '',
     'approved-fingerprint.json',
@@ -145,7 +145,8 @@ describe('complete local publication preparation', () => {
       ).rejects.toThrow(missing ? 'required' : 'SLA_SPREADSHEET_ID');
       await absent(input.runDirectory, 'quality-audit.json');
       await absent(input.runDirectory, 'publication_stages_manifest.json');
-    }
+    },
+    30_000
   );
   it('stops on validation failure before generating any write payloads', async () => {
     const input = await fixture();
@@ -160,7 +161,7 @@ describe('complete local publication preparation', () => {
     );
     await absent(input.runDirectory, 'publication_stages_manifest.json');
     await absent(input.runDirectory, 'publication-gate.json');
-  });
+  }, 30_000);
   it('verifies Google capture before planning and leaves the saved capture unchanged', async () => {
     const input = await fixture();
     const metadata = await readPrivateJson(
@@ -174,7 +175,7 @@ describe('complete local publication preparation', () => {
     });
     await expect(prepareIntakePublication(input, now)).rejects.toThrow();
     await absent(input.runDirectory, 'publication_stages_manifest.json');
-  });
+  }, 30_000);
   it.each(['2026-09-24T13:59:59.999Z', '2026-09-24T16:00:00.001Z'])(
     'does not bless stale or future concurrency evidence %s or overwrite a previous gate',
     async (queriedAt) => {
@@ -195,7 +196,8 @@ describe('complete local publication preparation', () => {
       expect(await readPrivateJson(path.join(input.runDirectory, 'publication-gate.json'))).toEqual(
         { previous: true }
       );
-    }
+    },
+    30_000
   );
   it('permits an old frozen assessment with complete fresh post-cutoff deferral', async () => {
     const input = await fixture();
@@ -223,7 +225,7 @@ describe('complete local publication preparation', () => {
       liveCount: 1,
       deferredChangeCount: 1,
     });
-  });
+  }, 30_000);
   // Preparing and rereading every staged artifact exceeds 5s on Windows CI.
   it('retains all prepared assertion fields when reading gate inputs and rejects corrupt consumed data', async () => {
     const input = await fixture();

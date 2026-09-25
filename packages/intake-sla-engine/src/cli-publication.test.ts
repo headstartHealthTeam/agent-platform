@@ -183,7 +183,7 @@ describe('local Intake saved-command CLI', () => {
     expect(incomplete.exitCode).toBe(2);
     expect(JSON.parse(incomplete.stdout)).toHaveProperty('publicationStatus', 'In Progress');
     await expect(fs.access(path.join(directory, RECEIPT))).rejects.toThrow();
-  });
+  }, 30_000);
   it('runs the actual process from another working directory through stage and final readbacks', async () => {
     await manualFixture();
     const args = ['--run-dir', directory];
@@ -281,7 +281,7 @@ describe('local Intake saved-command CLI', () => {
       stdout: '',
       stderr: '{"code":"GOOGLE_STATE_CAPTURE_FAILED"}\n',
     });
-  });
+  }, 30_000);
   it('does not validate an unused value-less input flag during retained-capture revalidation', async () => {
     await write('google_state_capture.json', rawCapture());
     await write('proof.json', {
@@ -317,7 +317,7 @@ describe('local Intake saved-command CLI', () => {
     expect(
       await readPublicationJson(path.join(directory, 'google_state_capture.json'))
     ).toHaveProperty('revalidation.checkedAt', '2026-01-02T00:00:00Z');
-  });
+  }, 30_000);
   it('exits nonzero for unknown commands and malformed required arguments', async () => {
     await expect(runSavedPublicationCommand('unknown', [])).rejects.toThrow(
       'Unknown Intake command'

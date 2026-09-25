@@ -108,7 +108,7 @@ describe('saved source capture command composition', () => {
     expect(JSON.parse(final.stdout)).toMatchObject({ pending: 0, saved: 1, blocked: 1 });
     await writePrivateJson(file('publication-readback.json'), {});
     expect((await call('review:checkpoint', [...flags, '--action', 'status'])).exitCode).toBe(1);
-  });
+  }, 30_000);
   it('normalizes idempotently, fills missing outputs and preflights every existing artifact before writing', async () => {
     const input = await firefliesInputs();
     const firstResult = await call('review:fireflies-normalize');
@@ -132,7 +132,7 @@ describe('saved source capture command composition', () => {
     expect((await call('review:fireflies-normalize')).stderr).toContain(
       'ALREADY_NORMALIZED_DISCOVERY'
     );
-  });
+  }, 30_000);
   // This multi-command filesystem scenario exceeds the 5s unit budget on Windows CI.
   it('plans, captures bodies, resumes and finalizes through command entrypoints with provider cooldowns intact', async () => {
     const input = await firefliesInputs();

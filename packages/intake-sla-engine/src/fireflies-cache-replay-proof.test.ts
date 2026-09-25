@@ -101,7 +101,7 @@ describe('consumer-bound Fireflies replay proof', () => {
       ).toEqual(data.result.proof);
     }
     expect(() => parseFirefliesProfiles([{}])).toThrow();
-  });
+  }, 30_000);
   it('distinguishes unused cache from incomplete materialization and preserves filesystem failures', async () => {
     const root = await directory();
     expect(await readCacheRunProof(root, [], '2026-01-10')).toBeNull();
@@ -109,7 +109,7 @@ describe('consumer-bound Fireflies replay proof', () => {
     await expect(readCacheRunProof(root, [], '2026-01-10')).rejects.toThrow('not completed');
     await fs.mkdir(path.join(root, PROOF));
     await expect(readCacheRunProof(root, [], '2026-01-10')).rejects.toThrow('private regular file');
-  });
+  }, 30_000);
   it('rejects changed discovery, cache plan, disk identity and consumer snapshots', async () => {
     const data = await fixture();
     const check = (): ReturnType<typeof readCacheRunProof> =>
@@ -139,7 +139,7 @@ describe('consumer-bound Fireflies replay proof', () => {
         })),
       })
     ).rejects.toThrow('Consumer identity profiles changed');
-  });
+  }, 30_000);
   it('requires exact builder snapshots, hashes all row fields, and rejects incomplete/duplicate/cohort-transplanted rows', async () => {
     const data = await fixture();
     const check = (rows: readonly unknown[] = data.rows): ReturnType<typeof readCacheRunProof> =>
@@ -178,5 +178,5 @@ describe('consumer-bound Fireflies replay proof', () => {
     // A later disk file must not replace the exact rows already loaded by the consumer.
     await writePrivateJson(path.join(data.root, 'input_rows.json'), [{ opportunityId: 'other' }]);
     expect(await check()).toEqual(data.result.proof);
-  });
+  }, 30_000);
 });

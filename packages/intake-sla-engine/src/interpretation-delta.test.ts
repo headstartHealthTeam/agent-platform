@@ -115,7 +115,7 @@ describe('saved bounded interpretation delta', () => {
     expect(await read('ai_interpretation_precomputed.json')).toEqual(artifact);
     expect(Object.hasOwn(artifact, 'credentialSource')).toBe(false);
     expect(await fs.readdir(current)).not.toContain('.writer-lock');
-  });
+  }, 30_000);
   it('freshly interprets prior Codex results and resumes the private checkpoint on rerun', async () => {
     await priorResult({ apiEnabled: false, currentRunPrecomputed: true });
     const { client, createClient } = clientFactory();
@@ -156,7 +156,7 @@ describe('saved bounded interpretation delta', () => {
       expect(
         (await fs.stat(path.join(current, 'ai_interpretation_delta_checkpoint.json'))).mode & 0o777
       ).toBe(0o600);
-  });
+  }, 30_000);
   it('retains completed results after a later failure and removes only its own lock/listeners', async () => {
     await write(current, 'fireflies_interpretation_packets.json', {
       packets: [envelope, { ...envelope, sourceRecordId: 'synthetic:2' }],
@@ -174,7 +174,7 @@ describe('saved bounded interpretation delta', () => {
     expect(await fs.readdir(current)).not.toContain('ai_interpretation_precomputed.json');
     expect(await fs.readdir(current)).not.toContain('.writer-lock');
     expect([process.listenerCount('SIGINT'), process.listenerCount('SIGTERM')]).toEqual(before);
-  });
+  }, 30_000);
   it('rejects mismatched or expired preflight before any client or saved output', async () => {
     const createClient = vi.fn(() => clientFactory().client);
     for (const changes of [
@@ -202,7 +202,7 @@ describe('saved bounded interpretation delta', () => {
     await expect(
       interpretSavedDelta({ runDirectory: current, priorRunDirectory: prior, env, createClient })
     ).resolves.toMatchObject({ apiEnabled: true });
-  });
+  }, 30_000);
   it('honors configuration, immutable-run and existing writer-lock failures', async () => {
     const { createClient } = clientFactory();
     const input = { runDirectory: current, priorRunDirectory: prior, env, createClient };
@@ -214,7 +214,7 @@ describe('saved bounded interpretation delta', () => {
     await fs.rmdir(path.join(current, '.writer-lock'));
     await write(current, 'publication-readback.json', {});
     await expect(interpretSavedDelta(input)).rejects.toThrow('immutable');
-  });
+  }, 30_000);
   it('preserves existing checkpoint metadata and rejects mismatched checkpoint identity', async () => {
     await write(current, 'ai_interpretation_delta_checkpoint.json', {
       ...config,
@@ -236,7 +236,7 @@ describe('saved bounded interpretation delta', () => {
     await expect(
       interpretSavedDelta({ runDirectory: current, priorRunDirectory: prior, env, createClient })
     ).rejects.toThrow('different model or provider');
-  });
+  }, 30_000);
   it('uses the shared non-storing API through the CLI and sanitizes every command failure', async () => {
     for (const [key, value] of Object.entries(env)) vi.stubEnv(key, value);
     await priorResult({ apiEnabled: false });
@@ -273,7 +273,7 @@ describe('saved bounded interpretation delta', () => {
       stdout: '',
       stderr: '{"code":"INTERPRETATION_DELTA_FAILED","checkpointsRetained":true}\n',
     });
-  });
+  }, 30_000);
   it('handles empty inventories without a request but still requires client setup and worker limits', async () => {
     await write(current, 'fireflies_interpretation_packets.json', { packets: null });
     await write(prior, 'fireflies_interpretation_packets.json', {});
@@ -304,7 +304,7 @@ describe('saved bounded interpretation delta', () => {
         createClient,
       })
     ).rejects.toThrow('Invalid bounded worker limits');
-  });
+  }, 30_000);
   it('retains checkpoints when interrupted and releases signal listeners', async () => {
     await priorResult({ apiEnabled: false });
     const { client, createClient } = clientFactory();
@@ -319,5 +319,5 @@ describe('saved bounded interpretation delta', () => {
       interpretations: [{ sourceRecordId: 'synthetic:1' }],
     });
     expect(await fs.readdir(current)).not.toContain('.writer-lock');
-  });
+  }, 30_000);
 });

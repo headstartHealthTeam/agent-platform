@@ -104,7 +104,7 @@ describe('complete saved report build', () => {
     expect(await readPrivateJson(path.join(runDirectory, 'workbook-values.json'))).toEqual(
       JSON.parse(JSON.stringify(result.workbook))
     );
-  });
+  }, 30_000);
   it('does not rebuild published runs or bypass missing reviewer capture', async () => {
     const runDirectory = await fixture();
     const input = {
@@ -126,5 +126,5 @@ describe('complete saved report build', () => {
       verified: true,
     });
     await expect(buildIntakeReport(input)).rejects.toThrow('immutable');
-  });
+  }, 30_000);
 });

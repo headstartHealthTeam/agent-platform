@@ -281,5 +281,5 @@ describe('bound current-run note judgment', () => {
     } finally {
       await fs.rm(directory, { recursive: true, force: true });
     }
-  });
+  }, 30_000);
 });

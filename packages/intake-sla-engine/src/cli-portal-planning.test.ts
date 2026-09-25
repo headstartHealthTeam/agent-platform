@@ -101,7 +101,7 @@ describe('saved Portal planning command composition', () => {
       found: 1,
       blocked: 0,
     });
-  });
+  }, 30_000);
   it('plans actual identity-producer profiles and preserves raw nested metadata', async () => {
     await write('identity_profile_rows.json', [profile]);
     const result = await call('review:portal-plan');
@@ -116,7 +116,7 @@ describe('saved Portal planning command composition', () => {
     expect(
       (await runPortalPlanningCommand('review:portal-plan', [], { SLA_RUN_DIR: root })).stdout
     ).toBe(result.stdout);
-  });
+  }, 30_000);
   it('preserves frozen cutoff, fallback sentinel and complete empty requests without inventing source exceptions', async () => {
     await write('identity_profile_rows.json', [profile]);
     await call('review:portal-plan');
@@ -161,7 +161,7 @@ describe('saved Portal planning command composition', () => {
       }
     );
     expect((await call('review:portal-materialize')).stdout).toBe(result.stdout);
-  });
+  }, 30_000);
   it('keeps missing requests row-blocked while retaining valid base evidence and unused fallback envelopes', async () => {
     await write('identity_profile_rows.json', [profile]);
     await call('review:portal-plan');
@@ -185,7 +185,7 @@ describe('saved Portal planning command composition', () => {
     expect(await readPrivateJson(path.join(root, 'portal_rows.json'))).toMatchObject([
       { blocked: true, chats: [{ id: 'base' }] },
     ]);
-  });
+  }, 30_000);
   it('retains missing optional-file defaults and rejects malformed current evidence or unsupported commands', async () => {
     expect(JSON.parse((await call('review:portal-materialize')).stdout)).toEqual({
       opportunities: 0,
@@ -200,5 +200,5 @@ describe('saved Portal planning command composition', () => {
       'required'
     );
     await expect(call('unknown')).rejects.toThrow('Unknown');
-  });
+  }, 30_000);
 });

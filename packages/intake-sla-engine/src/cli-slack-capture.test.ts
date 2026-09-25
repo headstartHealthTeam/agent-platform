@@ -83,7 +83,7 @@ describe('saved Slack command persistence', () => {
     expect((await call('review:slack-capture', [...flags, '--resume', 'false'])).exitCode).toBe(0);
     await writePrivateJson(file('publication-readback.json'), {});
     expect((await call('review:slack-capture', [...flags, '--resume'])).exitCode).toBe(1);
-  });
+  }, 30_000);
   it('allows resume without a prior capture and archives absent prior rows as null', async () => {
     await writePrivateJson(file('slack_full_sweep_plan.json'), plan);
     const prior = capture([page(1, '', 'next')]);
@@ -97,7 +97,7 @@ describe('saved Slack command persistence', () => {
     expect(
       await readPrivateJson(file(`slack-capture-history/${sha256Json(original)}.json`))
     ).toEqual(original);
-  });
+  }, 30_000);
   it('persists only completeness-proven deltas without granting source readiness or replacing checkpoints', async () => {
     const base = {
       asOf: '2026-01-01',
@@ -152,5 +152,5 @@ describe('saved Slack command persistence', () => {
     await writePrivateJson(file('proof.json'), proof);
     await writePrivateJson(file('publication-readback.json'), {});
     expect((await call('review:slack-delta', flags)).exitCode).toBe(1);
-  });
+  }, 30_000);
 });

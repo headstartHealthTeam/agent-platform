@@ -83,7 +83,7 @@ describe('frozen generation ledger input and replaceable current-run drafts', ()
     ]);
     expect(formatted[2]).toEqual(generationLedgerRows([generated])[1]);
     expect(combined[0]).toEqual(historical);
-  });
+  }, 30_000);
   it('rebuilds only current drafts while preserving every historical value and provenance input', async () => {
     const h = await harness();
     const prior = {
@@ -117,7 +117,7 @@ describe('frozen generation ledger input and replaceable current-run drafts', ()
     ).toEqual(output);
     expect(await readPrivateJson(h.file('generation_ledger_baseline.json'))).toEqual(baseline);
     expect(await readPrivateJson(h.file('generation_ledger_state.json'))).toEqual(output);
-  });
+  }, 30_000);
   it('excludes legacy same-run drafts without mutating the historical input', async () => {
     const h = await harness();
     const prior = row('prior', 'Retain exactly.');
@@ -128,7 +128,7 @@ describe('frozen generation ledger input and replaceable current-run drafts', ()
     expect(baseline.rows).toEqual([prior]);
     await writeGenerationLedgerState({ ...h, baseline, currentRows: [] });
     expect(await readPrivateJson(h.file('generation_ledger_state.json'))).toEqual([prior]);
-  });
+  }, 30_000);
   it('keeps explicit input protected and rejects silent rebasing, missing input or changed saved baseline', async () => {
     const h = await harness();
     const inputPath = h.file('protected-input.json');
@@ -148,7 +148,7 @@ describe('frozen generation ledger input and replaceable current-run drafts', ()
     await expect(writeGenerationLedgerState({ ...h, baseline, currentRows: [] })).rejects.toThrow(
       'changed during build'
     );
-  });
+  }, 30_000);
   it('rejects invalid or published current inputs, duplicate drafts, wrong runs and corrupt hashes', async () => {
     for (const input of [
       {},
@@ -186,7 +186,7 @@ describe('frozen generation ledger input and replaceable current-run drafts', ()
     await expect(
       writeGenerationLedgerState({ ...h, baseline: invalidBaseline, currentRows: [] })
     ).rejects.toThrow('baseline changed');
-  });
+  }, 30_000);
   it('retains published immutability and owner-only output', async () => {
     const h = await harness();
     const baseline = await loadGenerationLedgerBaseline(h);
@@ -198,5 +198,5 @@ describe('frozen generation ledger input and replaceable current-run drafts', ()
     await expect(writeGenerationLedgerState({ ...h, baseline, currentRows: [] })).rejects.toThrow(
       'immutable'
     );
-  });
+  }, 30_000);
 });

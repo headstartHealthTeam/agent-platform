@@ -98,7 +98,7 @@ describe('saved Fireflies interpretation packet command', () => {
     expect((await runFirefliesPacketsCommand(['--run-dir', root], { RUN_AT: cutoff })).stdout).toBe(
       result.stdout
     );
-  });
+  }, 30_000);
   it('skips unselected rows/profiles and uses only the selected transcript fallback', async () => {
     await write('identity_profile_rows.json', [
       profile,
@@ -120,7 +120,7 @@ describe('saved Fireflies interpretation packet command', () => {
     expect(JSON.parse((await call()).stdout)).toEqual({ opportunities: 1, packets: 1 });
     await write('fireflies_rows.json', [{ opportunityId: profile.opportunityId, meetings: null }]);
     expect(JSON.parse((await call()).stdout)).toEqual({ opportunities: 0, packets: 0 });
-  });
+  }, 30_000);
   it('uses the current authorization gate and preserves selected-source failure', async () => {
     await write('opportunity_rows.json', [
       { Id: profile.opportunityId, StageName: 'IA Requested' },
@@ -144,7 +144,7 @@ describe('saved Fireflies interpretation packet command', () => {
     ]);
     await expect(call()).rejects.toThrow();
     await expect(runFirefliesPacketsCommand([], {})).rejects.toThrow('required');
-  });
+  }, 30_000);
   it.each([
     { authorizationNumbers: null },
     { providerRoster: null },
@@ -172,7 +172,8 @@ describe('saved Fireflies interpretation packet command', () => {
         },
       ]);
       expect(JSON.parse((await call()).stdout)).toEqual({ opportunities: 1, packets: 1 });
-    }
+    },
+    30_000
   );
   it('retains numeric source dates and raw JSON titles in the packet binding', async () => {
     const date = Date.parse(meeting.date);
@@ -194,5 +195,5 @@ describe('saved Fireflies interpretation packet command', () => {
         },
       ],
     });
-  });
+  }, 30_000);
 });

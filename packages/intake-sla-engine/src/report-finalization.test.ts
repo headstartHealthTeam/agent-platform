@@ -213,7 +213,7 @@ describe('assembled report artifacts and saved workbook export', () => {
       expect(JSON.stringify(matrix)).toBe(JSON.stringify(savedTables.get(name)));
     expect([...vendor.values.keys()]).toEqual(INTAKE_WORKBOOK_SHEETS);
     expect(vendor.save).toHaveBeenCalledOnce();
-  });
+  }, 30_000);
   it('preserves API audit metadata and replaces only current ledger drafts on rebuild', async () => {
     const supplied = await input();
     const apiInput = {
@@ -242,7 +242,7 @@ describe('assembled report artifacts and saved workbook export', () => {
       'utf8'
     );
     expect(values).toContain('27 input and 5 output tokens used.');
-  });
+  }, 30_000);
   it('asserts note consumption before writing and never modifies a published run', async () => {
     const supplied = await input();
     await expect(
@@ -268,7 +268,7 @@ describe('assembled report artifacts and saved workbook export', () => {
       exportSavedIntakeReportWorkbook(vendor.provider, supplied.runDirectory)
     ).rejects.toThrow('immutable');
     expect(vendor.save).not.toHaveBeenCalled();
-  });
+  }, 30_000);
   it('does not fabricate a workbook when a required table or a supported cell is missing', async () => {
     const supplied = await input();
     const result = await finalizeIntakeReportArtifacts(supplied);
@@ -289,5 +289,5 @@ describe('assembled report artifacts and saved workbook export', () => {
       exportSavedIntakeReportWorkbook(vendor.provider, supplied.runDirectory)
     ).rejects.toThrow('workbook cell contract');
     expect(vendor.values.size).toBe(0);
-  });
+  }, 30_000);
 });

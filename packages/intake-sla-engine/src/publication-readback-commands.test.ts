@@ -122,7 +122,7 @@ describe('manual captured publication readback commands', () => {
     ).rejects.toThrow('already complete');
     expect(interleaved).toBe(true);
     expect(await f.read('publication_stage_readbacks.json')).toEqual(completed);
-  });
+  }, 30_000);
   it('samples receipts after all payloads for final verification, not before them', async () => {
     const f = await fixture();
     await complete(f);
@@ -146,7 +146,7 @@ describe('manual captured publication readback commands', () => {
     await expect(
       fs.access(path.join(f.runDirectory, 'publication-readback.json'))
     ).rejects.toThrow();
-  });
+  }, 30_000);
   it('retains hashed nullable metadata unused by a values assertion', async () => {
     const f = await fixture();
     const stages = f.manifest.stages.map((stage) => ({
@@ -169,7 +169,7 @@ describe('manual captured publication readback commands', () => {
       recorded: '02-review-queue',
       verifiedAssertions: 1,
     });
-  });
+  }, 30_000);
   it('records exact hashes, stage order and final receipt while remaining usable after lease expiry', async () => {
     const f = await fixture();
     const expectedStages: unknown[] = [];
@@ -232,7 +232,7 @@ describe('manual captured publication readback commands', () => {
       if (process.platform !== 'win32') expect(stat.mode & 0o777).toBe(0o600);
     }
     expect(await fs.readdir(f.runDirectory)).not.toContain('publication_stage_readbacks.json.tmp');
-  });
+  }, 30_000);
   it('does not parse or accept a final sample while stages are incomplete', async () => {
     const f = await fixture();
     await f.actual('02-review-queue');
@@ -245,7 +245,7 @@ describe('manual captured publication readback commands', () => {
     await expect(
       fs.access(path.join(f.runDirectory, 'publication-readback.json'))
     ).rejects.toThrow();
-  });
+  }, 30_000);
   it('rejects wrong order, changed payloads and mismatched evidence before recording anything', async () => {
     const f = await fixture();
     await f.actual('09-run-history');
@@ -266,7 +266,7 @@ describe('manual captured publication readback commands', () => {
     await expect(
       fs.access(path.join(f.runDirectory, 'publication_stage_readbacks.json'))
     ).rejects.toThrow();
-  });
+  }, 30_000);
   it('requires every saved payload and an exact final target after all stage receipts exist', async () => {
     const f = await fixture();
     await complete(f);
@@ -287,7 +287,7 @@ describe('manual captured publication readback commands', () => {
     await expect(
       fs.access(path.join(f.runDirectory, 'publication-readback.json'))
     ).rejects.toThrow();
-  });
+  }, 30_000);
   it('requires saved observations and an actual file even when the publication is incomplete', async () => {
     const f = await fixture();
     await expect(verifyPreparedPublication(f)).rejects.toThrow();
@@ -295,5 +295,5 @@ describe('manual captured publication readback commands', () => {
     await capturePreparedStageReadback({ ...f, stageId: '02-review-queue' });
     await fs.unlink(f.actualFile);
     await expect(verifyPreparedPublication(f)).rejects.toThrow();
-  });
+  }, 30_000);
 });

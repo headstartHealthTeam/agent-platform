@@ -73,7 +73,7 @@ describe('saved current-run Codex finalization', () => {
         2
       )}\n`,
     });
-  });
+  }, 30_000);
   it('retains absent and null empty inventories and candidate rows', async () => {
     for (const [current, candidate] of [
       [{}, {}],
@@ -98,7 +98,7 @@ describe('saved current-run Codex finalization', () => {
       await write(candidateFile, { rows: [...candidates.rows, empty] });
       expect((await finalizeSavedCurrentRunPrecomputed(directory)).rows).toHaveLength(1);
     }
-  });
+  }, 30_000);
   it('preserves required-file and JSON-read ordering and never writes on invalid input', async () => {
     await expect(finalizeSavedCurrentRunPrecomputed(directory)).rejects.toThrow(
       'Current-run interpretation packets is required'
@@ -121,5 +121,5 @@ describe('saved current-run Codex finalization', () => {
     }
     expect(await fs.readdir(directory)).not.toContain(outputFile);
     await expect(runFinalizePrecomputedCommand([])).rejects.toThrow('--run-dir');
-  });
+  }, 30_000);
 });

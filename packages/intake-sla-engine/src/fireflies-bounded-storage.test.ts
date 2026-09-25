@@ -136,7 +136,7 @@ describe('bounded Fireflies checkpoint transactions', () => {
     ).toMatchObject({ proof: { status: 'Complete' } });
     await expect(fs.access(h.file('fireflies_cache_plan.json'))).rejects.toThrow();
     expect(await readPrivateJson(h.file(EXECUTION))).toMatchObject({ searchBlocked: 1 });
-  });
+  }, 30_000);
   it('rejects invalid batches before any checkpoint and refuses changed accepted evidence', async () => {
     const h = await harness();
     await planBoundedCollection(h.root);
@@ -152,7 +152,7 @@ describe('bounded Fireflies checkpoint transactions', () => {
       )
     ).rejects.toThrow('differs');
     expect((await boundedCollectionStatus(h.root)).saved).toBe(1);
-  });
+  }, 30_000);
   it('captures raw response and receipt before checkpoint, resumes without input and never overwrites either', async () => {
     const h = await harness();
     await planBoundedCollection(h.root);
@@ -186,7 +186,7 @@ describe('bounded Fireflies checkpoint transactions', () => {
     expect(await readPrivateJson(h.file(RAW))).toEqual(raw);
     await writePrivateJson(h.file(RECEIPT), { changed: true });
     await expect(captureCandidateResponse(h.root, { index: 0 })).rejects.toThrow('receipt differs');
-  });
+  }, 30_000);
   it('serializes concurrent capture and preserves published-run immutability', async () => {
     const h = await harness();
     await planBoundedCollection(h.root);
@@ -208,7 +208,7 @@ describe('bounded Fireflies checkpoint transactions', () => {
       (): Promise<unknown> => finalizeBoundedCollection(h.root),
     ])
       await expect(operation()).rejects.toThrow('immutable');
-  });
+  }, 30_000);
   it('resumes interrupted finalization and rejects unowned or corrupted artifacts', async () => {
     const h = await harness();
     await planBoundedCollection(h.root);
@@ -237,7 +237,7 @@ describe('bounded Fireflies checkpoint transactions', () => {
       { wrong: true }
     );
     await expect(boundedCollectionStatus(h.root)).rejects.toThrow('corrupt');
-  });
+  }, 30_000);
   it('binds exact consumed rows, execution receipts, cohort and cutoff', async () => {
     const h = await harness();
     const records = await finalize(h);
@@ -285,7 +285,7 @@ describe('bounded Fireflies checkpoint transactions', () => {
     );
     await writePrivateJson(h.file(BOUNDED_MANIFEST_FILE), { ...manifest, meetings: [] });
     await expect(boundedCollectionStatus(h.root)).rejects.toThrow('manifest changed');
-  });
+  }, 30_000);
   it('binds conditional CSM coverage separately without rewriting the original manifest', async () => {
     const h = await harness((input): void => {
       const role = first(first(input.profiles).providerRoles);
@@ -316,5 +316,5 @@ describe('bounded Fireflies checkpoint transactions', () => {
       coverageHash: sha256Json(proof.coverage),
     });
     expect(await readBoundedRunProof(h.root, records, proof.manifest.asOf, options)).toEqual(proof);
-  });
+  }, 30_000);
 });

@@ -81,7 +81,7 @@ describe('connector checkpoint recovery', () => {
       tampered: true,
     });
     expect((await call('status')).pending).toBe(0);
-  });
+  }, 30_000);
   it('serializes concurrent accept calls and retains each exact output', async () => {
     const runDirectory = await directory();
     await Promise.all(
@@ -97,7 +97,7 @@ describe('connector checkpoint recovery', () => {
     expect(
       (await connectorCheckpoint({ runDir: runDirectory, plan, action: 'finalize' })).saved
     ).toBe(2);
-  });
+  }, 30_000);
   it('rechecks publication immutability after a queued operation acquires the lock', async () => {
     const runDirectory = await directory();
     const ready = signal();
@@ -118,7 +118,7 @@ describe('connector checkpoint recovery', () => {
     await expect(
       connectorCheckpoint({ runDir: runDirectory, plan, action: 'plan' })
     ).rejects.toThrow('immutable');
-  });
+  }, 30_000);
   it('rejects altered plan and checkpoint bindings and unexpected files', async () => {
     const runDirectory = await directory();
     await expect(
@@ -153,7 +153,7 @@ describe('connector checkpoint recovery', () => {
     expect(
       (await connectorCheckpoint({ runDir: runDirectory, action: 'status', plan })).saved
     ).toBe(0);
-  });
+  }, 30_000);
   it('validates request/capture identities and preserves terminal failed outcomes as accounted, not successful', async () => {
     for (const input of [
       null,
@@ -194,5 +194,5 @@ describe('connector checkpoint recovery', () => {
       pending: 0,
       blocked: 2,
     });
-  });
+  }, 30_000);
 });

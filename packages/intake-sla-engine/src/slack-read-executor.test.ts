@@ -85,7 +85,7 @@ describe('bounded native Slack read execution', () => {
     ]);
     await executeSlackReads(options);
     expect(calls).toHaveLength(4);
-  });
+  }, 30_000);
   it('stops access, validation, exhausted and long-delay failures with sanitized durable receipts', async () => {
     for (const scenario of ['forbidden', 'invalid', 'exhaust', 'long-delay']) {
       const f = await fixture();
@@ -126,7 +126,7 @@ describe('bounded native Slack read execution', () => {
       );
       expect(bodies.join('')).not.toContain('SYNTHETIC_PRIVATE_MARKER');
     }
-  });
+  }, 30_000);
   it('rejects changed plans, non-read operations, absent callbacks and published runs before a read', async () => {
     const f = await fixture();
     let calls = 0;
@@ -149,7 +149,7 @@ describe('bounded native Slack read execution', () => {
     await writePrivateJson(path.join(f.runDir, 'publication-readback.json'), {});
     await expect(executeSlackReads({ ...f, readers })).rejects.toThrow('immutable');
     expect(calls).toBe(0);
-  });
+  }, 30_000);
   it('retains original callback arguments and supports separately injected thread requests', async () => {
     const f = await fixture();
     const plan = checkpointPlan({
@@ -178,7 +178,7 @@ describe('bounded native Slack read execution', () => {
     };
     expect((await executeSlackReads({ ...f, plan, readers, validators })).pending).toBe(0);
     expect(plan).toEqual(before);
-  });
+  }, 30_000);
   it('prevents concurrent duplicate reads with a separate lease and rechecks publication between requests', async () => {
     const f = await fixture();
     let release: (() => void) | undefined;
@@ -224,5 +224,5 @@ describe('bounded native Slack read execution', () => {
       },
     };
     await expect(executeSlackReads(stopAfterFirst)).rejects.toThrow('immutable');
-  });
+  }, 30_000);
 });

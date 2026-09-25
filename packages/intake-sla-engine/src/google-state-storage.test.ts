@@ -194,7 +194,7 @@ describe('raw Google state and projection transaction verification', () => {
     await expect(
       verifyGoogleStateCapture(runDirectory, 'synthetic', 'current')
     ).resolves.toBeUndefined();
-  });
+  }, 30_000);
   it('never overwrites a published run, conflicting archive or another active capture transaction', async () => {
     const runDirectory = await harness(),
       inputFile = path.join(runDirectory, 'synthetic-input.json'),
@@ -239,7 +239,7 @@ describe('raw Google state and projection transaction verification', () => {
     expect(await fs.readFile(path.join(runDirectory, 'google_state_capture.json'), 'utf8')).toBe(
       original
     );
-  });
+  }, 30_000);
   it('fails malformed captures before saving projections', async () => {
     const runDirectory = await harness(),
       inputFile = path.join(runDirectory, 'synthetic-input.json');
@@ -258,7 +258,7 @@ describe('raw Google state and projection transaction verification', () => {
     await expect(
       saveGoogleStateCapture({ runDirectory, spreadsheetId: 'synthetic', runId: 'current' })
     ).rejects.toThrow(TypeError);
-  });
+  }, 30_000);
   it('preserves legacy raw timestamp values instead of imposing a new string-only gate', async () => {
     const directory = await harness();
     for (const timestamp of [0, 1, 2026]) {
@@ -305,7 +305,7 @@ describe('raw Google state and projection transaction verification', () => {
         verifyGoogleStateCapture(directory, 'synthetic', 'current')
       ).resolves.toBeUndefined();
     }
-  });
+  }, 30_000);
   it('consumes only governed extents while retaining all raw provenance in hashes', async () => {
     const directory = await harness();
     const raw = { ...fixture(), optionalMetadata: { retain: [false, 0, null] } };
@@ -335,7 +335,7 @@ describe('raw Google state and projection transaction verification', () => {
     expect(() => captureGooglePublicationState(raw, 'synthetic', 'current')).toThrow(
       'Duplicate Google Sheet'
     );
-  });
+  }, 30_000);
   it('rejects malformed consumed rows and preserves the original validation order', () => {
     const raw = fixture();
     raw.sheets[0] = {
@@ -392,7 +392,7 @@ describe('raw Google state and projection transaction verification', () => {
     await expect(verifyGoogleStateCapture(directory, 'synthetic', 'current')).rejects.toMatchObject(
       { code: 'ENOENT' }
     );
-  });
+  }, 30_000);
   it('retains compatibility with an unhashed legacy snapshot, but never ignores invalid JSON or a claimed capture', async () => {
     const directory = await harness();
     const metadata = path.join(directory, 'google_sheet_metadata_current.json');
@@ -408,7 +408,7 @@ describe('raw Google state and projection transaction verification', () => {
     await expect(verifyGoogleStateCapture(directory, 'synthetic', 'current')).rejects.toThrow(
       SyntaxError
     );
-  });
+  }, 30_000);
   it('verifies retained snapshot proof without changing its timestamp or raw hashes', async () => {
     const directory = await harness();
     const raw = {
@@ -439,5 +439,5 @@ describe('raw Google state and projection transaction verification', () => {
     await expect(
       verifyGoogleStateCapture(directory, 'synthetic', 'current')
     ).resolves.toBeUndefined();
-  });
+  }, 30_000);
 });

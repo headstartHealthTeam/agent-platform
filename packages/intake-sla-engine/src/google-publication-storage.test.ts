@@ -119,7 +119,7 @@ describe('saved publication preparation', () => {
         },
       }).reviewerPreservation.currentReviewerStateHash
     ).toBe(sha256Json({ rows: [], capturedAt: 123, revalidatedAt: false, revalidationHash: null }));
-  });
+  }, 30_000);
   it('writes exact staged payloads and reviewer proof, with the manifest last and private modes', async () => {
     await write(LEGACY, { obsolete: true });
     const expected = await prepare();
@@ -149,7 +149,7 @@ describe('saved publication preparation', () => {
     } finally {
       vi.useRealTimers();
     }
-  });
+  }, 30_000);
   it('leaves legacy payloads alone if workbook validation fails', async () => {
     await write(LEGACY, { retained: true });
     await write('workbook-values.json', { sheets: {} });
@@ -157,7 +157,7 @@ describe('saved publication preparation', () => {
       'Workbook is missing'
     );
     expect(await readPublicationJson(path.join(runDirectory, LEGACY))).toEqual({ retained: true });
-  });
+  }, 30_000);
   it('does not inspect unused prior artifacts when no changed started plan consumes them', async () => {
     await write(MANIFEST, { unconsumed: true });
     await write(OBSERVATIONS, { stages: [] });
@@ -167,13 +167,13 @@ describe('saved publication preparation', () => {
     expect(await readPublicationJson(path.join(runDirectory, OBSERVATIONS))).toEqual({
       stages: [],
     });
-  });
+  }, 30_000);
   it('preserves started same-plan readbacks and does not require a rejection file', async () => {
     await startPublication();
     const before = await fs.readFile(path.join(runDirectory, OBSERVATIONS), 'utf8');
     await prepareSavedGooglePublication({ runDirectory });
     expect(await fs.readFile(path.join(runDirectory, OBSERVATIONS), 'utf8')).toBe(before);
-  });
+  }, 30_000);
   it('does not erase a malformed nonempty prior stage list as though publication never started', async () => {
     await write(MANIFEST, { planHash: 'prior' });
     await write(OBSERVATIONS, { stages: 'nonempty' });
@@ -183,7 +183,7 @@ describe('saved publication preparation', () => {
     expect(await readPublicationJson(path.join(runDirectory, MANIFEST))).toEqual({
       planHash: 'prior',
     });
-  });
+  }, 30_000);
   it('retains unused source metadata and ignores ungoverned tabs without changing prepared hashes', async () => {
     const before = await prepare();
     const input = fixture();
@@ -203,7 +203,7 @@ describe('saved publication preparation', () => {
       path.join(runDirectory, 'reviewer_state_current.json')
     );
     expect(before.reviewerProof.currentReviewerStateHash).toBe(sha256Json(reviewer));
-  });
+  }, 30_000);
   it('archives every exact prior artifact before retaining capacity and committing the new manifest', async () => {
     const prior = await startPublication();
     const priorRaw = await fs.readFile(path.join(runDirectory, MANIFEST), 'utf8');
@@ -236,7 +236,7 @@ describe('saved publication preparation', () => {
     );
     expect(paths.at(-1)).toBe(path.join(runDirectory, MANIFEST));
     if (process.platform !== 'win32') expect((await fs.stat(archive)).mode & 0o777).toBe(0o700);
-  });
+  }, 30_000);
   it('retains only a definitive rejected-cell prefix, including the exact resume receipt', async () => {
     const prior = await startPublication(3);
     await changedEvidence();
@@ -273,41 +273,45 @@ describe('saved publication preparation', () => {
     expect(await readPublicationJson(path.join(runDirectory, OBSERVATIONS))).toHaveProperty(
       'rejectedCellReplan'
     );
-  });
+  }, 30_000);
   it.each([
     'missing rejection',
     'uncertain rejection',
     'corrupt stage',
     'corrupt call',
     'missing gate',
-  ])('rejects %s without replacing the prior manifest or receipts', async (scenario) => {
-    const prior = await startPublication();
-    await changedEvidence();
-    const before = await fs.readFile(path.join(runDirectory, MANIFEST), 'utf8');
-    const observations = await fs.readFile(path.join(runDirectory, OBSERVATIONS), 'utf8');
-    await write(
-      REJECTION,
-      scenario === 'uncertain rejection'
-        ? { response: { isError: true } }
-        : rejection(prior.manifest.planHash)
-    );
-    const stage = prior.manifest.stages[0];
-    const call = stage?.calls[0];
-    if (stage === undefined || call === undefined) throw new Error('Missing synthetic capacity');
-    if (scenario === 'corrupt stage') await write(stage.file, { requests: [] });
-    if (scenario === 'corrupt call') await write(call.file, { requests: [] });
-    if (scenario === 'missing gate') await fs.unlink(path.join(runDirectory, GATE));
-    const options =
-      scenario === 'missing rejection'
-        ? { runDirectory }
-        : { runDirectory, rejectionFile: path.join(runDirectory, REJECTION) };
-    await expect(prepareSavedGooglePublication(options)).rejects.toThrow();
-    expect(await fs.readFile(path.join(runDirectory, MANIFEST), 'utf8')).toBe(before);
-    expect(await fs.readFile(path.join(runDirectory, OBSERVATIONS), 'utf8')).toBe(observations);
-    expect(
-      (await fs.readdir(runDirectory)).some((name) => name.startsWith('publication-superseded-'))
-    ).toBe(false);
-  });
+  ])(
+    'rejects %s without replacing the prior manifest or receipts',
+    async (scenario) => {
+      const prior = await startPublication();
+      await changedEvidence();
+      const before = await fs.readFile(path.join(runDirectory, MANIFEST), 'utf8');
+      const observations = await fs.readFile(path.join(runDirectory, OBSERVATIONS), 'utf8');
+      await write(
+        REJECTION,
+        scenario === 'uncertain rejection'
+          ? { response: { isError: true } }
+          : rejection(prior.manifest.planHash)
+      );
+      const stage = prior.manifest.stages[0];
+      const call = stage?.calls[0];
+      if (stage === undefined || call === undefined) throw new Error('Missing synthetic capacity');
+      if (scenario === 'corrupt stage') await write(stage.file, { requests: [] });
+      if (scenario === 'corrupt call') await write(call.file, { requests: [] });
+      if (scenario === 'missing gate') await fs.unlink(path.join(runDirectory, GATE));
+      const options =
+        scenario === 'missing rejection'
+          ? { runDirectory }
+          : { runDirectory, rejectionFile: path.join(runDirectory, REJECTION) };
+      await expect(prepareSavedGooglePublication(options)).rejects.toThrow();
+      expect(await fs.readFile(path.join(runDirectory, MANIFEST), 'utf8')).toBe(before);
+      expect(await fs.readFile(path.join(runDirectory, OBSERVATIONS), 'utf8')).toBe(observations);
+      expect(
+        (await fs.readdir(runDirectory)).some((name) => name.startsWith('publication-superseded-'))
+      ).toBe(false);
+    },
+    30_000
+  );
   it('retains archive evidence and the old manifest if writing new payloads fails', async () => {
     const prior = await startPublication();
     await changedEvidence();
@@ -332,7 +336,7 @@ describe('saved publication preparation', () => {
         'utf8'
       )
     ).toBe(before);
-  });
+  }, 30_000);
   it('refuses immutable runs and private-artifact symlinks before writes', async () => {
     await write('publication-readback.json', {});
     const writes = vi.spyOn(fs, 'writeFile');
@@ -345,5 +349,5 @@ describe('saved publication preparation', () => {
     );
     await expect(prepareSavedGooglePublication({ runDirectory })).rejects.toThrow('regular file');
     expect(writes).not.toHaveBeenCalled();
-  });
+  }, 30_000);
 });

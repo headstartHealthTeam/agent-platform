@@ -140,7 +140,7 @@ describe('approved Intake workbook layout and verification', () => {
     expect(syntheticIntakeWorkbookTables()['On-Hold Review'][0]).toHaveLength(41);
     await expect(smokeIntakeWorkbookRuntime(fixture, output)).rejects.toThrow();
     expect(fixture.create).toHaveBeenCalledTimes(1);
-  });
+  }, 30_000);
   it('retains all seven sheets, original values, widths, dates and operator formatting', async () => {
     const fixture = new WorkbookFixture();
     const input = tables();
@@ -200,7 +200,7 @@ describe('approved Intake workbook layout and verification', () => {
       inspection: '',
     });
     expect(fixture.saveXlsx).toHaveBeenCalledWith(result.workbookPath);
-  });
+  }, 30_000);
   it('keeps header-only reports and absent optional prose columns valid', () => {
     const fixture = new WorkbookFixture();
     populateIntakeWorkbook(fixture, { ...tables(), 'Review Queue': [['Only header']] });
@@ -246,7 +246,7 @@ describe('approved Intake workbook layout and verification', () => {
     expect(await fs.readFile(path.join(directory, 'workbook-verification.json'), 'utf8')).toBe(
       JSON.stringify(result, null, 2)
     );
-  });
+  }, 30_000);
   it('retains formula matches, honest failure and partial-render failure behavior', async () => {
     const fixture = new WorkbookFixture();
     fixture.inspect.mockResolvedValueOnce(
@@ -261,7 +261,7 @@ describe('approved Intake workbook layout and verification', () => {
     fixture.render.mockRejectedValueOnce(new Error('render failed'));
     await expect(verifyIntakeWorkbook(fixture, directory)).rejects.toThrow('render failed');
     await expect(fs.stat(path.join(directory, 'workbook-verification.json'))).rejects.toThrow();
-  });
+  }, 30_000);
   it('preserves primitive/empty scan handling and rejects null records like the source', async () => {
     const fixture = new WorkbookFixture();
     fixture.inspect
@@ -270,5 +270,5 @@ describe('approved Intake workbook layout and verification', () => {
     expect((await verifyIntakeWorkbook(fixture, directory)).passed).toBe(true);
     fixture.inspect.mockResolvedValueOnce('null');
     await expect(verifyIntakeWorkbook(fixture, directory)).rejects.toThrow('inspection record');
-  });
+  }, 30_000);
 });

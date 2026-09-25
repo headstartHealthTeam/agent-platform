@@ -166,7 +166,7 @@ describe('routine Fireflies interpretation adapters', () => {
     } finally {
       await fs.rm(directory, { recursive: true });
     }
-  });
+  }, 30_000);
   it('decodes raw saved findings only after the segment and binding have been selected', () => {
     const bound = apiPrecomputed();
     const valid = bound.interpretations[0];

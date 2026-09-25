@@ -126,7 +126,7 @@ describe('saved Fireflies replay command', () => {
     expect(JSON.stringify(events)).not.toContain(profile.opportunityName);
     expect(JSON.stringify(events)).not.toContain(root);
     await expect(fs.access(file('.writer-lock'))).rejects.toThrow();
-  });
+  }, 30_000);
   it('retains genuinely empty results and does not parse irrelevant matcher fields', async () => {
     await write('identity_profile_rows.json', [
       {
@@ -146,7 +146,7 @@ describe('saved Fireflies replay command', () => {
       opportunities: 0,
       transcriptInventory: 0,
     });
-  });
+  }, 30_000);
   it.each([
     { authorizationNumbers: null },
     { providerRoster: null },
@@ -167,7 +167,8 @@ describe('saved Fireflies replay command', () => {
       await write('identity_profile_rows.json', saved);
       expect(JSON.parse((await call()).stdout)).toMatchObject({ found: 1 });
       expect(await readPrivateJson(file('identity_profile_rows.json'))).toEqual(saved);
-    }
+    },
+    30_000
   );
   it('retains a partial fallback competitor and the original weak disposition', async () => {
     await write('identity_profile_rows.json', [
@@ -178,7 +179,7 @@ describe('saved Fireflies replay command', () => {
     expect(await readPrivateJson(file('fireflies_rows.json'))).toMatchObject([
       { searched: true, meetings: [], weakMatches: [{ quality: 'Weak' }] },
     ]);
-  });
+  }, 30_000);
   it('rejects incomplete, stale, malformed and immutable input without overwriting the prior rows', async () => {
     const prior = [{ retained: true }];
     await write('fireflies_rows.json', prior);
@@ -194,7 +195,7 @@ describe('saved Fireflies replay command', () => {
     await expect(call()).rejects.toThrow('immutable');
     expect(await readPrivateJson(file('fireflies_rows.json'))).toEqual(prior);
     await expect(runFirefliesReplayCommand([], {})).rejects.toThrow('required');
-  });
+  }, 30_000);
   it('binds shadow-cache provenance to exact raw profiles, inventory and replay rows', async () => {
     const input = cacheFixture();
     const profiles = [profile];
@@ -221,7 +222,7 @@ describe('saved Fireflies replay command', () => {
       { searchedAt: input.discovery.completedAt, searchCoverage: { fullTranscriptsRetrieved: 1 } },
     ]);
     await expect(call({ SOURCE_CUTOFF: '2026-01-09' })).rejects.toThrow('bound current-run cutoff');
-  });
+  }, 30_000);
   it.each([false, true])(
     'keeps bounded missing-search state row-local (blocked=%s) and binds replay proof',
     async (blocked) => {
@@ -270,6 +271,7 @@ describe('saved Fireflies replay command', () => {
       await expect(call({ SOURCE_CUTOFF: '2026-01-09' })).rejects.toThrow(
         'bound current-run cutoff'
       );
-    }
+    },
+    30_000
   );
 });

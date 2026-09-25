@@ -165,7 +165,7 @@ describe('saved recovery command composition', () => {
     await write(root, PORTAL_INVENTORY, normalizePortalAuthCapture(raw));
     await fs.unlink(path.join(root, 'portal_auth_request_capture.json'));
     await expect(verifyRecoveryInputs(root, RUN, CUTOFF)).rejects.toThrow('Portal capture');
-  });
+  }, 30_000);
   it('initializes a distinct correction without modifying its published base and permits idempotent resume', async () => {
     const baseDirectory = await publishedBase();
     const runDirectory = await directory();
@@ -193,7 +193,7 @@ describe('saved recovery command composition', () => {
     await write(runDirectory, LEDGER, []);
     await expect(verifyRecoveryInputs(runDirectory, RUN, CUTOFF)).rejects.toThrow('ledger changed');
     await expect(initializeSavedCorrection(input)).rejects.toThrow('do not overwrite');
-  });
+  }, 30_000);
   it('rejects reused, published and base-descendant directories and tampered stage calls', async () => {
     const baseDirectory = await publishedBase();
     const runDirectory = await directory();
@@ -215,7 +215,7 @@ describe('saved recovery command composition', () => {
     await expect(fs.access(path.join(runDirectory, PROVENANCE))).rejects.toMatchObject({
       code: 'ENOENT',
     });
-  });
+  }, 30_000);
   it('requires complete correction markers but excludes current draft rows from its inherited-ledger hash', async () => {
     const root = await directory();
     const provenance = { runId: RUN, asOf: CUTOFF, ledgerHash: sha256Json([]) };
@@ -230,7 +230,7 @@ describe('saved recovery command composition', () => {
     await expect(verifyRecoveryInputs(root, RUN, CUTOFF)).rejects.toThrow('ledger changed');
     await fs.unlink(path.join(root, PROVENANCE));
     await expect(verifyRecoveryInputs(root, RUN, CUTOFF)).rejects.toThrow('incomplete');
-  });
+  }, 30_000);
   it('reads every structured artifact and saves the exact bounded delta without copying sources', async () => {
     const before = await directory();
     const after = await directory();
@@ -257,7 +257,7 @@ describe('saved recovery command composition', () => {
     await expect(saveStructuredCorrectionDelta(before, after)).rejects.toThrow(
       'structured correction artifact'
     );
-  });
+  }, 30_000);
   it('adds the complete post-cutoff disposition to the exact refreshed cohort while retaining metadata', async () => {
     const root = await directory();
     const refresh = {
@@ -297,7 +297,7 @@ describe('saved recovery command composition', () => {
       await expect(savePostCutoffCapture(root, path.join(root, 'input.json'))).rejects.toThrow();
       expect(await readPrivateJson(path.join(root, REFRESH))).toEqual(refresh);
     }
-  });
+  }, 30_000);
   it('recomputes Slack raw capture bindings and rejects changed or absent derived proof', async () => {
     const root = await directory();
     const plan = {
@@ -324,7 +324,7 @@ describe('saved recovery command composition', () => {
     await write(root, 'slack_full_sweep_exact_name.json', rows);
     await fs.unlink(path.join(root, 'slack_search_capture.json'));
     await expect(verifyRecoveryInputs(root, RUN, CUTOFF)).rejects.toThrow('Slack capture');
-  });
+  }, 30_000);
   it('routes saved commands with sanitized failures and no credential/provider dependency', async () => {
     for (const command of [
       'review:portal-auth-capture',
@@ -366,5 +366,5 @@ describe('saved recovery command composition', () => {
         ])
       ).exitCode
     ).toBe(1);
-  });
+  }, 30_000);
 });

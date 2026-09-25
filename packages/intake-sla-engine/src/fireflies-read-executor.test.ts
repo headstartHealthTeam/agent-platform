@@ -96,7 +96,7 @@ describe('durable serial Fireflies read execution', () => {
     ]);
     await executeFirefliesReads({ ...h, read });
     expect(calls).toHaveLength(2);
-  });
+  }, 30_000);
   it.each([
     { recovery: 'accepted', status: 429 },
     { recovery: 'accepted', status: 503 },
@@ -137,7 +137,8 @@ describe('durable serial Fireflies read execution', () => {
       h.advance(1);
       expect((await executeFirefliesReads(options)).saved).toBe(2);
       expect(calls).toBe(1);
-    }
+    },
+    30_000
   );
   it('preserves earlier successes and enforces the original per-tool attempt budget across invocations', async () => {
     const h = await harness();
@@ -155,7 +156,7 @@ describe('durable serial Fireflies read execution', () => {
     h.advance(1100);
     await expect(executeFirefliesReads({ ...h, read })).rejects.toThrow('budget exhausted');
     expect(calls).toEqual([ID_ONE, ID_TWO, ID_TWO]);
-  });
+  }, 30_000);
   it('does not admit invalid bodies or access failures and does not expose provider diagnostics', async () => {
     for (const response of [
       { isError: true, status: 403, message: 'synthetic private marker' },
@@ -177,7 +178,7 @@ describe('durable serial Fireflies read execution', () => {
       expect(calls).toBe(1);
       expect((await boundedCollectionStatus(h.runDir)).saved).toBe(0);
     }
-  });
+  }, 30_000);
   it('rejects invalid durable state and keeps terminal/pending failure decisions intact', () => {
     const state = readFirefliesState(undefined, 'manifest');
     expect(readFirefliesState(state, 'manifest')).toEqual(state);
@@ -231,5 +232,5 @@ describe('durable serial Fireflies read execution', () => {
     await writePrivateJson(path.join(h.runDir, 'publication-readback.json'), {});
     await expect(executeFirefliesReads({ ...h, read })).rejects.toThrow('immutable');
     expect(calls).toBe(2);
-  });
+  }, 30_000);
 });

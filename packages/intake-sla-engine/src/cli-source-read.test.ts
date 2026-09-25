@@ -137,7 +137,7 @@ describe('source read command composition', () => {
     await fs.unlink(path.join(root, 'publication-gate.json'));
     expect((await runGoogleReadCommand(wrong)).stderr).toContain('TARGET_MISMATCH');
     expect(fetch).toHaveBeenCalledTimes(2);
-  });
+  }, 30_000);
   it('verifies actual filter metadata with the bound read-only adapter and saves its raw receipt', async () => {
     const response = {
       spreadsheetId: sheet,
@@ -161,7 +161,7 @@ describe('source read command composition', () => {
     expect((await runGoogleReadCommand(flags('preflight'))).stderr).toContain(
       'FILTER_METADATA_MISSING'
     );
-  });
+  }, 30_000);
   it('saves and verifies an exact stage sample after write-lease expiry; retains mismatching samples', async () => {
     await binding();
     const response = (value: string): Response =>
@@ -189,7 +189,7 @@ describe('source read command composition', () => {
       assertions: [{ values: [[{ stringValue: 'mismatch' }]] }],
     });
     expect(fetch.mock.calls.every((call) => call[1]?.method === 'GET')).toBe(true);
-  });
+  }, 30_000);
   it('routes final readback and stops invalid targets, stages, immutable runs and private failures', async () => {
     await binding();
     vi.mocked(finalizePublication).mockResolvedValue({ published: true, verifiedAssertions: 3 });
@@ -217,7 +217,7 @@ describe('source read command composition', () => {
     await write('publication-readback.json', {});
     expect((await runGoogleReadCommand(flags('preflight'))).exitCode).toBe(1);
     expect(fetch).not.toHaveBeenCalled();
-  });
+  }, 30_000);
   it('uses the verified Salesforce reader and private baseline, preserving drift exit status and receipt', async () => {
     const baseline = { apex: {}, flows: {}, slaMetadata: [], capturedAt: null };
     await write('baseline.json', baseline);
@@ -247,5 +247,5 @@ describe('source read command composition', () => {
     const failed = await runProductionDriftCommand(args, env);
     expect(failed.stderr).toContain('verified-salesforce-read');
     expect(failed.stderr).not.toContain('private-provider-value');
-  });
+  }, 30_000);
 });

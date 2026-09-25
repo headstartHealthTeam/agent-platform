@@ -58,7 +58,7 @@ describe('content-addressed Fireflies cache files', () => {
     expect((await loadCache(root)).objects.size).toBe(0);
     await fs.writeFile(path.join(root, INDEX_FILE), 'invalid JSON');
     expect(await loadCache(root)).toEqual({ index: null, objects: new Map() });
-  });
+  }, 30_000);
   it('does not hide non-missing filesystem errors or accept non-regular object storage', async () => {
     const root = await directory();
     await writePrivateJson(path.join(root, INDEX_FILE), { entries: [] });
@@ -85,7 +85,7 @@ describe('content-addressed Fireflies cache files', () => {
       await fs.symlink(objects, path.join(linkedRoot, 'objects'));
       await expect(loadCache(linkedRoot)).rejects.toThrow('real directory');
     }
-  });
+  }, 30_000);
 });
 describe('discovery normalization storage proof', () => {
   it('allows original discovery and verifies both raw capture and normalized receipt when present', async () => {
@@ -120,5 +120,5 @@ describe('discovery normalization storage proof', () => {
     );
     await fs.unlink(path.join(root, RAW_FILE));
     await expect(readFirefliesDiscovery(root, input.collectionPlan)).rejects.toThrow('incomplete');
-  });
+  }, 30_000);
 });

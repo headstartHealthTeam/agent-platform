@@ -132,7 +132,7 @@ describe('saved report audit and validation composition', () => {
       rowCount: 1,
     });
     expect(await fs.readFile(path.join(directory, 'workbook-values.json'), 'utf8')).toBe(original);
-  });
+  }, 30_000);
   it('stops after a recomputed Critical audit and does not trust a stale success', async () => {
     const directory = await fixture({ 'Suggested SLA Summary': '' });
     await write(directory, 'quality-audit.json', { passed: true });
@@ -149,7 +149,7 @@ describe('saved report audit and validation composition', () => {
         expect.objectContaining({ rule: 'missing-summary', severity: 'Critical' }),
       ])
     );
-  });
+  }, 30_000);
   it('keeps Warning findings nonblocking and stops on formula errors before later note checks', async () => {
     const directory = await fixture({
       'Suggested SLA Summary': '9/4: Treatment plan remains underway',
@@ -167,7 +167,7 @@ describe('saved report audit and validation composition', () => {
     expect(await readPrivateJson(path.join(directory, 'workbook-verification.json'))).toMatchObject(
       { passed: false, formulaErrorCount: 1 }
     );
-  });
+  }, 30_000);
   it('rejects changed adjudication inputs only after the audit and workbook stages', async () => {
     const directory = await fixture();
     await write(directory, 'note_adjudications.json', { changed: true });
@@ -176,7 +176,7 @@ describe('saved report audit and validation composition', () => {
       'Note adjudication inputs changed after build'
     );
     expect(vendor.render).toHaveBeenCalledTimes(16);
-  });
+  }, 30_000);
   it('retains count equality as a final failure without changing the other acceptance results', async () => {
     const directory = await fixture();
     await write(directory, 'run_manifest.json', {
@@ -194,19 +194,25 @@ describe('saved report audit and validation composition', () => {
       expectedRows: 2,
       processedRows: 1,
     });
-  });
+  }, 30_000);
   it.each([
     'run_manifest.json',
     'workbook-values.json',
     'intake_sla_review_queue.xlsx',
     'reviewer_state.json',
-  ])('requires the original %s artifact before any validation side effects', async (name) => {
-    const directory = await fixture();
-    await fs.unlink(path.join(directory, name));
-    const vendor = workbookProvider();
-    await expect(validateSavedIntakeReport(vendor.provider, directory, now)).rejects.toThrow(name);
-    expect(vendor.open).not.toHaveBeenCalled();
-  });
+  ])(
+    'requires the original %s artifact before any validation side effects',
+    async (name) => {
+      const directory = await fixture();
+      await fs.unlink(path.join(directory, name));
+      const vendor = workbookProvider();
+      await expect(validateSavedIntakeReport(vendor.provider, directory, now)).rejects.toThrow(
+        name
+      );
+      expect(vendor.open).not.toHaveBeenCalled();
+    },
+    30_000
+  );
   it('permits the exact marked denial-context exception and rejects an unmarked one', async () => {
     const directory = await fixture({
       'Ready to Copy': 'Blocked',
@@ -244,7 +250,7 @@ describe('saved report audit and validation composition', () => {
     expect(
       await validateSavedIntakeReport(workbookProvider().provider, directory, now)
     ).toMatchObject({ passed: false, denialContext: { blocked: 1, unmarked: 1 } });
-  });
+  }, 30_000);
   it('accepts actual serialized delay history with omitted optional metadata and binds its complete bytes', async () => {
     const history = buildDelayHistory({
       opportunity: { id: opportunityId, slaCreatedDate: '2026-09-01' },
@@ -283,7 +289,7 @@ describe('saved report audit and validation composition', () => {
         expect.objectContaining({ rule: 'delay-history-omission', severity: 'Critical' }),
       ])
     );
-  });
+  }, 30_000);
   it('allows only absent optional audit artifacts, not malformed or unreadable ones', async () => {
     const directory = await fixture();
     await fs.unlink(path.join(directory, 'run_manifest.json'));
@@ -294,5 +300,5 @@ describe('saved report audit and validation composition', () => {
     );
     await fs.writeFile(path.join(directory, 'delay_history_rows.json'), '{broken');
     await expect(auditSavedIntakeReport(directory, now)).rejects.toBeInstanceOf(SyntaxError);
-  });
+  }, 30_000);
 });

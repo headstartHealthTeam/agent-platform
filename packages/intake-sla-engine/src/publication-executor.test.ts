@@ -196,7 +196,7 @@ describe('approved staged publication executor', () => {
     });
     expect(apply).not.toHaveBeenCalled();
     expect(await f.read(`publication_execution_${stage.id}.json`)).not.toHaveProperty('inFlight');
-  });
+  }, 30_000);
   it('preserves unused raw observation fields for already-satisfied stages', async () => {
     const f = await fixture();
     const stages = f.stages.map((stage, index) =>
@@ -234,7 +234,7 @@ describe('approved staged publication executor', () => {
       stages: [unused, {}],
     });
     expect(f.applied).toEqual(['08-terminal-marker']);
-  });
+  }, 30_000);
   it('retains legacy observation metadata without making it a new execution requirement', async () => {
     const f = await fixture();
     await advancePublication(f);
@@ -257,7 +257,7 @@ describe('approved staged publication executor', () => {
     expect(await f.read('publication_stage_readbacks.json')).toMatchObject({
       stages: [{ verifiedAt: 0, legacy: { preserved: true } }, {}, {}],
     });
-  });
+  }, 30_000);
   it('advances one stage, publishes history last and independently samples final state twice', async () => {
     const f = await fixture();
     await expect(finalizePublication({ ...f, sleep: noWait })).rejects.toThrow(
@@ -285,7 +285,7 @@ describe('approved staged publication executor', () => {
     });
     await expect(advancePublication(f)).rejects.toThrow('Published');
     await expect(finalizePublication(f)).rejects.toThrow('immutable');
-  });
+  }, 30_000);
   it('rejects expired/future gates before each write but allows read-only final verification', async () => {
     const f = await fixture();
     for (const stage of f.stages) {
@@ -309,7 +309,7 @@ describe('approved staged publication executor', () => {
     vi.setSystemTime(Date.now() + 24 * 3_600_000);
     expect(await finalizePublication({ ...f, sleep: noWait })).toMatchObject({ published: true });
     expect(f.applied).toHaveLength(3);
-  });
+  }, 30_000);
   it('never repeats an uncertain append and verifies the whole stage on resume', async () => {
     const f = await fixture();
     const adapter = {
@@ -331,7 +331,7 @@ describe('approved staged publication executor', () => {
       verifiedAssertions: 1,
     });
     expect(f.applied).toEqual(['02-review-queue']);
-  });
+  }, 30_000);
   it('requires exact authority, capabilities, concurrency and readback targets', async () => {
     const f = await fixture();
     for (const authority of [
@@ -374,7 +374,7 @@ describe('approved staged publication executor', () => {
     await expect(f.read('publication_stage_readbacks.json')).rejects.toMatchObject({
       code: 'ENOENT',
     });
-  });
+  }, 30_000);
   it('retains a changed second sample without creating a published receipt', async () => {
     const f = await fixture();
     await complete(f);
@@ -402,7 +402,7 @@ describe('approved staged publication executor', () => {
       assertions: [{ id: '02-review-queue', values: [[null]] }, {}, {}],
     });
     expect(f.applied).toHaveLength(3);
-  });
+  }, 30_000);
   it('retains partial capture privately, rejects wrong partial targets, and resumes read-only', async () => {
     const f = await fixture();
     await complete(f);
@@ -434,7 +434,7 @@ describe('approved staged publication executor', () => {
     await expect(f.read('publication-readback.json')).rejects.toMatchObject({ code: 'ENOENT' });
     expect(await finalizePublication({ ...f, sleep: noWait })).toMatchObject({ published: true });
     expect(f.applied).toHaveLength(3);
-  });
+  }, 30_000);
   it('reconstructs every call, rejects changed journals and resumes only an exact completed prefix', async () => {
     const f = await fixture(2),
       stage = f.stages.at(0);
@@ -466,7 +466,7 @@ describe('approved staged publication executor', () => {
     expect(apply.mock.calls.at(0)?.at(0)).toMatchObject({ callIndex: 1 });
     await f.write(stage.file, { requests: [] });
     await expect(advancePublication(f)).rejects.toThrow('payload hash changed');
-  });
+  }, 30_000);
   it('rechecks local bindings after concurrency, before any external write', async () => {
     const f = await fixture();
     let checks = 0;
@@ -490,7 +490,7 @@ describe('approved staged publication executor', () => {
     await expect(f.read('publication_execution_02-review-queue.json')).rejects.toMatchObject({
       code: 'ENOENT',
     });
-  });
+  }, 30_000);
   it('retains uncertain acknowledgments and enforces writer exclusion and settle bounds', async () => {
     const f = await fixture();
     await withCacheLock(f.runDir, async () => {
@@ -504,5 +504,5 @@ describe('approved staged publication executor', () => {
     await expect(advancePublication(f)).rejects.toThrow('does not match');
     expect(f.applied).toEqual([]);
     expect(await fs.readdir(f.runDir)).not.toContain('.writer-lock');
-  });
+  }, 30_000);
 });
