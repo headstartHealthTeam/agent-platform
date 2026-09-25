@@ -24,7 +24,7 @@ async function setup(): Promise<{
   const manifest = {
     name: '@headstart-health/intake-sla-engine',
     version: '0.1.0',
-    files: ['dist', 'README.md'],
+    files: ['dist', 'docs', 'README.md'],
     dependencies: { '@headstart-health/test-provider': 'workspace:*', external: '1.0.0' },
   };
   await writeFile(
@@ -37,6 +37,8 @@ async function setup(): Promise<{
   );
   await writeFile(join(packageRoot, 'package.json'), JSON.stringify(manifest));
   await writeFile(join(packageRoot, 'README.md'), 'synthetic package');
+  await mkdir(join(packageRoot, 'docs'));
+  await writeFile(join(packageRoot, 'docs/local-setup.md'), 'synthetic setup contract');
   const provider = join(root, 'packages/test-provider');
   await mkdir(join(provider, 'dist'), { recursive: true });
   await writeFile(
@@ -111,6 +113,9 @@ describe('standalone Intake dependency closure', () => {
       result
     );
     expect(await runtimeFingerprint(input.target)).toBe(result['artifactSha256']);
+    expect(await readFile(join(input.target, 'docs/local-setup.md'), 'utf8')).toBe(
+      'synthetic setup contract'
+    );
     expect(result['workspacePackages']).toEqual([
       '@headstart-health/intake-sla-engine',
       '@headstart-health/test-provider',

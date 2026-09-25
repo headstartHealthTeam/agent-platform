@@ -60,6 +60,9 @@ and examples.
 
 - [Intake SLA migration ownership](intake-sla-migration.md) fixes the shared-provider versus Intake
   policy boundary and source-parity requirements for the supervised engine migration.
+  [Local runtime setup](../packages/intake-sla-engine/docs/local-setup.md) and the
+  [operator runbook](../packages/intake-sla-engine/docs/automation-runbook.md) describe its separate
+  reviewed-runtime installation and unchanged supervised operation.
 
 - [OpenAI platform development access](openai-platform-access.md) connects local API access,
   approved lifecycle operations and pinned canonical skill preparation. Its

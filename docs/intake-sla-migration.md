@@ -47,9 +47,8 @@ external lockfile snapshots/integrities and uses the pinned frozen production in
 Organic's command/link/fingerprint helpers without changing that workflow. Intake carries its full
 compiled synthetic suite as a runtime dependency; validation reruns that suite in a child selecting
 production exports, rather than relying on source aliases or a prior pass receipt. Outside-checkout
-CLI validation and synthetic workbook build/reimport/render/formula acceptance pass. Remaining
-source-command coverage and instruction/setup cutover still prevent treating the migration as an
-operational replacement.
+CLI validation and synthetic workbook build/reimport/render/formula acceptance pass. The packaged setup and runbooks describe deliberate runtime selection; synthetic parity does not
+claim live model/provider acceptance or an installed operational cutover.
 
 ## Package ownership map
 
@@ -86,8 +85,8 @@ producer-to-adapter contracts are readonly structural projections, not casts or 
 Saved-source loading and health now retain the original capture/proof selection and private
 derivations without provider reads. Raw payloads remain untouched until their consumer decodes the
 selected fields; the Portal evidence boundary does not validate unused fallback envelopes.
-Complete command acceptance remains separate integration work; these collection modules do not
-authorize operational cutover.
+The normal command routes compose these modules; collection tests do not authorize operational
+cutover.
 
 The report's Opportunity preparation, communication matching and comparison context now compose
 actual typed collection/identity producers. Comparison remains context for source requirements;
@@ -103,7 +102,7 @@ stage values and the original falsy milestone results; typing does not invent bu
 add a rejection. Saved-payload decoding and complete per-row orchestration now compose these
 contracts, retaining source counts, empty/unchecked distinctions, original review and QA status,
 reviewer cells and ledger fields. Source and built-package review now cover the complete per-row
-composition. Full builder command integration and independently packaged acceptance remain unfinished. The package build checks its
+composition. The package build checks its
 rolled-up public declarations with library checking enabled, in addition to source type checking.
 
 The saved-run builder now composes collection, private identity registries, retained source artifacts,
@@ -111,16 +110,15 @@ the complete row evaluator and final artifact/workbook projection. Interpreter s
 original on/off selection, API preflight lease, bound API artifacts and fresh-current-run Codex
 provenance. Explicit registry injection changes configuration location, not identity or roster rules.
 Builder, input-boundary and CLI build integration have passed source and built-package comparison
-review; no installed skill or operational runtime has been switched. The remaining
-validation/preparation commands, source-capture command coverage and runtime
-dependency-closure acceptance are not implied by a successful saved build.
+review; no installed skill or operational runtime has been switched. Validation/preparation, source-capture commands and independent runtime packaging have their own
+acceptance paths rather than being inferred from a successful saved build.
 
 Local source-capture command composition now connects connector checkpointing, discovery
 normalization, bounded Fireflies capture, and Slack capture/resume/delta to the existing typed
 implementations. These commands accept agent-supplied private artifacts without provider dispatch.
 They retain bounded stdin, exact retry checks, prior-capture archives and sanitized failure output.
 Source and built command comparison review passed, including interrupted-write recovery and
-exact retry behavior. Standalone packaging remains separate acceptance work.
+exact retry behavior. Standalone packaging is validated independently of source command tests.
 
 Transcript selection now composes the typed provider identity and conversation scoring contracts
 with the approved roster-aware context windows. Meeting indexes remain distinct from explicitly
@@ -135,7 +133,7 @@ relevance-based deduplication, default follow-up dates, reported-versus-verified
 supported wording. `interpretConversation` projects those facts into the original evidence contract,
 preserving identity metadata, source-record suffixes and explicit unknown milestone fields. These
 are existing deterministic semantics, not a replacement for current-run interpretation or a new
-fallback mode. Full source-adapter and report composition remains separate work.
+fallback mode. Source adapters and report composition use these same contracts.
 
 Opportunity notes retain source date and identity precedence and compose the current-run note
 adjudicator: an accepted empty result stays empty, while an absent
@@ -207,14 +205,14 @@ window, source/relevance ranking, provenance and own unknown milestone fields, d
 substantive views, elapsed-day freshness and chronological changes. Search bundles stay auditable
 without independently establishing freshness. The approved routine builder supplies no raw
 Fireflies/Aloha/Claims/Slack inputs here; unreferenced raw-transcript fallback and standalone
-file-processing CLI are excluded. Final recommendation/report composition remains separate work.
+file-processing CLI are excluded. Final recommendations and report composition consume this same freshness projection.
 
 Storyline assembly retains the approved frozen story window, evidence admission, issue inference,
 explicit and implied resolution, restatement/supersession and conflict rules, current-gate succession,
 unresolved authorization precedence, future milestone monitoring and narrative/source projections.
 Typed lifecycle modules preserve the original rule order and arbitrary producer metadata without
 mutating inputs. These remain Intake-specific report semantics; no new provider capability or agent
-judgment constraint is introduced. Final recommendation and rendered-report composition remain separate.
+judgment constraint is introduced. The final recommendation and rendered report compose these contracts.
 
 Inventory the routine `review:*` entrypoints and their imports, commands, live collectors, source
 modules, contracts, docs and synthetic tests from the pinned reference. Exclude unrelated utilities
@@ -229,9 +227,8 @@ with synthetic non-Intake callers and preserve existing Google/Organic consumers
 
 ### Provider extraction traceability
 
-This table records implemented provider-level extraction, not completion of the Intake callers.
-The later engine must compose these packages before its corresponding source cases are considered
-migrated. Existing source test expectations remain the behavioral reference.
+This table records provider-level extraction and its Intake consumers. Existing source test
+expectations remain the behavioral reference; shared-provider tests alone do not establish report parity.
 
 | Source responsibility and baseline case                                                                                                                                             | Provider destination and regression                                                                                                                                                         | Intake remainder                                                                                                                           |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -242,13 +239,12 @@ migrated. Existing source test expectations remain the behavioral reference.
 | `slack-response.mjs` single-response normalization and `slack-plugin-search.mjs` transport unwrap; non-cutoff `slack-response.test.mjs` cases                                       | `slack-data`: `thread.test.ts`, `envelope.test.ts` preserve no-reply receipts, explicit count, structured pagination/identity and transport rejection                                       | Run hashes, cutoff reconciliation, cohort queries and admission remain Intake-owned; see Slack capture traceability below                  |
 | `ai-interpretation.mjs#createOpenAIResponsesClient`; request/failure cases in `ai-interpretation-schema.test.mjs`                                                                   | Isolated `openai-platform/responses`: `responses.test.ts` checks model, explicit reasoning effort, schema name, strict output, non-storage, sanitization and no implicit retry/model switch | Exact prompt/schema, approved AWS credential selection, low effort, preflight, support/binding policy and fresh-current-run Codex fallback |
 
-Provider extension is still required where source execution needs additional generic discovery,
-search or metadata behavior. Do not move that responsibility into Intake merely because the first
-provider contract is already present. Do not claim the whole workflow has parity from this table.
+Future vendor mechanics follow the same shared-provider boundary. Do not move them into Intake
+because a first provider contract already exists, or claim whole-workflow parity from this table.
 
 ### Typed domain traceability
 
-| Source responsibility                              | Intake destination and regression                                                                                                                                                                                                                               | Integration still required                                                                                      |
+| Source responsibility                              | Intake destination and regression                                                                                                                                                                                                                               | Composed consumers                                                                                              |
 | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `billing-claims.mjs`; billing reconciliation cases | `billing-types`, `billing-normalization`, `billing-claims`, `billing-collection`; `billing.test.ts` preserves cutoff-before-aggregation on raw/normalized paths, partial sessions, explicit completion, relationship conflicts and complete collection receipts | Source adapters, final storyline/recommendation and collector composition; their source tests remain applicable |
 | `evidence.mjs`, `source-result.mjs`, `drift.mjs`   | `evidence`, `source-result`, `drift`; `evidence.test.ts` preserves ranking, specificity, source-empty versus failed/incomplete results and exact fingerprint comparison                                                                                         | Admission, collection and publication consumers                                                                 |
@@ -257,7 +253,7 @@ provider contract is already present. Do not claim the whole workflow has parity
 | `gate-engine.mjs`, `gate-context.mjs`              | `gate-engine`, `gate-context`; `gates.test.ts` preserves prerequisite ordering, excluded/unknown stages, authoritative authorization evidence and newer contextual non-authorization evidence                                                                   | Full evidence engine, storyline, recommendations and workbook                                                   |
 
 Salesforce metadata queries use the shared reader's explicit Tooling API option. Fireflies identity
-normalization and offset-chain validation use `fireflies-data`; the Intake wrapper must still bind
+normalization and offset-chain validation use `fireflies-data`; the Intake wrapper binds
 the raw/normalized hashes, run, complete discovery scope and frozen cutoff. Provider page validation
 does not itself certify an Intake collection. No business decision moved into those providers.
 
@@ -349,7 +345,7 @@ serialized files need new actual-byte receipts, never copied receipts from prior
   thresholds, date contributions, completeness and failure precedence. Provider parsers do not
   make these workflow-specific relevance or source-admission decisions.
 
-These matching contracts still require full source-adapter and report integration. Synthetic
+Source adapters and report composition consume these matching contracts. Synthetic
 comparison against the approved reference is not a live interpretation acceptance or cutover.
 
 ### Current-run judgment and evidence assembly
@@ -374,7 +370,7 @@ comparison against the approved reference is not a live interpretation acceptanc
   aliases, audit identities, equivalent timestamps and last-authoritative-event precedence.
 
 These contracts preserve agent judgment, not a new deterministic classification requirement.
-Source-adapter, freshness-analyzer and final report integration remain separate parity work.
+Source adapters, freshness analysis and final report composition have separate parity coverage.
 
 ### Report inputs and historical state
 
@@ -392,8 +388,8 @@ Source-adapter, freshness-analyzer and final report integration remain separate 
 - `text-truncation.mjs` retains code-point slicing and the approved ellipsis behavior. It is a small
   Intake report helper, not a speculative new utility package.
 
-These projections and persistence contracts still require workbook, source-adapter and publication
-composition. They preserve existing rules rather than adding evidence classifications or gates.
+Workbook, source-adapter and publication composition consume these projections and persistence
+contracts. They preserve existing rules rather than adding evidence classifications or gates.
 
 ### Slack capture and read recovery traceability
 
@@ -421,7 +417,7 @@ composition. They preserve existing rules rather than adding evidence classifica
 
 Provider tests use synthetic non-Intake responses. Intake tests compose captures, exact readbacks,
 recovery, terminal failures and cutoff threads. The next section maps denial-context contracts;
-actual source-adapter and full operational composition remain separate work. This is not readiness.
+source-adapter and full command composition are tested separately. This is not live readiness.
 
 ### Authorization source projection and denial context
 
@@ -446,8 +442,8 @@ actual source-adapter and full operational composition remain separate work. Thi
   publication check retains the existing partial-publication rule: every genuinely missing required
   row/source must be visibly marked Blocked with denial-context rationale.
 
-These pure contracts and private readback do not complete the CLI, source-adapter, workbook or final
-publication integration; those consumers still need full reference-case composition.
+CLI, source-adapter, workbook and final publication consumers compose these contracts with their
+own reference-case coverage; pure contract tests do not substitute for that integration coverage.
 
 ### Publication planning foundations
 
@@ -464,10 +460,8 @@ publication integration; those consumers still need full reference-case composit
   metadata does not enter that hash; payloads, dependencies, flags and assertion order do.
 
 These are pure workflow planning helpers, not new provider write capabilities. The following
-sections record complete pure planning, capture acceptance, gate and readback contracts. Their
-file preparation persistence, provider and operational command integration remain unfinished. The
-injected executor is described below. No live writes
-or cutover are authorized by these tests.
+sections record complete pure planning, capture acceptance, gate and readback contracts. Their file preparation, persistence and command consumers compose these contracts. The injected
+executor is described below. No live writes or cutover are authorized by these tests.
 
 ### Publication freshness and frozen-snapshot gate
 
@@ -483,7 +477,7 @@ or cutover are authorized by these tests.
   Binding checks and read-only recovery remain independent of the lease check before further writes.
 
 This gate adds no business requirement. The following sections record captured-readback and pure
-planner parity and injected execution; provider and operational command integration remain work.
+planner parity and injected execution; provider and operational command composition use the same contracts.
 
 ### Exact stage and final readback contracts
 
@@ -497,13 +491,13 @@ keep the original numeric-property behavior; negative/fractional coordinates are
 as array offsets. Raw values are hash-verified, not accepted from operator-authored actual hashes.
 
 These contracts do not themselves read or write Google. The capture and planner composition below
-retain them; provider I/O, retries/uncertain outcomes and command integration remain separate work.
+retain them; provider I/O, retries/uncertain outcomes and commands compose these same contracts.
 
 `publication-replan.mjs` maps to the typed replan contracts and helpers. The original capacity-only
 pre-dispatch rejection and definitive atomic cell-length rejection retain only exact verified
 stage/call prefixes. `publication-replan.test.ts` preserves rejection cases, immutable input receipts,
 caller call subtypes and exact resume-prefix comparison. No generic retry of uncertain writes is
-introduced; publication execution and command integration remain separate work.
+introduced; publication execution and commands retain that distinction.
 
 ### Google capture and retained state
 
@@ -529,8 +523,7 @@ timestamps; unknown input has unknown timestamp output rather than an unsafe str
 validated before taking the existing writer lock, published runs remain immutable, retained raw
 captures are archived identically, and all projections precede the final raw transaction marker.
 A synthetic mid-projection failure proves old raw/archive retention, failed partial verification,
-lock/temporary-file cleanup and successful same-proof resume. Provider reads and command routing
-remain work. These capture functions do not make provider calls or authorize publication.
+lock/temporary-file cleanup and successful same-proof resume. The read command composes these capture functions. These capture functions do not make provider calls or authorize publication.
 
 ### Complete pure publication planner
 
@@ -545,9 +538,8 @@ historical entries are not a new matrix-validation requirement. Replacement, not
 rows remain fully consumed and checked, and malformed selected current-run entries still fail.
 The pure assembly from `build-google-payloads.mjs` maps to `prepareGooglePublicationArtifacts`:
 exact stage/call filenames, payloads, prepared-manifest hash and bound reviewer proof are returned
-without I/O. Shared Google types remain read-only provider contracts. Publication-plan persistence,
-native/REST adapter composition and operational command acceptance remain
-distinct migration work.
+without I/O. Shared Google types remain read-only provider contracts. Publication-plan persistence, native/REST adapter composition and command acceptance each have
+separate tests.
 
 ### Injected-adapter publication execution
 
@@ -562,7 +554,7 @@ only after both match. Expired write leases do not disable this read-only final 
 authority/capability/concurrency failures, exact saved prefixes, changed local bindings, partial
 captures, second-sample drift and lock cleanup. Raw prepared JSON is narrowed without reconstruction
 so original controls, unknown metadata and saved hashes survive. This ports execution policy, not
-provider mechanics: native/REST composition, preparation persistence and CLI acceptance remain work.
+provider mechanics: native/REST composition, preparation persistence and CLI acceptance are tested separately.
 
 The explicit credential mechanics from `google-adc-reader.mjs` belong in shared
 `google-read-transport`, exposed as `createGoogleAdcTokenProvider`. They preserve private
@@ -579,7 +571,7 @@ HTTP timeout creation. Raw partial captures narrow only consumed fields, preserv
 unused provider metadata without weakening the existing strict grid reader. The read-only facade
 from `google-adc-reader.mjs` exposes no apply operation. Permanent adapter/failure/pacing tests retain
 independent 117-assertion samples, partial failures, transient metadata and construction bindings.
-Operational CLI composition and preparation persistence remain distinct work.
+CLI composition and preparation persistence retain these adapter boundaries.
 
 The saved-file bodies of `next-publication-stage.mjs`, `capture-publication-stage-readback.mjs`
 and `verify-publication-readback.mjs` map to the exported next-stage/readback command functions.
@@ -592,7 +584,7 @@ the same exact receipt. This manual single-supplied-sample path remains distinct
 two independent adapter samples. Raw saved assertion metadata is narrowed only where consumed;
 producer types remain precise and raw plan/evidence hashes are preserved. The permanent saved-file
 tests cover expiry, resume, nullable unused metadata, ordering and interleaved receipt updates.
-CLI routing/distribution and the higher-level validation/gate preparation command remain work.
+CLI routing and higher-level validation/gate preparation compose these saved-file functions.
 
 `build-google-payloads.mjs` saved-file persistence maps to `prepareSavedGooglePublication`,
 composing the existing typed planner and pure artifact assembler. It reads prior receipts before
@@ -602,19 +594,53 @@ the new manifest last. Capacity-only and definitive rejected-cell replans retain
 verified prefixes; same-plan preparation leaves receipts unchanged. Published runs remain immutable.
 Raw input metadata is narrowed at consumption and retains its original reviewer hash. Synthetic
 filesystem tests cover exact files, modes, unused inputs, replan failures and interrupted writes.
-The higher-level validation/gate preparation command, CLI routing and distribution remain work;
-this local file builder performs no provider calls and does not establish publication readiness.
+The higher-level validation/gate preparation command retains the same prerequisites; this local
+file builder performs no provider calls and does not establish publication readiness.
 
-The local `headstart-intake-sla` executable begins routing the saved-file commands through these
+The local `headstart-intake-sla` executable routes the saved-file commands through these
 same functions: `review:next-publish-stage`, `review:capture-publish-readback`,
 `review:verify-publish`, `review:google-capture`, and the positional `build-google-payloads` helper.
 Existing successful JSON, incomplete-verification exit status 2, and capture-specific sanitized
 failures are retained. Usage text names the compiled executable; other uncaught failures use a
 concise error line instead of a Node stack. Synthetic subprocess tests run from a separate working
-directory with no provider access. Other command routes and standalone dependency-closure packaging
-remain incomplete; this executable is not a replacement for the approved operational runtime yet.
+directory with no provider access. Standalone dependency-closure packaging and deliberate operator setup are described in the
+[local setup guide](../packages/intake-sla-engine/docs/local-setup.md). No skill update silently
+switches an operational runtime.
 
 ## Five implementation slices
+
+### Routine command coverage
+
+The installed `headstart-intake-sla` executable owns the routine commands below. The public API
+exports their underlying typed operations for hosts that supply authorized callbacks. CLI capture
+commands accept actual protected tool responses; they do not pretend to dispatch desktop tools.
+
+| Approved entrypoints                                                                                             | Typed composition and permanent regression coverage                                                                                                         |
+| ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `review:build`                                                                                                   | `cli-build`, report collection/evaluation/finalization; `cli-build.test.ts`, report build/input/composition tests                                           |
+| `review:validate`, `review:prepare-publish`                                                                      | `cli-validation`, self-validation and publication preparation; `cli-validation.test.ts`, `self-validation.test.ts`, report validation and preparation tests |
+| `review:runtime-preflight`                                                                                       | `cli-runtime`, artifact runtime; `artifact-runtime.test.ts`, `cli-workbook.test.ts`                                                                         |
+| `review:checkpoint`                                                                                              | `cli-source-capture`, connector checkpoint; `cli-source-capture.test.ts`, `connector-checkpoint.test.ts`                                                    |
+| `review:portal-auth-capture`, `review:correction-init`, `review:structured-delta`, `review:post-cutoff-capture`  | `cli-recovery`; `recovery-storage.test.ts`, correction/delta/Portal/post-cutoff tests                                                                       |
+| `review:slack-capture`, `review:slack-delta`                                                                     | `cli-source-capture`, exact raw capture/resume/delta; `cli-slack-capture.test.ts` and source contract tests                                                 |
+| `review:slack-plan`, `review:slack-merge`                                                                        | `cli-slack-planning`, sweep planning/merge; `cli-slack-planning.test.ts`                                                                                    |
+| `review:google-capture`, `review:next-publish-stage`, `review:capture-publish-readback`, `review:verify-publish` | `cli-publication`, exact saved state/readback; CLI, next-stage and readback-command tests                                                                   |
+| `review:google-read`, `review:drift`                                                                             | `cli-source-read`, shared Google/Salesforce readers; `cli-source-read.test.ts` and adapter/fingerprint tests                                                |
+| `review:ai-preflight`, `review:interpret-delta`, `review:finalize-precomputed`                                   | `cli-interpretation`; preflight, delta and current-run precomputed command tests                                                                            |
+| `review:interpret-with-aws`                                                                                      | `cli-aws-interpretation`; credential handoff and real synthetic child tests                                                                                 |
+| `review:fireflies-normalize`, `review:fireflies-body-capture`, `review:fireflies-bounded`                        | `cli-source-capture`; command, bounded proof/storage and provider normalization tests                                                                       |
+| `review:fireflies-plan`, `review:fireflies-cache`                                                                | `cli-fireflies-planning`; planning/cache command and locked proof tests                                                                                     |
+| `review:fireflies-replay`, `review:fireflies-packets`                                                            | Dedicated CLI modules and tests; exact raw profile/packet bindings, numeric dates, bounded/cache proof and row-local coverage                               |
+| `review:portal-plan`, `review:portal-materialize`                                                                | `cli-portal-planning`; request binding, selected-profile projection and row-local materialization tests                                                     |
+
+The source's internal `review:live-build` is composed by `review:build`, not exposed as a second
+operating procedure. The positional `build-google-payloads` helper remains available. The added
+`review:workbook-runtime-smoke` is a manually invoked synthetic setup check, not a daily workflow gate.
+Original `test` and `check:distribution` duties are included in installed `review:validate` and
+the repository QA lane. The two standalone `salesforce:*operational-context` utilities and unused
+legacy adapters are excluded: neither is part of the read-only Intake workflow.
+
+### Delivery sequence
 
 1. **Characterize and assign ownership.** Pin sources and map routine behavior/tests to the owners
    above. No provider replacement or live execution. The map governs each later slice.
@@ -659,14 +685,14 @@ resolution/check contract and optional private identity receipt. They check Node
 entry or package fallback, and the same minimal library factories; they do not add a full workbook
 validation gate. Factory results remain unknown until workbook consumers narrow their actual
 contracts. No vendor package is copied or redistributed by this preflight. Workstation-specific
-paths stay in private operator configuration, not the receipt. Host provisioning documentation and
-complete outside-checkout dependency-closure acceptance remain work.
+paths stay in private operator configuration, not the receipt. The [local setup guide](../packages/intake-sla-engine/docs/local-setup.md) documents host provisioning
+and outside-checkout dependency-closure acceptance.
 
 `artifact-workbook` now supplies the injected vendor operation adapter; Intake's
 `populateIntakeWorkbook`, `exportIntakeWorkbook` and `verifyIntakeWorkbook` retain the original
 seven-tab layout, values, operator sizing, sixteen preview ranges and formula-error scan policy.
-The builder's upstream report/evidence assembly and higher-level validation command still need
-composition; migrating these workbook functions does not make the entire workflow runnable.
+The saved builder and validation command compose these workbook functions with the complete
+report/evidence assembly.
 
 `review:workbook-runtime-smoke --output-dir <new-directory>` is a separate manually launched
 synthetic host-acceptance tool. It uses the selected provisioned library, writes synthetic values,
@@ -705,7 +731,7 @@ signal cancellation and final execution receipt. Successful in-flight interpreta
 later failure. Only fresh packets are passed to the shared Responses client; reuse never narrows or
 reconstructs unused packet fields. The API consumer accepts the original optional source/opportunity
 fields and validates only the fields used for finding support. These routes do not collect sources
-or change the frozen cutoff. Complete operational orchestration remains unfinished. Newly
+or change the frozen cutoff. The normal CLI composes these saved interpretation operations. Newly
 serialized grouping may differ only in object-key insertion order; all values and
 canonical hashes are retained, and new byte receipts must describe the actual new bytes.
 
@@ -714,8 +740,7 @@ private/mutable current-run check, ephemeral credential handoff, inherited child
 forwarding and sanitized wrapper failures. The child invokes the selected route in the built local
 CLI instead of a source-repository script; its working directory is that entrypoint's directory.
 This removes the source-checkout dependency without changing provider identity or making a live
-call during testing. A real synthetic Node child supplements injected-process tests; complete
-outside-checkout dependency closure remains a separate migration acceptance.
+call during testing. A real synthetic Node child supplements injected-process tests; outside-checkout dependency closure is validated separately from this process test.
 
 Source-adapter foundations now retain the approved `interpretedFindingSemantics` projection and
 `structuredEvidenceEvent` defaults. Explicit interpreter semantics, including an intentionally
@@ -723,14 +748,14 @@ empty semantic result, bypass the legacy untyped-finding fallback. That fallback
 existing category priority and qualified treatment-plan milestone meaning; gate implications are
 not separate completion evidence. Structured events preserve default metadata and explicit falsy
 values. These functions remain Intake-owned and do not independently admit provider evidence;
-their full adapter and report consumers are still being migrated.
+their full adapter and report consumers compose these contracts.
 
 `source-adapters.mjs#adaptBillingClaims` now composes the typed billing resolver with report
 evidence. It preserves cutoff-before-aggregation, completed sessions without asserting whole-assessment
 completion, remaining assessment/support sessions, future monitoring dates, past unverified work,
 and Salesforce-owner reconciliation exceptions. The adapter does not infer completion from dates
 or write Salesforce. Its synthetic regressions and source comparisons establish adapter parity;
-the final storyline/recommendation consumers still require integration and their own parity checks.
+final storyline/recommendation consumers have their own integration and parity checks.
 
 Opportunity milestone and stage-history evidence projections retain
 their existing source selection, field precedence, timestamps, actions and audit defaults. A
@@ -743,26 +768,26 @@ event dates, including exclusion of status-only modified timestamps from payer-u
 Portal treatment-authorization request evidence keeps the original frozen submitted-date selection,
 downstream-record suppression and correction/reconciliation routing. Provider submission is not
 relabeled as payer submission. These report projections make no provider calls and do not repair
-Salesforce; the main authorization-record and final report consumers remain separate migration work.
+Salesforce; the authorization-record and final report consumers retain these same distinctions.
 
 Dated-task projection and administrative-template filters retain the existing update-marker,
 appointment-date, relative submission and frozen-cutoff handling. Bounded parsing preserves the
 original greedy date selection without nested optional regex quantifiers; it does not extend the
-date window or add recognized phrases. These helpers support the remaining note/task/authorization
-adapters, which must still compose them with evidence identity and the existing interpretation path.
+date window or add recognized phrases. Note/task/authorization adapters compose these helpers with evidence identity and the existing
+interpretation path.
 
 Conversation text, sentence segmentation, mentioned dates, requested information and denial-reason
 helpers preserve the approved interpretation's existing vocabulary, ordering, cleanup and date
 precedence. HTML normalization remains distinct where the two original source paths differ.
 Equivalent flattened regexes satisfy platform security lint without truncating source text or
 introducing new policy. These are existing Intake semantics, not generic provider mechanics or a
-replacement for current-run Codex judgment; full operational fact extraction remains separate work.
+replacement for current-run Codex judgment; operational fact extraction composes these same helpers.
 
 Clinical Quality evidence composes the requested-information helper with existing status and
 signature precedence. Requested edits take priority; signed plans still require the recorded review
 outcome and payer submission. Pending review does not become premature signature outreach. Source
 timestamps, owners, narratives and fact types retain the original projection; this does not change
-the underlying Salesforce lifecycle or complete final-report integration.
+the underlying Salesforce lifecycle.
 
 Staffing, Talent Acquisition and first-interview evidence preserve existing direct/candidate-map
 linkage, inactive-path priority, candidate availability versus client milestones, and future-interview
@@ -779,8 +804,7 @@ identity, lifecycle references, recurrence and unresolved opening context. It do
 freshness, readiness or the current action. The receipt binds the complete cohort and narrative
 to the original manifest contract. Its local HTML companion remains escaped, script-free and
 self-contained, with complete cell text rather than truncated summaries. Synthetic source-output
-comparisons and real mobile/tablet/desktop/wide browser checks cover this port; final recommendation
-composition and complete runtime acceptance remain separate migration work.
+comparisons and real mobile/tablet/desktop/wide browser checks cover this port; final recommendation composition and runtime acceptance have separate coverage.
 
 The typed fact-packet assembly now composes those storyline findings, source coverage and
 domain action rules. It preserves staffing assignment/candidate precedence, explicit planned
@@ -792,15 +816,14 @@ The typed short/long renderer retains the original rule priority, complete compe
 source-date versus assessment-cutoff language, attribution and additive delay history. It does not
 introduce a sentence ceiling or a new publication rule. Original recommendation regressions and
 actual evidence-to-packet-to-render tests cover planned/observed milestones, partial assessment,
-payer progress and conflict, raw-leakage checks and nonmutation. Whole-workflow report/QA and
-operational integration, independent packaging and acceptance remain unfinished.
+payer progress and conflict, raw-leakage checks and nonmutation. Whole-workflow report/QA composition and independent packaging have separate acceptance coverage.
 
 Publication row quality and timeline formatting retain the approved finding order, readiness
 relationships, specificity and raw-leakage checks, date-prefix semantics and future-versus-completed
 distinction. Timeline compaction changes repeated metadata only; every admitted fact stays literal
 and ordered, and a still-oversized cell remains a failure rather than being truncated. These are
 existing Intake report contracts, not generic provider rules or new limits on agent investigation.
-Full workbook audit and saved validation-command composition remain separate work.
+The full workbook audit and saved validation command compose these contracts.
 
 The report action model retains its distinct Eastern-calendar date handling, owner and action
 priority, explicit follow-up precedence and future-milestone monitoring. It is not substituted with
@@ -814,7 +837,7 @@ chronology, readiness and cross-row duplication checks. It retains the original 
 Critical-only severity failure, duplicate-cohort failure and No Action owner exception. Review
 and Warning findings do not become new blanket publication bans. Raw spreadsheet identity values
 retain their equality semantics. Synthetic whole-report comparisons cover this pure audit;
-saved-artifact loading and full report/validation command composition remain separate work.
+saved-artifact loading and full report/validation command composition have separate coverage.
 
 Report source summaries and task display projections preserve the approved source-specific record
 ordering, date precedence, display limits and distinct note formatting. Task Chatter keeps comment
@@ -828,14 +851,14 @@ priority, along with Complete/Partial/Conflicting/Missing/Blocked status selecti
 display retains active-candidate selection and its original ordered wording. The queue, on-hold,
 evidence and history headers, header notes and data dictionary are copied exactly from the approved
 builder and checked against source-derived digests. They remain report vocabulary, not new business
-requirements; complete row and saved-run assembly is still being composed.
+requirements; complete row and saved-run assembly compose these same fields.
 
 Report comparison fields, interpretation/coverage audit labels, final row readiness and run-note
 metadata retain their original values and precedence. Existing action items stay comparison-only;
 the display text does not enable deterministic interpretation fallback or promote weak conversation
 matches. The source's zero-precomputed-row and unavailable-interpretation distinctions remain intact.
 These projections consume actual source-health, search and interpretation contracts without making
-provider calls. Complete row, cohort and saved-run assembly remain separate integration work.
+provider calls. Complete row, cohort and saved-run assembly compose these projections.
 
 Final queue/evidence row projection and cohort table assembly preserve the approved field order,
 reviewer-value handling, issue/timeline text, hold-field insertion, freshness/date/name ordering,
@@ -843,8 +866,8 @@ source count distinctions and current-versus-prior Run History rows. The report 
 frozen cutoff, delay-history digest and note receipts; pending rows do not become published by being
 built. Missing hold duration remains blank, and raw historical ledger/reviewer values are not
 coerced. Actual evidence, packet, renderer, freshness, authorization and source producers compose
-through these typed Intake-owned projections. Saved-artifact orchestration and command integration
-remain separate work; provider mechanics stay in their shared packages.
+through these typed Intake-owned projections. Saved-artifact orchestration and commands compose these projections; provider mechanics stay in
+their shared packages.
 
 The Production fingerprint reader composes `salesforce-read`'s organization-verified, schema-checked
 data and Tooling queries. Intake retains explicit Production target configuration, the approved Apex
@@ -856,8 +879,7 @@ Salesforce collection projections preserve practice/provider fallback, original 
 latest linked Authorization Review enrichment, phase-specific Master date fallback, inactive RBT
 close dates and direct-versus-assigned staffing merge behavior. These transformations retain raw
 metadata and input identity where the approved builder does. They do not establish completion,
-replace evidence normalization or expand collection scope. Live and saved-source orchestration
-remain separate integration work.
+replace evidence normalization or expand collection scope. Live and saved-source orchestration compose these same projections.
 
 Saved reviewer and Run History loading preserve exact raw values, key precedence, original header
 equality and the 99-row window before current-run filtering. Reviewer capture age at build time
@@ -889,7 +911,7 @@ hashes and Published cell coverage before deriving a new run. Structured deltas 
 snapshots' indirect relationships; unresolved ownership expands affected scope rather than dropping
 a change. Post-cutoff disposition retains complete, explicitly observed modification evidence and
 defers those changes without moving the assessment cutoff or asserting appointment completion.
-These are existing recovery contracts; private command integration remains separate work.
+These are existing recovery contracts; private commands compose these same recovery contracts.
 
 Portal Authorization Request capture retains the approved API/CSV completeness, exact export
 headers, Eastern-time ambiguity checks, raw capture hashes and client/provider matching. Its
