@@ -63,6 +63,13 @@ and examples.
   [Local runtime setup](../packages/intake-sla-engine/docs/local-setup.md) and the
   [operator runbook](../packages/intake-sla-engine/docs/automation-runbook.md) describe its separate
   reviewed-runtime installation and unchanged supervised operation.
+- [Provider credentialing](../workflows/provider-credentialing/README.md) preserves the payer-neutral
+  preparation contracts, investigative skill, synthetic evaluations and application artifacts.
+  Its connected operation also needs the separately reviewed shared runtime and application changes.
+- [Shared operator integration](shared-operator-integration.md) defines reusable runtime and
+  application contracts; [agent workflow development](agent-workflow-development.md) explains
+  desktop authoring and normal-application acceptance with hosted execution. The
+  [local executor](local-agent-executor.md) remains an optional diagnostic fallback.
 
 - [OpenAI platform development access](openai-platform-access.md) connects local API access,
   approved lifecycle operations and pinned canonical skill preparation. Its
@@ -111,6 +118,10 @@ flowchart TD
   [reusable data capabilities](reusable-data-capabilities.md).
 - [Organic reporting runtime](organic-reporting-runtime.md) documents standalone deployment,
   private provider profiles, and synthetic/live end-to-end verification.
+- [Google Drive tools](../packages/google-drive-data/README.md),
+  [document inspection](../packages/document-reading/README.md), and
+  [Headstart MCP original-file access](../packages/headstart-mcp-data/README.md) provide reusable
+  primary-agent evidence access. They do not activate a workflow or provision credentials.
 - [`packages/google-read-transport/`](../packages/google-read-transport/README.md) owns sanitized
   ADC resolution and the explicit read-only Google HTTP operation allowlist.
 - [`packages/salesforce-read/`](../packages/salesforce-read/README.md) owns explicit Organization

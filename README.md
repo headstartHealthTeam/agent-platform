@@ -95,6 +95,7 @@ contexts, not competing sources of truth.
 | `packages/slack-data/`                 | Slack native response and complete-thread contracts                   |
 | `packages/artifact-workbook/`          | Injected local workbook library operations without report policy      |
 | `packages/openai-platform/`            | Supervised lifecycle access and isolated structured Responses         |
+| `packages/document-reading/`           | Source-independent full text, page/image and original-file evidence   |
 | `packages/semrush-data/`               | Reusable provider-neutral Semrush read contracts                      |
 | `packages/organic-performance-engine/` | Deterministic organic reporting evidence analysis                     |
 | `packages/workflow-contracts/`         | Runtime-neutral workflow manifest and run schemas                     |
@@ -109,11 +110,15 @@ package-local build and test commands, dependency-aware builds, explicit cache o
 
 ## Included Skills
 
+Credentialing preparation uses the canonical skill below and a separate draft workflow package;
+it does not enable live payer actions.
+
 OpenAI development access uses separately provisioned [runtime tooling](docs/openai-platform-access.md);
 installing these skills does not install credentials, runtime packages or a hosted workflow.
 
 | Skill                                                                                                | Purpose                                                                                               |
 | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [`headstart-provider-credentialing`](skills/headstart-provider-credentialing/SKILL.md)               | Investigate scoped credentialing evidence and prepare cited proposals with explicit human boundaries  |
 | [`bulletin-writer`](skills/bulletin-writer/SKILL.md)                                                 | Provider-portal bulletins with clear actions and grounded Headstart voice                             |
 | [`deep-pr-review`](skills/deep-pr-review/SKILL.md)                                                   | Generic evidence-backed pull request review method                                                    |
 | [`headstart-agent-workflow-authoring`](skills/headstart-agent-workflow-authoring/SKILL.md)           | Select and design the smallest safe local or managed agent workflow                                   |
@@ -143,9 +148,10 @@ installing these skills does not install credentials, runtime packages or a host
 
 ## Managed Workflows
 
-| Workflow                                                                             | Status | Purpose                                                             |
-| ------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------- |
-| [`synthetic-read-only-reference`](workflows/synthetic-read-only-reference/README.md) | Draft  | Disabled synthetic example of the managed workflow package contract |
+| Workflow                                                                             | Status | Purpose                                                                     |
+| ------------------------------------------------------------------------------------ | ------ | --------------------------------------------------------------------------- |
+| [`provider-credentialing`](workflows/provider-credentialing/README.md)               | Draft  | Payer-neutral synthetic preparation foundation; not a live or connected MVP |
+| [`synthetic-read-only-reference`](workflows/synthetic-read-only-reference/README.md) | Draft  | Disabled synthetic example of the managed workflow package contract         |
 
 Managed workflow packages are not installed globally with portable skills. They may be loaded from
 a repository checkout for local development, evaluation, or an explicitly supported supervised
@@ -157,6 +163,9 @@ or promoting it. The [managed runtime completion roadmap](docs/managed-runtime-c
 defines the workflow-independent path through shared preparation, execution compatibility and the
 remaining operations decision. Evaluate Agents API with OpenAI-hosted execution first; self-hosted
 API execution or SDK hosting is conditional on a verified unmet requirement. The
+[development pattern](docs/agent-workflow-development.md#hosted-first-connected-execution) applies
+this to connected testing too: normal local backend/admin may use hosted agent compute directly.
+Installing tool packages does not require a custom executor. The
 [compatibility assessment](docs/agents-api-compatibility.md) explains how the existing local workflow
 packages are reused and where adapters, policy enforcement and recovery need work. A thin integration
 or an operations service such as Windmill may cover the remaining controls. No provider is deployed

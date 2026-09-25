@@ -1,0 +1,440 @@
+{
+  "schemaVersion": "0.3.0",
+  "workId": "synthetic-ga-initial",
+  "caseRevision": "case-r1",
+  "workflowRevision": "workflow-r2",
+  "routeRevision": "synthetic-route-r2",
+  "status": "prepared-for-review",
+  "answers": [
+    {
+      "requirementId": "answer-service-a-street",
+      "value": "10 Example Lane",
+      "disposition": "supported",
+      "factIds": ["service-a-street"],
+      "evidence": [
+        {
+          "id": "service-a-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented service-a source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-service-a-city",
+      "value": "Example Georgia City",
+      "disposition": "supported",
+      "factIds": ["service-a-city"],
+      "evidence": [
+        {
+          "id": "service-a-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented service-a source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-service-a-postalCode",
+      "value": "00000",
+      "disposition": "supported",
+      "factIds": ["service-a-postalCode"],
+      "evidence": [
+        {
+          "id": "service-a-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented service-a source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-pay-to-street",
+      "value": "30 Example Accounts Road",
+      "disposition": "supported",
+      "factIds": ["pay-to-street"],
+      "evidence": [
+        {
+          "id": "pay-to-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented pay-to source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-pay-to-city",
+      "value": "Example Accounts City",
+      "disposition": "supported",
+      "factIds": ["pay-to-city"],
+      "evidence": [
+        {
+          "id": "pay-to-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented pay-to source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-mail-to-street",
+      "value": "40 Example Mail Road",
+      "disposition": "supported",
+      "factIds": ["mail-to-street"],
+      "evidence": [
+        {
+          "id": "mail-to-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented mail-to source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-mail-to-city",
+      "value": "Example Mail City",
+      "disposition": "supported",
+      "factIds": ["mail-to-city"],
+      "evidence": [
+        {
+          "id": "mail-to-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented mail-to source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-degree-one-degree",
+      "value": "Synthetic undergraduate degree",
+      "disposition": "supported",
+      "factIds": ["degree-one-degree"],
+      "evidence": [
+        {
+          "id": "degree-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented degree-one source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-degree-one-graduated",
+      "value": "2018-05-31",
+      "disposition": "supported",
+      "factIds": ["degree-one-graduated"],
+      "evidence": [
+        {
+          "id": "degree-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented degree-one source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-degree-two-degree",
+      "value": "Synthetic graduate degree",
+      "disposition": "supported",
+      "factIds": ["degree-two-degree"],
+      "evidence": [
+        {
+          "id": "degree-two-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented degree-two source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-degree-two-graduated",
+      "value": "2020-05-31",
+      "disposition": "supported",
+      "factIds": ["degree-two-graduated"],
+      "evidence": [
+        {
+          "id": "degree-two-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented degree-two source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-job-one-title",
+      "value": "Synthetic clinician",
+      "disposition": "supported",
+      "factIds": ["job-one-title"],
+      "evidence": [
+        {
+          "id": "job-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented job-one source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-job-one-startDate",
+      "value": "2020-06-01",
+      "disposition": "supported",
+      "factIds": ["job-one-startDate"],
+      "evidence": [
+        {
+          "id": "job-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented job-one source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-job-one-endDate",
+      "value": "2022-03-31",
+      "disposition": "supported",
+      "factIds": ["job-one-endDate"],
+      "evidence": [
+        {
+          "id": "job-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented job-one source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-job-two-title",
+      "value": "Synthetic supervisor",
+      "disposition": "supported",
+      "factIds": ["job-two-title"],
+      "evidence": [
+        {
+          "id": "job-two-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented job-two source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-job-two-startDate",
+      "value": "2022-04-01",
+      "disposition": "supported",
+      "factIds": ["job-two-startDate"],
+      "evidence": [
+        {
+          "id": "job-two-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented job-two source supports this proxy value, not an independent truth or verification claim.",
+      "basis": "proxy"
+    },
+    {
+      "requirementId": "answer-job-two-endDate",
+      "value": "2024-01-31",
+      "disposition": "supported",
+      "factIds": ["job-two-endDate"],
+      "evidence": [
+        {
+          "id": "job-two-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented job-two source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-job-three-title",
+      "value": "Synthetic independent clinician",
+      "disposition": "supported",
+      "factIds": ["job-three-title"],
+      "evidence": [
+        {
+          "id": "job-three-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented job-three source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-job-three-startDate",
+      "value": "2024-02-01",
+      "disposition": "supported",
+      "factIds": ["job-three-startDate"],
+      "evidence": [
+        {
+          "id": "job-three-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented job-three source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-job-three-current",
+      "value": true,
+      "disposition": "supported",
+      "factIds": ["job-three-current"],
+      "evidence": [
+        {
+          "id": "job-three-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented job-three source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-ownership-one-percentage",
+      "value": 60,
+      "disposition": "supported",
+      "factIds": ["ownership-one-percentage"],
+      "evidence": [
+        {
+          "id": "ownership-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented ownership-one source supports this declared value, not an independent truth or verification claim.",
+      "basis": "declared"
+    },
+    {
+      "requirementId": "answer-ownership-two-percentage",
+      "value": 40,
+      "disposition": "supported",
+      "factIds": ["ownership-two-percentage"],
+      "evidence": [
+        {
+          "id": "ownership-two-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented ownership-two source supports this declared value, not an independent truth or verification claim.",
+      "basis": "declared"
+    },
+    {
+      "requirementId": "answer-management-one-title",
+      "value": "Synthetic operations manager",
+      "disposition": "supported",
+      "factIds": ["management-one-title"],
+      "evidence": [
+        {
+          "id": "management-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented management-one source supports this declared value, not an independent truth or verification claim.",
+      "basis": "declared"
+    },
+    {
+      "requirementId": "answer-license-one-credential",
+      "value": "SYNTHETIC-LICENSE-NOT-VALID",
+      "disposition": "supported",
+      "factIds": ["license-one-credential"],
+      "evidence": [
+        {
+          "id": "license-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented license-one source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-license-one-expiry",
+      "value": "2027-01-01",
+      "disposition": "supported",
+      "factIds": ["license-one-expiry"],
+      "evidence": [
+        {
+          "id": "license-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented license-one source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-coverage-one-coverageType",
+      "value": "Synthetic professional liability",
+      "disposition": "supported",
+      "factIds": ["coverage-one-coverageType"],
+      "evidence": [
+        {
+          "id": "coverage-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented coverage-one source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    },
+    {
+      "requirementId": "answer-coverage-one-limit",
+      "value": 1000000,
+      "disposition": "supported",
+      "factIds": ["coverage-one-limit"],
+      "evidence": [
+        {
+          "id": "coverage-one-source",
+          "revision": "r1"
+        }
+      ],
+      "explanation": "The invented coverage-one source supports this documented value, not an independent truth or verification claim.",
+      "basis": "documented"
+    }
+  ],
+  "questions": [],
+  "humanStops": ["H-01", "H-04", "H-05"],
+  "handoff": "Invented structural reference, not a model result or current payer policy. Review exact fields and file lineage before any population. Human actions listed here are pending, including any mid-form stop. No upload, signature, attestation, submission, approval or billing activation has occurred.",
+  "attachments": [
+    {
+      "requirementId": "attach-license",
+      "disposition": "proposed",
+      "artifact": {
+        "id": "license-pdf",
+        "revision": "r1",
+        "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000002"
+      },
+      "explanation": "Proposed exact invented artifact revision and digest; not uploaded, signed or verified against real bytes."
+    },
+    {
+      "requirementId": "attach-cv",
+      "disposition": "proposed",
+      "artifact": {
+        "id": "cv-corrected",
+        "revision": "r1",
+        "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000004"
+      },
+      "explanation": "Proposed exact invented artifact revision and digest; not uploaded, signed or verified against real bytes."
+    },
+    {
+      "requirementId": "attach-coverage",
+      "disposition": "proposed",
+      "artifact": {
+        "id": "coverage-pdf",
+        "revision": "r1",
+        "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000005"
+      },
+      "explanation": "Proposed exact invented artifact revision and digest; not uploaded, signed or verified against real bytes."
+    }
+  ],
+  "protectedActions": [
+    {
+      "requirementId": "affiliation-attestation",
+      "disposition": "human-required",
+      "explanation": "A designated human must verify authority and perform this protected action in the destination. This proposal does not grant authority or claim completion."
+    },
+    {
+      "requirementId": "final-signature",
+      "disposition": "human-required",
+      "explanation": "A designated human must verify authority and perform this protected action in the destination. This proposal does not grant authority or claim completion."
+    },
+    {
+      "requirementId": "final-submission",
+      "disposition": "human-required",
+      "explanation": "A designated human must verify authority and perform this protected action in the destination. This proposal does not grant authority or claim completion."
+    }
+  ]
+}

@@ -138,6 +138,38 @@ describe('Google publication bounded failures', () => {
     ).rejects.toMatchObject({ status: 503, attempts: 1 });
     expect(writes).toBe(1);
   });
+  it.each([429, 503])(
+    'keeps a header-only HTTP %s publication failure to one attempt',
+    async (status) => {
+      const payload = { requests: [{ synthetic: true }] };
+      const json = vi.fn((): Promise<unknown> =>
+        Promise.reject(new Error('must not read private response'))
+      );
+      const fetchImpl = vi.fn<GoogleReadFetch>().mockResolvedValue({
+        ok: false,
+        status,
+        headers: new Headers({ 'Retry-After': '2.5' }),
+        json,
+      });
+      const f = fixture(fetchImpl, {
+        manifest: {
+          ...manifest,
+          stages: [{ id: 'stage', calls: [{ payloadHash: sha256Json(payload) }] }],
+        },
+      });
+      await expect(
+        createGoogleRestAdapter(f.options).apply({
+          spreadsheetId: manifest.spreadsheetId,
+          stageId: 'stage',
+          callIndex: 0,
+          payload,
+        })
+      ).rejects.toMatchObject({ status, retryAfterMs: 2500, attempts: 1 });
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      expect(json).not.toHaveBeenCalled();
+      expect(f.sleeps).toEqual([]);
+    }
+  );
   it.each([999, 99, 503.5, Number.NaN])('does not retry invalid HTTP status %s', async (status) => {
     const fetchImpl = vi.fn((): Promise<GoogleReadResponse> =>
       Promise.resolve({ ok: false, status })

@@ -15,8 +15,18 @@ contains no business workflow behavior and performs no external operations.
 - Define durable run requests and results independently of a transient Codex thread.
 - Runtime-parse untrusted run requests before they reach an executor.
 - Fail closed when a manifest omits a required operational boundary.
+- Define the source-neutral `RetainedEvidenceManifest` for original Salesforce/Drive files,
+  explicit Google exports, complete Google Docs structure JSON, and runtime-derived files with exact parent references. This typed
+  handoff is not a storage receipt: the owning application verifies and retains the actual bytes,
+  rechecks case authority, and only then accepts the artifact into a review package.
 
 ## Boundary
+
+`src/operator.ts` additionally owns the portable operator-port v1 types: immutable provider binding,
+safe items/snapshot and human reply/stop command. `openai-platform` consumes these types and keeps
+provider behavior in its adapter. They are distinct from workflow business outcomes and from the
+backend-owned HTTP projection. No SDK, workflow policy, database entity or credential lookup is
+included. See [shared operator integration](../../docs/shared-operator-integration.md).
 
 A portable workflow skill tells an interactive agent how to perform a task. A managed workflow
 manifest makes that behavior deployable by declaring everything the local user previously supplied

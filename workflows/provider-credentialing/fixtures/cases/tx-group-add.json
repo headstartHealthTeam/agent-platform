@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "0.1.0",
+  "dataMode": "synthetic",
+  "caseRevision": "case-r1",
+  "workflowRevision": "workflow-r1",
+  "routeRevision": "route-r1",
+  "work": {
+    "id": "synthetic-tx-group-add",
+    "providerId": "provider-alpha",
+    "practiceId": "practice-alpha",
+    "payer": "synthetic-medicaid-tx",
+    "product": "synthetic-professional",
+    "jurisdiction": "TX",
+    "requestType": "group-add",
+    "locationIds": ["location-a", "location-b"],
+    "period": "2026",
+    "existingAffiliationIds": ["affiliation-retained"]
+  },
+  "facts": [
+    {
+      "id": "existing-affiliation",
+      "key": "provider.existingAffiliation",
+      "subjectId": "provider-alpha",
+      "locationIds": ["location-a"],
+      "value": "affiliation-retained",
+      "disposition": "verified",
+      "evidence": [
+        {
+          "id": "affiliation-record",
+          "revision": "r1"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "route-note",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "title": "Synthetic group-add route",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "SCENARIO ONLY. This case adds an existing provider to practice-alpha at location-a and location-b. It does not start a new provider enrollment or replace another active affiliation."
+    },
+    {
+      "id": "affiliation-record",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "title": "Existing provider affiliation record",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "Provider-alpha already has active affiliation-retained at location-a. Retain this affiliation; this case is additive."
+    },
+    {
+      "id": "location-letter",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "title": "Two-location scope confirmation",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "Practice-alpha requests group-add at location-a and location-b for 2026. Both locations are included; no other location is authorized."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "request-kind",
+      "question": "Which request type is supported?",
+      "required": true
+    },
+    {
+      "id": "location-scope",
+      "question": "Which locations should this request cover?",
+      "required": true
+    },
+    {
+      "id": "existing-affiliation",
+      "question": "What must be preserved?",
+      "required": true
+    }
+  ],
+  "recordedMilestones": [],
+  "execution": {
+    "priorOutcome": "none",
+    "stopRequested": false,
+    "permittedActions": ["inspect", "prepare"]
+  }
+}

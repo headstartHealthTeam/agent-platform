@@ -1,87 +1,35 @@
-import { createHash } from 'node:crypto';
-import { chmod, lstat, readFile, realpath, writeFile } from 'node:fs/promises';
-import { dirname, isAbsolute, resolve, sep } from 'node:path';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import {
-  runRuntimeCommand,
-  runtimeFingerprint,
-  verifyPortableRuntime as verifyRuntimeLinks,
-  type RuntimeCommand,
-} from './runtime-packaging.js';
+import { packageWorkspaceRuntime, type RuntimeCommand } from './runtime-packaging.js';
 export {
   runRuntimeCommand,
   runRuntimeExecutable,
   runtimeFingerprint,
+  verifyPortableRuntime,
   type RuntimeCommand,
 } from './runtime-packaging.js';
-
-const ENGINE = '@headstart-health/organic-performance-engine';
-function inside(root: string, candidate: string): boolean {
-  return candidate === root || candidate.startsWith(`${root}${sep}`);
-}
-export async function verifyPortableRuntime(target: string, sourcePackage: string): Promise<void> {
-  await verifyRuntimeLinks(target, sourcePackage, ENGINE);
-}
 
 export async function packageOrganicRuntime(input: {
   readonly sourceRoot: string;
   readonly target: string;
   readonly command?: RuntimeCommand;
 }): Promise<Readonly<Record<string, unknown>>> {
-  const root = await realpath(input.sourceRoot);
-  if (!isAbsolute(input.target)) throw new Error('Runtime target must be absolute');
-  const target = resolve(input.target);
-  const parent = await realpath(dirname(target));
-  if (inside(root, parent) || inside(target, root) || parent !== dirname(target))
-    throw new Error('Runtime target must be outside the source checkout and use a resolved parent');
-  try {
-    await lstat(target);
-    throw new Error('Runtime target already exists');
-  } catch (error: unknown) {
-    if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error;
-  }
-  const sourcePackage = resolve(root, 'packages/organic-performance-engine');
-  for (const entrypoint of ['cli.js', 'collect-cli.js', 'workbook-cli.js'])
-    await readFile(resolve(sourcePackage, 'dist', entrypoint));
-  const command = input.command ?? runRuntimeCommand;
-  const version = (await command('corepack', ['pnpm', '--version'], root)).trim();
-  if (version !== '9.15.0') throw new Error('Packaging requires the repository-pinned pnpm 9.15.0');
-  const sourceRevision = (await command('git', ['rev-parse', 'HEAD'], root)).trim();
-  const sourceDirty = (await command('git', ['status', '--porcelain'], root)).trim().length > 0;
-  await command('corepack', ['pnpm', '--filter', ENGINE, 'deploy', '--prod', target], root);
-  await verifyPortableRuntime(target, sourcePackage);
-  const template = await readFile(resolve(target, 'templates/headstart-report.v1.json'));
-  const receipt = {
+  return packageWorkspaceRuntime({
+    ...input,
+    packageName: '@headstart-health/organic-performance-engine',
+    packageDirectory: 'packages/organic-performance-engine',
     schemaVersion: 'headstart-organic-runtime/v1',
-    package: ENGINE,
-    version: '0.1.0',
-    sourceRevision,
-    sourceDirty,
-    pnpmVersion: version,
-    lockfileSha256: createHash('sha256')
-      .update(await readFile(resolve(root, 'pnpm-lock.yaml')))
-      .digest('hex'),
-    artifactSha256: await runtimeFingerprint(target),
-    templateSha256: createHash('sha256').update(template).digest('hex'),
+    buildEntries: ['cli.js', 'collect-cli.js', 'workbook-cli.js'],
+    extraFileHashes: { templateSha256: 'templates/headstart-report.v1.json' },
     entrypoints: {
       'headstart-organic-analyze': 'dist/cli.js',
       'headstart-organic-collect': 'dist/collect-cli.js',
       'headstart-organic-workbook-plan': 'dist/workbook-cli.js',
       'headstart-gsc-report': 'node_modules/@headstart-health/google-search-console/dist/cli.js',
     },
-  };
-  for (const entrypoint of Object.values(receipt.entrypoints)) {
-    await readFile(resolve(target, entrypoint));
-    await chmod(resolve(target, entrypoint), 0o755);
-  }
-  await writeFile(
-    resolve(target, 'runtime-receipt.json'),
-    `${JSON.stringify(receipt, null, 2)}\n`,
-    { flag: 'wx' }
-  );
-  return receipt;
+  });
 }
 
 async function main(): Promise<void> {

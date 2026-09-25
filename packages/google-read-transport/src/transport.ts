@@ -47,6 +47,9 @@ export interface GoogleTokenProvider {
 export interface GoogleJsonReader {
   request(url: string, body?: Readonly<Record<string, unknown>>): Promise<unknown>;
 }
+export interface GoogleResponseReader {
+  readResponse(url: string, resourceKey?: string): Promise<Response>;
+}
 export type GoogleReadFailureKind =
   | 'configuration'
   | 'authentication'
@@ -141,11 +144,13 @@ export class GcloudReadTokenProvider implements GoogleTokenProvider {
     }
   }
 }
+const GOOGLE_HOST = 'www.googleapis.com';
 const ALLOWED_HOSTS = new Set([
-  'www.googleapis.com',
+  GOOGLE_HOST,
   'analyticsdata.googleapis.com',
   'analyticsadmin.googleapis.com',
   'sheets.googleapis.com',
+  'docs.googleapis.com',
 ]);
 async function failureReason(response: GoogleReadResponse, readDetails = true): Promise<string> {
   const failure = z
@@ -164,7 +169,7 @@ async function failureReason(response: GoogleReadResponse, readDetails = true): 
         .join(', ')
     : '';
 }
-export class GoogleReadTransport implements GoogleJsonReader {
+export class GoogleReadTransport implements GoogleJsonReader, GoogleResponseReader {
   readonly #tokens: GoogleTokenProvider;
   readonly #options: GoogleReadTransportOptions;
   public constructor(tokens: GoogleTokenProvider, options: GoogleReadTransportOptions = {}) {
@@ -186,6 +191,32 @@ export class GoogleReadTransport implements GoogleJsonReader {
     }
   }
   public async request(url: string, body?: Readonly<Record<string, unknown>>): Promise<unknown> {
+    const response = await this.#fetch(url, body);
+    try {
+      if (response.json === undefined) throw new TypeError('Google response body is unavailable');
+      return await response.json();
+    } catch (error: unknown) {
+      throw responseBodyFailure(error);
+    }
+  }
+  public async readResponse(url: string, resourceKey?: string): Promise<Response> {
+    if (resourceKey !== undefined && !/^[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(resourceKey)) {
+      throw new GoogleReadError('Invalid Drive resource key');
+    }
+    const response = await this.#fetch(url, undefined, resourceKey, '*/*');
+    // JSON-only injection remains supported, but cannot stand in for an untouched binary body.
+    if (!(response instanceof Response))
+      throw new GoogleReadError('Google raw reads require a native Response', {
+        kind: 'invalid-response',
+      });
+    return response;
+  }
+  async #fetch(
+    url: string,
+    body?: Readonly<Record<string, unknown>>,
+    resourceKey?: string,
+    accept = 'application/json'
+  ): Promise<GoogleReadResponse> {
     const parsed = new URL(url);
     if (
       parsed.protocol !== 'https:' ||
@@ -196,8 +227,8 @@ export class GoogleReadTransport implements GoogleJsonReader {
     )
       throw new GoogleReadError('Google API origin is not allowed');
     const allowedRead =
-      (parsed.hostname === 'www.googleapis.com' &&
-        searchConsoleRead(parsed.pathname, body !== undefined)) ||
+      googleDocumentRead(parsed, body !== undefined) ||
+      (parsed.hostname === GOOGLE_HOST && searchConsoleRead(parsed.pathname, body !== undefined)) ||
       (parsed.hostname === 'analyticsdata.googleapis.com' &&
         body !== undefined &&
         /^\/v1beta\/properties\/\d+:runReport$/.test(parsed.pathname)) ||
@@ -217,8 +248,9 @@ export class GoogleReadTransport implements GoogleJsonReader {
         method: body === undefined ? 'GET' : 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
+          Accept: accept,
           'Content-Type': 'application/json',
+          ...(resourceKey === undefined ? {} : { 'X-Goog-Drive-Resource-Keys': resourceKey }),
         },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         redirect: 'error',
@@ -237,12 +269,7 @@ export class GoogleReadTransport implements GoogleJsonReader {
         googleHttpFailureMetadata(response, (this.#options.now ?? Date.now)())
       );
     }
-    try {
-      if (response.json === undefined) throw new TypeError('Google response body is unavailable');
-      return await response.json();
-    } catch (error: unknown) {
-      throw responseBodyFailure(error);
-    }
+    return response;
   }
 }
 
@@ -262,6 +289,17 @@ export interface GoogleReadResponse {
   readonly json?: () => Promise<unknown>;
 }
 export type GoogleReadFetch = (url: string, init: RequestInit) => Promise<GoogleReadResponse>;
+function googleDocumentRead(url: URL, post: boolean): boolean {
+  if (post) return false;
+  if (url.hostname === 'docs.googleapis.com')
+    return /^\/v1\/documents\/[A-Za-z0-9_-]+$/.test(url.pathname);
+  return (
+    url.hostname === GOOGLE_HOST &&
+    /^\/drive\/v3\/(?:about|files|files\/[A-Za-z0-9_-]+|files\/[A-Za-z0-9_-]+\/export)$/.test(
+      url.pathname
+    )
+  );
+}
 
 function searchConsoleRead(path: string, post: boolean): boolean {
   if (post) return /^\/webmasters\/v3\/sites\/[^/]+\/searchAnalytics\/query$/.test(path);

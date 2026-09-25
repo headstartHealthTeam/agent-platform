@@ -1,1 +1,6 @@
 * text=auto eol=lf
+
+# Generated from workflow contracts; review the owning TypeScript schemas and generation tests.
+workflows/provider-credentialing/schemas/input.schema.json linguist-generated=true
+workflows/provider-credentialing/schemas/output.schema.json linguist-generated=true
+workflows/provider-credentialing/schemas/production-read-input.schema.json linguist-generated=true

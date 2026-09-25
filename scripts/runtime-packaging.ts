@@ -1,7 +1,16 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { lstat, readFile, readdir, realpath, symlink, unlink } from 'node:fs/promises';
-import { dirname, relative, resolve, sep } from 'node:path';
+import {
+  chmod,
+  lstat,
+  readFile,
+  readdir,
+  realpath,
+  symlink,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
+import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const COREPACK_ENTRYPOINT = fileURLToPath(
@@ -63,7 +72,7 @@ async function files(root: string): Promise<string[]> {
 export async function verifyPortableRuntime(
   target: string,
   sourcePackage: string,
-  packageName: string
+  packageName = '@headstart-health/organic-performance-engine'
 ): Promise<void> {
   const root = await realpath(target);
   const source = await realpath(sourcePackage);
@@ -98,4 +107,88 @@ export async function runtimeFingerprint(target: string): Promise<string> {
     digest.update(`${name}\0${content}\n`);
   }
   return digest.digest('hex');
+}
+
+export async function packageWorkspaceRuntime(input: {
+  readonly sourceRoot: string;
+  readonly target: string;
+  readonly command?: RuntimeCommand;
+  readonly packageName: string;
+  readonly packageDirectory: string;
+  readonly schemaVersion: string;
+  readonly buildEntries: readonly string[];
+  readonly entrypoints: Readonly<Record<string, string>>;
+  readonly extraFileHashes?: Readonly<Record<string, string>>;
+}): Promise<Readonly<Record<string, unknown>>> {
+  const root = await realpath(input.sourceRoot);
+  if (!isAbsolute(input.target)) throw new Error('Runtime target must be absolute');
+  const target = resolve(input.target);
+  const parent = await realpath(dirname(target));
+  if (inside(root, parent) || inside(target, root) || parent !== dirname(target))
+    throw new Error('Runtime target must be outside the source checkout and use a resolved parent');
+  try {
+    await lstat(target);
+    throw new Error('Runtime target already exists');
+  } catch (error: unknown) {
+    if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error;
+  }
+  const sourcePackage = resolve(root, input.packageDirectory);
+  for (const entrypoint of input.buildEntries)
+    await readFile(resolve(sourcePackage, 'dist', entrypoint));
+  const command = input.command ?? runRuntimeCommand;
+  const version = (await command('corepack', ['pnpm', '--version'], root)).trim();
+  if (version !== '9.15.0') throw new Error('Packaging requires the repository-pinned pnpm 9.15.0');
+  const sourceRevision = (await command('git', ['rev-parse', 'HEAD'], root)).trim();
+  const sourceDirty = (await command('git', ['status', '--porcelain'], root)).trim().length > 0;
+  await command(
+    'corepack',
+    ['pnpm', '--filter', input.packageName, 'deploy', '--prod', target],
+    root
+  );
+  await verifyPortableRuntime(target, sourcePackage, input.packageName);
+  const manifest: unknown = JSON.parse(await readFile(resolve(target, 'package.json'), 'utf8'));
+  if (
+    manifest === null ||
+    typeof manifest !== 'object' ||
+    !('name' in manifest) ||
+    manifest.name !== input.packageName ||
+    !('version' in manifest) ||
+    typeof manifest.version !== 'string' ||
+    !manifest.version.trim()
+  )
+    throw new Error('Runtime manifest must match the packaged workspace and declare a version');
+  const extraHashes = new Map<string, string>();
+  for (const [name, path] of Object.entries(input.extraFileHashes ?? {})) {
+    extraHashes.set(
+      name,
+      createHash('sha256')
+        .update(await readFile(resolve(target, path)))
+        .digest('hex')
+    );
+  }
+  const receipt = {
+    schemaVersion: input.schemaVersion,
+    package: input.packageName,
+    version: manifest.version,
+    sourceRevision,
+    sourceDirty,
+    runtime: { node: process.version, platform: process.platform, architecture: process.arch },
+    pnpmVersion: version,
+    lockfileSha256: createHash('sha256')
+      .update(await readFile(resolve(root, 'pnpm-lock.yaml')))
+      .digest('hex'),
+    artifactSha256: await runtimeFingerprint(target),
+    ...Object.fromEntries(extraHashes),
+    entrypoints: input.entrypoints,
+  };
+  for (const entrypoint of Object.values(receipt.entrypoints)) {
+    await readFile(resolve(target, entrypoint));
+    await chmod(resolve(target, entrypoint), 0o755);
+  }
+  await writeFile(
+    resolve(target, 'runtime-receipt.json'),
+    `${JSON.stringify(receipt, null, 2)}\n`,
+    { flag: 'wx' }
+  );
+  return receipt;
 }

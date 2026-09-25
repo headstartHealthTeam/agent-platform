@@ -607,6 +607,22 @@ directory with no provider access. Standalone dependency-closure packaging and d
 [local setup guide](../packages/intake-sla-engine/docs/local-setup.md). No skill update silently
 switches an operational runtime.
 
+### Compatibility with shared operator and document capabilities
+
+Intake coexists with the application-controlled credentialing workflow without adopting its
+execution model or business rules. Shared Google transport retains both the minimal injected JSON
+contract and untouched native `Response` reads for Drive/Docs. The explicit file/scopes provider
+and Intake's identity-bound ADC provider remain distinct choices, with no fallback between them.
+HTTP metadata is shared; Intake still owns bounded retries and single-attempt prepared writes.
+
+The OpenAI build emits the operator/executor artifacts and the isolated `./responses` ESM/types
+entrypoint. Transcript interpretation does not acquire an operator-session dependency. Organic
+and Drive retain their shared deployment wrapper; Intake retains built-closure assembly with a
+frozen offline install. Complete document retrieval/inspection remains independently available,
+not a replacement for Salesforce queries or workbook generation and formula verification, and
+not a new required Intake source. These integration changes do not install a runtime, change
+agent judgment or interpretation fallback, or authorize a live run.
+
 ## Five implementation slices
 
 ### Routine command coverage

@@ -5,6 +5,7 @@ export {
   GcloudReadTokenProvider,
   type GoogleTokenProvider,
   type GoogleJsonReader,
+  type GoogleResponseReader,
   type GoogleReadFailureKind,
   type GoogleReadFailureMetadata,
   type GoogleReadTransportOptions,
@@ -17,3 +18,4 @@ export type {
   GoogleCredentialFileStat,
   GoogleAdcCommandOptions,
 } from './bound-adc.js';
+export { GoogleFileTokenProvider } from './file-token-provider.js';

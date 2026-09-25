@@ -1,0 +1,1814 @@
+{
+  "schemaVersion": "0.2.0",
+  "dataMode": "synthetic",
+  "caseRevision": "case-r1",
+  "workflowRevision": "workflow-r2",
+  "routeRevision": "synthetic-route-r2",
+  "work": {
+    "id": "synthetic-tx-group-add",
+    "providerId": "provider-alpha",
+    "practiceId": "practice-alpha",
+    "payer": "synthetic-plan-tx",
+    "product": "synthetic-professional",
+    "jurisdiction": "TX",
+    "requestType": "group-add",
+    "locationIds": ["location-a", "location-b"],
+    "period": "2026",
+    "existingAffiliationIds": ["affiliation-retained"]
+  },
+  "facts": [
+    {
+      "id": "service-a-street",
+      "key": "street",
+      "subjectId": "practice-alpha",
+      "locationIds": ["location-a"],
+      "recordId": "service-a",
+      "value": "10 Example Lane",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "service-a-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "service-a-city",
+      "key": "city",
+      "subjectId": "practice-alpha",
+      "locationIds": ["location-a"],
+      "recordId": "service-a",
+      "value": "Example Texas City",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "service-a-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "service-a-postalCode",
+      "key": "postalCode",
+      "subjectId": "practice-alpha",
+      "locationIds": ["location-a"],
+      "recordId": "service-a",
+      "value": "00000",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "service-a-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "service-b-street",
+      "key": "street",
+      "subjectId": "practice-alpha",
+      "locationIds": ["location-b"],
+      "recordId": "service-b",
+      "value": "20 Example Lane",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "service-b-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "service-b-city",
+      "key": "city",
+      "subjectId": "practice-alpha",
+      "locationIds": ["location-b"],
+      "recordId": "service-b",
+      "value": "Second Example City",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "service-b-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "pay-to-street",
+      "key": "street",
+      "subjectId": "practice-alpha",
+      "locationIds": [],
+      "recordId": "pay-to",
+      "value": "30 Example Accounts Road",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "pay-to-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "pay-to-city",
+      "key": "city",
+      "subjectId": "practice-alpha",
+      "locationIds": [],
+      "recordId": "pay-to",
+      "value": "Example Accounts City",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "pay-to-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "mail-to-street",
+      "key": "street",
+      "subjectId": "practice-alpha",
+      "locationIds": [],
+      "recordId": "mail-to",
+      "value": "40 Example Mail Road",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "mail-to-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "mail-to-city",
+      "key": "city",
+      "subjectId": "practice-alpha",
+      "locationIds": [],
+      "recordId": "mail-to",
+      "value": "Example Mail City",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "mail-to-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "degree-one-degree",
+      "key": "degree",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "degree-one",
+      "value": "Synthetic undergraduate degree",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "degree-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "degree-one-graduated",
+      "key": "graduated",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "degree-one",
+      "value": "2018-05-31",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "degree-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "degree-two-degree",
+      "key": "degree",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "degree-two",
+      "value": "Synthetic graduate degree",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "degree-two-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "degree-two-graduated",
+      "key": "graduated",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "degree-two",
+      "value": "2020-05-31",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "degree-two-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "job-one-title",
+      "key": "title",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "job-one",
+      "value": "Synthetic clinician",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "job-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "job-one-startDate",
+      "key": "startDate",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "job-one",
+      "value": "2020-06-01",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "job-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "job-one-endDate",
+      "key": "endDate",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "job-one",
+      "value": "2022-03-31",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "job-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "job-two-title",
+      "key": "title",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "job-two",
+      "value": "Synthetic supervisor",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "job-two-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "job-two-startDate",
+      "key": "startDate",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "job-two",
+      "value": "2022-04-01",
+      "disposition": "proxy",
+      "evidence": [
+        {
+          "id": "job-two-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": "Invented operator choice: only a month was available; the first day is a proxy requiring visible review, not a verified exact date."
+    },
+    {
+      "id": "job-two-endDate",
+      "key": "endDate",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "job-two",
+      "value": "2024-01-31",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "job-two-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "job-three-title",
+      "key": "title",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "job-three",
+      "value": "Synthetic independent clinician",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "job-three-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "job-three-startDate",
+      "key": "startDate",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "job-three",
+      "value": "2024-02-01",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "job-three-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "job-three-current",
+      "key": "current",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "job-three",
+      "value": true,
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "job-three-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "ownership-one-percentage",
+      "key": "percentage",
+      "subjectId": "practice-alpha",
+      "locationIds": [],
+      "recordId": "ownership-one",
+      "value": 60,
+      "disposition": "declared",
+      "evidence": [
+        {
+          "id": "ownership-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "ownership-two-percentage",
+      "key": "percentage",
+      "subjectId": "practice-alpha",
+      "locationIds": [],
+      "recordId": "ownership-two",
+      "value": 40,
+      "disposition": "declared",
+      "evidence": [
+        {
+          "id": "ownership-two-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "management-one-title",
+      "key": "title",
+      "subjectId": "practice-alpha",
+      "locationIds": [],
+      "recordId": "management-one",
+      "value": "Synthetic operations manager",
+      "disposition": "declared",
+      "evidence": [
+        {
+          "id": "management-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "license-one-credential",
+      "key": "credential",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "license-one",
+      "value": "SYNTHETIC-LICENSE-NOT-VALID",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "license-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "license-one-expiry",
+      "key": "expiry",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "license-one",
+      "value": "2027-01-01",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "license-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "coverage-one-coverageType",
+      "key": "coverageType",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "coverage-one",
+      "value": "Synthetic professional liability",
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "coverage-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    },
+    {
+      "id": "coverage-one-limit",
+      "key": "limit",
+      "subjectId": "provider-alpha",
+      "locationIds": [],
+      "recordId": "coverage-one",
+      "value": 1000000,
+      "disposition": "documented",
+      "evidence": [
+        {
+          "id": "coverage-one-source",
+          "revision": "r1"
+        }
+      ],
+      "qualification": null
+    }
+  ],
+  "evidence": [
+    {
+      "id": "party-register",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "recordId": null,
+      "locationIds": [],
+      "title": "Invented party-register",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "Synthetic register: owner-one and owner-two own the practice; manager-one is a managing employee, not an owner. All parties and organizations are invented.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "party-register",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "service-a-source",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "recordId": "service-a",
+      "locationIds": ["location-a"],
+      "title": "Invented service-a-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record service-a: street=10 Example Lane (documented); city=Example Texas City (documented); postalCode=00000 (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "service-a-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "service-b-source",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "recordId": "service-b",
+      "locationIds": ["location-b"],
+      "title": "Invented service-b-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record service-b: street=20 Example Lane (documented); city=Second Example City (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "service-b-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "pay-to-source",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "recordId": "pay-to",
+      "locationIds": [],
+      "title": "Invented pay-to-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record pay-to: street=30 Example Accounts Road (documented); city=Example Accounts City (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "pay-to-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "mail-to-source",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "recordId": "mail-to",
+      "locationIds": [],
+      "title": "Invented mail-to-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record mail-to: street=40 Example Mail Road (documented); city=Example Mail City (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "mail-to-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "degree-one-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": "degree-one",
+      "locationIds": [],
+      "title": "Invented degree-one-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record degree-one: degree=Synthetic undergraduate degree (documented); graduated=2018-05-31 (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "degree-one-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "degree-two-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": "degree-two",
+      "locationIds": [],
+      "title": "Invented degree-two-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record degree-two: degree=Synthetic graduate degree (documented); graduated=2020-05-31 (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "degree-two-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "job-one-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": "job-one",
+      "locationIds": [],
+      "title": "Invented job-one-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record job-one: title=Synthetic clinician (documented); startDate=2020-06-01 (documented); endDate=2022-03-31 (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "job-one-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "job-two-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": "job-two",
+      "locationIds": [],
+      "title": "Invented job-two-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record job-two: title=Synthetic supervisor (documented); startDate=2022-04-01 (proxy); endDate=2024-01-31 (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "job-two-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "job-three-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": "job-three",
+      "locationIds": [],
+      "title": "Invented job-three-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record job-three: title=Synthetic independent clinician (documented); startDate=2024-02-01 (documented); current=true (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "job-three-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "ownership-one-source",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "recordId": "ownership-one",
+      "locationIds": [],
+      "title": "Invented ownership-one-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record ownership-one: percentage=60 (declared). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "ownership-one-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "ownership-two-source",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "recordId": "ownership-two",
+      "locationIds": [],
+      "title": "Invented ownership-two-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record ownership-two: percentage=40 (declared). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "ownership-two-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "management-one-source",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "recordId": "management-one",
+      "locationIds": [],
+      "title": "Invented management-one-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record management-one: title=Synthetic operations manager (declared). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "management-one-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "license-one-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": "license-one",
+      "locationIds": [],
+      "title": "Invented license-one-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record license-one: credential=SYNTHETIC-LICENSE-NOT-VALID (documented); expiry=2027-01-01 (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "license-one-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "coverage-one-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": "coverage-one",
+      "locationIds": [],
+      "title": "Invented coverage-one-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "INVENTED record coverage-one: coverageType=Synthetic professional liability (documented); limit=1000000 (documented). Proxy and operator-selected values are not verified source facts.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "coverage-one-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "license-image-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": "license-one",
+      "locationIds": [],
+      "title": "Invented license-image-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "Invented license image metadata. No real file bytes.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "license-image-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "license-pdf-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": "license-one",
+      "locationIds": [],
+      "title": "Invented license-pdf-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "Invented PDF rendering of the exact license-image revision; no signature or attestation added.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "license-pdf-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "cv-deficient-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": null,
+      "locationIds": [],
+      "title": "Invented cv-deficient-source",
+      "retrieval": "available",
+      "validity": "expired",
+      "content": "Superseded invented resume omits job-two. Do not select this version.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "cv-deficient-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "cv-corrected-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": null,
+      "locationIds": [],
+      "title": "Invented cv-corrected-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "Invented corrected resume includes all three employment records and both education records. job-two start day remains a labeled proxy.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "cv-corrected-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "coverage-pdf-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": "coverage-one",
+      "locationIds": [],
+      "title": "Invented coverage-pdf-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "Invented coverage certificate; dates and scope need human review.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "coverage-pdf-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "group-addendum-source",
+      "revision": "r1",
+      "subjectId": "practice-alpha",
+      "recordId": null,
+      "locationIds": [],
+      "title": "Invented group-addendum-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "Invented unsigned group-add addendum, preserving affiliation-retained at location-a while requesting the additive group-add scope at location-a and location-b; location-b is not already covered by affiliation-retained.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "group-addendum-source",
+        "version": "r1"
+      }
+    },
+    {
+      "id": "provider-agreement-source",
+      "revision": "r1",
+      "subjectId": "provider-alpha",
+      "recordId": null,
+      "locationIds": [],
+      "title": "Invented provider-agreement-source",
+      "retrieval": "available",
+      "validity": "current",
+      "content": "Invented unsigned provider agreement for a separate asynchronous human/provider handoff.",
+      "observedAt": "2026-09-16T12:00:00Z",
+      "source": {
+        "system": "synthetic-source",
+        "recordId": "provider-agreement-source",
+        "version": "r1"
+      }
+    }
+  ],
+  "requirements": [
+    {
+      "id": "answer-service-a-street",
+      "question": "Prepare street for record service-a; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "service-a",
+        "locationIds": ["location-a"]
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "address",
+        "field": "service-a-street"
+      }
+    },
+    {
+      "id": "answer-service-a-city",
+      "question": "Prepare city for record service-a; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "service-a",
+        "locationIds": ["location-a"]
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "address",
+        "field": "service-a-city"
+      }
+    },
+    {
+      "id": "answer-service-a-postalCode",
+      "question": "Prepare postalCode for record service-a; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "service-a",
+        "locationIds": ["location-a"]
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "address",
+        "field": "service-a-postalCode"
+      }
+    },
+    {
+      "id": "answer-service-b-street",
+      "question": "Prepare street for record service-b; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "service-b",
+        "locationIds": ["location-b"]
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "address",
+        "field": "service-b-street"
+      }
+    },
+    {
+      "id": "answer-service-b-city",
+      "question": "Prepare city for record service-b; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "service-b",
+        "locationIds": ["location-b"]
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "address",
+        "field": "service-b-city"
+      }
+    },
+    {
+      "id": "answer-pay-to-street",
+      "question": "Prepare street for record pay-to; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "pay-to",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "address",
+        "field": "pay-to-street"
+      }
+    },
+    {
+      "id": "answer-pay-to-city",
+      "question": "Prepare city for record pay-to; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "pay-to",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "address",
+        "field": "pay-to-city"
+      }
+    },
+    {
+      "id": "answer-mail-to-street",
+      "question": "Prepare street for record mail-to; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "mail-to",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "address",
+        "field": "mail-to-street"
+      }
+    },
+    {
+      "id": "answer-mail-to-city",
+      "question": "Prepare city for record mail-to; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "mail-to",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "address",
+        "field": "mail-to-city"
+      }
+    },
+    {
+      "id": "answer-degree-one-degree",
+      "question": "Prepare degree for record degree-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "degree-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "education",
+        "field": "degree-one-degree"
+      }
+    },
+    {
+      "id": "answer-degree-one-graduated",
+      "question": "Prepare graduated for record degree-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "degree-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "education",
+        "field": "degree-one-graduated"
+      }
+    },
+    {
+      "id": "answer-degree-two-degree",
+      "question": "Prepare degree for record degree-two; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "degree-two",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "education",
+        "field": "degree-two-degree"
+      }
+    },
+    {
+      "id": "answer-degree-two-graduated",
+      "question": "Prepare graduated for record degree-two; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "degree-two",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "education",
+        "field": "degree-two-graduated"
+      }
+    },
+    {
+      "id": "answer-job-one-title",
+      "question": "Prepare title for record job-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "job-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "employment",
+        "field": "job-one-title"
+      }
+    },
+    {
+      "id": "answer-job-one-startDate",
+      "question": "Prepare startDate for record job-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "job-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "employment",
+        "field": "job-one-startDate"
+      }
+    },
+    {
+      "id": "answer-job-one-endDate",
+      "question": "Prepare endDate for record job-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "job-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "employment",
+        "field": "job-one-endDate"
+      }
+    },
+    {
+      "id": "answer-job-two-title",
+      "question": "Prepare title for record job-two; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "job-two",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "employment",
+        "field": "job-two-title"
+      }
+    },
+    {
+      "id": "answer-job-two-startDate",
+      "question": "Prepare startDate for record job-two; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "job-two",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "employment",
+        "field": "job-two-startDate"
+      }
+    },
+    {
+      "id": "answer-job-two-endDate",
+      "question": "Prepare endDate for record job-two; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "job-two",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "employment",
+        "field": "job-two-endDate"
+      }
+    },
+    {
+      "id": "answer-job-three-title",
+      "question": "Prepare title for record job-three; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "job-three",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "employment",
+        "field": "job-three-title"
+      }
+    },
+    {
+      "id": "answer-job-three-startDate",
+      "question": "Prepare startDate for record job-three; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "job-three",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "employment",
+        "field": "job-three-startDate"
+      }
+    },
+    {
+      "id": "answer-job-three-current",
+      "question": "Prepare current for record job-three; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "job-three",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "employment",
+        "field": "job-three-current"
+      }
+    },
+    {
+      "id": "answer-ownership-one-percentage",
+      "question": "Prepare percentage for record ownership-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "ownership-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "ownership",
+        "field": "ownership-one-percentage"
+      }
+    },
+    {
+      "id": "answer-ownership-two-percentage",
+      "question": "Prepare percentage for record ownership-two; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "ownership-two",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "ownership",
+        "field": "ownership-two-percentage"
+      }
+    },
+    {
+      "id": "answer-management-one-title",
+      "question": "Prepare title for record management-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": "management-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "management",
+        "field": "management-one-title"
+      }
+    },
+    {
+      "id": "answer-license-one-credential",
+      "question": "Prepare credential for record license-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "license-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "license",
+        "field": "license-one-credential"
+      }
+    },
+    {
+      "id": "answer-license-one-expiry",
+      "question": "Prepare expiry for record license-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "license-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "license",
+        "field": "license-one-expiry"
+      }
+    },
+    {
+      "id": "answer-coverage-one-coverageType",
+      "question": "Prepare coverageType for record coverage-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "coverage-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "coverage",
+        "field": "coverage-one-coverageType"
+      }
+    },
+    {
+      "id": "answer-coverage-one-limit",
+      "question": "Prepare limit for record coverage-one; preserve its qualification.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "coverage-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "coverage",
+        "field": "coverage-one-limit"
+      }
+    }
+  ],
+  "recordedMilestones": [],
+  "execution": {
+    "priorOutcome": "none",
+    "stopRequested": false,
+    "permittedActions": ["inspect", "prepare"]
+  },
+  "relatedParties": [
+    {
+      "id": "owner-one",
+      "kind": "person",
+      "roles": ["owner"],
+      "evidence": [
+        {
+          "id": "party-register",
+          "revision": "r1"
+        }
+      ]
+    },
+    {
+      "id": "owner-two",
+      "kind": "organization",
+      "roles": ["owner"],
+      "evidence": [
+        {
+          "id": "party-register",
+          "revision": "r1"
+        }
+      ]
+    },
+    {
+      "id": "manager-one",
+      "kind": "person",
+      "roles": ["managing-employee"],
+      "evidence": [
+        {
+          "id": "party-register",
+          "revision": "r1"
+        }
+      ]
+    },
+    {
+      "id": "college-one",
+      "kind": "organization",
+      "roles": ["institution"],
+      "evidence": [
+        {
+          "id": "party-register",
+          "revision": "r1"
+        }
+      ]
+    },
+    {
+      "id": "college-two",
+      "kind": "organization",
+      "roles": ["institution"],
+      "evidence": [
+        {
+          "id": "party-register",
+          "revision": "r1"
+        }
+      ]
+    },
+    {
+      "id": "employer-one",
+      "kind": "organization",
+      "roles": ["employer"],
+      "evidence": [
+        {
+          "id": "party-register",
+          "revision": "r1"
+        }
+      ]
+    },
+    {
+      "id": "employer-two",
+      "kind": "organization",
+      "roles": ["employer"],
+      "evidence": [
+        {
+          "id": "party-register",
+          "revision": "r1"
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "id": "service-a",
+      "kind": "address",
+      "subjectId": "practice-alpha",
+      "relatedPartyId": null,
+      "addressRole": "service",
+      "locationIds": ["location-a"],
+      "period": null
+    },
+    {
+      "id": "service-b",
+      "kind": "address",
+      "subjectId": "practice-alpha",
+      "relatedPartyId": null,
+      "addressRole": "service",
+      "locationIds": ["location-b"],
+      "period": null
+    },
+    {
+      "id": "pay-to",
+      "kind": "address",
+      "subjectId": "practice-alpha",
+      "relatedPartyId": null,
+      "addressRole": "pay-to",
+      "locationIds": [],
+      "period": null
+    },
+    {
+      "id": "mail-to",
+      "kind": "address",
+      "subjectId": "practice-alpha",
+      "relatedPartyId": null,
+      "addressRole": "mail-to",
+      "locationIds": [],
+      "period": null
+    },
+    {
+      "id": "degree-one",
+      "kind": "education",
+      "subjectId": "provider-alpha",
+      "relatedPartyId": "college-one",
+      "addressRole": null,
+      "locationIds": [],
+      "period": {
+        "start": "2014-08-01",
+        "end": "2018-05-31"
+      }
+    },
+    {
+      "id": "degree-two",
+      "kind": "education",
+      "subjectId": "provider-alpha",
+      "relatedPartyId": "college-two",
+      "addressRole": null,
+      "locationIds": [],
+      "period": {
+        "start": "2018-08-01",
+        "end": "2020-05-31"
+      }
+    },
+    {
+      "id": "job-one",
+      "kind": "employment",
+      "subjectId": "provider-alpha",
+      "relatedPartyId": "employer-one",
+      "addressRole": null,
+      "locationIds": [],
+      "period": {
+        "start": "2020-06-01",
+        "end": "2022-03-31"
+      }
+    },
+    {
+      "id": "job-two",
+      "kind": "employment",
+      "subjectId": "provider-alpha",
+      "relatedPartyId": "employer-two",
+      "addressRole": null,
+      "locationIds": [],
+      "period": {
+        "start": null,
+        "end": "2024-01-31"
+      }
+    },
+    {
+      "id": "job-three",
+      "kind": "employment",
+      "subjectId": "provider-alpha",
+      "relatedPartyId": "employer-one",
+      "addressRole": null,
+      "locationIds": [],
+      "period": {
+        "start": "2024-02-01",
+        "end": null
+      }
+    },
+    {
+      "id": "ownership-one",
+      "kind": "ownership",
+      "subjectId": "practice-alpha",
+      "relatedPartyId": "owner-one",
+      "addressRole": null,
+      "locationIds": [],
+      "period": null
+    },
+    {
+      "id": "ownership-two",
+      "kind": "ownership",
+      "subjectId": "practice-alpha",
+      "relatedPartyId": "owner-two",
+      "addressRole": null,
+      "locationIds": [],
+      "period": null
+    },
+    {
+      "id": "management-one",
+      "kind": "management",
+      "subjectId": "practice-alpha",
+      "relatedPartyId": "manager-one",
+      "addressRole": null,
+      "locationIds": [],
+      "period": null
+    },
+    {
+      "id": "license-one",
+      "kind": "license",
+      "subjectId": "provider-alpha",
+      "relatedPartyId": null,
+      "addressRole": null,
+      "locationIds": [],
+      "period": {
+        "start": "2026-01-01",
+        "end": "2027-01-01"
+      }
+    },
+    {
+      "id": "coverage-one",
+      "kind": "coverage",
+      "subjectId": "provider-alpha",
+      "relatedPartyId": null,
+      "addressRole": null,
+      "locationIds": [],
+      "period": {
+        "start": "2026-01-01",
+        "end": "2026-12-31"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "license-image",
+      "revision": "r1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000001",
+      "mediaType": "image/png",
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "license-one",
+        "locationIds": []
+      },
+      "evidence": [
+        {
+          "id": "license-image-source",
+          "revision": "r1"
+        }
+      ],
+      "lineage": {
+        "kind": "source"
+      }
+    },
+    {
+      "id": "license-pdf",
+      "revision": "r1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000002",
+      "mediaType": "application/pdf",
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "license-one",
+        "locationIds": []
+      },
+      "evidence": [
+        {
+          "id": "license-pdf-source",
+          "revision": "r1"
+        }
+      ],
+      "lineage": {
+        "kind": "converted",
+        "sources": [
+          {
+            "id": "license-image",
+            "revision": "r1",
+            "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000001"
+          }
+        ],
+        "transformation": {
+          "id": "synthetic-image-to-pdf",
+          "revision": "v1"
+        }
+      }
+    },
+    {
+      "id": "cv-deficient",
+      "revision": "r1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000003",
+      "mediaType": "application/pdf",
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": null,
+        "locationIds": []
+      },
+      "evidence": [
+        {
+          "id": "cv-deficient-source",
+          "revision": "r1"
+        }
+      ],
+      "lineage": {
+        "kind": "source"
+      }
+    },
+    {
+      "id": "cv-corrected",
+      "revision": "r1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000004",
+      "mediaType": "application/pdf",
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": null,
+        "locationIds": []
+      },
+      "evidence": [
+        {
+          "id": "cv-corrected-source",
+          "revision": "r1"
+        }
+      ],
+      "lineage": {
+        "kind": "source"
+      }
+    },
+    {
+      "id": "coverage-pdf",
+      "revision": "r1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000005",
+      "mediaType": "application/pdf",
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "coverage-one",
+        "locationIds": []
+      },
+      "evidence": [
+        {
+          "id": "coverage-pdf-source",
+          "revision": "r1"
+        }
+      ],
+      "lineage": {
+        "kind": "source"
+      }
+    },
+    {
+      "id": "group-addendum",
+      "revision": "r1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000006",
+      "mediaType": "application/pdf",
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": null,
+        "locationIds": []
+      },
+      "evidence": [
+        {
+          "id": "group-addendum-source",
+          "revision": "r1"
+        }
+      ],
+      "lineage": {
+        "kind": "source"
+      }
+    },
+    {
+      "id": "provider-agreement",
+      "revision": "r1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000007",
+      "mediaType": "application/pdf",
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": null,
+        "locationIds": []
+      },
+      "evidence": [
+        {
+          "id": "provider-agreement-source",
+          "revision": "r1"
+        }
+      ],
+      "lineage": {
+        "kind": "source"
+      }
+    }
+  ],
+  "attachmentRequirements": [
+    {
+      "id": "attach-license",
+      "question": "Attach a PDF license; preserve image-to-PDF source lineage.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "license-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "documents",
+        "field": "attach-license"
+      },
+      "acceptedMediaTypes": ["application/pdf"]
+    },
+    {
+      "id": "attach-cv",
+      "question": "Use the corrected CV with complete repeating history; do not select the deficient version.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": null,
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "documents",
+        "field": "attach-cv"
+      },
+      "acceptedMediaTypes": ["application/pdf"]
+    },
+    {
+      "id": "attach-coverage",
+      "question": "Attach the coverage document.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": "coverage-one",
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "documents",
+        "field": "attach-coverage"
+      },
+      "acceptedMediaTypes": ["application/pdf"]
+    },
+    {
+      "id": "attach-addendum",
+      "question": "Prepare group addendum without terminating existing enrollment.",
+      "required": true,
+      "scope": {
+        "subjectId": "practice-alpha",
+        "recordId": null,
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "documents",
+        "field": "attach-addendum"
+      },
+      "acceptedMediaTypes": ["application/pdf"]
+    },
+    {
+      "id": "attach-agreement",
+      "question": "Prepare separate provider agreement; do not claim it has been signed or returned.",
+      "required": true,
+      "scope": {
+        "subjectId": "provider-alpha",
+        "recordId": null,
+        "locationIds": []
+      },
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "documents",
+        "field": "attach-agreement"
+      },
+      "acceptedMediaTypes": ["application/pdf"]
+    }
+  ],
+  "protectedActionRequirements": [
+    {
+      "id": "practice-signature",
+      "action": "signature",
+      "actorSubjectId": "practice-alpha",
+      "actorRole": "authorized practice representative",
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "final-handoff",
+        "field": "practice-signature"
+      },
+      "attachmentRequirementIds": ["attach-addendum"],
+      "blocksRequirementIds": []
+    },
+    {
+      "id": "provider-signature",
+      "action": "signature",
+      "actorSubjectId": "provider-alpha",
+      "actorRole": "provider",
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "final-handoff",
+        "field": "provider-signature"
+      },
+      "attachmentRequirementIds": ["attach-agreement"],
+      "blocksRequirementIds": []
+    },
+    {
+      "id": "final-submission",
+      "action": "submission",
+      "actorSubjectId": "practice-alpha",
+      "actorRole": "authorized submitter",
+      "destination": {
+        "system": "synthetic-portal",
+        "section": "final-handoff",
+        "field": "final-submission"
+      },
+      "attachmentRequirementIds": [
+        "attach-license",
+        "attach-cv",
+        "attach-coverage",
+        "attach-addendum",
+        "attach-agreement"
+      ],
+      "blocksRequirementIds": []
+    }
+  ]
+}

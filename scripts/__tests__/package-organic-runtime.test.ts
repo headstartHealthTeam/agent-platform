@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, readFile, realpath, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,8 +14,10 @@ import {
   type RuntimeCommand,
 } from '../package-organic-runtime.js';
 
+const temporaryRoots: string[] = [];
 async function setup(): Promise<{ root: string; target: string; command: RuntimeCommand }> {
   const temporary = await realpath(await mkdtemp(join(tmpdir(), 'organic-runtime-test-')));
+  temporaryRoots.push(temporary);
   const root = join(temporary, 'source');
   const target = join(temporary, 'artifact');
   await mkdir(join(root, 'packages/organic-performance-engine/dist'), { recursive: true });
@@ -27,6 +29,10 @@ async function setup(): Promise<{ root: string; target: string; command: Runtime
     if (args.includes('rev-parse')) return 'synthetic-revision';
     if (args.includes('status')) return '?? uncommitted';
     await mkdir(join(target, 'dist'), { recursive: true });
+    await writeFile(
+      join(target, 'package.json'),
+      JSON.stringify({ name: '@headstart-health/organic-performance-engine', version: '3.2.1' })
+    );
     for (const name of ['cli.js', 'collect-cli.js', 'workbook-cli.js'])
       await writeFile(join(target, 'dist', name), '// synthetic');
     await mkdir(join(target, 'templates'), { recursive: true });
@@ -48,9 +54,15 @@ async function setup(): Promise<{ root: string; target: string; command: Runtime
   return { root, target, command };
 }
 describe('standalone organic runtime packaging', () => {
-  afterEach(() => vi.unstubAllEnvs());
+  afterEach(async () => {
+    vi.unstubAllEnvs();
+    await Promise.all(
+      temporaryRoots.splice(0).map((directory) => rm(directory, { recursive: true, force: true }))
+    );
+  });
   it('runs the actual pinned Corepack entrypoint without a PATH shim or live provider', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'organic corepack shim space & fixture-'));
+    temporaryRoots.push(directory);
     const marker = join(directory, 'shim-executed.txt');
     // Deliberately unusable PATH shims must never be consulted by the production launcher.
     await writeFile(
@@ -74,6 +86,7 @@ describe('standalone organic runtime packaging', () => {
   });
   it('preserves Node argv boundaries and private failure output without a command interpreter', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'organic launcher space & fixture-'));
+    temporaryRoots.push(directory);
     const script = join(directory, 'corepack-fixture.cjs');
     await writeFile(
       script,
@@ -117,6 +130,7 @@ if (process.argv[2] === 'fail') {
     });
     expect(receipt).toMatchObject({
       sourceRevision: 'synthetic-revision',
+      version: '3.2.1',
       sourceDirty: true,
       pnpmVersion: '9.15.0',
     });
@@ -157,5 +171,26 @@ if (process.argv[2] === 'fail') {
     await expect(
       verifyPortableRuntime(x.target, join(x.root, 'packages/organic-performance-engine'))
     ).rejects.toThrow(/external dependency/);
+  });
+  it.each([
+    { name: 'different-package', version: '1.2.3' },
+    { name: '@headstart-health/organic-performance-engine' },
+    { name: '@headstart-health/organic-performance-engine', version: ' ' },
+    { name: '@headstart-health/organic-performance-engine', version: 123 },
+    null,
+  ])('refuses a receipt for invalid deployed manifest %j', async (manifest) => {
+    const x = await setup();
+    const command: RuntimeCommand = async (executable, args, cwd) => {
+      const result = await x.command(executable, args, cwd);
+      if (args.includes('deploy'))
+        await writeFile(join(x.target, 'package.json'), JSON.stringify(manifest));
+      return result;
+    };
+    await expect(
+      packageOrganicRuntime({ sourceRoot: x.root, target: x.target, command })
+    ).rejects.toThrow('Runtime manifest');
+    await expect(readFile(join(x.target, 'runtime-receipt.json'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
   });
 });
