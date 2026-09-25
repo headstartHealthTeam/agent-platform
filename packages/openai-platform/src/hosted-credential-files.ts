@@ -42,6 +42,15 @@ export function bindHostedCredentialFiles(
   const environment = action.body.environment;
   if (environment.type !== 'openai_hosted')
     throw new Error('Credential files require a hosted environment');
+  if (
+    environment.network?.access !== 'restricted' ||
+    !environment.network.allowed_domains?.length ||
+    environment.network.allowed_domains.some(
+      (domain) =>
+        !z.hostname().safeParse(domain.startsWith('*.') ? domain.slice(2) : domain).success
+    )
+  )
+    throw new Error('Credential files require an explicit restricted network allowlist');
   if (environment.environment_template_id && environment.files === undefined)
     throw new Error('Template credential files require an explicit complete input-file list');
   const existing = environment.files ?? [];

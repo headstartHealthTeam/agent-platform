@@ -1,3 +1,5 @@
+import { HostedArtifactError } from './hosted-artifact-error.js';
+
 /** Bound actual bytes, including a body that stalls after response headers arrive. */
 export async function readHostedArtifactBody(
   response: Response,
@@ -19,7 +21,7 @@ export async function readHostedArtifactBody(
       signal.throwIfAborted();
       if (part.done) break;
       length += part.value.byteLength;
-      if (length > size) throw new Error('Artifact overflow');
+      if (length > size) throw new HostedArtifactError('artifact-capacity');
       chunks.push(part.value);
     }
     if (length !== size) throw new Error('Artifact truncated');

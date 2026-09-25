@@ -68,12 +68,12 @@ The shared adapter also supports explicit same-run MCP credential delivery to ho
 OpenAI's credential vault. Backend persists only its non-secret launch-correlated receipt and can
 resume proven-undispatched setup after restart. Its `openai-service` composition supplies the
 application key from an explicitly selected managed secret, while `openai-local` retains the
-workstation resolver; both use the same provider artifact. These implementations have synthetic
-SDK/database coverage, not deployed or live-source acceptance. Google credential binding and
-hosted-file-to-reviewer evidence delivery remain distinct integration work.
+workstation resolver; both use the same provider artifact. Google credential-file binding and
+completed-turn artifact reads are separate shared adapter capabilities; the owning application
+supplies protected deployment credentials and retains exact reviewer evidence. Configuration,
+deployment and live-source acceptance remain separate from these code-level contracts.
 
-The next implementation checkpoint is one normal-app source-to-review/correction demonstration.
-Its reviewable changes have these distinct owners:
+Normal-app source-to-review/correction acceptance has these distinct owners:
 
 | Change                                     | Includes / owning files or subsystem                                                                                                                                                                                      | Explicitly excludes                                                                                                    | Verification                                                                                                                                                                        |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

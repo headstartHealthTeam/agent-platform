@@ -21,7 +21,7 @@ complete real-source correction loop remain unverified; this decision changes no
 
 The build also emits `dist/preparation-definition.json`: the canonical skill, the
 [connected entry prompt](prompts/connected.md), both public input schemas, proposal schema and
-four function declarations. Its workflow revision hashes the complete definition. The artifact
+five function declarations. Its workflow revision hashes the complete definition. The artifact
 contains no fixtures, expected answers, credentials or private case data. Deploy/pin reviewed bytes
 alongside the validator; do not maintain a second instruction copy in backend.
 
@@ -41,8 +41,13 @@ in [workflow contracts](../../packages/workflow-contracts/README.md#responsibili
 It covers Drive originals, exports, Docs structure and runtime-derived artifacts alongside
 Salesforce originals. A runtime file or manifest is not a retained receipt: the trusted application
 handoff must verify the bytes, case/subject binding and exact parent lineage before publication.
-Binding hosted artifact delivery to that handoff remains a separate integration step; the capture
-function below still accepts Salesforce identifiers only.
+`queue_credentialing_hosted_review_package` queues a complete package plus exact output paths for
+the application's after-turn delivery worker. Queue admission is not successful retention or
+publication: the agent must end the turn so the provider can publish immutable outputs, then the
+application validates bytes, lineage and current case authority. The capture function below
+remains the direct Salesforce-original path; hosted delivery also supports full Drive/export and
+runtime-derived evidence. Connected verification, not the presence of these declarations, proves
+the complete integration.
 
 `capture_credentialing_source_document` is the protected original-file retention capability.
 It accepts exact Salesforce link/document/version identifiers discovered through MCP, verifies the

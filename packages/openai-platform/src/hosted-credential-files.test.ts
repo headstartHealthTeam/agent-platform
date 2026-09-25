@@ -1,4 +1,5 @@
 import type { AgentHostedCredentialFiles } from '@headstart-health/workflow-contracts';
+import { credentialContentSha256 } from '@headstart-health/workflow-contracts';
 import { describe, expect, it, vi, type Mock } from 'vitest';
 
 import { fingerprint, type OpenAIPlatform } from './platform.js';
@@ -17,8 +18,15 @@ const files = [{ path, content: secret }];
 const settings = {
   model: 'synthetic',
   reasoning: { effort: 'high' },
-  environment: { type: 'openai_hosted' },
+  environment: {
+    type: 'openai_hosted',
+    network: { access: 'restricted', allowed_domains: ['googleapis.com', '*.googleapis.com'] },
+  },
   credentialFiles: [path],
+};
+const options = {
+  expectedTarget: fingerprint(target),
+  retainCredentialProtection: async (): Promise<void> => undefined,
 };
 function setup(
   profile: unknown = settings,
@@ -76,17 +84,13 @@ describe('ephemeral hosted credential files', () => {
     await expect(port.preflightLaunch(request)).rejects.toThrow('preflight failed');
     expect(platform.apply).not.toHaveBeenCalled();
     await port.preflightLaunch(request);
-    expect(
-      (await port.createSession(request, undefined, { expectedTarget: fingerprint(target) })).status
-    ).toBe('created');
+    expect((await port.createSession(request, undefined, options)).status).toBe('created');
     expect(resolve).toHaveBeenCalledTimes(3);
   });
   it('places bytes only in the SDK setup, leaving intent, profile and receipt non-secret', async () => {
     const { port, platform } = setup();
     await port.preflightLaunch(request);
-    const result = await port.createSession(request, undefined, {
-      expectedTarget: fingerprint(target),
-    });
+    const result = await port.createSession(request, undefined, options);
     expect(result.status).toBe('created');
     expect(platform.apply.mock.calls[0]?.[0]).toMatchObject({
       body: {
@@ -131,21 +135,55 @@ describe('ephemeral hosted credential files', () => {
     }
   });
   it('requires explicit file composition with a template so credential injection cannot erase inherited runtime files', async () => {
-    const environment = { type: 'openai_hosted', environment_template_id: 'template_invented' };
+    const environment = { ...settings.environment, environment_template_id: 'template_invented' };
     const ambiguous = setup({ ...settings, environment });
     await expect(ambiguous.port.preflightLaunch(request)).rejects.toThrow('preflight failed');
     expect(ambiguous.platform.apply).not.toHaveBeenCalled();
     const runtime = { type: 'inline', path: '/workspace/runtime/profile.json', data: 'e30=' };
     const explicit = setup({ ...settings, environment: { ...environment, files: [runtime] } });
-    expect(
-      (
-        await explicit.port.createSession(request, undefined, {
-          expectedTarget: fingerprint(target),
-        })
-      ).status
-    ).toBe('created');
+    expect((await explicit.port.createSession(request, undefined, options)).status).toBe('created');
     expect(explicit.platform.apply.mock.calls[0]?.[0]).toMatchObject({
       body: { environment: { files: [runtime, { path }] } },
     });
+  });
+  it.each([
+    undefined,
+    { access: 'enabled' },
+    { access: 'disabled' },
+    { access: 'restricted' },
+    { access: 'restricted', allowed_domains: [] },
+    { access: 'restricted', allowed_domains: ['*'] },
+  ])(
+    'refuses credential-file dispatch without an explicit restricted allowlist: %j',
+    async (network) => {
+      const { port, platform } = setup({
+        ...settings,
+        environment: { type: 'openai_hosted', network },
+      });
+      await expect(port.preflightLaunch(request)).rejects.toThrow('preflight failed');
+      expect(await port.createSession(request, undefined, options)).toEqual({
+        status: 'not-attempted',
+        reason: 'validation',
+      });
+      expect(platform.apply).not.toHaveBeenCalled();
+    }
+  );
+  it('requires durable non-secret protection before dispatch and stops on retention failure', async () => {
+    const { port, platform } = setup();
+    expect(
+      await port.createSession(request, undefined, { expectedTarget: fingerprint(target) })
+    ).toEqual({ status: 'not-attempted', reason: 'validation' });
+    const retain = vi.fn().mockImplementation(async () => {
+      expect(platform.apply).not.toHaveBeenCalled();
+      throw new Error('Synthetic persistence outage');
+    });
+    expect(
+      await port.createSession(request, undefined, {
+        ...options,
+        retainCredentialProtection: retain,
+      })
+    ).toEqual({ status: 'not-attempted', reason: 'before-dispatch' });
+    expect(retain).toHaveBeenCalledWith({ contentSha256: [credentialContentSha256(secret)] });
+    expect(platform.apply).not.toHaveBeenCalled();
   });
 });

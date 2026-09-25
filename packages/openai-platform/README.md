@@ -172,7 +172,7 @@ workstation credential resolver. Optional local compute does not define the host
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.9.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.10.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
@@ -227,7 +227,7 @@ the explicit hosted binding below can also deliver the same grant to runtime fil
 The owning application provisions the non-human identity, issues and revokes run grants
 and enforces source permissions. This package does not implement employee OAuth or mint Headstart
 credentials. The same attachment path works with hosted and retained local execution; it does not
-make a credential valid at a different MCP deployment/database. Adapter `0.9.0` pins the credential,
+make a credential valid at a different MCP deployment/database. Adapter `0.10.0` pins the credential,
 vault-receipt and dispatch/recovery contracts together, so an older artifact cannot silently ignore them.
 
 For hosted file tools, trusted launch settings may additionally declare:
@@ -247,6 +247,10 @@ substitutes the credential only on HTTPS requests to the existing MCP audience's
 hosted network policy must permit that host (port 443 or 8443); this is credential delivery,
 not another source-permission policy. The runtime profile refers to the environment variable.
 Google credentials are separate and are **not** supplied by this mapping.
+With a template, runtime credentials require explicit complete `env` and `network` overrides:
+omitted settings cannot prove collision-free names or reachable destinations. Explicit `env: {}`
+or `null` intentionally replaces template variables. Template network overrides cannot broaden
+the provider's policy; an incompatible template must be corrected by the deployment owner.
 
 This mode requires both `beforeDispatch` and `retainCredentialVault` callbacks. The owning
 application must durably save the returned non-secret `AgentCredentialVault` receipt before any
@@ -265,6 +269,9 @@ Existing Headstart grant expiry/revocation and Stop remain authoritative. Automa
 garbage collection is not implemented; deleting a vault would neither revoke the original token
 nor cancel a running session. Vault updates do not rotate an already-created sandbox's credential.
 Synthetic SDK/database tests prove the handoff and recovery contract, not hosted full-document access.
+The published vault documentation does not specify the project's vault quota. Confirm capacity
+and an owner-approved retention/cleanup procedure before hosted activation; do not invent a quota
+or delete vaults belonging to other sessions.
 
 For tools that must locally sign or refresh credentials (the existing Google Drive reader), a
 native-vault placeholder is insufficient. Trusted composition may separately provide ephemeral
@@ -279,6 +286,21 @@ observation, recovery or cancellation of existing sessions. A later launch can r
 When using an environment template, supply the complete explicit `environment.files` list (or
 explicit `null`/empty list when intentionally overriding inherited files); credential injection
 will not silently replace omitted/inherited runtime inputs.
+Every credential-file launch requires `network.access: "restricted"` and a nonempty explicit domain
+allowlist, even with a template. The approved profile must include all tool, installation and source
+endpoints needed by the workflow: for the current Google transport that includes
+`oauth2.googleapis.com`, `www.googleapis.com`, `drive.googleapis.com` and `docs.googleapis.com`, plus
+the bound MCP host and any other reviewed investigation/tool destinations. This is an egress control,
+not a record/field/evidence restriction; do not silently remove necessary source access.
+
+`retainCredentialProtection` must durably acknowledge the exact injected-file SHA-256 digests before
+any credential installation or session dispatch. Preserve/union these non-secret digests through
+proven-undispatched retries and rotation; existing-run controls do not reread current Google keys.
+The shared `workflow-contracts` credential-material guard checks exact copies and unambiguous private
+key markers in original bytes and structured function input/output (including one base64 wrapper).
+Applications apply it before persistence and retention, not merely before reviewer display. It does
+not redact ordinary sensitive business evidence, and it is not an exhaustive transformed-secret or
+prompt-injection detector. Keep the network and identity boundaries as independent protections.
 
 These are real secrets visible to sandbox code, not vault placeholders. Provision a read-only
 Google identity with Viewer visibility to all required evidence and no broader roles/delegation.
@@ -286,6 +308,10 @@ The helper's requested OAuth scope alone does not restrict possession of a priva
 not revoke that key. Identity approval, rotation and hosted-environment lifecycle remain explicit
 deployment responsibilities. Keep secret contents out of the repository, profile, output directory,
 model input, logs and application journal.
+The pinned SDK's session-read contract returns input-file metadata, excluding inline contents;
+`--include-content` does not add fields omitted by that API. This is documented/schema evidence,
+not a live-provider guarantee. A sufficiently privileged project key can still control a session;
+never treat metadata-only readback as protection from that authority.
 
 ### Ended-turn file handoff
 
@@ -296,6 +322,14 @@ including stalled bodies. It never fetches arbitrary URLs or backend paths.
 A successful complete listing without the requested completed-turn output is an invalid reference,
 not an indefinite network retry. The application saves correction feedback so a corrected request
 can proceed; transport failures remain retryable.
+Failed/cancelled roots, non-root references and actual byte overflow are permanent identity/capacity
+failures; pending turns and interrupted/truncated transport remain retryable. The official guide
+matches completed turn plus path and raises absence after listing; it does not document eventual
+listing lag or fallback to an earlier turn's unchanged file. Likewise the content API is a binary
+download, not a documented signed-URL redirect. The actual shared-client tests preserve
+`redirect: "error"`; never forward the application key to an unverified redirect destination.
+If hosted acceptance reveals a different provider behavior, capture sanitized evidence and revise
+that boundary explicitly rather than weakening provenance or guessing a retry window.
 
 OpenAI publishes output artifacts only after a turn completes. A function cannot synchronously
 wait for its own turn's files. The credentialing queue function therefore returns truthful queued

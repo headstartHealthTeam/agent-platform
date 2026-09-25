@@ -1,3 +1,4 @@
+import type { AgentCredentialProtection } from './credential-protection.js';
 import type { OperatorBinding } from './operator.js';
 
 /** Trusted application deployment input, never supplied by an operator or model. */
@@ -66,6 +67,10 @@ export interface AgentSessionCreateOptions {
   expectedTarget: string;
   credentialVault?: AgentCredentialVault;
   retainCredentialVault?: (vault: AgentCredentialVault) => Promise<void>;
+  /** Required with hosted credential files. Persist before any credential installation/dispatch;
+   * union prior hashes on a proven-undispatched retry and retain for the session's lifetime.
+   */
+  retainCredentialProtection?: (protection: AgentCredentialProtection) => Promise<void>;
   /** Called after validation/provider preflight, immediately before the one SDK create attempt.
    * The application must durably journal dispatch here. Throwing prevents the provider write.
    */

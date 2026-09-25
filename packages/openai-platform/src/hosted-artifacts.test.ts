@@ -1,8 +1,10 @@
 import OpenAI from 'openai';
 import { describe, expect, it, vi, type Mock } from 'vitest';
 
+import { resolveRuntimeConfig } from './config.js';
 import { readHostedArtifactBody } from './hosted-artifact-body.js';
 import { downloadHostedArtifact } from './hosted-artifacts.js';
+import { OpenAIPlatform } from './platform.js';
 
 const request = { turnId: 'turn', path: '/workspace/outputs/license.pdf', maxBytes: 100 };
 const artifact = {
@@ -25,6 +27,60 @@ function setup(
   return { client: new OpenAI({ apiKey: 'invented', fetch: fetcher, maxRetries: 0 }), fetcher };
 }
 describe('native hosted artifact transport', () => {
+  it.each([false, true])(
+    'exercises the shared client, preserving authentication boundaries (redirect=%s)',
+    async (redirect) => {
+      const requests: Request[] = [];
+      const config = resolveRuntimeConfig({
+        profile: {
+          schemaVersion: 'headstart-capability-profile/v1',
+          id: 'synthetic',
+          revision: 'v1',
+          bindings: [
+            {
+              capabilityId: 'openai.agents.read',
+              providerId: 'openai-sdk',
+              adapterVersion: '0.1.0',
+              options: { organizationId: 'org-synthetic', projectId: 'proj_synthetic' },
+            },
+          ],
+        },
+      });
+      const transport: typeof fetch = async (input, init) => {
+        const http = new Request(input, init);
+        requests.push(http);
+        const pathname = new URL(http.url).pathname;
+        if (pathname === '/v1/agents')
+          return Response.json(
+            { data: [], has_more: false },
+            { headers: { 'openai-project': 'proj_synthetic' } }
+          );
+        if (pathname.endsWith('/content'))
+          return redirect
+            ? new Response(null, {
+                status: 302,
+                headers: { location: 'https://untrusted.example.com/bytes' },
+              })
+            : new Response('%PDF-abc');
+        return Response.json({ data: [artifact], has_more: false });
+      };
+      const platform = new OpenAIPlatform(config, 'synthetic-api-key', transport);
+      if (redirect)
+        await expect(platform.readHostedArtifact('session', request)).rejects.toThrow(
+          'unavailable'
+        );
+      else
+        expect(
+          Buffer.from((await platform.readHostedArtifact('session', request)).bytes).toString()
+        ).toBe('%PDF-abc');
+      expect(requests).toHaveLength(3);
+      for (const http of requests) {
+        expect(http.redirect).toBe('error');
+        expect(new URL(http.url).hostname).toBe('api.openai.com');
+        expect(http.headers.get('openai-project')).toBe('proj_synthetic');
+      }
+    }
+  );
   it('returns a repairable identity error after a complete ended-turn listing lacks the requested path', async () => {
     const { client, fetcher } = setup([[{ ...artifact, id: 'old', turn_id: 'old' }], []]);
     await expect(downloadHostedArtifact(client, 'session', request)).rejects.toMatchObject({
@@ -55,9 +111,15 @@ describe('native hosted artifact transport', () => {
     );
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
-  it.each(['short', 'longer-than-eight'])('rejects a changed body size: %s', async (body) => {
-    const { client } = setup([[artifact]], body);
+  it('keeps a truncated response retryable without accepting substituted bytes', async () => {
+    const { client } = setup([[artifact]], 'short');
     await expect(downloadHostedArtifact(client, 'session', request)).rejects.toThrow('unavailable');
+  });
+  it('classifies body overflow as a permanent capacity failure', async () => {
+    const { client } = setup([[artifact]], 'longer-than-eight');
+    await expect(downloadHostedArtifact(client, 'session', request)).rejects.toMatchObject({
+      code: 'artifact-capacity',
+    });
   });
   it.each([
     '/workspace/.credentials/google.json',

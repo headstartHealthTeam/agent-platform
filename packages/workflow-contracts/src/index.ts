@@ -21,6 +21,12 @@ export type {
 } from './evidence.js';
 
 export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from './functions.js';
+export {
+  credentialContentSha256,
+  containsCredentialBytes,
+  containsCredentialMaterial,
+  type AgentCredentialProtection,
+} from './credential-protection.js';
 export { AGENT_FUNCTION_PAYLOAD_LIMIT } from './functions.js';
 export type {
   AgentArtifactRequest,

@@ -13,6 +13,7 @@ import type {
   OperatorBinding,
   AgentHostedCredentialFiles,
 } from '@headstart-health/workflow-contracts';
+import { credentialContentSha256 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
 import type { Target } from './config.js';
@@ -43,6 +44,26 @@ const launchSettings = z
 
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,200}$/);
 const notAttempted = 'not-attempted';
+async function retainCredentialProtection(
+  action: Extract<Action, { operation: 'sessions.create' }>,
+  paths: string[] | undefined,
+  retain: AgentSessionCreateOptions['retainCredentialProtection']
+): Promise<'validation' | 'before-dispatch' | null> {
+  if (!paths?.length || action.body.environment.type !== 'openai_hosted') return null;
+  if (!retain) return 'validation';
+  try {
+    await retain({
+      contentSha256: (action.body.environment.files ?? []).flatMap((file) =>
+        file.type === 'inline' && paths.includes(file.path)
+          ? [credentialContentSha256(Buffer.from(file.data, 'base64'))]
+          : []
+      ),
+    });
+    return null;
+  } catch {
+    return 'before-dispatch';
+  }
+}
 const receiptSchema = z
   .object({
     sessionId: id,
@@ -135,6 +156,12 @@ export class SessionLaunchPort implements AgentLaunchPort {
     } catch {
       return { status: notAttempted, reason: 'validation' };
     }
+    const protectionFailure = await retainCredentialProtection(
+      action,
+      launchSettings.parse(this.settings).credentialFiles,
+      options.retainCredentialProtection
+    );
+    if (protectionFailure) return { status: notAttempted, reason: protectionFailure };
     const runtime = this.runtimeBindings(launchSettings.parse(this.settings), credentials);
     if (runtime.length) {
       if (
@@ -283,6 +310,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
     const environment = z
       .object({
         type: z.literal('openai_hosted'),
+        environment_template_id: z.string().optional(),
         env: z.record(z.string(), z.string()).nullish(),
         network: z
           .object({
@@ -292,6 +320,13 @@ export class SessionLaunchPort implements AgentLaunchPort {
           .optional(),
       })
       .parse(settings.environment);
+    if (
+      environment.environment_template_id &&
+      (environment.env === undefined || environment.network === undefined)
+    )
+      throw new Error(
+        'Template runtime credentials require explicit environment and network settings'
+      );
     return settings.runtimeCredentials.map((binding) => {
       const credential = credentials?.find((value) => value.serverLabel === binding.serverLabel);
       if (!credential || environment.env?.[binding.environmentVariable] !== undefined)

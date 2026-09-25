@@ -252,6 +252,42 @@ describe('hosted run credential delivery through the official SDK transport', ()
     });
     expect(f.dispatch).toHaveBeenCalledTimes(1);
   });
+  it('requires explicit template overrides instead of trusting hidden inherited credential settings', async () => {
+    const f = fixture();
+    const template = { type: 'openai_hosted', environment_template_id: 'template_synthetic' };
+    for (const environment of [template, { ...template, network: settings.environment.network }]) {
+      expect(
+        await f.port({ ...settings, environment }).createSession(request, [credential], f.options())
+      ).toEqual({ status: 'not-attempted', reason: 'validation' });
+    }
+    expect(f.calls).toHaveLength(0);
+    const explicit = { ...template, env: {}, network: settings.environment.network };
+    expect(
+      await f
+        .port({ ...settings, environment: explicit })
+        .createSession(request, [credential], f.options())
+    ).toMatchObject({ status: 'created' });
+  });
+  it('checks template overrides for environment-name collisions and unavailable MCP hosts', async () => {
+    const f = fixture();
+    for (const overrides of [
+      {
+        env: { HEADSTART_MCP_AUTHORIZATION: 'not-a-vault-value' },
+        network: settings.environment.network,
+      },
+      { env: {}, network: { access: 'restricted', allowed_domains: ['other.example.com'] } },
+    ]) {
+      const environment = {
+        type: 'openai_hosted',
+        environment_template_id: 'template_synthetic',
+        ...overrides,
+      };
+      expect(
+        await f.port({ ...settings, environment }).createSession(request, [credential], f.options())
+      ).toEqual({ status: 'not-attempted', reason: 'validation' });
+    }
+    expect(f.calls).toHaveLength(0);
+  });
   it('never installs a secret when durable receipt acknowledgement fails', async () => {
     const f = fixture();
     f.retain.mockRejectedValue(new Error('lost database acknowledgement'));
