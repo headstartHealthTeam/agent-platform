@@ -1,4 +1,5 @@
 import { verifyCapabilityPreflight } from '@headstart-health/capability-runtime';
+import type { AgentArtifact, AgentArtifactRequest } from '@headstart-health/workflow-contracts';
 import OpenAI from 'openai';
 
 import {
@@ -6,10 +7,12 @@ import {
   CAPABILITY,
   PROVIDER,
   requirement,
-  type ResolvedConfig,
+  type RuntimeConfig,
   type Target,
 } from './config.js';
 import { fingerprint } from './fingerprint.js';
+import { downloadHostedArtifact } from './hosted-artifacts.js';
+import { HostedCredentialVaults } from './hosted-credentials.js';
 import {
   observationRequestSchema,
   projectSessionControlEvent,
@@ -108,9 +111,20 @@ function pageData(page: { data: { id: string | null }[]; has_more: boolean }): u
 /** Supervising caller owns human approval; managed workflows need a separate approval executor. */
 export class OpenAIPlatform {
   readonly #client: OpenAI;
-  readonly #config: ResolvedConfig;
+  readonly #config: RuntimeConfig;
 
-  public constructor(config: ResolvedConfig, apiKey: string, fetchImplementation?: typeof fetch) {
+  public async readHostedArtifact(
+    sessionId: string,
+    request: AgentArtifactRequest
+  ): Promise<AgentArtifact> {
+    await this.preflight();
+    return downloadHostedArtifact(this.#client, sessionId, request);
+  }
+
+  public provisionHostedCredentials: HostedCredentialVaults['provision'] = (...args) =>
+    new HostedCredentialVaults(this.#client).provision(...args);
+
+  public constructor(config: RuntimeConfig, apiKey: string, fetchImplementation?: typeof fetch) {
     this.#config = config;
     this.#client = new OpenAI({
       apiKey,

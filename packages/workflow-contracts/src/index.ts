@@ -23,6 +23,12 @@ export type {
 export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from './functions.js';
 export { AGENT_FUNCTION_PAYLOAD_LIMIT } from './functions.js';
 export type {
+  AgentArtifactRequest,
+  AgentArtifact,
+  AgentArtifactPort,
+  AgentArtifactFailureCode,
+} from './artifacts.js';
+export type {
   AgentLaunchDefinition,
   AgentLaunchRequest,
   AgentSessionCredential,
@@ -31,6 +37,9 @@ export type {
   AgentLaunchIdentity,
   AgentSessionCandidate,
   AgentLaunchPreflight,
+  AgentHostedCredentialFile,
+  AgentHostedCredentialFiles,
+  AgentCredentialVault,
   AgentSessionCreateOptions,
   AgentSessionCreateResult,
   AgentLaunchCandidateResult,

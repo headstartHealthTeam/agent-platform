@@ -17,6 +17,9 @@ import type {
   AgentLaunchCandidatePage,
   OperatorHistoryCursor,
   OperatorHistoryPage,
+  AgentArtifactRequest,
+  AgentArtifact,
+  AgentHostedCredentialFiles,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
@@ -43,7 +46,8 @@ const wrongTarget = 'Wrong runtime target';
 const noInferenceAuthority = 'No current bounded inference authorization';
 const sessionGet = 'sessions.get' as const;
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
-type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight' | 'openOperatorObservation'>;
+type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight' | 'openOperatorObservation'> &
+  Partial<Pick<OpenAIPlatform, 'readHostedArtifact'>>;
 function operatorStatus(
   status: ReturnType<typeof verifiedOperatorRoots>['root']['status'],
   hasQuestions: boolean
@@ -78,7 +82,8 @@ export class OperatorRuntimePort {
     private readonly billableUntil = 0,
     private readonly appFunctions: readonly string[] = [],
     private readonly launchSettings?: unknown,
-    private readonly executor?: SessionExecutor
+    private readonly executor?: SessionExecutor,
+    private readonly credentialFiles?: AgentHostedCredentialFiles
   ) {
     z.array(z.string().regex(/^[A-Za-z0-9_-]{1,100}$/))
       .max(30)
@@ -93,8 +98,34 @@ export class OperatorRuntimePort {
       this.launchSettings,
       this.billableUntil,
       this.appFunctions,
-      this.executor
+      this.executor,
+      this.credentialFiles
     );
+  }
+  async artifactTurnStatus(
+    binding: OperatorBinding,
+    turnId: string
+  ): Promise<'pending' | 'completed' | 'failed' | 'cancelled'> {
+    this.requireOpen();
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
+    const observed = await this.turns.read(this.platform, binding);
+    const turn = observed.roots.find((candidate) => candidate.id === turnId);
+    if (!turn) throw new Error('Artifact turn is not a verified root in this session');
+    return turn.status === 'completed' || turn.status === 'failed' || turn.status === 'cancelled'
+      ? turn.status
+      : 'pending';
+  }
+  async readArtifact(
+    binding: OperatorBinding,
+    request: AgentArtifactRequest
+  ): Promise<AgentArtifact> {
+    if (
+      (await this.artifactTurnStatus(binding, request.turnId)) !== 'completed' ||
+      !this.platform.readHostedArtifact
+    )
+      throw new Error('Hosted artifact turn has not completed');
+    this.requireOpen();
+    return this.platform.readHostedArtifact(binding.sessionId, request);
   }
   preflightLaunch(
     request: AgentLaunchRequest,

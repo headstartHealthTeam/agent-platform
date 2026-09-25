@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 
+import { hostedDeliveryDefinition } from './hosted-delivery-definition.js';
+
 // Generated deployment artifact: one canonical skill, connected entry prompt and public schemas.
 // No fixtures, oracle proposals, credentials or private case material enter it.
 const text = (path: string): Promise<string> => readFile(new URL(path, import.meta.url), 'utf8');
@@ -24,6 +26,7 @@ const definition = {
     compact(output),
   ].join('\n\n'),
   tools: [
+    hostedDeliveryDefinition,
     {
       type: 'function',
       name: 'ask_operator',

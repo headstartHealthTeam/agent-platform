@@ -11,10 +11,13 @@ import type {
   AgentLaunchCandidateResult,
   AgentLaunchCandidatePage,
   OperatorBinding,
+  AgentHostedCredentialFiles,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
 import type { Target } from './config.js';
+import { bindHostedCredentialFiles, credentialFilePaths } from './hosted-credential-files.js';
+import { runtimeCredentialBindings } from './hosted-credentials.js';
 import { actionSchema, type Action } from './operations.js';
 import {
   fingerprint,
@@ -26,6 +29,17 @@ import { selfHostedExecutorConnection } from './self-hosted.js';
 import type { SessionExecutor } from './session-executor.js';
 import { visitSessionHistory } from './session-history.js';
 import { inspectLaunchCandidate, discoverLaunchCandidates } from './session-recovery.js';
+
+const launchSettings = z
+  .object({
+    model: z.string().min(1),
+    reasoning: z.unknown(),
+    environment: z.unknown(),
+    mcpServers: z.array(z.unknown()).default([]),
+    runtimeCredentials: runtimeCredentialBindings.optional(),
+    credentialFiles: credentialFilePaths.optional(),
+  })
+  .strict();
 
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,200}$/);
 const notAttempted = 'not-attempted';
@@ -82,12 +96,14 @@ function creationResult(
  */
 export class SessionLaunchPort implements AgentLaunchPort {
   constructor(
-    private readonly platform: Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight'>,
+    private readonly platform: Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight'> &
+      Partial<Pick<OpenAIPlatform, 'provisionHostedCredentials'>>,
     private readonly target: Target,
     private readonly settings: unknown,
     private readonly billableUntil: number,
     private readonly appFunctions: readonly string[],
-    private readonly executor?: SessionExecutor
+    private readonly executor?: SessionExecutor,
+    private readonly credentialFiles?: AgentHostedCredentialFiles
   ) {}
 
   async preflightLaunch(
@@ -95,7 +111,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
     descriptors?: AgentSessionCredentialDescriptor[]
   ): Promise<AgentLaunchPreflight> {
     try {
-      this.prepare(request, descriptors, false);
+      await this.prepare(request, descriptors, false);
       await this.platform.preflight();
       if (Date.now() >= this.billableUntil) throw new Error('Expired');
       return { target: fingerprint(this.target) };
@@ -115,9 +131,44 @@ export class SessionLaunchPort implements AgentLaunchPort {
       return { status: notAttempted, reason: 'validation' };
     let action: Extract<Action, { operation: 'sessions.create' }>;
     try {
-      action = this.prepare(request, credentials, true);
+      action = await this.prepare(request, credentials, true);
     } catch {
       return { status: notAttempted, reason: 'validation' };
+    }
+    const runtime = this.runtimeBindings(launchSettings.parse(this.settings), credentials);
+    if (runtime.length) {
+      if (
+        !options.beforeDispatch ||
+        !options.retainCredentialVault ||
+        !this.platform.provisionHostedCredentials
+      )
+        return { status: notAttempted, reason: 'validation' };
+      try {
+        await this.platform.preflight();
+        const vaultId = await this.platform.provisionHostedCredentials(
+          {
+            target: options.expectedTarget,
+            requestId: request.requestId,
+            workflowRevision: request.workflowRevision,
+          },
+          runtime.map((binding) => {
+            const credential = credentials?.find(
+              (value) => value.serverLabel === binding.serverLabel
+            );
+            if (!credential) throw new Error('Missing runtime credential');
+            return {
+              name: binding.name,
+              host: binding.host,
+              authorization: credential.authorization,
+            };
+          }),
+          options.retainCredentialVault,
+          options.credentialVault
+        );
+        action.body.vault_ids = [vaultId];
+      } catch {
+        return { status: notAttempted, reason: 'preflight' };
+      }
     }
     const dispatch: { crossed: boolean; reason: 'preflight' | 'before-dispatch' } = {
       crossed: false,
@@ -169,23 +220,15 @@ export class SessionLaunchPort implements AgentLaunchPort {
     return discoverLaunchCandidates(this.platform, this.target, identity, after);
   }
 
-  private prepare(
+  private async prepare(
     request: AgentLaunchRequest,
     bindings: AgentSessionCredentialDescriptor[] | undefined,
     includeAuthorization: boolean
-  ): Extract<Action, { operation: 'sessions.create' }> {
+  ): Promise<Extract<Action, { operation: 'sessions.create' }>> {
     if (Date.now() >= this.billableUntil) throw new Error('Inference authorization expired');
     z.uuid().parse(request.requestId);
     id.parse(request.workflowRevision);
-    const settings = z
-      .object({
-        model: z.string().min(1),
-        reasoning: z.unknown(),
-        environment: z.unknown(),
-        mcpServers: z.array(z.unknown()).default([]),
-      })
-      .strict()
-      .parse(this.settings);
+    const settings = launchSettings.parse(this.settings);
     const functions = request.definition.tools;
     if (
       functions.some(
@@ -223,7 +266,55 @@ export class SessionLaunchPort implements AgentLaunchPort {
       throw new Error('Only native MCP source bindings are permitted');
     if (action.body.environment.type === 'self_hosted' && !this.executor)
       throw new Error('Self-hosted executor is not configured');
+    this.runtimeBindings(settings, bindings);
+    const files =
+      typeof this.credentialFiles === 'function'
+        ? await this.credentialFiles()
+        : this.credentialFiles;
+    bindHostedCredentialFiles(action, settings.credentialFiles, files);
     return action;
+  }
+
+  private runtimeBindings(
+    settings: z.infer<typeof launchSettings>,
+    credentials?: AgentSessionCredentialDescriptor[]
+  ): { name: string; host: string; serverLabel: string }[] {
+    if (!settings.runtimeCredentials) return [];
+    const environment = z
+      .object({
+        type: z.literal('openai_hosted'),
+        env: z.record(z.string(), z.string()).nullish(),
+        network: z
+          .object({
+            access: z.enum(['enabled', 'disabled', 'restricted']),
+            allowed_domains: z.array(z.string()).optional(),
+          })
+          .optional(),
+      })
+      .parse(settings.environment);
+    return settings.runtimeCredentials.map((binding) => {
+      const credential = credentials?.find((value) => value.serverLabel === binding.serverLabel);
+      if (!credential || environment.env?.[binding.environmentVariable] !== undefined)
+        throw new Error('Runtime credential configuration mismatch');
+      const url = new URL(credential.audience);
+      if (
+        url.protocol !== 'https:' ||
+        (url.port !== '' && url.port !== '443' && url.port !== '8443') ||
+        environment.network?.access === 'disabled' ||
+        (environment.network?.access === 'restricted' &&
+          !environment.network.allowed_domains?.some(
+            (domain) =>
+              domain === url.hostname ||
+              (domain.startsWith('*.') && url.hostname.endsWith(domain.slice(1)))
+          ))
+      )
+        throw new Error('Runtime credential destination unavailable');
+      return {
+        name: binding.environmentVariable,
+        host: url.hostname,
+        serverLabel: binding.serverLabel,
+      };
+    });
   }
 
   private bindCredentials(

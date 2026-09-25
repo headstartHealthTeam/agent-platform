@@ -41,8 +41,31 @@ export interface AgentLaunchPreflight {
   target: string;
 }
 
+/** Ephemeral trusted deployment input. Real secret bytes are visible inside the hosted sandbox.
+ * Never persist with launch intent, put in an output directory, or return in a launch receipt.
+ */
+export interface AgentHostedCredentialFile {
+  path: string;
+  content: string;
+}
+
+/** Launch-only resolution; source credential availability must not gate existing-run controls. */
+export type AgentHostedCredentialFiles =
+  | readonly AgentHostedCredentialFile[]
+  | (() => Promise<readonly AgentHostedCredentialFile[] | undefined>);
+
+/** Non-secret setup receipt. The owner retains it before any credential is installed. It is
+ * not a session receipt and never establishes permission to replay uncertain session creation.
+ */
+export interface AgentCredentialVault extends AgentLaunchIdentity {
+  kind: 'openai-credential-vault';
+  id: string;
+}
+
 export interface AgentSessionCreateOptions {
   expectedTarget: string;
+  credentialVault?: AgentCredentialVault;
+  retainCredentialVault?: (vault: AgentCredentialVault) => Promise<void>;
   /** Called after validation/provider preflight, immediately before the one SDK create attempt.
    * The application must durably journal dispatch here. Throwing prevents the provider write.
    */

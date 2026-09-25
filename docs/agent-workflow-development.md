@@ -55,13 +55,22 @@ remove the fallback code, clean up its resources or rotate its credentials becau
 
 ### Implementation Follow-Through
 
-This documentation change does not implement hosted setup. The current provider schema in
-[`operations.ts`](../packages/openai-platform/src/operations.ts) accepts `openai_hosted` with template
-and network settings, but not the documented package/file/setup fields. The existing
+The provider schema in [`operations.ts`](../packages/openai-platform/src/operations.ts) now accepts
+hosted package/file/setup and non-secret environment fields for inline sessions and templates;
+the [provider README](../packages/openai-platform/README.md#hosted-first-development-direction) owns
+the precise supported contract and its remaining credential/deployment boundaries. The existing
 [`SessionLaunchPort`](../packages/openai-platform/src/session-launch.ts) already separates optional
 self-hosted provisioning from session control. Extend those existing boundaries rather than add a
 parallel launcher. The credentialing application composition still needs a hosted profile and
 connected verification; a configuration-label change alone does not complete that work.
+
+The shared adapter also supports explicit same-run MCP credential delivery to hosted tools through
+OpenAI's credential vault. Backend persists only its non-secret launch-correlated receipt and can
+resume proven-undispatched setup after restart. Its `openai-service` composition supplies the
+application key from an explicitly selected managed secret, while `openai-local` retains the
+workstation resolver; both use the same provider artifact. These implementations have synthetic
+SDK/database coverage, not deployed or live-source acceptance. Google credential binding and
+hosted-file-to-reviewer evidence delivery remain distinct integration work.
 
 The next implementation checkpoint is one normal-app source-to-review/correction demonstration.
 Its reviewable changes have these distinct owners:

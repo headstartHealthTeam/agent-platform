@@ -29,15 +29,18 @@ the backend's explicit local composition. See its [artifact boundary](../package
 The protected deployment pin and source/lockfile provenance must travel together. This establishes
 dependency-independent local distribution, not automated package publication or production release.
 
-Launch contracts also live in `workflow-contracts`. Operator adapter `0.8.0` deliberately changes
+Launch contracts also live in `workflow-contracts`. Operator adapter `0.9.0` retains the change
 creation from a receipt-or-error promise to `created` / proven `not-attempted` / `unknown` outcomes.
 Its read-only descriptor preflight precedes issue-once credentials and pins the expected project;
 the dispatch callback lets backend commit its attempt journal after validation and immediately
 before the SDK call. Read-only candidate inspection and bounded, cursor-based exact-metadata
 discovery support backend-owned positive-match recovery after lost receipts. A zero-match scan is
 not proof of absence, and mutable metadata is not a uniqueness guarantee. Backend retains atomic
-journal/cursor/binding persistence, competing-candidate handling and Stop authority; Agent Platform
-does not add a recovery database or service. See the
+journal/cursor/binding persistence, competing-candidate handling and Stop authority. Version 0.9.0
+also requires a durably acknowledged non-secret per-launch vault receipt before delivering the
+existing run's MCP credential to hosted file tools. Proven-undispatched setup can reuse that vault;
+uncertain session creation still cannot be replayed. Agent Platform does not add a recovery
+database or service. See the
 [launch contract details](../packages/openai-platform/README.md#application-functions-and-normal-application-launch).
 
 The backend tests the same shared core with unrelated invented inventory work, not just a second
