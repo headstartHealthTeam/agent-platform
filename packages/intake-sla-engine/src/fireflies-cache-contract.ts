@@ -37,8 +37,8 @@ export function validateCachePolicy(policy: unknown): FirefliesCachePolicy {
   return parsed.data;
 }
 export interface FirefliesCollectionWindow {
-  readonly fromDate: string | null;
-  readonly toDate: string | null;
+  readonly fromDate: unknown;
+  readonly toDate: unknown;
 }
 export const firefliesDiscoverySchema = z.looseObject({
   version: z.literal(FIREFLIES_CACHE_VERSION),

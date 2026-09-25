@@ -11,8 +11,8 @@ export async function selectFirefliesCollectionMode(
     asOf,
   }: {
     readonly mode: string;
-    readonly runId: string;
-    readonly asOf: string;
+    readonly runId: unknown;
+    readonly asOf: unknown;
   }
 ): Promise<void> {
   if (![BOUNDED_FRESH, 'cache-shadow-experiment', 'cache-reuse'].includes(mode))

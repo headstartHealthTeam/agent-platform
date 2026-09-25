@@ -52,7 +52,7 @@ export function createNoteAdjudicator({
   artifact = null,
 }: {
   readonly runId: string;
-  readonly asOf: string | Date;
+  readonly asOf: string | number | Date;
   readonly artifact?: unknown;
 }): NoteAdjudicator {
   const sourceCutoff = (asOf instanceof Date ? asOf : new Date(asOf)).toISOString();

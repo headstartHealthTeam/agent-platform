@@ -170,7 +170,18 @@ export function buildProviderRoleClusters(
     };
   });
 }
-export function providerClusterAnchors(cluster: ProviderIdentityCluster): string[] {
+export function providerClusterAnchors(
+  cluster: Pick<
+    ProviderIdentityCluster,
+    | 'salesforceIds'
+    | 'names'
+    | 'emails'
+    | 'phones'
+    | 'practiceAliases'
+    | 'meetingAliases'
+    | 'portalProviderIds'
+  >
+): string[] {
   return [
     ...cluster.salesforceIds,
     ...cluster.names,

@@ -4,8 +4,20 @@ import type { DateValue } from './dates.js';
 import type { ProviderIdentityCluster } from './provider-identity-types.js';
 
 export interface MeetingSegmentProfile extends ConversationProfile {
-  readonly providerIdentity?: ProviderIdentityCluster | null | undefined;
-  readonly providerRoster?: readonly ConversationProfile[] | undefined;
+  readonly providerIdentity?:
+    | Pick<
+        ProviderIdentityCluster,
+        | 'salesforceIds'
+        | 'names'
+        | 'emails'
+        | 'phones'
+        | 'practiceAliases'
+        | 'meetingAliases'
+        | 'portalProviderIds'
+      >
+    | null
+    | undefined;
+  readonly providerRoster?: readonly ConversationProfile[] | null | undefined;
   readonly storyStartDate?: DateValue;
   readonly stageEntryDate?: DateValue;
   readonly slaCreatedDate?: DateValue;

@@ -1,4 +1,4 @@
-export type EvidenceDate = string | Date;
+export type EvidenceDate = string | number | Date;
 export interface EvidenceEvent {
   readonly opportunityId: string;
   readonly source: string;

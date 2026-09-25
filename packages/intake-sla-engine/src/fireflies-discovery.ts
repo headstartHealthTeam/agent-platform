@@ -45,7 +45,7 @@ function discoveryEnvelope(input: unknown): FirefliesDiscovery {
 export function validateDiscovery(
   input: unknown,
   collectionPlan: FirefliesCollectionWindow,
-  asOf: string
+  asOf: unknown
 ): TranscriptMetadata[] {
   const time = cacheTimestamp(asOf);
   const discovery = discoveryEnvelope(input);

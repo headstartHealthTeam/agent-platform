@@ -56,7 +56,10 @@ export interface SavedDeltaArtifact {
 const preparedShape = z.object({
   transcriptSegment: z.string().nullish(),
   source: z
-    .object({ matchQuality: z.string().nullish(), eventDate: z.string().nullish() })
+    .object({
+      matchQuality: z.string().nullish(),
+      eventDate: z.union([z.string(), z.number()]).nullish(),
+    })
     .nullish(),
   opportunity: z.object({ id: z.string().nullish() }).nullish(),
 });

@@ -20,29 +20,29 @@ import type {
   PublicationWriteAdapter,
 } from './publication-executor-types.js';
 import type {
-  PublicationActualAssertion,
-  PublicationAssertion,
+  PublicationActualAssertionInput,
+  PublicationAssertionInput,
   PublicationManifest,
 } from './publication-readback-types.js';
 
-type ReadAssertion = Omit<PublicationAssertion, 'expectedHash'> & GoogleReadAssertion;
-type Range = Omit<PublicationAssertion, 'expectedHash' | 'id'>;
+type ReadAssertion = PublicationAssertionInput & GoogleReadAssertion;
+type Range = Omit<PublicationAssertionInput, 'expectedHash' | 'id'>;
 function metadataOnly(assertion: Range): boolean {
   return assertion.kind === 'basic-filter' || assertion.kind === 'grid-properties';
 }
 function boundedCoordinates(assertion: Range): GoogleGridRead['range'] {
   const { startRowIndex, endRowIndex, startColumnIndex, endColumnIndex } = assertion;
   check(
-    startRowIndex !== undefined &&
+    typeof startRowIndex === 'number' &&
       Number.isSafeInteger(startRowIndex) &&
       startRowIndex >= 0 &&
-      endRowIndex !== undefined &&
+      typeof endRowIndex === 'number' &&
       Number.isSafeInteger(endRowIndex) &&
       endRowIndex > startRowIndex &&
-      startColumnIndex !== undefined &&
+      typeof startColumnIndex === 'number' &&
       Number.isSafeInteger(startColumnIndex) &&
       startColumnIndex >= 0 &&
-      endColumnIndex !== undefined &&
+      typeof endColumnIndex === 'number' &&
       Number.isSafeInteger(endColumnIndex) &&
       endColumnIndex > startColumnIndex,
     'Google read range must be bounded'
@@ -124,7 +124,7 @@ async function sample(
     input.spreadsheetId === spreadsheetId && input.runId === manifest.runId,
     'Google read target mismatch'
   );
-  const assertions: PublicationActualAssertion[] = [];
+  const assertions: PublicationActualAssertionInput[] = [];
   const responses = new Map<string, GoogleGridCapture>();
   try {
     assertRequests(input.assertions);

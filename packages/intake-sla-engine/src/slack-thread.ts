@@ -13,7 +13,7 @@ export type IntakeSlackThreadResult =
       readonly error: '';
       readonly completionEvidence: {
         readonly kind: 'verified-cutoff-replies';
-        readonly sourceCutoff: string;
+        readonly sourceCutoff: unknown;
         readonly replies: number;
         readonly observedReplies: number;
         readonly deferredReplies: number;
@@ -71,7 +71,7 @@ function parseThread(capture: ThreadRow, text: string, messageTs: unknown): Thre
 function cutoffThread(
   row: ThreadRow,
   minimumReplies: number,
-  sourceCutoff: string | undefined
+  sourceCutoff: unknown
 ): IntakeSlackThreadResult {
   const failure = (): SlackThreadResult => ({
     complete: false,
@@ -79,7 +79,7 @@ function cutoffThread(
     error: 'Slack post-cutoff reply accounting is incomplete or inconsistent.',
   });
   try {
-    const cutoff = Date.parse(sourceCutoff ?? '');
+    const cutoff = Date.parse(String(sourceCutoff));
     const fullRow = rowSchema.parse(row.unboundedReadback);
     const hasIdentity = [row.channelId, row.messageTs].every(Boolean);
     if (
@@ -118,7 +118,7 @@ function cutoffThread(
 export function normalizeSlackThread(
   input: unknown = {},
   minimumReplies = 0,
-  { sourceCutoff }: { readonly sourceCutoff?: string | undefined } = {}
+  { sourceCutoff }: { readonly sourceCutoff?: unknown } = {}
 ): IntakeSlackThreadResult {
   const problem = slackThreadRetrievalProblem(input, minimumReplies);
   if (problem !== null) return { complete: false, text: '', error: problem };

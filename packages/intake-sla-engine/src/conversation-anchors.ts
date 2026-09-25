@@ -50,7 +50,7 @@ export function conversationContextAnchors(profile: ConversationProfile): string
     .map(normalize)
     .filter((value) => value.length >= 3);
 }
-export function conversationStageTerms(stage: string | null | undefined = ''): string[] {
+export function conversationStageTerms(stage: unknown = ''): string[] {
   const value = normalize(stage);
   if (/ia approved|ia scheduled|ic scheduled|ic completed/.test(value))
     return [

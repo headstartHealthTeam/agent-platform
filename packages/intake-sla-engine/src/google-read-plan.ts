@@ -4,16 +4,16 @@ export interface GoogleReadAssertion {
   readonly kind: string;
   readonly sheetId: number;
   readonly title: string;
-  readonly startRowIndex?: number | undefined;
-  readonly endRowIndex?: number | undefined;
-  readonly startColumnIndex?: number | undefined;
-  readonly endColumnIndex?: number | undefined;
-  readonly rowCount?: number | undefined;
-  readonly columnCount?: number | undefined;
+  readonly startRowIndex?: unknown;
+  readonly endRowIndex?: unknown;
+  readonly startColumnIndex?: unknown;
+  readonly endColumnIndex?: unknown;
+  readonly rowCount?: unknown;
+  readonly columnCount?: unknown;
 }
 export type GoogleReadRange<T extends GoogleReadAssertion> = Omit<T, 'endRowIndex' | 'rowCount'> & {
-  endRowIndex?: number | undefined;
-  rowCount?: number | undefined;
+  endRowIndex?: unknown;
+  rowCount?: unknown;
 };
 export interface GoogleAssertionReadGroup<T extends GoogleReadAssertion> {
   readonly range: GoogleReadRange<T>;
@@ -33,9 +33,10 @@ export function planGoogleAssertionReads<T extends GoogleReadAssertion>(
     const previous = groups.at(-1);
     const range = previous?.range;
     const cells =
-      ((expected.endRowIndex ?? Number.NaN) -
-        (range?.startRowIndex ?? expected.startRowIndex ?? Number.NaN)) *
-      ((expected.endColumnIndex ?? Number.NaN) - (expected.startColumnIndex ?? Number.NaN));
+      (Number(expected.endRowIndex ?? Number.NaN) -
+        Number(range?.startRowIndex ?? expected.startRowIndex ?? Number.NaN)) *
+      (Number(expected.endColumnIndex ?? Number.NaN) -
+        Number(expected.startColumnIndex ?? Number.NaN));
     if (
       previous !== undefined &&
       expected.kind === 'values' &&
@@ -50,7 +51,8 @@ export function planGoogleAssertionReads<T extends GoogleReadAssertion>(
     ) {
       range.endRowIndex = expected.endRowIndex;
       if (range.rowCount !== undefined)
-        range.rowCount = (range.endRowIndex ?? Number.NaN) - (range.startRowIndex ?? Number.NaN);
+        range.rowCount =
+          Number(range.endRowIndex ?? Number.NaN) - Number(range.startRowIndex ?? Number.NaN);
       previous.assertions.push(expected);
     } else groups.push({ range: { ...expected }, assertions: [expected] });
   }

@@ -3,9 +3,8 @@ import { captureProperty as property } from './google-capture-property.js';
 import type { GoogleAssertionCaptureInput } from './google-capture-types.js';
 import { sha256Json } from './json-fingerprint.js';
 import type {
-  PublicationActualAssertion,
-  PublicationAssertion,
-  PublicationCoordinates,
+  PublicationActualAssertionInput,
+  PublicationAssertionInput,
 } from './publication-readback-types.js';
 
 const COORDINATES = [
@@ -15,7 +14,7 @@ const COORDINATES = [
   'startColumnIndex',
   'endColumnIndex',
 ] as const;
-type Expected = Omit<PublicationAssertion, 'expectedHash'>;
+type Expected = PublicationAssertionInput;
 function arrayProperty<T>(array: readonly T[] | undefined, index: number): T | undefined {
   // eslint-disable-next-line security/detect-object-injection -- Numeric read-only array lookup must preserve property semantics, including fractional indices; .at would truncate them.
   return array?.[index];
@@ -39,7 +38,7 @@ function sheetIdentity(sheet: unknown): unknown {
 function coordinates(
   expected: Expected,
   capture: GoogleAssertionCaptureInput<unknown>
-): PublicationCoordinates {
+): Omit<PublicationActualAssertionInput, 'id'> {
   for (const key of COORDINATES.filter((field) => Object.hasOwn(expected, field))) {
     const value: unknown = Reflect.get(expected, key);
     const captured: unknown =
@@ -82,8 +81,8 @@ function dimensionPixels(expected: Expected, blocks: readonly unknown[]): number
     'Invalid dimension assertion'
   );
   const rows = expected.dimension === 'ROWS';
-  const start = (rows ? expected.startRowIndex : expected.startColumnIndex) ?? Number.NaN;
-  const end = (rows ? expected.endRowIndex : expected.endColumnIndex) ?? Number.NaN;
+  const start = Number((rows ? expected.startRowIndex : expected.startColumnIndex) ?? Number.NaN);
+  const end = Number((rows ? expected.endRowIndex : expected.endColumnIndex) ?? Number.NaN);
   return Array.from({ length: end - start }, (_, offset) => {
     const index = start + offset;
     const matches = blocks.flatMap((block) => {
@@ -130,19 +129,22 @@ function cellMatrix<T>(
   blocks: readonly unknown[],
   select: (cell: unknown) => T
 ): T[][] {
-  const rows =
+  const rows = Number(
     expected.rowCount ??
-    (expected.endRowIndex ?? Number.NaN) - (expected.startRowIndex ?? Number.NaN);
-  const columns =
+      Number(expected.endRowIndex ?? Number.NaN) - Number(expected.startRowIndex ?? Number.NaN)
+  );
+  const columns = Number(
     expected.columnCount ??
-    (expected.endColumnIndex ?? Number.NaN) - (expected.startColumnIndex ?? Number.NaN);
+      Number(expected.endColumnIndex ?? Number.NaN) -
+        Number(expected.startColumnIndex ?? Number.NaN)
+  );
   return Array.from({ length: rows }, (_, row) =>
     Array.from({ length: columns }, (_, column) =>
       select(
         cellAt(
           blocks,
-          (expected.startRowIndex ?? 0) + row,
-          (expected.startColumnIndex ?? 0) + column
+          Number(expected.startRowIndex ?? 0) + row,
+          Number(expected.startColumnIndex ?? 0) + column
         )
       )
     )
@@ -162,7 +164,7 @@ function dataValidation(cell: unknown): unknown {
 function rangeActual(
   expected: Expected,
   blocks: readonly unknown[]
-): Partial<PublicationActualAssertion> {
+): Partial<PublicationActualAssertionInput> {
   switch (expected.kind) {
     case 'values':
       return {
@@ -207,7 +209,7 @@ function rangeActual(
 export function googleAssertionCapture(
   expected: Expected,
   capture: GoogleAssertionCaptureInput<unknown>
-): PublicationActualAssertion {
+): PublicationActualAssertionInput {
   const sheet = capturedSheet(expected, capture);
   const base = { id: expected.id, ...coordinates(expected, capture) };
   if (expected.kind === 'grid-properties')

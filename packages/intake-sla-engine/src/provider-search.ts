@@ -16,8 +16,8 @@ export interface ProviderSearchInput extends ProviderIdentityInput {
   readonly opportunityName?: string | undefined;
   readonly knownNameVariants?: readonly string[] | null | undefined;
   readonly clientAliases?: readonly string[] | null | undefined;
-  readonly stage?: string | null | undefined;
-  readonly currentStage?: string | null | undefined;
+  readonly stage?: unknown;
+  readonly currentStage?: unknown;
   readonly authorizationNumbers?: readonly string[] | null | undefined;
   readonly payers?: readonly string[] | null | undefined;
   readonly rbtNames?: readonly string[] | null | undefined;

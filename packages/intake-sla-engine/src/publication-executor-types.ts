@@ -1,7 +1,7 @@
 import type {
   PublicationActual,
-  PublicationActualAssertion,
-  PublicationAssertion,
+  PublicationActualAssertionInput,
+  PublicationAssertionInput,
   PublicationGateBinding,
   PublicationLoadedCall,
   PublicationManifest,
@@ -38,7 +38,7 @@ export interface PublicationConcurrencyResult {
   readonly checkedAt?: unknown;
 }
 export interface CapturedPublicationActual extends PublicationActual {
-  readonly assertions: readonly PublicationActualAssertion[];
+  readonly assertions: readonly PublicationActualAssertionInput[];
 }
 export interface IncompletePublicationActual extends CapturedPublicationActual {
   readonly complete: unknown;
@@ -47,7 +47,7 @@ export interface IncompletePublicationActual extends CapturedPublicationActual {
 export interface PublicationReadRequest {
   readonly runId: string;
   readonly spreadsheetId: string;
-  readonly assertions: readonly Omit<PublicationAssertion, 'expectedHash'>[];
+  readonly assertions: readonly PublicationAssertionInput[];
   readonly onIncompleteCapture: (partial: IncompletePublicationActual) => Promise<void>;
 }
 export interface PublicationReadAdapter {

@@ -24,11 +24,11 @@ export interface ConversationProfile {
   readonly providerPhones?: readonly IdentityValue[] | null | undefined;
   readonly providerRoles?: readonly ConversationProvider[] | null | undefined;
   readonly providers?: readonly ConversationProvider[] | null | undefined;
-  readonly authorizationNumbers?: readonly IdentityValue[] | undefined;
+  readonly authorizationNumbers?: readonly IdentityValue[] | null | undefined;
   readonly payers?: readonly IdentityValue[] | null | undefined;
   readonly payer?: string | null | undefined;
   readonly familyEmails?: readonly IdentityValue[] | null | undefined;
-  readonly familyPhones?: readonly IdentityValue[] | undefined;
+  readonly familyPhones?: readonly IdentityValue[] | null | undefined;
   readonly rbtNames?: readonly IdentityValue[] | null | undefined;
   readonly candidateNames?: readonly IdentityValue[] | null | undefined;
   readonly rbtRequests?:
@@ -39,7 +39,7 @@ export interface ConversationProfile {
     | null
     | undefined;
   readonly candidates?: readonly { readonly name?: string | null | undefined }[] | null | undefined;
-  readonly stage?: string | null | undefined;
+  readonly stage?: unknown;
 }
 export interface ConversationMatchInput {
   readonly text: string;

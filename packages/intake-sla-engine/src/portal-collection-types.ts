@@ -10,21 +10,24 @@ export interface PortalCollectionProfile extends ConversationProfile {
   readonly opportunityName: string;
   readonly providerRoles?: readonly PortalCollectionProvider[] | null | undefined;
   readonly providerRoster?: readonly ConversationProfile[] | undefined;
-  readonly searchWindow?: {
-    readonly fromDate?: string | null;
-    readonly toDate?: string | null;
-  } | null;
+  readonly searchWindow?:
+    | {
+        readonly fromDate?: string | null | undefined;
+        readonly toDate?: string | null | undefined;
+      }
+    | null
+    | undefined;
 }
 export interface PortalCollectionRequest {
   requestKey: string;
-  requestType?: string;
-  opportunityIds?: string[];
+  requestType?: string | undefined;
+  opportunityIds?: string[] | undefined;
   opportunityNames?: string[];
   clientName?: string;
   clientNames?: string[];
   providerName?: string;
-  providerUserId?: string;
-  roster?: ConversationProfile[];
+  providerUserId?: string | undefined;
+  roster?: ConversationProfile[] | null | undefined;
   createdFrom?: string | null | undefined;
   createdTo?: string | null | undefined;
   limit?: number;
@@ -35,8 +38,8 @@ export interface PortalCollectionPlan {
   readonly opportunityCount?: number;
   readonly providerRequestCount?: number;
   readonly clientRequestCount?: number;
-  readonly sentinelRequestKey?: string | null;
-  readonly requests?: readonly PortalCollectionRequest[];
+  readonly sentinelRequestKey?: string | null | undefined;
+  readonly requests?: readonly PortalCollectionRequest[] | undefined;
 }
 export interface BuiltPortalCollectionPlan extends PortalCollectionPlan {
   readonly version: string;
@@ -55,10 +58,10 @@ export interface PortalCollectionChat extends PortalChat {
 export interface PortalInventoryExecution {
   readonly [field: string]: unknown;
   readonly requestKey: string;
-  readonly status?: string;
-  readonly paginationComplete?: boolean | null;
+  readonly status?: unknown;
+  readonly paginationComplete?: unknown;
   readonly pages?: unknown;
-  readonly chats?: readonly PortalCollectionChat[] | null;
+  readonly chats?: readonly PortalCollectionChat[] | null | undefined;
 }
 export interface BoundPortalExecution extends PortalInventoryExecution {
   readonly chats: (PortalCollectionChat & { requestKey: string })[];
@@ -68,9 +71,9 @@ export interface PortalInventoryInput {
   readonly inventory?: readonly PortalInventoryExecution[];
 }
 export interface PortalCollectionBaseRow {
-  readonly opportunityId?: string | null;
-  readonly opportunityName?: string | null;
-  readonly chats?: readonly PortalCollectionChat[] | null;
+  readonly opportunityId?: string | null | undefined;
+  readonly opportunityName?: string | null | undefined;
+  readonly chats?: readonly PortalCollectionChat[] | null | undefined;
   readonly responses?: { readonly chats?: readonly PortalCollectionChat[] | null } | null;
 }
 export interface PortalMaterializationInput extends PortalInventoryInput {

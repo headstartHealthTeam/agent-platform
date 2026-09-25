@@ -1321,3 +1321,15 @@ export {
   saveSlackSearchCapture,
   saveSlackDelta,
 } from './source-capture-storage.js';
+export { runGoogleReadCommand, runProductionDriftCommand } from './cli-source-read.js';
+export { runFirefliesCacheCommand, runFirefliesPlanCommand } from './cli-fireflies-planning.js';
+export { runFirefliesReplayCommand } from './cli-fireflies-replay.js';
+export { runFirefliesPacketsCommand } from './cli-fireflies-packets.js';
+export { runPortalPlanningCommand } from './cli-portal-planning.js';
+export { runSlackPlanningCommand } from './cli-slack-planning.js';
+export { buildSlackSweepPlan, type SlackSweepPlan } from './slack-sweep-plan.js';
+export {
+  mergeSlackSweep,
+  type SlackSweepRow as MergedSlackSweepRow,
+  type SlackSweepExecution as MergedSlackSweepExecution,
+} from './slack-sweep-merge.js';

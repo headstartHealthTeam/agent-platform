@@ -5,7 +5,8 @@ import { normalizeIdentityValue } from './provider-identity-values.js';
 export function normalizeConversationValue(value: unknown = ''): string {
   return normalizeIdentityValue(String(value));
 }
-export function uniqueConversationValues(values: readonly unknown[] = []): unknown[] {
+export function uniqueConversationValues(values: readonly unknown[] | null = []): unknown[] {
+  if (values === null) throw new TypeError('Conversation values require an array');
   return [...new Set(values.flat().filter(Boolean))];
 }
 function similarity(left = '', right = ''): number {

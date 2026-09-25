@@ -4,6 +4,7 @@ import type { CompleteFirefliesTranscript } from '@headstart-health/fireflies-da
 import {
   cacheTimestamp,
   FIREFLIES_CACHE_VERSION,
+  firefliesDiscoverySchema,
   requireCacheValue,
   validateCachePolicy,
 } from './fireflies-cache-contract.js';
@@ -20,6 +21,7 @@ import type {
   FirefliesCachePlanItem,
 } from './fireflies-cache-plan.js';
 import { normalizeCacheTranscript } from './fireflies-cache-transcript.js';
+import { captureProperty } from './google-capture-property.js';
 import { sha256Json } from './json-fingerprint.js';
 
 export interface MaterializedCacheEntry {
@@ -140,7 +142,7 @@ function fullRevalidationTime(
   return baseline.lastFullRevalidationAt;
 }
 export function materializeFirefliesCache({
-  discovery,
+  discovery: rawDiscovery,
   collectionPlan,
   policy: policyInput,
   index = null,
@@ -150,12 +152,12 @@ export function materializeFirefliesCache({
   completedAt = new Date().toISOString(),
 }: CacheMaterializationInput): FirefliesCacheMaterialization {
   requireCacheValue(
-    cacheTimestamp(completedAt) >= cacheTimestamp(discovery.completedAt),
+    cacheTimestamp(completedAt) >= cacheTimestamp(captureProperty(rawDiscovery, 'completedAt')),
     'Invalid materialization time'
   );
   const policy = validateCachePolicy(policyInput);
   const expected = planFirefliesCache({
-    discovery,
+    discovery: rawDiscovery,
     collectionPlan,
     policy,
     index,
@@ -167,6 +169,7 @@ export function materializeFirefliesCache({
     'Cache plan changed; replan from current inputs',
     'STALE_CACHE_PLAN'
   );
+  const discovery = firefliesDiscoverySchema.parse(rawDiscovery);
   const fetchedById = validateFetches(fetched, plan, discovery.completedAt, completedAt);
   const records: CompleteFirefliesTranscript[] = [];
   const entries: MaterializedCacheEntry[] = [];

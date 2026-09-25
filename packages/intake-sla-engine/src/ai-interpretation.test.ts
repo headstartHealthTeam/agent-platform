@@ -250,6 +250,31 @@ describe('finding support and semantic preservation', () => {
 });
 
 describe('shared Responses composition', () => {
+  it('preserves numeric source dates through packet binding and interpretation', async () => {
+    const eventDate = Date.parse('2026-09-17T12:00:00Z');
+    const numericPacket = buildTranscriptInterpretationPacket({
+      profile: { opportunityId: 'synthetic' },
+      source: 'Fireflies',
+      eventDate,
+      segment: fact.synthesizedFact,
+      matchQuality: 'Direct',
+    });
+    const client = vi.fn(async () => ({
+      data: { findings: [fact] },
+      usage: null,
+      responseId: null,
+      model: 'gpt-5.6-sol',
+    }));
+    const result = await interpretTranscriptPacketWithAI({
+      packet: numericPacket,
+      client,
+      model: 'gpt-5.6-sol',
+    });
+    expect(numericPacket.source.eventDate).toBe(eventDate);
+    expect(result.packetHash).toBe(sha256Json(numericPacket));
+    expect(result.findings).toHaveLength(1);
+    expect(result.findings[0]?.factType).toBe(fact.factType);
+  });
   it('sends the exact Intake contract with low effort, strict schema and store:false', async () => {
     const controller = new AbortController();
     const request = vi.fn<typeof fetch>(async (_url, options) => {

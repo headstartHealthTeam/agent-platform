@@ -27,8 +27,8 @@ export function firefliesClientSearchVariants(
   }
   return uniqueIdentityValues(output);
 }
-export function firefliesStageTerms(stage: string | null = ''): string[] {
-  const value = normalizeIdentityValue(stage);
+export function firefliesStageTerms(stage: unknown = ''): string[] {
+  const value = normalizeIdentityValue(String(stage));
   if (/ta approved|97153|first day/.test(value))
     return ['RBT', 'staffing', 'candidate', 'interview', 'first day', 'start date', '97153'];
   if (/treatment plan|97151 started/.test(value))

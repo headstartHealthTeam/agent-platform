@@ -11,7 +11,7 @@ import {
 
 export type IntakeSlaMetadata = readonly [stage: string, days: number | null, duration: string];
 export interface IntakeProductionBaseline extends ProductionFingerprint {
-  readonly capturedAt?: string | undefined;
+  readonly capturedAt?: unknown;
   readonly slaMetadata: readonly IntakeSlaMetadata[];
 }
 export interface IntakeProductionObservation extends ProductionFingerprint {
@@ -22,7 +22,7 @@ export interface IntakeProductionObservation extends ProductionFingerprint {
   readonly slaMetadata: readonly IntakeSlaMetadata[];
 }
 export interface IntakeProductionCheck {
-  readonly expectedCapturedAt: string | undefined;
+  readonly expectedCapturedAt: unknown;
   readonly actual: IntakeProductionObservation;
   readonly result: FingerprintComparison;
 }

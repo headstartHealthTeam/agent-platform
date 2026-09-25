@@ -1,3 +1,4 @@
+import type { EvidenceDate } from './evidence.js';
 import type { GateContext } from './gate-context.js';
 
 export type InterpretationJson =
@@ -10,24 +11,25 @@ export type InterpretationJson =
 
 type NamedIdentity = { readonly name?: unknown } | Readonly<Record<string, unknown>>;
 export interface InterpretationProfile {
-  readonly opportunityId?: string | null;
-  readonly opportunityName?: string | null;
-  readonly knownNameVariants?: readonly string[] | null;
-  readonly clientAliases?: readonly string[] | null;
-  readonly practice?: string | NamedIdentity | null;
+  readonly opportunityId?: string | null | undefined;
+  readonly opportunityName?: string | null | undefined;
+  readonly knownNameVariants?: readonly string[] | null | undefined;
+  readonly clientAliases?: readonly string[] | null | undefined;
+  readonly practice?: string | NamedIdentity | null | undefined;
   readonly providerRoles?:
     | readonly {
         readonly role: string;
-        readonly names?: readonly string[] | null;
-        readonly emails?: readonly string[] | null;
+        readonly names?: readonly string[] | null | undefined;
+        readonly emails?: readonly string[] | null | undefined;
       }[]
-    | null;
-  readonly currentCsm?: string | NamedIdentity | null;
-  readonly priorCsms?: readonly unknown[] | null;
-  readonly authorizationNumbers?: readonly string[] | null;
-  readonly payers?: readonly InterpretationJson[] | null;
-  readonly rbtRequests?: readonly InterpretationJson[] | null;
-  readonly candidates?: readonly InterpretationJson[] | null;
+    | null
+    | undefined;
+  readonly currentCsm?: string | NamedIdentity | null | undefined;
+  readonly priorCsms?: readonly unknown[] | null | undefined;
+  readonly authorizationNumbers?: readonly string[] | null | undefined;
+  readonly payers?: readonly InterpretationJson[] | null | undefined;
+  readonly rbtRequests?: readonly InterpretationJson[] | null | undefined;
+  readonly candidates?: readonly InterpretationJson[] | null | undefined;
   readonly providerRoster?:
     | readonly {
         readonly opportunityId?: string | null | undefined;
@@ -35,7 +37,8 @@ export interface InterpretationProfile {
         readonly opportunityName?: string | null | undefined;
         readonly name?: string | null | undefined;
       }[]
-    | null;
+    | null
+    | undefined;
   readonly stage?: string | null | undefined;
   readonly stageEntryDate?: string | null | undefined;
 }
@@ -44,7 +47,7 @@ export interface InterpretationPacketInput {
   readonly gate?: GateContext | null;
   readonly source?: string;
   readonly sourceRecordId?: string;
-  readonly eventDate?: string | null | undefined;
+  readonly eventDate?: EvidenceDate | null | undefined;
   readonly segment?: string | null;
   readonly matchQuality?: string;
   readonly matchContext?: Readonly<Record<string, InterpretationJson | undefined>>;
@@ -88,7 +91,7 @@ export interface TranscriptInterpretationPacket {
   readonly source: {
     readonly name: string | undefined;
     readonly recordId: string | undefined;
-    readonly eventDate: string | null | undefined;
+    readonly eventDate: EvidenceDate | null | undefined;
     readonly matchQuality: string | undefined;
     readonly matchContext: Readonly<Record<string, InterpretationJson | undefined>>;
   };
@@ -101,7 +104,7 @@ export interface PreparedInterpretationPacket {
   readonly source?:
     | {
         readonly matchQuality?: string | null | undefined;
-        readonly eventDate?: string | null | undefined;
+        readonly eventDate?: EvidenceDate | null | undefined;
       }
     | null
     | undefined;

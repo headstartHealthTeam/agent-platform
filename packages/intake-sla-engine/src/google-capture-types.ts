@@ -1,6 +1,6 @@
 import type { GoogleGridCell } from '@headstart-health/google-sheets-data';
 
-import type { PublicationCoordinates } from './publication-readback-types.js';
+import type { PublicationAssertionInput } from './publication-readback-types.js';
 
 /** Native capture envelope: partial metadata is intentional; provider read results also compose. */
 export interface GoogleCapturedCell {
@@ -35,7 +35,7 @@ export interface GoogleAssertionCaptureInput<
 > {
   readonly spreadsheetId?: string | undefined;
   readonly complete?: unknown;
-  readonly range?: PublicationCoordinates | null | undefined;
+  readonly range?: Partial<PublicationAssertionInput> | null | undefined;
   readonly response?: Response | undefined;
 }
 export interface GoogleStateSheet {

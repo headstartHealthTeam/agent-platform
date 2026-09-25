@@ -8,16 +8,17 @@ import { z } from 'zod';
 import {
   cacheTimestamp,
   FIREFLIES_CACHE_VERSION,
+  firefliesDiscoverySchema,
   requireCacheValue,
   validateCachePolicy,
 } from './fireflies-cache-contract.js';
 import type {
   FirefliesCachePolicy,
   FirefliesCollectionWindow,
-  FirefliesDiscovery,
 } from './fireflies-cache-contract.js';
 import { normalizeCacheTranscript } from './fireflies-cache-transcript.js';
 import { validateDiscovery } from './fireflies-discovery.js';
+import { captureProperty } from './google-capture-property.js';
 import { sha256Json } from './json-fingerprint.js';
 
 export const CACHE_HOUR_MS = 3_600_000;
@@ -69,7 +70,7 @@ export interface FirefliesCachePlan {
   readonly planHash: string;
 }
 export interface FirefliesCachePlanInput {
-  readonly discovery: FirefliesDiscovery;
+  readonly discovery: unknown;
   readonly collectionPlan: FirefliesCollectionWindow;
   readonly policy: unknown;
   readonly index?: unknown;
@@ -141,7 +142,7 @@ export function cacheReuseReason(
   }
 }
 export function planFirefliesCache({
-  discovery,
+  discovery: rawDiscovery,
   collectionPlan,
   policy: policyInput,
   index = null,
@@ -155,7 +156,13 @@ export function planFirefliesCache({
       (typeof policy.approvalReference === 'string' && policy.approvalReference.trim().length > 0),
     'Reuse requires an explicitly approved validation-age policy'
   );
-  const meetings = validateDiscovery(discovery, collectionPlan, discovery.asOf);
+  const meetings = validateDiscovery(
+    rawDiscovery,
+    collectionPlan,
+    captureProperty(rawDiscovery, 'asOf')
+  );
+  // Domain validation above owns error classification; decode only after it succeeds.
+  const discovery = firefliesDiscoverySchema.parse(rawDiscovery);
   const time = cacheTimestamp(discovery.asOf);
   const scopeHash = sha256Json(discovery.scope);
   const policyHash = sha256Json(policy);
@@ -188,7 +195,7 @@ export function planFirefliesCache({
     version: FIREFLIES_CACHE_VERSION,
     runId: discovery.runId,
     asOf: discovery.asOf,
-    discoveryHash: sha256Json(discovery),
+    discoveryHash: sha256Json(rawDiscovery),
     collectionPlanHash: sha256Json(collectionPlan),
     scopeHash,
     policyHash,
