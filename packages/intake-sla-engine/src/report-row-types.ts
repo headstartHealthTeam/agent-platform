@@ -19,8 +19,8 @@ import type { SourceOutcome } from './source-outcome.js';
 export interface ReportRowOpportunity extends ReportProviderOpportunity, ReportHoldRecord {
   readonly Id: string;
   readonly Name: string;
-  readonly Current_SLA__c: string;
-  readonly Headstart_Practice__r?: { readonly Name?: string | null | undefined } | null;
+  readonly Current_SLA__c?: string | null | undefined;
+  readonly Headstart_Practice__r?: { readonly Name?: string | null | undefined } | null | undefined;
   readonly CSM__c?: string | null | undefined;
   readonly SL_Due__c?: number | string | null | undefined;
   readonly On_Hold__c?: boolean | null | undefined;

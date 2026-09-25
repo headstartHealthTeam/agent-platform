@@ -17,7 +17,7 @@ export interface ConversationSearchInput<T extends SearchMatch> {
   readonly blocked?: boolean;
   readonly timedOut?: boolean;
   readonly unsupported?: boolean;
-  readonly searchedAt?: string;
+  readonly searchedAt?: string | null;
 }
 export interface ConversationMatchCounts {
   Direct: number;
@@ -29,7 +29,7 @@ export interface ConversationSearchResult<T extends SearchMatch> {
   source: string;
   opportunityId: string;
   status: 'Found' | 'Searched - Not Found' | 'Blocked' | 'Timed Out' | 'Unsupported';
-  searchedAt: string;
+  searchedAt: string | null;
   identitiesUsed: unknown[];
   queriesUsed: unknown[];
   recordsScanned: number;

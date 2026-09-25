@@ -17,7 +17,7 @@ export interface ConversationInterpretationInput<
   readonly opportunityId: string;
   readonly source: string;
   readonly sourceRecordId: string;
-  readonly eventDate: EvidenceDate;
+  readonly eventDate: EvidenceDate | null | undefined;
   readonly text: string;
   readonly rawText?: string | null | undefined;
   readonly matchQuality: string;
@@ -65,6 +65,9 @@ function projectFact<Identity extends ConversationIdentity>(
     assumedIdentityNote = '',
     matchedAs = '',
   } = input;
+  // The approved event factory requires a date only when a fact is emitted.
+  if (eventDate === null || eventDate === undefined || eventDate === '')
+    throw new Error('EvidenceEvent missing eventDate');
   return createEvidenceEvent({
     opportunityId,
     source,

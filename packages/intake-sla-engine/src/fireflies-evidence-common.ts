@@ -60,6 +60,7 @@ export function firefliesFindingEvent(
   } = context;
   const semantics = interpretedFindingSemantics(finding, gate);
   const uncertain = finding.semanticsSupplied && !semantics.category;
+  if (!meeting.date) throw new Error('EvidenceEvent missing eventDate');
   return createEvidenceEvent({
     opportunityId: profile.opportunityId,
     source: 'Fireflies',

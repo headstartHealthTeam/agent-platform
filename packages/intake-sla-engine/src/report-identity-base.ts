@@ -1,4 +1,4 @@
-import { clientIdentityAliasesFor } from './client-identity.js';
+import { clientIdentityAliasesFor, type ClientIdentityRegistry } from './client-identity.js';
 import { reportClean, reportPreferred, reportText } from './report-display-values.js';
 import type {
   ReportFamilyContact,
@@ -63,14 +63,18 @@ function familyFor(opp: Opportunity, data: StructuredCollection): ReportFamilyCo
 }
 export function reportIdentityBase(
   opp: Opportunity,
-  data: StructuredCollection
+  data: StructuredCollection,
+  clientRegistry?: ClientIdentityRegistry
 ): ReportIdentityBase {
   const history = data.opportunityHistory.filter((row) => row.OpportunityId === opp.Id);
-  const registry = clientIdentityAliasesFor({
-    opportunityId: opp.Id,
-    opportunityName: opp.Name,
-    practiceId: opp.Headstart_Practice__c,
-  });
+  const registry = clientIdentityAliasesFor(
+    {
+      opportunityId: opp.Id,
+      opportunityName: opp.Name,
+      practiceId: opp.Headstart_Practice__c,
+    },
+    clientRegistry
+  );
   const priorCsms = [
     ...new Set(
       history

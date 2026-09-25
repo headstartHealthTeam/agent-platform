@@ -1,7 +1,7 @@
 import { createEvidenceEvent, type EvidenceEvent } from './evidence.js';
 import { categoryForGate } from './gate-context.js';
 import {
-  firstEvidenceText,
+  firstEvidenceDate,
   requiredEvidenceValue,
   type SourceEvidenceContext,
 } from './source-evidence-context.js';
@@ -30,7 +30,7 @@ export function adaptStageHistory({
         opportunityId: profile.opportunityId,
         source: 'Salesforce Stage History',
         sourceRecordId: requiredEvidenceValue(record.Id, 'sourceRecordId'),
-        eventDate: requiredEvidenceValue(firstEvidenceText(record.CreatedDate, asOf), 'eventDate'),
+        eventDate: requiredEvidenceValue(firstEvidenceDate(record.CreatedDate, asOf), 'eventDate'),
         category: categoryForGate(gate),
         text: `The Opportunity entered ${String(record.NewValue)}.`,
         matchQuality: 'Direct',

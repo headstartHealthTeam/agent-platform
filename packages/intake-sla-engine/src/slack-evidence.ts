@@ -12,13 +12,14 @@ import { firstEvidenceText } from './source-evidence-context.js';
 function resultText(row: SlackEvidenceRow): string {
   const messages = (row.messages ?? []).flatMap((message) => {
     try {
-      const parsed: unknown = JSON.parse(message.text);
+      const parsed: unknown = JSON.parse(String(message.text));
       if (parsed === null) throw new TypeError('Null legacy Slack message');
       const result = typeof parsed === 'object' && 'results' in parsed ? parsed.results : undefined;
       const present = Boolean(result);
       return present ? [result] : [];
     } catch {
-      return message.text ? [message.text] : [];
+      const present = Boolean(message.text);
+      return present ? [message.text] : [];
     }
   });
   const searches = (row.searches ?? []).flatMap((search) =>

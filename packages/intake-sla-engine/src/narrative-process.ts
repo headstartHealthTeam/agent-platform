@@ -22,7 +22,7 @@ function authorizationPosition(
 }
 
 export function processPositionSentence(packet: NarrativePacket): string {
-  const stage = packet.stage;
+  const stage = String(packet.stage);
   const normalized = stage.toLowerCase();
   const process = String(packet.processPosition).toLowerCase();
   const lead = packet.opportunityName

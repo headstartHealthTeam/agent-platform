@@ -1,14 +1,14 @@
 import { assessBillingClaims, selectBillingClaimAppointments } from './billing-claims.js';
 import type { BillingAppointment, BillingAssessmentInput, BillingState } from './billing-types.js';
 import { isoDate, nextBusinessDay } from './dates.js';
-import { createEvidenceEvent, type EvidenceEvent } from './evidence.js';
+import { createEvidenceEvent, type EvidenceDate, type EvidenceEvent } from './evidence.js';
 import type { GateContext } from './gate-context.js';
 import type { IdentityProfile } from './identity-profile.js';
 
 export interface BillingEvidenceInput extends Omit<BillingAssessmentInput, 'appointments'> {
   readonly profile: Pick<IdentityProfile, 'opportunityId'> &
     Partial<Pick<IdentityProfile, 'currentCsm'>>;
-  readonly asOf: string;
+  readonly asOf: EvidenceDate;
   readonly gate?: GateContext | null;
 }
 export interface BillingEvidenceEvent extends EvidenceEvent {
@@ -33,10 +33,7 @@ interface Context {
 }
 const SALESFORCE_UPDATE = 'Salesforce Update';
 const PROVIDER_OUTREACH = 'Provider Outreach';
-function textOr(
-  value: string | null | undefined,
-  fallback: string | null | undefined
-): string | null | undefined {
+function textOr<T>(value: string | null | undefined, fallback: T): string | T {
   return value === null || value === undefined || value === '' ? fallback : value;
 }
 function ownerName(profile: BillingEvidenceInput['profile']): string {
@@ -149,11 +146,12 @@ function narrative(context: Context): Narrative {
     };
   return unverified(context);
 }
-function required(value: string | null | undefined, field: string): string {
-  if (!value) throw new Error(`EvidenceEvent missing ${field}`);
+function required<T extends EvidenceDate>(value: T | null | undefined, field: string): T {
+  if (value === null || value === undefined || value === '')
+    throw new Error(`EvidenceEvent missing ${field}`);
   return value;
 }
-function followUp(context: Context, asOf: string): string | null {
+function followUp(context: Context, asOf: EvidenceDate): string | null {
   const { appointment, scheduled, past, future } = context;
   if (appointment.reviewReasons.length > 0) return nextBusinessDay(asOf);
   if (appointment.completed && appointment.qualifyingAssessment && scheduled !== null)
@@ -161,7 +159,11 @@ function followUp(context: Context, asOf: string): string | null {
   if (!appointment.completed && future && past === null) return appointment.serviceDate;
   return nextBusinessDay(asOf);
 }
-function evidence(context: Context, opportunityId: string, asOf: string): BillingEvidenceEvent {
+function evidence(
+  context: Context,
+  opportunityId: string,
+  asOf: EvidenceDate
+): BillingEvidenceEvent {
   const { appointment, owner, sourceId, scheduled } = context;
   const assessment = appointment.qualifyingAssessment;
   const conflict = appointment.reviewReasons.length > 0;

@@ -5,7 +5,7 @@ export interface TranscriptFindingInput {
   readonly matchedOpportunityId?: string | null | undefined;
   readonly synthesizedFact?: string | null | undefined;
   readonly gateImpact?: string | null | undefined;
-  readonly substantive?: boolean | undefined;
+  readonly substantive?: boolean | null | undefined;
   readonly relationship?: string | null | undefined;
   readonly supportSpan?: string | null | undefined;
   readonly actionOwner?: string | null | undefined;
@@ -22,7 +22,7 @@ export interface TranscriptFindingInput {
 export interface FindingContext {
   readonly segment?: string | null;
   readonly inputMatchQuality?: string | null;
-  readonly eventDate?: EvidenceDate | null;
+  readonly eventDate?: EvidenceDate | null | undefined;
   readonly expectedOpportunityId?: string | null;
 }
 export interface ValidatedTranscriptFinding {

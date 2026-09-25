@@ -13,7 +13,7 @@ import { capitalize, truncate } from './recommendation-text.js';
 export function pausedStaffingShortSummary(packet: NarrativePacket): string | null {
   const detail = packet.structuredGateDetail;
   if (
-    !/ta approved/i.test(packet.stage) ||
+    !/ta approved/i.test(String(packet.stage)) ||
     detail?.factType !== 'rbt-recruiting' ||
     !/paused|on hold/i.test(detail.fact)
   )
@@ -130,7 +130,7 @@ function structuredCandidateSummary(packet: NarrativePacket): string | null {
 }
 
 export function staffingShortSummary(packet: NarrativePacket): string | null {
-  if (!/ta approved/i.test(packet.stage)) return null;
+  if (!/ta approved/i.test(String(packet.stage))) return null;
   const assigned = assignedRbtName(packet.structuredGateDetail);
   const conversation = conversationSummary(packet, assigned);
   if (conversation) return conversation;

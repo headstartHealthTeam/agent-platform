@@ -51,7 +51,7 @@ export interface RecommendationFact {
 export interface RecommendationOpportunity {
   readonly id: string;
   readonly name?: string | undefined;
-  readonly stage: string;
+  readonly stage: string | undefined;
   readonly csm?: string | null | undefined;
   readonly provider?: string | null | undefined;
   readonly stageEntryDate?: DateValue;
@@ -138,7 +138,7 @@ export interface FactPacket<T extends RecommendationEvent = RecommendationEvent>
   readonly opportunityName: string | undefined;
   readonly provider: string | null;
   readonly csm: string | null;
-  readonly stage: string;
+  readonly stage: string | undefined;
   readonly slaCreatedDate: string | null;
   readonly stageEntryDate: string | null;
   readonly storyStartDate: string | null;

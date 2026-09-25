@@ -1,4 +1,5 @@
 import { isoDate } from './dates.js';
+import type { EvidenceDate } from './evidence.js';
 import { categoryForGate } from './gate-context.js';
 import {
   firstEvidenceText,
@@ -70,7 +71,7 @@ interface CandidateState {
   readonly rejected: boolean;
   readonly hired: boolean;
   readonly availability: string | null;
-  readonly eventDate: string;
+  readonly eventDate: EvidenceDate;
 }
 function candidateNarrative(state: CandidateState): string {
   const { candidate, status, rejected, hired, availability, eventDate } = state;

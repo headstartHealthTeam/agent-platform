@@ -1,16 +1,19 @@
 import type { EvidenceDate } from './evidence.js';
 import type { GateContext } from './gate-context.js';
-import type { IdentityProfile } from './identity-profile.js';
 
 export interface SourceEvidenceContext {
-  readonly profile: Pick<IdentityProfile, 'opportunityId'> &
-    Partial<Pick<IdentityProfile, 'currentCsm' | 'stage'>>;
+  readonly profile: {
+    readonly opportunityId: string;
+    readonly stage?: string | null | undefined;
+    readonly currentCsm?:
+      string | { readonly name?: unknown } | Readonly<Record<string, unknown>> | null | undefined;
+  };
   readonly gate?: GateContext | null;
-  readonly asOf: string;
+  readonly asOf: EvidenceDate;
 }
 export function evidenceOwner(profile: SourceEvidenceContext['profile']): string {
   const csm = profile.currentCsm;
-  const name: unknown = typeof csm === 'object' && csm !== null ? csm['name'] : undefined;
+  const name: unknown = typeof csm === 'object' && csm !== null ? csm.name : undefined;
   const hasName = Boolean(name);
   if (!hasName) return 'CSM';
   if (typeof name !== 'string') throw new Error('Evidence action owner must be text');
@@ -26,8 +29,12 @@ export function firstEvidenceDate(
 ): EvidenceDate | undefined {
   return values.find((value): value is EvidenceDate => Boolean(value));
 }
-export function requiredEvidenceValue(value: string | null | undefined, field: string): string {
-  if (!value) throw new Error(`EvidenceEvent missing ${field}`);
+export function requiredEvidenceValue<T extends EvidenceDate>(
+  value: T | null | undefined,
+  field: string
+): T {
+  if (value === null || value === undefined || value === '')
+    throw new Error(`EvidenceEvent missing ${field}`);
   return value;
 }
 export function latestEvidenceDate(

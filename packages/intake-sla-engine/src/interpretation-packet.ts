@@ -44,7 +44,7 @@ export interface InterpretationPacketInput {
   readonly gate?: GateContext | null;
   readonly source?: string;
   readonly sourceRecordId?: string;
-  readonly eventDate?: string;
+  readonly eventDate?: string | null | undefined;
   readonly segment?: string | null;
   readonly matchQuality?: string;
   readonly matchContext?: Readonly<Record<string, InterpretationJson | undefined>>;
@@ -88,7 +88,7 @@ export interface TranscriptInterpretationPacket {
   readonly source: {
     readonly name: string | undefined;
     readonly recordId: string | undefined;
-    readonly eventDate: string | undefined;
+    readonly eventDate: string | null | undefined;
     readonly matchQuality: string | undefined;
     readonly matchContext: Readonly<Record<string, InterpretationJson | undefined>>;
   };
@@ -154,13 +154,16 @@ export function interpretationGateContext({
   stage = '',
   authorizationGate = null,
 }: {
-  readonly stage?: string;
+  readonly stage?: string | null | undefined;
   readonly authorizationGate?: {
     readonly required?: boolean;
     readonly satisfied?: boolean;
     readonly blocker?: string | null;
   } | null;
-} = {}): { readonly processPosition: string; readonly unresolvedGate: string | null | undefined } {
+} = {}): {
+  readonly processPosition: string | null;
+  readonly unresolvedGate: string | null | undefined;
+} {
   return {
     processPosition: stage,
     unresolvedGate:

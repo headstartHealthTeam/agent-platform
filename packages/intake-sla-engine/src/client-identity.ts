@@ -3,10 +3,10 @@ import aliases from './contracts/client-identity-aliases.json' with { type: 'jso
 
 export interface ClientIdentityEntry {
   readonly [key: string]: unknown;
-  readonly opportunityIds?: readonly string[] | null;
-  readonly names?: readonly string[] | null;
-  readonly practiceIds?: readonly string[] | null;
-  readonly aliases?: readonly string[] | null;
+  readonly opportunityIds?: readonly string[] | null | undefined;
+  readonly names?: readonly string[] | null | undefined;
+  readonly practiceIds?: readonly string[] | null | undefined;
+  readonly aliases?: readonly string[] | null | undefined;
   readonly evidence?: unknown;
 }
 export interface ClientIdentityRegistry {

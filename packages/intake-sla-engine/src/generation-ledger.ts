@@ -131,9 +131,11 @@ export function classifyCurrentSlaNote({
     return { provenance: 'Generated - Unverified Legacy', admittedText: '', excludedText: text };
   return { provenance: 'Human', admittedText: text, excludedText: '' };
 }
-export interface GenerationLedgerRow {
+export interface GenerationLedgerRow<
+  SlaId extends string | null | undefined = string | null | undefined,
+> {
   readonly runId: string;
-  readonly slaId: string;
+  readonly slaId: SlaId;
   readonly opportunityId: string;
   readonly engineVersion: string | undefined;
   readonly sourceCutoff: string | undefined;
@@ -144,7 +146,7 @@ export interface GenerationLedgerRow {
   readonly operationalSummaryHash: string;
   readonly publicationStatus: string;
 }
-export function createGenerationLedgerRow({
+export function createGenerationLedgerRow<SlaId extends string | null | undefined>({
   runId,
   slaId,
   opportunityId,
@@ -156,7 +158,7 @@ export function createGenerationLedgerRow({
   publicationStatus = 'Built - Pending Publish',
 }: {
   readonly runId: string;
-  readonly slaId: string;
+  readonly slaId: SlaId;
   readonly opportunityId: string;
   readonly engineVersion?: string | undefined;
   readonly sourceCutoff?: string | undefined;
@@ -164,7 +166,7 @@ export function createGenerationLedgerRow({
   readonly generatedSummary?: unknown;
   readonly operationalSummary?: unknown;
   readonly publicationStatus?: string;
-}): GenerationLedgerRow {
+}): GenerationLedgerRow<SlaId> {
   return {
     runId,
     slaId,

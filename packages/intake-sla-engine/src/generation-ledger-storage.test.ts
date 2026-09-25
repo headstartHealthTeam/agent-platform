@@ -12,6 +12,7 @@ import {
   classifyCurrentSlaNote,
   createGenerationLedgerRow,
   generationLedgerRows,
+  type GenerationLedgerRow,
 } from './generation-ledger.js';
 import { sha256Json } from './json-fingerprint.js';
 import { readPrivateJson, writePrivateJson } from './private-run-storage.js';
@@ -36,7 +37,7 @@ function row(
   runId: string,
   text: string,
   opportunityId = 'synthetic-opportunity'
-): ReturnType<typeof createGenerationLedgerRow> {
+): GenerationLedgerRow<string> {
   return createGenerationLedgerRow({
     runId,
     opportunityId,

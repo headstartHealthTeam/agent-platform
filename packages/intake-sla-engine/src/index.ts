@@ -1176,6 +1176,38 @@ export {
   reportConversationSearchPathways,
 } from './report-identity.js';
 export type { ReportIdentityProfile } from './report-identity-types.js';
+export { loadSavedReportSources } from './saved-source-context.js';
+export type { SavedReportSources, SavedPortalRequests } from './saved-source-context.js';
+export { savedSourceArtifacts } from './saved-source-storage.js';
+export type { SavedSourceArtifacts } from './saved-source-health.js';
+export {
+  indexReportStructuredSources,
+  prepareReportOpportunity,
+} from './report-opportunity-context.js';
+export type {
+  ReportOpportunityContext,
+  ReportStructuredIndex,
+} from './report-opportunity-context.js';
+export { matchReportCommunication } from './report-communication-match.js';
+export {
+  assembleReportAuthoritativeEvidence,
+  reportAdapterGate,
+  reportGateCategory,
+} from './report-authoritative-evidence.js';
+export type {
+  ReportAuthoritativeInput,
+  ReportAdapterGate,
+} from './report-authoritative-evidence.js';
+export { prepareReportComparison } from './report-comparison-context.js';
+export type { PreparedReportComparison } from './report-comparison-context.js';
+export { classifyReportComparison } from './report-comparison-classification.js';
+export { comparisonNarrative } from './report-comparison-narrative.js';
+export type { ReportComparisonNarrative } from './report-comparison-narrative.js';
+export type {
+  ReportComparisonInput,
+  ReportComparisonResult,
+  ReportComparisonFreshness,
+} from './report-comparison-types.js';
 export {
   buildReportBillingRows,
   reportBillingReconciliation,
@@ -1188,3 +1220,97 @@ export {
 } from './collection-search-window.js';
 export type { StructuredCollectionSource } from './collection-initial.js';
 export type { StructuredCollectionArtifacts } from './collection-decoding.js';
+export { decodeSavedPortalEvidence } from './saved-portal-evidence.js';
+export { prepareReportCommunicationEvidence } from './report-communication-evidence.js';
+export type {
+  ReportCommunicationEvidence,
+  ReportCommunicationMatch,
+} from './report-communication-evidence.js';
+export { evaluateReportSourceOutcomes } from './report-source-outcomes.js';
+export { structuredReportOutcome } from './report-structured-outcomes.js';
+export type {
+  ReportSourceSnapshot,
+  ReportSourceOutcomesInput,
+  ReportSourceOutcomes,
+  ReportRowSourceOutcome,
+} from './report-source-outcome-types.js';
+export { buildReportRecommendation, reportCoreSourceResults } from './report-recommendation.js';
+export type {
+  ReportRecommendation,
+  ReportRecommendationInput,
+  ReportRecommendationSource,
+} from './report-recommendation.js';
+export { projectReportFinalContext, reportCalendarDaysSince } from './report-final-context.js';
+export type {
+  ReportFinalContext,
+  ReportFinalExpanded,
+  ReportTimelineEvidence,
+} from './report-final-context.js';
+export { evaluateReportInterpretation } from './report-interpretation.js';
+export type {
+  EvaluatedReportInterpretation,
+  ReportInterpretation,
+  ReportInterpretationInput,
+  ReportInterpreterExecution,
+} from './report-interpretation.js';
+export { prepareReportSavedEvidence, type ReportSavedEvidence } from './report-saved-evidence.js';
+export {
+  reportConversationDisplay,
+  type ReportConversationDisplay,
+} from './report-conversation-display.js';
+export {
+  decodeSavedFirefliesEvidence,
+  type SavedFirefliesEvidence,
+  type SavedFirefliesMeeting,
+} from './saved-fireflies-evidence.js';
+export {
+  decodeSavedPortalReport,
+  decodeSavedPortalReportInput,
+  type SavedPortalReport,
+} from './saved-portal-report.js';
+export {
+  decodeSavedPortalRequests,
+  decodeSavedPortalRequestInventory,
+} from './saved-portal-requests.js';
+export {
+  decodeSavedSlackEvidence,
+  decodeSavedSlackExecution,
+  type SavedSlackEvidence,
+} from './saved-slack-evidence.js';
+export {
+  decodeSavedSupplementalEvidence,
+  type SavedSupplementalEvidence,
+} from './saved-supplemental-evidence.js';
+export {
+  evaluateReportOpportunity,
+  type ReportEvaluationContext,
+  type EvaluatedReportRow,
+} from './report-evaluation.js';
+export {
+  reportInterpretationDisplay,
+  type ReportInterpretationDisplayInput,
+} from './report-interpretation-display.js';
+export {
+  evaluateReportRowQuality,
+  type ReportRowQuality,
+  type ReportRowQualityInput,
+} from './report-row-quality.js';
+export type { ReportIdentityRegistries } from './report-identity.js';
+export {
+  prepareReportInterpreter,
+  type PreparedReportInterpreter,
+  type ReportPrecomputedArtifact,
+} from './report-interpreter-setup.js';
+export { buildIntakeReport, type IntakeReportBuildInput } from './report-build.js';
+export {
+  decodeReportPrecomputedArtifact,
+  loadReportIdentityRegistries,
+  loadReportInterpreter,
+} from './report-runtime-inputs.js';
+export { runBuildReportCommand } from './cli-build.js';
+export { isSourceCaptureCommand, runSourceCaptureCommand } from './cli-source-capture.js';
+export {
+  saveNormalizedFirefliesDiscovery,
+  saveSlackSearchCapture,
+  saveSlackDelta,
+} from './source-capture-storage.js';

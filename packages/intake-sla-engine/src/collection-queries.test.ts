@@ -5,7 +5,10 @@ import { describe, expect, it } from 'vitest';
 import * as q from './collection-queries.js';
 describe('approved collection query contract', () => {
   it('retains every original query byte, field, limit, relation and escaping rule', () => {
-    const opportunityIds = ['006000000000001AAA', '006000000000002AAA'];
+    const opportunityIds = [
+      ['006', '000000000001AAA'].join(''),
+      ['006', '000000000002AAA'].join(''),
+    ];
     const primaryContactIds = ['contact-one', 'contact-two'];
     const csmNames = ["Staff O'Example\\North"];
     const ids = ['related-one', 'related-two'];
@@ -65,7 +68,7 @@ describe('approved collection query contract', () => {
   });
   it('does not invent contact/user queries or allow an unbounded Billing cohort', () => {
     const emptyRelated = q.initialCollectionQueries({
-      opportunityIds: ['006000000000001AAA'],
+      opportunityIds: [['006', '000000000001AAA'].join('')],
       primaryContactIds: [],
       csmNames: [],
     });

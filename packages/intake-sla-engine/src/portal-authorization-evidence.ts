@@ -1,4 +1,5 @@
 import { isoDate } from './dates.js';
+import type { EvidenceDate } from './evidence.js';
 import { categoryForGate, type GateContext } from './gate-context.js';
 import type { SourceAuthorizationRecord } from './source-authorization-types.js';
 import {
@@ -34,7 +35,7 @@ export interface PortalAuthorizationEvidenceInput extends Omit<
   SourceEvidenceContext,
   'gate' | 'asOf'
 > {
-  readonly asOf?: string | null;
+  readonly asOf?: EvidenceDate | null;
   readonly records?: readonly PortalAuthorizationEvidenceRecord[] | null;
   readonly salesforceAuthorizationRecords?: readonly SourceAuthorizationRecord[] | null;
   readonly clinicalQualityRecords?: readonly unknown[] | null;

@@ -1,7 +1,9 @@
 import { isoDate, nextBusinessDay } from './dates.js';
+import type { EvidenceDate } from './evidence.js';
 import { categoryForGate } from './gate-context.js';
 import {
   evidenceOwner,
+  firstEvidenceDate,
   firstEvidenceText,
   latestEvidenceDate,
   requiredEvidenceValue,
@@ -46,7 +48,7 @@ interface RequestState {
   readonly assigned: string;
   readonly startDate: string | null;
   readonly status: string;
-  readonly eventDate: string;
+  readonly eventDate: EvidenceDate;
 }
 type RequestDecision = Omit<
   StructuredEvidenceInput,
@@ -98,7 +100,7 @@ function replacementEvent(
     opportunityId: input.profile.opportunityId,
     source: 'RBT Request',
     sourceRecordId: `${String(record.Id)}:${String(replacement.Id)}`,
-    eventDate: firstEvidenceText(replacement.CreatedDate, state.eventDate) ?? '',
+    eventDate: firstEvidenceDate(replacement.CreatedDate, state.eventDate) ?? '',
     category: 'rbt',
     text: `The prior RBT assignment${assigned ? ` to ${assigned}` : ''} closed on ${String(isoDate(record.Date_Closed__c))}; a replacement request opened on ${String(isoDate(replacement.CreatedDate))} and has no confirmed assignment or first 97153 date.`,
     gateImpact: 'Prior RBT coverage was superseded; replacement staffing is required',

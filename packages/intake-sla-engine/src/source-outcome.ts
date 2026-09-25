@@ -6,13 +6,13 @@ export interface StageEvidence {
   readonly processGateRelevance?: string | null;
 }
 export interface SourceCheck {
-  readonly unsupported?: boolean;
-  readonly error?: string | null;
-  readonly searchedAt?: string | null;
-  readonly collectedAt?: string | null;
-  readonly checkedAt?: string | null;
-  readonly timedOut?: boolean;
-  readonly blocked?: boolean;
+  readonly unsupported?: boolean | null | undefined;
+  readonly error?: string | null | undefined;
+  readonly searchedAt?: string | null | undefined;
+  readonly collectedAt?: string | null | undefined;
+  readonly checkedAt?: string | null | undefined;
+  readonly timedOut?: boolean | null | undefined;
+  readonly blocked?: boolean | null | undefined;
 }
 export interface SourceOutcome {
   readonly source: string;
@@ -24,7 +24,7 @@ export interface SourceOutcome {
   readonly coverageStatus?: string;
 }
 export interface SourceOutcomeInput {
-  readonly row?: SourceCheck | null;
+  readonly row?: SourceCheck | null | undefined;
   readonly items?: readonly StageEvidence[];
   readonly source: string;
   readonly required?: boolean;

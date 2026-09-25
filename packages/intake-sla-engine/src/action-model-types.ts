@@ -3,7 +3,7 @@ export type ActionDate = string | number | Date | null;
 export interface ActionModelInput {
   readonly opp: {
     readonly StageName?: unknown;
-    readonly Current_SLA__r?: { readonly Stage__c?: unknown } | null;
+    readonly Current_SLA__r?: { readonly Stage__c?: unknown } | null | undefined;
     readonly CSM__c?: unknown;
   };
   readonly blocker: string;

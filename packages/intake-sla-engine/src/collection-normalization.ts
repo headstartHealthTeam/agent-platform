@@ -32,9 +32,10 @@ interface OpportunityProjection {
 type CollectionProjection<T, P> = {
   readonly [K in keyof T as K extends keyof P ? never : K]: T[K];
 } & P;
+export type NormalizedCollectionOpportunity<T> = CollectionProjection<T, OpportunityProjection>;
 export function normalizeCollectedOpportunities<T extends CollectionOpportunity>(
   records: readonly T[]
-): CollectionProjection<T, OpportunityProjection>[] {
+): NormalizedCollectionOpportunity<T>[] {
   return records
     .map((opp) => {
       const providerPractice = reportPreferred(
@@ -69,11 +70,12 @@ interface AuthorizationProjection {
   readonly Initial_Auth_Approval_Date__c: string | null | undefined;
   readonly Treatment_Auth_Approval_Date__c: string | null | undefined;
 }
+export type NormalizedCollectionAuthorization<T> = CollectionProjection<T, AuthorizationProjection>;
 /** Collection enrichment, distinct from gate/evidence normalization and phase decisions. */
 export function normalizeCollectedAuthorizations<T extends SourceAuthorizationRecord>(
   authorizations: readonly T[],
   reviews: readonly SourceAuthorizationRecord[]
-): CollectionProjection<T, AuthorizationProjection>[] {
+): NormalizedCollectionAuthorization<T>[] {
   const byAuthorization = new Map<string, SourceAuthorizationRecord>();
   for (const review of [...reviews].sort(
     (left, right) =>
@@ -123,9 +125,15 @@ export type CollectionRbtRequest = RbtRequestEvidenceRecord & {
   readonly Inactive__c?: boolean | null | undefined;
   readonly RBT_Inactive_Date__c?: string | null | undefined;
 };
+export type NormalizedCollectionRbtRequest<T> = CollectionProjection<
+  T,
+  {
+    readonly Date_Closed__c: string | null | undefined;
+  }
+>;
 export function normalizeCollectedRbtRequests<T extends CollectionRbtRequest>(
   records: readonly T[]
-): CollectionProjection<T, { readonly Date_Closed__c: string | null | undefined }>[] {
+): NormalizedCollectionRbtRequest<T>[] {
   return records.map((row) => ({
     ...row,
     Date_Closed__c: reportPreferred(
@@ -134,15 +142,16 @@ export function normalizeCollectedRbtRequests<T extends CollectionRbtRequest>(
     ),
   }));
 }
-export function normalizeCollectedStaffing<T extends StaffingEvidenceRecord>(
-  records: readonly T[],
-  assignedLookup = false
-): CollectionProjection<
+export type NormalizedCollectionStaffing<T> = CollectionProjection<
   T,
   {
     readonly Billable_Start_Date__c: string | null | undefined;
   }
->[] {
+>;
+export function normalizeCollectedStaffing<T extends StaffingEvidenceRecord>(
+  records: readonly T[],
+  assignedLookup = false
+): NormalizedCollectionStaffing<T>[] {
   return records.map((row) => ({
     ...row,
     Billable_Start_Date__c: assignedLookup

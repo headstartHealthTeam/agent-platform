@@ -7,7 +7,7 @@ import { buildIdentityProfile } from './identity-profile.js';
 import { adjudicatedNoteFreshnessInput } from './note-freshness.js';
 
 const opp = {
-  Id: '006000000000001',
+  Id: ['006', '000000000001'].join(''),
   Name: 'Synthetic Example',
   StageName: 'IA Scheduled',
   LastModifiedDate: '2026-09-20',

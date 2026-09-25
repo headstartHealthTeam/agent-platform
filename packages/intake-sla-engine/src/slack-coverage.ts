@@ -1,18 +1,18 @@
-type Count = number | string | null;
+type Count = number | string | null | undefined;
 export interface SlackSweepExecution {
-  readonly cohortComplete?: boolean;
+  readonly cohortComplete?: boolean | null | undefined;
   readonly expectedOpportunities?: Count;
   readonly opportunities?: Count;
   readonly blocked?: Count;
   readonly unassignedExactRows?: Count;
   readonly unassignedPageTwoRecords?: Count;
-  readonly threadExpansionComplete?: boolean;
+  readonly threadExpansionComplete?: boolean | null | undefined;
 }
 export interface SlackSweepRow {
-  readonly blocked?: boolean;
-  readonly error?: string | null;
-  readonly paginationComplete?: boolean;
-  readonly threadExpansionComplete?: boolean;
+  readonly blocked?: boolean | null | undefined;
+  readonly error?: string | null | undefined;
+  readonly paginationComplete?: boolean | null | undefined;
+  readonly threadExpansionComplete?: boolean | null | undefined;
 }
 export interface SlackSweepCoverage {
   readonly status: 'Partial' | 'Complete';

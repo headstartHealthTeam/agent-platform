@@ -4,7 +4,6 @@ import type { PacketInterpretation } from './ai-interpretation.js';
 import type { ConversationSearchResult } from './conversation-search-result.js';
 import type { EvidenceDate, EvidenceEvent } from './evidence.js';
 import type { GateContext } from './gate-context.js';
-import type { TranscriptFindingInput } from './interpretation-findings.js';
 import type { InterpretationProfile } from './interpretation-packet.js';
 import type {
   FirefliesMeetingSegment,
@@ -20,7 +19,7 @@ export type FirefliesEvidenceProfile = MeetingSegmentProfile &
     readonly csmNames?: readonly string[] | undefined;
   };
 export interface FirefliesEvidenceMeeting extends SegmentableMeeting {
-  readonly date: string;
+  readonly date?: string | null | undefined;
   readonly meetingRelationship?: string | null | undefined;
 }
 export interface FirefliesEvidenceRow {
@@ -29,7 +28,7 @@ export interface FirefliesEvidenceRow {
   readonly error?: string | null | undefined;
   readonly meetings?: readonly FirefliesEvidenceMeeting[] | null | undefined;
   readonly queriesUsed?: readonly unknown[] | null | undefined;
-  readonly searchedAt?: string | undefined;
+  readonly searchedAt?: string | null | undefined;
   readonly searchCoverage?:
     | {
         readonly queriesUsed?: readonly unknown[] | null | undefined;
@@ -55,20 +54,20 @@ export interface FirefliesApiInput extends FirefliesEvidenceInput {
 }
 export interface FirefliesSuppliedInterpretation {
   readonly sourceRecordId: string;
-  readonly findings?: readonly TranscriptFindingInput[];
+  /** Raw saved findings are decoded only after this record is selected and its binding matches. */
+  readonly findings?: unknown;
   readonly binding?: unknown;
   readonly validationBinding?: unknown;
 }
 export interface FirefliesPrecomputed<T extends FirefliesSuppliedInterpretation> {
   readonly interpretations?: readonly T[] | null | undefined;
-  readonly currentRunPrecomputed?: boolean | null | undefined;
+  readonly currentRunPrecomputed?: unknown;
   readonly apiEnabled?: boolean | null | undefined;
   readonly model?: string | null | undefined;
   readonly provider?: string | null | undefined;
   readonly engineVersion?: string | null | undefined;
   readonly store?: boolean | null | undefined;
-  readonly executionProvenance?:
-    { readonly kind?: string; readonly api?: boolean } | null | undefined;
+  readonly executionProvenance?: unknown;
   readonly usage?: FirefliesEvidenceUsage | null | undefined;
 }
 export interface FirefliesPrecomputedInput<

@@ -61,7 +61,9 @@ function documentationConflict<T extends RecommendationEvent>(state: FactPacketS
   const outstanding = outstandingDocument(state.narrative);
   const { opportunity, asOf } = state.input;
   state.iaCompletionDocumentationConflict =
-    /IA Approved|IA Scheduled|IC Completed/i.test(opportunity.stage) && reported && outstanding
+    /IA Approved|IA Scheduled|IC Completed/i.test(String(opportunity.stage)) &&
+    reported &&
+    outstanding
       ? {
           reportedDate: isoDate(reported.eventDate),
           requiredItem: requiredItemFromEvent(outstanding),

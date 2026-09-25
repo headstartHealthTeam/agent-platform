@@ -1,9 +1,15 @@
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+
 import type { StructuredResponsesClient } from '@headstart-health/openai-platform/responses';
 import { describe, expect, it, vi } from 'vitest';
 
 import { firefliesPacketInput } from './fireflies-evidence-common.js';
 import type { FirefliesEvidenceSegment, FirefliesPrecomputed } from './fireflies-evidence-types.js';
 import type { PrecomputedFinding } from './precomputed-candidate.js';
+import { writePrivateJson } from './private-run-storage.js';
+import { loadReportInterpreter } from './report-runtime-inputs.js';
 
 import {
   adaptFirefliesWithAI,
@@ -101,6 +107,97 @@ function apiPrecomputed(
 }
 
 describe('routine Fireflies interpretation adapters', () => {
+  it('retains bound saved null substantive findings as non-substantive in both execution paths', async () => {
+    const directory = await fs.mkdtemp(
+      path.join(await fs.realpath(os.tmpdir()), 'intake-null-finding-')
+    );
+    try {
+      const packet = buildTranscriptInterpretationPacket(firefliesPacketInput(context()));
+      const findings = [{ ...finding, substantive: null }];
+      const bundles = [
+        {
+          apiEnabled: true,
+          model,
+          provider: APPROVED_INTERPRETER_PROVIDER,
+          engineVersion: EVIDENCE_ENGINE_VERSION,
+          store: false,
+          interpretation: {
+            sourceRecordId: 'meeting:1',
+            findings,
+            binding: interpretationBindingForPacket({ packet, model }),
+          },
+        },
+        {
+          currentRunPrecomputed: true,
+          apiEnabled: false,
+          engineVersion: EVIDENCE_ENGINE_VERSION,
+          executionProvenance: { kind: 'codex-current-run', api: false },
+          interpretation: {
+            sourceRecordId: 'meeting:1',
+            findings,
+            validationBinding: interpretationValidationBindingForPacket({ packet }),
+          },
+        },
+      ];
+      for (const { interpretation, ...metadata } of bundles) {
+        await writePrivateJson(path.join(directory, 'ai_interpretation_precomputed.json'), {
+          ...metadata,
+          rows: [{ opportunityId: profile.opportunityId, interpretations: [interpretation] }],
+        });
+        const loaded = await loadReportInterpreter({
+          runDirectory: directory,
+          environment: {
+            SLA_AI_INTERPRETATION: 'on',
+            SLA_INTERPRETER_MODEL: model,
+            SLA_INTERPRETER_PROVIDER: APPROVED_INTERPRETER_PROVIDER,
+            SLA_APPROVED_CREDENTIAL_SOURCE: 'synthetic',
+          },
+        });
+        const precomputed = loaded.precomputed.get(profile.opportunityId);
+        if (!precomputed) throw new Error('Synthetic precomputed row missing');
+        const raw = precomputed.interpretations?.[0]?.findings;
+        const result = adaptFirefliesWithPrecomputedAI({ ...base, precomputed });
+        expect(result.events).toEqual([]);
+        expect(result.failures).toEqual([]);
+        expect(result.interpretations[0]?.findings).toBe(raw);
+        expect(raw).toEqual(findings);
+        expect(result.interpretations[0]?.acceptedFindings).toBe(0);
+      }
+    } finally {
+      await fs.rm(directory, { recursive: true });
+    }
+  });
+  it('decodes raw saved findings only after the segment and binding have been selected', () => {
+    const bound = apiPrecomputed();
+    const valid = bound.interpretations[0];
+    if (!valid) throw new Error('Synthetic interpretation missing');
+    const unused = { sourceRecordId: 'unused', findings: null };
+    expect(
+      adaptFirefliesWithPrecomputedAI({
+        ...base,
+        precomputed: { ...bound, interpretations: [unused, valid] },
+      }).events
+    ).toHaveLength(1);
+    const unmatchedBinding = { sourceRecordId: valid.sourceRecordId, findings: null, binding: {} };
+    expect(
+      adaptFirefliesWithPrecomputedAI({
+        ...base,
+        precomputed: { ...bound, interpretations: [unmatchedBinding] },
+      }).failures[0]
+    ).toContain('binding mismatch');
+    expect(() =>
+      adaptFirefliesWithPrecomputedAI({
+        ...base,
+        precomputed: { ...bound, interpretations: [{ ...valid, findings: null }] },
+      })
+    ).toThrow('Invalid consumed transcript findings');
+    expect(
+      adaptFirefliesWithPrecomputedAI({
+        ...base,
+        precomputed: { ...bound, interpretations: [valid, { ...valid, findings: [] }] },
+      }).events
+    ).toEqual([]);
+  });
   it('composes real identity/gate producers and retains raw identity metadata and own undefined packet fields', () => {
     const packet = buildTranscriptInterpretationPacket(firefliesPacketInput(context()));
     expect(packet.opportunity.practice).toBe(profile.practice);

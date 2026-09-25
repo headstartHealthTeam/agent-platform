@@ -2,7 +2,7 @@ import type { NarrativePacket } from './narrative-types.js';
 import { cleanTerminalPunctuation, shortenSentence } from './recommendation-text.js';
 
 export function materialAuthorizationScopeSentence(packet: NarrativePacket): string | null {
-  if (!/^TA\b/i.test(packet.stage)) return null;
+  if (!/^TA\b/i.test(String(packet.stage))) return null;
   const event = (packet.story?.timeline ?? []).find(
     (candidate) =>
       candidate.issueKey === 'treatment-authorization' &&

@@ -6,11 +6,17 @@ export interface NoteOpportunity {
   readonly Intake_Notes__c?: string | null | undefined;
   readonly On_Hold_Notes__c?: string | null | undefined;
 }
-type EffectiveNoteOpportunity<T extends NoteOpportunity> = Omit<
+type WithoutNoteFields<T, Excluded extends PropertyKey> = {
+  [Key in keyof T as Key extends Excluded ? never : Key]: T[Key];
+};
+type EffectiveNoteOpportunity<T extends NoteOpportunity> = WithoutNoteFields<
   T,
   'Current_SLA__r' | 'Intake_Notes__c' | 'On_Hold_Notes__c'
 > & {
-  Current_SLA__r: Omit<NonNullable<T['Current_SLA__r']>, 'Reason_for_Delay_Notes__c'> & {
+  Current_SLA__r: WithoutNoteFields<
+    NonNullable<T['Current_SLA__r']>,
+    'Reason_for_Delay_Notes__c'
+  > & {
     Reason_for_Delay_Notes__c: string | null | undefined;
   };
   Intake_Notes__c: string | null | undefined;

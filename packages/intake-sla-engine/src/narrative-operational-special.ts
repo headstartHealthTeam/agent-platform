@@ -8,14 +8,14 @@ export function specialOperationalSummary(packet: NarrativePacket): string | nul
   if (newest?.factType === 'tp-portal-submitted-awaiting-clinical-quality')
     return [
       `The provider submitted portal Treatment Authorization request${newest.sourceRecordId ? ` #${newest.sourceRecordId}` : ''} on ${String(humanDate(newest.date))}.`,
-      `The Opportunity remains in ${packet.stage}.`,
+      `The Opportunity remains in ${String(packet.stage)}.`,
       "No matching Salesforce Treatment Authorization or Clinical Quality record is present, so the provider submission has not entered Headstart's downstream review workflow.",
       'The next internal milestone is creation of the Salesforce Authorization and Clinical Quality records and movement to Treatment Plan In-review; this is not payer submission.',
       nextStepSentence(packet),
     ].join(' ');
   if (packet.startEvidenceConflict)
     return [
-      `The client is currently in ${packet.stage}.`,
+      `The client is currently in ${String(packet.stage)}.`,
       `On ${String(humanDate(packet.startEvidenceConflict.reportedDate))}, the provider reported that direct-care treatment had started.`,
       `That conflicts with the staffing record showing ${String(humanDate(packet.startEvidenceConflict.plannedDate))} as the planned start, and Salesforce and linked billing have no completed first 97153 service.`,
       'The actual treatment-start date remains unverified.',

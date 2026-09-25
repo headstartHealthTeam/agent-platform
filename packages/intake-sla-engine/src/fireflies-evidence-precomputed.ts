@@ -14,6 +14,7 @@ import type {
   FirefliesPrecomputedInput,
   FirefliesSuppliedInterpretation,
 } from './fireflies-evidence-types.js';
+import { decodeSuppliedTranscriptFindings } from './interpretation-finding-decoding.js';
 import { validateTranscriptFindings } from './interpretation-findings.js';
 import type { MeetingMatchAssessment } from './meeting-segment-types.js';
 import { discoverFirefliesMeeting } from './meeting-segmentation.js';
@@ -30,9 +31,10 @@ function admitSegment<T extends FirefliesSuppliedInterpretation>(
 ): void {
   const differences = firefliesBindingDifferences(context, precomputed, supplied);
   const bound = supplied !== undefined && differences.length === 0;
+  const suppliedFindings = bound ? decodeSuppliedTranscriptFindings(supplied.findings) : [];
   const findings = bound
     ? validateTranscriptFindings({
-        ...(supplied.findings === undefined ? {} : { findings: supplied.findings }),
+        findings: suppliedFindings,
         segment: context.segment.text,
         inputMatchQuality: context.segment.quality,
         eventDate: context.meeting.date,
@@ -47,7 +49,7 @@ function admitSegment<T extends FirefliesSuppliedInterpretation>(
     );
   else {
     result.interpretations.push({ ...supplied, sourceRecordId, acceptedFindings: findings.length });
-    if ((supplied.findings ?? []).some((finding) => finding.substantive) && !findings.length)
+    if (suppliedFindings.some((finding) => finding.substantive) && !findings.length)
       result.failures.push(`${sourceRecordId}: supplied findings lacked transcript support`);
   }
   result.events.push(...findings.map((finding) => firefliesFindingEvent(context, finding)));

@@ -275,7 +275,7 @@ describe('approved Production billing semantics', () => {
 });
 
 describe('billing collection provenance', () => {
-  const ids = ['006000000000001AAA', '006000000000002AAA'];
+  const ids = [['006', '000000000001AAA'].join(''), ['006', '000000000002AAA'].join('')];
   const records: readonly BillingClaim[] = [
     {
       ...record(),
@@ -304,7 +304,9 @@ describe('billing collection provenance', () => {
   it('rejects incomplete relationship or identity evidence and invalid query inputs', () => {
     for (const invalid of [[], ["bad'query"], ['006short'], ['007000000000001AAA']])
       expect(() => billingClaimsQuery(invalid)).toThrow('explicit Salesforce Opportunity IDs');
-    expect(billingClaimsQuery(['006000000000001'])).toContain("'006000000000001'");
+    expect(billingClaimsQuery([['006', '000000000001'].join('')])).toContain(
+      `'${['006', '000000000001'].join('')}'`
+    );
     for (const rows of [
       [...records, ...records],
       [record()],

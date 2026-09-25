@@ -16,7 +16,7 @@ export function shortConflictSummary(packet: NarrativePacket): string | null {
       conflict
     )
   ) {
-    const phase = /^IA\b/i.test(packet.stage) ? 'IA' : 'TA';
+    const phase = /^IA\b/i.test(String(packet.stage)) ? 'IA' : 'TA';
     const state =
       authorization.lifecycle === 'Withdrawn'
         ? withdrawnDenialClause(phase, authorization.reason)

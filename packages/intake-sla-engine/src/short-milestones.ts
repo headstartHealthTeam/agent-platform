@@ -7,7 +7,7 @@ import { requiredItemIsPlural, shortenSentence, truncate } from './recommendatio
 export function assessmentPlanShortSummary(packet: NarrativePacket): string | null {
   const newest = packet.newestUpdate;
   if (
-    !/IA Approved|IA Scheduled|IC Completed/i.test(packet.stage) ||
+    !/IA Approved|IA Scheduled|IC Completed/i.test(String(packet.stage)) ||
     !newest ||
     !(
       newest.factType === 'ia-planned' ||

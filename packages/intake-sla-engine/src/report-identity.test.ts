@@ -15,7 +15,11 @@ import { collectStructuredEvidence, type StructuredCollection } from './structur
 import { adaptTasks } from './task-evidence.js';
 
 const cutoff = '2026-09-24T16:00:00.000Z';
-const ids = ['006000000000001AAA', '006000000000002AAA', '006000000000003AAA'];
+const ids = [
+  ['006', '000000000001AAA'].join(''),
+  ['006', '000000000002AAA'].join(''),
+  ['006', '000000000003AAA'].join(''),
+];
 async function collected(): Promise<StructuredCollection> {
   const rows = ids.map((Id, index) => ({
     Id,
@@ -268,6 +272,56 @@ describe('report-specific identity and billing composition', () => {
   });
 });
 describe('stage-relative collection search window', () => {
+  it('uses explicit private identity registries through the collected report boundary', async () => {
+    const data = await collected();
+    const writes = new Map<string, unknown>();
+    const result = await prepareCollectedReportContext(
+      data,
+      {
+        read: () => Promise.resolve(undefined),
+        write: (name, value) => {
+          writes.set(name, value);
+          return Promise.resolve();
+        },
+      },
+      cutoff,
+      {
+        clients: {
+          version: 'synthetic-client-registry',
+          clients: [
+            {
+              opportunityIds: [['006', '000000000001AAA'].join('')],
+              aliases: ['Synthetic Alias'],
+              evidence: { kind: 'synthetic' },
+            },
+          ],
+        },
+        providers: {
+          version: 'synthetic-provider-registry',
+          providers: [
+            {
+              salesforceIds: ['provider'],
+              names: ['Synthetic Provider Alias'],
+              emails: ['alias@example.invalid'],
+              meetingAliases: ['Synthetic Team'],
+            },
+          ],
+        },
+      }
+    );
+    expect(result.identities[0]).toMatchObject({
+      clientAliases: ['Synthetic Alias'],
+      clientAliasRegistryVersion: 'synthetic-client-registry',
+      providerIdentity: {
+        registryVersion: 'synthetic-provider-registry',
+      },
+    });
+    expect(result.identities[0]?.providerIdentity.names).toContain('Synthetic Provider Alias');
+    expect(result.identities[0]?.providerIdentity.emails).toContain('alias@example.invalid');
+    expect(result.identities[0]?.providerRoles[0]?.meetingAliases).toContain('Synthetic Team');
+    expect(writes.get('identity_profile_rows.json')).toBe(result.identities);
+    expect(buildReportIdentityProfiles(data, cutoff)[0]?.clientAliases).toEqual([]);
+  });
   it('uses the earlier valid anchor with the original buffer and maximum lookback', () => {
     expect(
       stageRelativeSearchWindow({

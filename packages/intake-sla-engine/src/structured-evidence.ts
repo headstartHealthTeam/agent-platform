@@ -1,10 +1,10 @@
-import { createEvidenceEvent, type EvidenceEvent } from './evidence.js';
+import { createEvidenceEvent, type EvidenceDate, type EvidenceEvent } from './evidence.js';
 
 export interface StructuredEvidenceInput {
   readonly opportunityId: string;
   readonly source: string;
   readonly sourceRecordId: string;
-  readonly eventDate: string;
+  readonly eventDate: EvidenceDate;
   readonly category: string;
   readonly text: string;
   readonly gateImpact?: string | null | undefined;
@@ -24,7 +24,7 @@ export interface StructuredEvidenceInput {
   readonly issueKey?: string | null;
 }
 export interface StructuredEvidenceEvent extends EvidenceEvent {
-  readonly eventDate: string;
+  readonly eventDate: EvidenceDate;
   readonly requestedInformation: string | null;
   readonly specificityMissing: boolean;
   readonly candidateStep: string | null;

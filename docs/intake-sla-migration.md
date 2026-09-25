@@ -74,8 +74,44 @@ and artifact order. Saved mode makes no provider calls. Report-specific identiti
 from the generic identity builder: provider/practice roster scope, raw family contact values,
 CSM history, search windows and billing reconciliation retain the approved report behavior. Actual
 producer-to-adapter contracts are readonly structural projections, not casts or invented fields.
-Saved-source health, full report-loop composition and complete command acceptance remain separate
-integration work; these collection modules do not authorize operational cutover.
+Saved-source loading and health now retain the original capture/proof selection and private
+derivations without provider reads. Raw payloads remain untouched until their consumer decodes the
+selected fields; the Portal evidence boundary does not validate unused fallback envelopes.
+Complete command acceptance remains separate integration work; these collection modules do not
+authorize operational cutover.
+
+The report's Opportunity preparation, communication matching and comparison context now compose
+actual typed collection/identity producers. Comparison remains context for source requirements;
+the final recommendation takes conflicts only from the approved structured resolvers and admitted
+evidence. Authoritative adapters retain order, Date-object cutoff/fallback behavior and accepted
+current-run note decisions. Interpretation composition preserves API/precomputed/unavailable
+selection, exact bindings, fresh Codex provenance and cohort-aware Slack without admitting raw
+conversations a second time. It does not add another interpretation pass or change agent judgment.
+
+Final packet, recommendation and report-context projection retain source coverage, specificity,
+action selection and timeline field semantics. Actual producer-to-consumer tests include missing
+stage values and the original falsy milestone results; typing does not invent business values or
+add a rejection. Saved-payload decoding and complete per-row orchestration now compose these
+contracts, retaining source counts, empty/unchecked distinctions, original review and QA status,
+reviewer cells and ledger fields. Source and built-package review now cover the complete per-row
+composition. Full builder command integration and independently packaged acceptance remain unfinished. The package build checks its
+rolled-up public declarations with library checking enabled, in addition to source type checking.
+
+The saved-run builder now composes collection, private identity registries, retained source artifacts,
+the complete row evaluator and final artifact/workbook projection. Interpreter startup preserves the
+original on/off selection, API preflight lease, bound API artifacts and fresh-current-run Codex
+provenance. Explicit registry injection changes configuration location, not identity or roster rules.
+Builder, input-boundary and CLI build integration have passed source and built-package comparison
+review; no installed skill or operational runtime has been switched. The remaining
+validation/preparation commands, source-capture command coverage and runtime
+dependency-closure acceptance are not implied by a successful saved build.
+
+Local source-capture command composition now connects connector checkpointing, discovery
+normalization, bounded Fireflies capture, and Slack capture/resume/delta to the existing typed
+implementations. These commands accept agent-supplied private artifacts without provider dispatch.
+They retain bounded stdin, exact retry checks, prior-capture archives and sanitized failure output.
+Source and built command comparison review passed, including interrupted-write recovery and
+exact retry behavior. Standalone packaging remains separate acceptance work.
 
 Transcript selection now composes the typed provider identity and conversation scoring contracts
 with the approved roster-aware context windows. Meeting indexes remain distinct from explicitly

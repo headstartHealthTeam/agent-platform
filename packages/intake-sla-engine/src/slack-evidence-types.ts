@@ -27,7 +27,7 @@ export interface SlackEvidenceRecord {
 export interface SlackEvidenceRow {
   readonly blocked?: boolean | null | undefined;
   readonly records?: readonly (SlackEvidenceRecord | null | undefined)[] | null | undefined;
-  readonly messages?: readonly { readonly text: string }[] | null | undefined;
+  readonly messages?: readonly { readonly text?: unknown }[] | null | undefined;
   readonly searches?:
     | readonly {
         readonly pages?:

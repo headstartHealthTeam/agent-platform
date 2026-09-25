@@ -1,8 +1,10 @@
 import type { InterviewEvidenceRecord } from './candidate-evidence.js';
 import type { CandidateMatch } from './candidate-match.js';
 import { isoDate } from './dates.js';
+import type { EvidenceDate } from './evidence.js';
 import { categoryForGate } from './gate-context.js';
 import {
+  firstEvidenceDate,
   firstEvidenceText,
   latestEvidenceDate,
   requiredEvidenceValue,
@@ -47,7 +49,7 @@ interface MatchState {
   readonly candidateName: string | null;
   readonly candidate: string;
   readonly state: string;
-  readonly eventDate: string;
+  readonly eventDate: EvidenceDate;
   readonly rejected: boolean;
   readonly hired: boolean;
   readonly interviewed: boolean;
@@ -91,7 +93,7 @@ function interviewsByCandidate(
 function matchContext(
   record: TicketMatchEvidenceRecord,
   interview: InterviewEvidenceRecord | undefined,
-  asOf: string
+  asOf: EvidenceDate
 ): MatchState {
   const candidateName = firstEvidenceText(record.Candidate__r?.Name) ?? null;
   const state = combinedMatchState(record) || 'candidate linked';
@@ -206,14 +208,14 @@ function linkedInterview(
     source: 'RBT First Interview',
     sourceRecordId: requiredEvidenceValue(interview.Id, 'sourceRecordId'),
     eventDate:
-      firstEvidenceText(
+      firstEvidenceDate(
         planned ? null : interview.Date_of_First_Interview__c,
         interview.LastModifiedDate,
         eventDate
       ) ?? '',
     text: planned
       ? `${candidate}'s first interview is planned for ${String(date)}${status}; the interview outcome and staffing decision remain unconfirmed.`
-      : `On ${String(isoDate(firstEvidenceText(interview.Date_of_First_Interview__c, eventDate)))}, ${candidate} reached first interview${status}; the staffing decision and expected start date remain unconfirmed.`,
+      : `On ${String(isoDate(firstEvidenceDate(interview.Date_of_First_Interview__c, eventDate)))}, ${candidate} reached first interview${status}; the staffing decision and expected start date remain unconfirmed.`,
     milestoneDate: planned ? date : null,
     followUpDate: planned ? date : null,
     actionType: planned ? 'Monitor' : common.actionType,

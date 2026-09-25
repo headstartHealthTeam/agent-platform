@@ -30,13 +30,13 @@ import {
   type ReportMetadataInput,
   type ReportMetadataInterpretation,
 } from './report-metadata.js';
+import type { ReportRecommendationSource } from './report-recommendation.js';
 import { loadReportRunHistory } from './report-saved-state.js';
 import {
   REPORT_HISTORY_HEADERS,
   reportDataDictionary,
   reportHeaderNotes,
 } from './report-vocabulary.js';
-import type { SourceOutcome } from './source-outcome.js';
 import { exportIntakeWorkbook } from './workbook-export.js';
 
 export interface ReportInterpretationRecord<Interpretation> {
@@ -54,7 +54,7 @@ export type ReportInterpretationExecution =
       readonly apiEnabled: false;
       readonly config?: Pick<InterpreterConfig, 'provider' | 'model'> | null | undefined;
     };
-export interface ReportCollectedSourceOutcome extends SourceOutcome {
+export interface ReportCollectedSourceOutcome extends ReportRecommendationSource {
   readonly runId: string;
   readonly collectedAt: string;
   readonly opportunityId: string;

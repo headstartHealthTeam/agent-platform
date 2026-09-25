@@ -106,13 +106,13 @@ function assessmentGate(
   unresolved: string
 ): string | undefined {
   if (
-    /ta approved|first day of 97153|97153 scheduled/.test(packet.stage.toLowerCase()) ||
+    /ta approved|first day of 97153|97153 scheduled/.test(String(packet.stage).toLowerCase()) ||
     /rbt|97153|staff|candidate|direct-care|treatment start/.test(unresolved)
   )
     return 'The first 97153 service is not yet confirmed by Salesforce or linked billing records.';
   if (
     process.includes('initial authorization approved') ||
-    (/ia approved|ia scheduled/.test(packet.stage.toLowerCase()) &&
+    (/ia approved|ia scheduled/.test(String(packet.stage).toLowerCase()) &&
       !/initial authorization|payer approval|denial|appeal/.test(unresolved))
   ) {
     return /reschedul|cancel/.test(unresolved)
@@ -139,7 +139,7 @@ function treatmentPlanGate(context: string, unresolved: string): string {
 export function gateSentence(packet: NarrativePacket): string | null {
   const process = String(packet.processPosition).toLowerCase();
   const unresolved = String(packet.unresolvedGate).toLowerCase();
-  const context = `${packet.stage} ${process} ${unresolved}`.toLowerCase();
+  const context = `${String(packet.stage)} ${process} ${unresolved}`.toLowerCase();
   const event = eventGate(packet, context, unresolved);
   if (event !== undefined) return event;
   const authorization = explicitAuthorizationGate(packet, process, unresolved);

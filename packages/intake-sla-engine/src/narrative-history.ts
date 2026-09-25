@@ -44,7 +44,7 @@ export function resolvedProgressSentence(packet: NarrativePacket): string | null
   if (!resolved.length) return null;
   const material = resolved.slice(-2);
   const insurance = material.find((issue) => issue.issueKey === 'insurance-verification');
-  if (insurance && /^Insurance Verification$/i.test(packet.stage)) {
+  if (insurance && /^Insurance Verification$/i.test(String(packet.stage))) {
     const date = humanDate(resolvedBusinessDate(packet, insurance));
     return `Earlier in this SLA, VOB and eligibility were completed${date ? ` on ${date}` : ''}, clearing the coverage check while the separate intake requirement remained.`;
   }

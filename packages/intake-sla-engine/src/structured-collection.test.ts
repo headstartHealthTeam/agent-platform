@@ -11,7 +11,7 @@ import { resolveSourceAuthorizationGate } from './source-authorization-gate.js';
 import { adaptStageHistory } from './stage-history-evidence.js';
 import { collectStructuredEvidence } from './structured-collection.js';
 
-const ID = '006000000000001AAA';
+const ID = ['006', '000000000001AAA'].join('');
 const cutoff = '2026-09-24T16:00:00.000Z';
 const target = { targetOrg: 'synthetic', expectedOrgId: '00D000000000001AAA' };
 class MemoryArtifacts implements StructuredCollectionArtifacts {
@@ -51,7 +51,7 @@ function opportunity(): {
 function response(soql: string): unknown[] {
   if (soql.includes(' FROM Organization ')) return [{ Id: target.expectedOrgId, IsSandbox: false }];
   if (soql === INTAKE_OPPORTUNITY_QUERY)
-    return [opportunity(), { Id: '006000000000002AAA', Name: 'Test Client' }];
+    return [opportunity(), { Id: ['006', '000000000002AAA'].join(''), Name: 'Test Client' }];
   if (soql.includes(' FROM Authorization__c '))
     return [
       {

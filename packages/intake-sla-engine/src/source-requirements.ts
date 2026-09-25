@@ -1,5 +1,5 @@
 export interface SourceContext {
-  readonly stage?: string;
+  readonly stage?: string | null | undefined;
   readonly unresolvedGate?: string | null;
   readonly blocker?: string | null;
   readonly summary?: string | null;
@@ -9,9 +9,9 @@ export interface SourceRequirementResult {
   readonly status: string;
   readonly required?: boolean;
 }
-export function isProviderFacingStage(stage = ''): boolean {
+export function isProviderFacingStage(stage: string | null | undefined = ''): boolean {
   return /ia approved|ia scheduled|ic scheduled|ic completed|97151|treatment plan|ta approved|first day of 97153/i.test(
-    stage
+    String(stage)
   );
 }
 function familyContactRequired(context: SourceContext): boolean {

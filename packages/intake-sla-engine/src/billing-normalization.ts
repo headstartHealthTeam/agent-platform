@@ -1,11 +1,15 @@
 import type { BillingAppointment, BillingClaim } from './billing-types.js';
 import { isoDate } from './dates.js';
+import type { EvidenceDate } from './evidence.js';
 
-export function billingCutoff(asOf?: string): { readonly day: string; readonly instant: number } {
+export function billingCutoff(asOf?: EvidenceDate): {
+  readonly day: string;
+  readonly instant: number;
+} {
   const day = isoDate(asOf);
   if (day === null || asOf === undefined)
     throw new Error('Billing evidence requires a valid frozen cutoff');
-  return { day, instant: Date.parse(asOf) };
+  return { day, instant: Date.parse(String(asOf)) };
 }
 
 export function availableAtCutoff(
@@ -178,7 +182,7 @@ function normalize(
 
 export function normalizeBillingClaimAppointments(
   records: readonly BillingClaim[] = [],
-  { asOf }: { readonly asOf?: string } = {}
+  { asOf }: { readonly asOf?: EvidenceDate } = {}
 ): BillingAppointment[] {
   const cutoff = billingCutoff(asOf);
   return records.flatMap((record) => {

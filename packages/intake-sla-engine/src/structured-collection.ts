@@ -18,6 +18,10 @@ import {
   normalizeCollectedRbtRequests,
   normalizeCollectedStaffing,
   mergeCollectedStaffing,
+  type NormalizedCollectionOpportunity,
+  type NormalizedCollectionAuthorization,
+  type NormalizedCollectionRbtRequest,
+  type NormalizedCollectionStaffing,
 } from './collection-normalization.js';
 import {
   collectedOpportunitySchema,
@@ -47,16 +51,16 @@ export interface StructuredCollection
       | 'contacts'
       | 'csmUsers'
     > {
-  readonly opportunities: ReturnType<typeof normalizeCollectedOpportunities<CollectedOpportunity>>;
-  readonly authorizations: ReturnType<
-    typeof normalizeCollectedAuthorizations<z.infer<typeof schemas.collectedAuthorizationSchema>>
-  >;
-  readonly rbtRequests: ReturnType<
-    typeof normalizeCollectedRbtRequests<z.infer<typeof schemas.collectedRbtRequestSchema>>
-  >;
-  readonly staffing: ReturnType<
-    typeof normalizeCollectedStaffing<z.infer<typeof schemas.collectedStaffingSchema>>
-  >;
+  readonly opportunities: NormalizedCollectionOpportunity<CollectedOpportunity>[];
+  readonly authorizations: NormalizedCollectionAuthorization<
+    z.infer<typeof schemas.collectedAuthorizationSchema>
+  >[];
+  readonly rbtRequests: NormalizedCollectionRbtRequest<
+    z.infer<typeof schemas.collectedRbtRequestSchema>
+  >[];
+  readonly staffing: NormalizedCollectionStaffing<
+    z.infer<typeof schemas.collectedStaffingSchema>
+  >[];
   readonly tasks: readonly Communication[];
   readonly aircalls: readonly (Communication & { readonly aircall__Message_Content__c: string })[];
   readonly taskUpdates: readonly ReportTaskUpdate[];

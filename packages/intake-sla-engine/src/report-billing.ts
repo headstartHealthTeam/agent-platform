@@ -7,6 +7,7 @@ import type { ReportIdentityProfile } from './report-identity-types.js';
 import {
   buildReportIdentityProfiles,
   reportConversationSearchPathways,
+  type ReportIdentityRegistries,
 } from './report-identity.js';
 import type { StructuredCollection } from './structured-collection.js';
 
@@ -114,12 +115,13 @@ export function reportBillingReconciliation(
 export async function prepareCollectedReportContext(
   data: StructuredCollection,
   artifacts: StructuredCollectionArtifacts,
-  asOf: Date | string
+  asOf: Date | string,
+  registries: ReportIdentityRegistries = {}
 ): Promise<{
   readonly identities: readonly ReportIdentityProfile[];
   readonly billingRows: readonly ReportBillingRow[];
 }> {
-  const identities = buildReportIdentityProfiles(data, asOf);
+  const identities = buildReportIdentityProfiles(data, asOf, registries);
   await artifacts.write('identity_profile_rows.json', identities);
   await artifacts.write(
     'conversation_search_pathways.json',

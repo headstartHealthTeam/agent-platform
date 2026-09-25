@@ -1,4 +1,5 @@
 import { isoDate } from './dates.js';
+import type { EvidenceDate } from './evidence.js';
 import { firstEvidenceText } from './source-evidence-context.js';
 
 export interface StaffingEvidenceLink {
@@ -38,7 +39,7 @@ export function staffingDisplayName(value: unknown = ''): string {
   if (text.length === 0 || text !== text.toLowerCase()) return text;
   return text.replace(/\b[a-z]/g, (character) => character.toUpperCase());
 }
-export function futureStaffingDate(value: string | null | undefined, asOf: string): boolean {
+export function futureStaffingDate(value: string | null | undefined, asOf: EvidenceDate): boolean {
   if (!value) return false;
   const date = isoDate(value);
   const cutoff = isoDate(asOf);

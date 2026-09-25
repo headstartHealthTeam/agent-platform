@@ -1,4 +1,5 @@
 import { selectCurrentCandidateMatch, type CandidateMatch } from './candidate-match.js';
+import type { DateValue } from './dates.js';
 import type { FactPacket } from './recommendation-types.js';
 import { reportText } from './report-display-values.js';
 
@@ -19,7 +20,7 @@ export interface ReportMaterialGapInput {
   readonly expanded: ReportExpandedReview;
   readonly freshness: ReportReviewFreshness;
   readonly firefliesResult: string;
-  readonly hasValidMilestone?: boolean | string | null;
+  readonly hasValidMilestone?: boolean | DateValue;
   readonly authorizationGate?: {
     readonly conflict?: boolean;
     readonly conflictReason?: string | null;

@@ -41,7 +41,7 @@ export function latestUpdateSentence(packet: NarrativePacket): string {
   const since = humanDate(packet.stageEntryDate ?? packet.slaCreatedDate ?? packet.storyStartDate);
   const sinceText = since ? ` since ${since}` : '';
   const context =
-    `${packet.stage} ${String(packet.processPosition)} ${String(packet.unresolvedGate)}`.toLowerCase();
+    `${String(packet.stage)} ${String(packet.processPosition)} ${String(packet.unresolvedGate)}`.toLowerCase();
   const prerequisite = completedPrerequisiteSentence(packet, context);
   if (prerequisite) return prerequisite;
   const passed = passedMilestoneSentence(context);

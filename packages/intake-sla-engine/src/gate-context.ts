@@ -13,7 +13,7 @@ export interface GateContext {
 }
 export interface GateOpportunity {
   readonly csm?: string | null;
-  readonly stageEntryDate?: string | null;
+  readonly stageEntryDate?: string | null | undefined;
 }
 export interface GateRefinement {
   readonly gateCategory: string;

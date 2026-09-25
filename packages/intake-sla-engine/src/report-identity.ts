@@ -1,4 +1,6 @@
+import type { ClientIdentityRegistry } from './client-identity.js';
 import { stageRelativeSearchWindow } from './collection-search-window.js';
+import type { ProviderIdentityRegistry } from './provider-identity-types.js';
 import { buildProviderIdentityCluster, buildProviderRoleClusters } from './provider-identity.js';
 import {
   assessFirefliesIdentityCoverage,
@@ -95,12 +97,17 @@ function enrichIdentity(
   };
 }
 /** Original report-specific identity projection, distinct from the generic IdentityProfile builder. */
+export interface ReportIdentityRegistries {
+  readonly clients?: ClientIdentityRegistry;
+  readonly providers?: ProviderIdentityRegistry;
+}
 export function buildReportIdentityProfiles(
   data: StructuredCollection,
-  asOf: Date | string
+  asOf: Date | string,
+  registries: ReportIdentityRegistries = {}
 ): ReportIdentityProfile[] {
   const profiles = data.opportunities.map((opp): ReportProviderIdentity => {
-    const base = reportIdentityBase(opp, data);
+    const base = reportIdentityBase(opp, data, registries.clients);
     const providerInput = {
       providerRoles: base.providers,
       practice: base.practice,
@@ -110,8 +117,8 @@ export function buildReportIdentityProfiles(
     };
     return {
       ...base,
-      providerRoles: buildProviderRoleClusters(providerInput),
-      providerIdentity: buildProviderIdentityCluster(providerInput),
+      providerRoles: buildProviderRoleClusters(providerInput, registries.providers),
+      providerIdentity: buildProviderIdentityCluster(providerInput, registries.providers),
     };
   });
   const byKey = new Map<string, ReportProviderIdentity[]>();

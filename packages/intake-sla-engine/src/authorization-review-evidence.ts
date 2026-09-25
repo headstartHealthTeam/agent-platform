@@ -3,6 +3,7 @@ import { categoryForGate, isVobRelevantGate, type GateContext } from './gate-con
 import type { SourceAuthorizationRecord } from './source-authorization-types.js';
 import {
   firstEvidenceText,
+  firstEvidenceDate,
   latestEvidenceDate,
   requiredEvidenceValue,
   type SourceEvidenceContext,
@@ -49,7 +50,7 @@ function reviewEvent(
   const notes = sourceHtmlText(record.Notes__c ?? '');
   const pending = /pending|submitted|in review|additional|await/i.test(`${status} ${notes}`);
   const denied = /denied|denial|appeal|peer review|partial/i.test(`${status} ${notes}`);
-  const date = firstEvidenceText(
+  const date = firstEvidenceDate(
     record.Treatment_Auth_Approval_Date__c,
     record.Initial_Auth_Submission_Date__c,
     notes ? record.LastModifiedDate : null,

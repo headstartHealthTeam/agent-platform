@@ -1,8 +1,10 @@
 import { isoDate } from './dates.js';
+import type { EvidenceDate } from './evidence.js';
 import { categoryForGate } from './gate-context.js';
 import { extractRequestedInformation } from './requested-information.js';
 import {
   evidenceOwner,
+  firstEvidenceDate,
   firstEvidenceText,
   latestEvidenceDate,
   requiredEvidenceValue,
@@ -32,7 +34,7 @@ export interface ClinicalQualityEvidenceInput extends SourceEvidenceContext {
 interface QualityState {
   readonly record: ClinicalQualityEvidenceRecord;
   readonly status: string;
-  readonly eventDate: string;
+  readonly eventDate: EvidenceDate;
   readonly profile: SourceEvidenceContext['profile'];
   readonly notes: string;
   readonly correction: string | null;
@@ -74,7 +76,7 @@ function qualityDecision(state: QualityState): QualityDecision {
   if (/denied|changes|edit|revision|correction/i.test(`${status} ${notes}`)) {
     const owner = evidenceOwner(profile);
     const reviewDate = isoDate(record.TS_In_Review__c);
-    const editsDate = isoDate(firstEvidenceText(record.TS_Edits_Sent_for_Review__c, eventDate));
+    const editsDate = isoDate(firstEvidenceDate(record.TS_Edits_Sent_for_Review__c, eventDate));
     return {
       text: `Clinical Quality${reviewDate ? ` began review on ${reviewDate} and` : ''} sent treatment-plan edits back on ${String(editsDate)}; ${correction ? `${correction} remain unresolved` : 'provider resubmission is not recorded'}.`,
       gateImpact: 'Clinical Quality corrections must be completed and resubmitted',

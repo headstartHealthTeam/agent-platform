@@ -22,8 +22,8 @@ export function contractedStoryGate(opportunity: StoryOpportunity, gate: StoryGa
     gate
   );
   if (!['insurance', 'other'].includes(key)) return key;
-  if (/^IA Requested$/i.test(opportunity.stage)) return 'initial-authorization';
-  if (/^TA Requested$/i.test(opportunity.stage)) return 'treatment-authorization';
+  if (/^IA Requested$/i.test(String(opportunity.stage))) return 'initial-authorization';
+  if (/^TA Requested$/i.test(String(opportunity.stage))) return 'treatment-authorization';
   return key;
 }
 

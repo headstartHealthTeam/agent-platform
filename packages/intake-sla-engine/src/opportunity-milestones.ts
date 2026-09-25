@@ -2,6 +2,7 @@ import { isoDate } from './dates.js';
 import { categoryForGate } from './gate-context.js';
 import {
   evidenceOwner,
+  firstEvidenceDate,
   firstEvidenceText,
   latestEvidenceDate,
   requiredEvidenceValue,
@@ -132,7 +133,7 @@ function assessment(context: Context): StructuredEvidenceEvent[] {
   return [
     event(context, {
       eventDate: requiredEvidenceValue(
-        firstEvidenceText(
+        firstEvidenceDate(
           opp.IA_Scheduled_Timestamp__c,
           opp.IA_Scheduled_On__c,
           opp.iaScheduledOn,
@@ -173,7 +174,7 @@ function treatment(context: Context): StructuredEvidenceEvent[] {
   return [
     event(context, {
       eventDate: requiredEvidenceValue(
-        firstEvidenceText(
+        firstEvidenceDate(
           opp.X53_Provider_Confirmed_First_Day_TS__c,
           opp.stageEntryDate,
           opp.LastModifiedDate,

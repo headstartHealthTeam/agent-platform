@@ -92,7 +92,7 @@ export function denialShortSummary(
   packet: NarrativePacket,
   denial: NarrativeDenialContext
 ): string {
-  const phase = /^IA\b/i.test(packet.stage) ? 'IA' : 'TA';
+  const phase = /^IA\b/i.test(String(packet.stage)) ? 'IA' : 'TA';
   const date = humanDate(packet.newestUpdate?.date ?? denial.event?.date);
   const second = secondDenialSummary(packet, denial, date, phase);
   if (second) return second;

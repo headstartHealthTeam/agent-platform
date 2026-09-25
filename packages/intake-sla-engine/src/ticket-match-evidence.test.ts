@@ -54,9 +54,9 @@ describe('Ticket Match evidence', () => {
       'Talent Acquisition',
       'RBT First Interview',
     ]);
-    expect(events.every((event) => Date.parse(event.eventDate) <= Date.parse(context.asOf))).toBe(
-      true
-    );
+    expect(
+      events.every((event) => new Date(event.eventDate).valueOf() <= Date.parse(context.asOf))
+    ).toBe(true);
     expect(JSON.stringify(events)).not.toContain('reached first interview');
     expect(events[0]?.text).toBe(
       "Synthetic Candidate's first interview is planned for 2026-09-25; the interview outcome, staffing decision, and start date remain unconfirmed."

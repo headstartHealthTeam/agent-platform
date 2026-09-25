@@ -105,7 +105,7 @@ export interface StoryIssue<T extends StoryEvent = StoryEvent> {
 }
 
 export interface StoryOpportunity {
-  readonly stage: string;
+  readonly stage: string | undefined;
   readonly slaCreatedDate?: DateValue;
   readonly stageEntryDate?: DateValue;
 }

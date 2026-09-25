@@ -10,6 +10,7 @@ import type {
 } from './fireflies-evidence-types.js';
 import { interpretationBindingDiff } from './interpretation-binding.js';
 import { buildTranscriptInterpretationPacket } from './interpretation-packet.js';
+import { savedFields } from './saved-report-fields.js';
 
 export function firefliesBindingDifferences<T extends FirefliesSuppliedInterpretation>(
   context: FirefliesEvidenceSegment,
@@ -19,10 +20,11 @@ export function firefliesBindingDifferences<T extends FirefliesSuppliedInterpret
   const packet = buildTranscriptInterpretationPacket(firefliesPacketInput(context));
   if (!supplied) return ['binding'];
   if (precomputed.currentRunPrecomputed === true) {
+    const provenance = savedFields(precomputed.executionProvenance);
     if (
       precomputed.apiEnabled !== false ||
-      precomputed.executionProvenance?.kind !== 'codex-current-run' ||
-      precomputed.executionProvenance.api !== false ||
+      provenance['kind'] !== 'codex-current-run' ||
+      provenance['api'] !== false ||
       !precomputed.engineVersion
     )
       return ['precomputed-provenance'];

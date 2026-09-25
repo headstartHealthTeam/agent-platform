@@ -39,6 +39,7 @@ export interface OpportunityNoteProfile {
 export interface OpportunityNoteAdjudicationInput extends ConversationInterpretationInput<
   ConversationIdentity & { readonly matchQuality: string }
 > {
+  readonly eventDate: EvidenceDate;
   readonly noteRecordId: string;
   readonly rawText: string;
   readonly stageEntryDate: string | null;

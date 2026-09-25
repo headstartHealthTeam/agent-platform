@@ -25,7 +25,7 @@ export function sourceUpdateLead(
 
 export function missingCompletionConfirmationSentence(packet: NarrativePacket): string | null {
   if (
-    /TA Approved|First Day of 97153/i.test(packet.stage) &&
+    /TA Approved|First Day of 97153/i.test(String(packet.stage)) &&
     !(packet.story?.resolvedIssues ?? []).length &&
     /assigned|hired|matched/i.test(packet.newestUpdate?.fact ?? '') &&
     /first 97153|start date/i.test(packet.newestUpdate?.fact ?? '')

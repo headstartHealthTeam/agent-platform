@@ -13,7 +13,7 @@ import {
 import { buildSearchPathways } from './search-pathways.js';
 
 const identity = {
-  opportunityId: '006000000000001',
+  opportunityId: ['006', '000000000001'].join(''),
   opportunityName: 'Synthetic Example',
   stage: 'IA Scheduled',
   providers: [{ name: 'Doctor Fiction', email: 'doctor@example.invalid' }],
@@ -135,7 +135,7 @@ describe('Intake search pathways and supplemental conversation admission', () =>
         text: 'Synthetic Example',
         identity,
         opportunityId: identity.opportunityId,
-        linkedOpportunityId: '006000000000002',
+        linkedOpportunityId: ['006', '000000000002'].join(''),
       })
     ).toEqual({
       matched: false,

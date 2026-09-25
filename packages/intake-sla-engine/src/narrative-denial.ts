@@ -13,14 +13,14 @@ const DENIED = 'auth-denied';
 
 export function denialReasonContext(packet: NarrativePacket): NarrativeDenialContext | null {
   const authorization = packet.authorization ?? {};
-  const gateText = `${packet.stage} ${String(packet.processPosition)} ${String(packet.unresolvedGate)} ${packet.newestUpdate?.fact ?? ''} ${authorization.state ?? ''}`;
+  const gateText = `${String(packet.stage)} ${String(packet.processPosition)} ${String(packet.unresolvedGate)} ${packet.newestUpdate?.fact ?? ''} ${authorization.state ?? ''}`;
   const withdrawn = /\bwithdrawn\b/i.test(gateText);
   const activeDenial =
     /\bden(?:ied|ial)\b/i.test(gateText) ||
     withdrawn ||
     (authorization.denialOccurred &&
       /appeal|peer review|partial approval/i.test(authorization.state ?? ''));
-  if (!/^(?:IA|TA)\b/i.test(packet.stage) || !activeDenial) return null;
+  if (!/^(?:IA|TA)\b/i.test(String(packet.stage)) || !activeDenial) return null;
   const candidates = [
     packet.structuredGateDetail,
     packet.authoritativeEvidence,
@@ -130,7 +130,7 @@ function denialState(
   review: ReturnType<typeof deniedReviewDetails>,
   appeal: string | null
 ): string {
-  const phase = /^IA\b/i.test(packet.stage) ? 'IA' : 'TA';
+  const phase = /^IA\b/i.test(String(packet.stage)) ? 'IA' : 'TA';
   if (denial.lifecycle === 'Withdrawn') return withdrawnDenialClause(phase, denial.reason);
   if (deniedAgain)
     return `${phase} was denied again after ${review.kind} because ${denial.reason}${review.newAuthorizationRequired ? '; any further request requires a new prior authorization' : '; a new authorization submission remains unconfirmed'}`;

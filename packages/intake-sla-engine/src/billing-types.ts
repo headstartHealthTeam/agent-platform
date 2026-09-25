@@ -1,3 +1,5 @@
+import type { EvidenceDate } from './evidence.js';
+
 export interface BillingClaim {
   readonly Id?: string | null | undefined;
   readonly id?: string | null | undefined;
@@ -94,7 +96,7 @@ export interface BillingAssessmentInput {
   readonly records?: readonly BillingClaim[];
   readonly appointments?: readonly BillingAppointment[];
   readonly opportunity?: BillingOpportunity;
-  readonly asOf?: string;
+  readonly asOf?: EvidenceDate;
   readonly coverageComplete?: boolean;
 }
 

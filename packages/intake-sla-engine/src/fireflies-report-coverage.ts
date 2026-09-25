@@ -17,7 +17,13 @@ interface ReportCoverageInput {
       }
     | null
     | undefined;
-  readonly row?: { readonly searchCoverage?: { readonly status?: string } | null } | null;
+  readonly row?:
+    | {
+        readonly searchCoverage?:
+          { readonly status?: string | null | undefined } | null | undefined;
+      }
+    | null
+    | undefined;
 }
 // The caller supplies readBoundedRunProof output, which revalidates original hashes.
 export function firefliesReportCoverage({

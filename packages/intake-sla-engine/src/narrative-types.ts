@@ -52,7 +52,7 @@ export interface NarrativePacket {
   readonly opportunityName?: string | null | undefined;
   readonly provider?: string | null | undefined;
   readonly csm?: string | null | undefined;
-  readonly stage: string;
+  readonly stage: string | undefined;
   readonly slaCreatedDate?: DateValue;
   readonly stageEntryDate?: DateValue;
   readonly storyStartDate?: DateValue;

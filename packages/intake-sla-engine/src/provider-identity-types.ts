@@ -75,7 +75,9 @@ export interface ProviderRoleCluster extends ProviderIdentityCluster {
 }
 export interface ProviderIdentityRegistry {
   readonly version: string;
-  readonly providers: readonly (Partial<IdentityClusterArrays> & {
+  readonly providers: readonly ({
+    readonly [K in keyof IdentityClusterArrays]?: readonly string[] | null | undefined;
+  } & {
     readonly salesforceIds: readonly string[];
     readonly names: readonly string[];
     readonly emails: readonly string[];

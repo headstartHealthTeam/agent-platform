@@ -25,12 +25,12 @@ export function familyShortSummary(packet: NarrativePacket): string | null {
       254
     );
   }
-  if (/97151 Started|Treatment Plan/i.test(packet.stage))
+  if (/97151 Started|Treatment Plan/i.test(String(packet.stage)))
     return truncate(
       `${prefix}Family availability or custody constraints are preventing treatment-plan progress and the next clinical milestone. ${owner} must confirm whether intake can proceed on a workable schedule.`,
       254
     );
-  if (/IA Approved|IA Scheduled|IC Completed/i.test(packet.stage))
+  if (/IA Approved|IA Scheduled|IC Completed/i.test(String(packet.stage)))
     return truncate(
       `${prefix}Family availability or custody constraints are preventing a confirmed initial-assessment plan. ${owner} must confirm whether and when the IA can proceed.`,
       254

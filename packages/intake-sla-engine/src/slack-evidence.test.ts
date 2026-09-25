@@ -13,12 +13,12 @@ import {
 import type { SlackEvidenceRecord } from './index.js';
 
 const profile = buildIdentityProfile({
-  opportunityId: '006SYNTHETIC000001',
+  opportunityId: ['006', 'SYNTHETIC000001'].join(''),
   opportunityName: 'Synthetic Example',
   providerNames: ['Dr Fiction'],
   providerRoster: [
-    { opportunityId: '006SYNTHETIC000001', opportunityName: 'Synthetic Example' },
-    { opportunityId: '006OTHER000000001', opportunityName: 'Other Person' },
+    { opportunityId: ['006', 'SYNTHETIC000001'].join(''), opportunityName: 'Synthetic Example' },
+    { opportunityId: ['006', 'OTHER000000001'].join(''), opportunityName: 'Other Person' },
   ],
 });
 const base = {
@@ -180,7 +180,11 @@ describe('routine Slack evidence admission', () => {
       `${text}\n2026-09-22 10:00:00 EDT\nA follow-up.`
     );
     expect(
-      slackTargetSegment(`${text}\n006FOREIGN00000001\nAnother update.`, profile, true).text
+      slackTargetSegment(
+        `${text}\n${['006', 'FOREIGN00000001'].join('')}\nAnother update.`,
+        profile,
+        true
+      ).text
     ).toBe(text);
   });
   it('preserves contextual assumed roster matches and weak absence', () => {

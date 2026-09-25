@@ -148,7 +148,7 @@ function advanceResolvedGate<T extends StoryEvent>(
     current.state = STORY_CONFLICTING;
     state.conflicts.set(
       state.currentGateIssueKey,
-      `${state.currentGateIssueKey}: evidence indicates the current gate is resolved, but the Opportunity remains in ${state.opportunity.stage}.`
+      `${state.currentGateIssueKey}: evidence indicates the current gate is resolved, but the Opportunity remains in ${String(state.opportunity.stage)}.`
     );
   }
 }

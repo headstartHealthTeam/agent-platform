@@ -45,7 +45,7 @@ export function missingAuthorizationShortSummary(packet: NarrativePacket): strin
     return null;
   const item = requiredItemFromEvent(newest);
   if (!item) return null;
-  const phase = /^IA\b/i.test(packet.stage) ? 'initial' : 'treatment';
+  const phase = /^IA\b/i.test(String(packet.stage)) ? 'initial' : 'treatment';
   const plural = requiredItemIsPlural(item);
   return shortenSentence(
     `${String(humanDate(newest.date))}: ${capitalize(item)} ${plural ? 'remain' : 'remains'} outstanding, and no current ${phase} authorization is on file. Intake must complete ${plural ? 'the documents' : 'the document'} before the payer path can be established.`,
@@ -77,12 +77,12 @@ export function requiredDocumentShortSummary(packet: NarrativePacket): string | 
   if (newest?.factType !== 'required-document') return null;
   const item = requiredItemFromEvent(newest);
   const date = String(humanDate(newest.date));
-  if (item && /IA Approved|IA Scheduled|IC Completed/i.test(packet.stage))
+  if (item && /IA Approved|IA Scheduled|IC Completed/i.test(String(packet.stage)))
     return truncate(
       `${date}: ${capitalize(item)} remains outstanding; the initial assessment cannot be scheduled or confirmed complete until Intake obtains and validates it.`,
       254
     );
-  if (item && /97151 Started|Treatment Plan/i.test(packet.stage))
+  if (item && /97151 Started|Treatment Plan/i.test(String(packet.stage)))
     return truncate(
       `${date}: ${capitalize(item)} remains outstanding; treatment-plan work cannot advance until Intake obtains and validates it.`,
       254
