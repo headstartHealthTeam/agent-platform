@@ -149,6 +149,7 @@ async function complete(f: Fixture): Promise<void> {
     expect(await advancePublication(f)).toMatchObject({ stageId: stage.id });
 }
 describe('approved staged publication executor', () => {
+  // Six complete on-disk fixtures exceed the 5s unit budget on Windows CI.
   it('accepts only explicit false incomplete markers before retaining evidence or advancing', async () => {
     for (const marker of [undefined, null, 0, '', true, false]) {
       const f = await fixture();
@@ -176,7 +177,7 @@ describe('approved staged publication executor', () => {
         });
       }
     }
-  });
+  }, 30_000);
   it('treats an absent in-flight journal field as uncertain and never dispatches another write', async () => {
     const f = await fixture();
     const stage = f.stages.at(0);

@@ -224,6 +224,7 @@ describe('complete local publication preparation', () => {
       deferredChangeCount: 1,
     });
   });
+  // Preparing and rereading every staged artifact exceeds 5s on Windows CI.
   it('retains all prepared assertion fields when reading gate inputs and rejects corrupt consumed data', async () => {
     const input = await fixture();
     await prepareIntakePublication(input, now);
@@ -239,5 +240,5 @@ describe('complete local publication preparation', () => {
     await expect(
       readSavedPublicationGateInputs(input.runDirectory, 'sheet', checkedAt)
     ).rejects.toThrow('Invalid publication gate artifact');
-  });
+  }, 30_000);
 });

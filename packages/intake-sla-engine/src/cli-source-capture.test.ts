@@ -133,6 +133,7 @@ describe('saved source capture command composition', () => {
       'ALREADY_NORMALIZED_DISCOVERY'
     );
   });
+  // This multi-command filesystem scenario exceeds the 5s unit budget on Windows CI.
   it('plans, captures bodies, resumes and finalizes through command entrypoints with provider cooldowns intact', async () => {
     const input = await firefliesInputs();
     expect((await call('review:fireflies-normalize')).exitCode).toBe(0);
@@ -196,7 +197,7 @@ describe('saved source capture command composition', () => {
     await writePrivateJson(file('publication-readback.json'), {});
     expect((await call('review:fireflies-bounded', ['--action', 'status'])).exitCode).toBe(1);
     expect((await call('review:fireflies-bounded', ['--action', 'bad'])).exitCode).toBe(1);
-  });
+  }, 30_000);
   it('reports only sanitized failures for unsupported/missing arguments', async () => {
     expect(isSourceCaptureCommand('review:slack-capture')).toBe(true);
     expect(isSourceCaptureCommand('wrong')).toBe(false);

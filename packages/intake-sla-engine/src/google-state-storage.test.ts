@@ -92,6 +92,7 @@ async function save(directory: string, raw: unknown): Promise<void> {
     await writePrivateJson(path.join(directory, `${name}.json`), value);
 }
 describe('raw Google state and projection transaction verification', () => {
+  // Full capture/interruption/resume I/O exceeds the 5s unit budget on Windows CI.
   it('keeps the raw transaction marker through interruption and resumes the same proof', async () => {
     const runDirectory = await harness();
     const inputFile = path.join(runDirectory, 'synthetic-input.json');
@@ -141,7 +142,7 @@ describe('raw Google state and projection transaction verification', () => {
     expect(await fs.readFile(captureFile, 'utf8')).not.toBe(original);
     expect((await fs.readdir(runDirectory)).filter((name) => name.endsWith('.tmp'))).toEqual([]);
     expect(await fs.readdir(runDirectory)).not.toContain('.writer-lock');
-  });
+  }, 30_000);
   it('persists supplied capture and a retained unchanged-file proof with raw capture last', async () => {
     const runDirectory = await harness(),
       inputFile = path.join(runDirectory, 'synthetic-input.json');

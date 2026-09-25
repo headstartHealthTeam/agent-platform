@@ -227,7 +227,9 @@ describe('manual captured publication readback commands', () => {
       verifiedAt: new Date().toISOString(),
     });
     for (const name of ['publication-readback.json', 'publication_stage_readbacks.json']) {
-      expect((await fs.stat(path.join(f.runDirectory, name))).mode & 0o777).toBe(0o600);
+      const stat = await fs.stat(path.join(f.runDirectory, name));
+      expect(stat.isFile()).toBe(true);
+      if (process.platform !== 'win32') expect(stat.mode & 0o777).toBe(0o600);
     }
     expect(await fs.readdir(f.runDirectory)).not.toContain('publication_stage_readbacks.json.tmp');
   });
