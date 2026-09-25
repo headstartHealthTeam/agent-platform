@@ -38,7 +38,7 @@
     "@headstart-health/capability-contracts": "workspace:*",
     "@headstart-health/capability-runtime": "workspace:*",
     "@headstart-health/workflow-runtime": "workspace:*",
-    "openai": "7.15.0",
+    "openai": "7.21.0",
     "fflate": "0.8.3",
     "yaml": "^2.9.1",
     "zod": "^4.6.5"
