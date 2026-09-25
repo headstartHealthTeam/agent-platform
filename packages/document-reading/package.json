@@ -40,7 +40,7 @@
     "unzipper-esm": "^0.13.2"
   },
   "devDependencies": {
-    "tsx": "^4.23.13",
+    "tsx": "^4.23.15",
     "jszip": "^3.10.1",
     "@types/node": "^22.20.4",
     "@vitest/coverage-v8": "^4.1.11",
@@ -50,6 +50,6 @@
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",
     "vitest": "^4.1.11",
-    "@cantoo/pdf-lib": "2.7.1"
+    "@cantoo/pdf-lib": "2.11.1"
   }
 }
