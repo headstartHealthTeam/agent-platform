@@ -10,6 +10,7 @@ import { runSavedPublicationCommand } from './cli-publication.js';
 import { isRecoveryCommand, runRecoveryCommand } from './cli-recovery.js';
 import { runArtifactPreflightCommand, runWorkbookRuntimeSmokeCommand } from './cli-runtime.js';
 import { isSourceCaptureCommand, runSourceCaptureCommand } from './cli-source-capture.js';
+import { isValidationCommand, runValidationCommand } from './cli-validation.js';
 
 const [command = '', ...args] = process.argv.slice(2);
 try {
@@ -32,7 +33,9 @@ try {
                     ? await runRecoveryCommand(command, args)
                     : isSourceCaptureCommand(command)
                       ? await runSourceCaptureCommand(command, args)
-                      : await runSavedPublicationCommand(command, args);
+                      : isValidationCommand(command)
+                        ? await runValidationCommand(command, args)
+                        : await runSavedPublicationCommand(command, args);
   process.stdout.write(result.stdout);
   process.stderr.write(result.stderr);
   process.exitCode = result.exitCode;

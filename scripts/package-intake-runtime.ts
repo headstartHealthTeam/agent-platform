@@ -4,28 +4,20 @@ import { dirname, isAbsolute, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { assembleRuntimeWorkspace } from './runtime-assembly.js';
 import {
   runRuntimeCommand,
   runtimeFingerprint,
-  verifyPortableRuntime as verifyRuntimeLinks,
-  type RuntimeCommand,
-} from './runtime-packaging.js';
-export {
-  runRuntimeCommand,
-  runRuntimeExecutable,
-  runtimeFingerprint,
+  verifyPortableRuntime,
   type RuntimeCommand,
 } from './runtime-packaging.js';
 
-const ENGINE = '@headstart-health/organic-performance-engine';
+const ENGINE = '@headstart-health/intake-sla-engine';
 function inside(root: string, candidate: string): boolean {
   return candidate === root || candidate.startsWith(`${root}${sep}`);
 }
-export async function verifyPortableRuntime(target: string, sourcePackage: string): Promise<void> {
-  await verifyRuntimeLinks(target, sourcePackage, ENGINE);
-}
-
-export async function packageOrganicRuntime(input: {
+/** Same dependency-closure packaging as Organic; private configuration and workbook vendor stay external. */
+export async function packageIntakeRuntime(input: {
   readonly sourceRoot: string;
   readonly target: string;
   readonly command?: RuntimeCommand;
@@ -42,40 +34,41 @@ export async function packageOrganicRuntime(input: {
   } catch (error: unknown) {
     if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error;
   }
-  const sourcePackage = resolve(root, 'packages/organic-performance-engine');
-  for (const entrypoint of ['cli.js', 'collect-cli.js', 'workbook-cli.js'])
+  const sourcePackage = resolve(root, 'packages/intake-sla-engine');
+  for (const entrypoint of ['cli.js', 'index.js', 'self-tests/self-test-config.js'])
     await readFile(resolve(sourcePackage, 'dist', entrypoint));
   const command = input.command ?? runRuntimeCommand;
   const version = (await command('corepack', ['pnpm', '--version'], root)).trim();
   if (version !== '9.15.0') throw new Error('Packaging requires the repository-pinned pnpm 9.15.0');
   const sourceRevision = (await command('git', ['rev-parse', 'HEAD'], root)).trim();
   const sourceDirty = (await command('git', ['status', '--porcelain'], root)).trim().length > 0;
-  await command('corepack', ['pnpm', '--filter', ENGINE, 'deploy', '--prod', target], root);
-  await verifyPortableRuntime(target, sourcePackage);
-  const template = await readFile(resolve(target, 'templates/headstart-report.v1.json'));
+  const workspacePackages = await assembleRuntimeWorkspace({
+    sourceRoot: root,
+    target,
+    engine: ENGINE,
+  });
+  await command(
+    'corepack',
+    ['pnpm', 'install', '--prod', '--offline', '--frozen-lockfile'],
+    target
+  );
+  await verifyPortableRuntime(target, sourcePackage, ENGINE);
+  await readFile(resolve(target, 'dist/self-tests/self-test-config.js'));
+  await chmod(resolve(target, 'dist/cli.js'), 0o755);
   const receipt = {
-    schemaVersion: 'headstart-organic-runtime/v1',
+    schemaVersion: 'headstart-intake-runtime/v1',
     package: ENGINE,
     version: '0.1.0',
     sourceRevision,
     sourceDirty,
+    workspacePackages,
     pnpmVersion: version,
     lockfileSha256: createHash('sha256')
       .update(await readFile(resolve(root, 'pnpm-lock.yaml')))
       .digest('hex'),
     artifactSha256: await runtimeFingerprint(target),
-    templateSha256: createHash('sha256').update(template).digest('hex'),
-    entrypoints: {
-      'headstart-organic-analyze': 'dist/cli.js',
-      'headstart-organic-collect': 'dist/collect-cli.js',
-      'headstart-organic-workbook-plan': 'dist/workbook-cli.js',
-      'headstart-gsc-report': 'node_modules/@headstart-health/google-search-console/dist/cli.js',
-    },
+    entrypoints: { 'headstart-intake-sla': 'dist/cli.js' },
   };
-  for (const entrypoint of Object.values(receipt.entrypoints)) {
-    await readFile(resolve(target, entrypoint));
-    await chmod(resolve(target, entrypoint), 0o755);
-  }
   await writeFile(
     resolve(target, 'runtime-receipt.json'),
     `${JSON.stringify(receipt, null, 2)}\n`,
@@ -83,13 +76,13 @@ export async function packageOrganicRuntime(input: {
   );
   return receipt;
 }
-
 async function main(): Promise<void> {
   const parsed = parseArgs({ options: { target: { type: 'string' } }, strict: true });
   if (!parsed.values.target) throw new Error('--target is required');
   const sourceRoot = fileURLToPath(new URL('..', import.meta.url));
-  const receipt = await packageOrganicRuntime({ sourceRoot, target: parsed.values.target });
-  process.stdout.write(`${JSON.stringify(receipt, null, 2)}\n`);
+  process.stdout.write(
+    `${JSON.stringify(await packageIntakeRuntime({ sourceRoot, target: parsed.values.target }), null, 2)}\n`
+  );
 }
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((error: unknown) => {

@@ -2,7 +2,6 @@ import { execFile } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -11,6 +10,7 @@ import {
   optionalIntakeArgument,
   parseIntakeArguments,
 } from './cli-arguments.js';
+import { syntheticCliArguments } from './cli-launch.test-support.js';
 import { runSavedPublicationCommand } from './cli-publication.js';
 import type { IntakeCommandResult } from './cli-publication.js';
 import { publicationStorageFixture } from './google-publication-fixture.test-helper.js';
@@ -69,13 +69,7 @@ function launch(args: readonly string[]): Promise<IntakeCommandResult> {
   return new Promise((resolve) => {
     execFile(
       process.execPath,
-      [
-        '--conditions=development',
-        '--import',
-        import.meta.resolve('tsx'),
-        fileURLToPath(new URL('./cli.ts', import.meta.url)),
-        ...args,
-      ],
+      [...syntheticCliArguments(import.meta.url), ...args],
       { cwd: directory, encoding: 'utf8', timeout: 15_000, maxBuffer: 1024 * 1024 },
       (error, stdout, stderr) => {
         resolve({

@@ -2,11 +2,12 @@ import { execFile } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { preflightArtifactRuntime, resolveArtifactRuntime } from './artifact-runtime.js';
+import { syntheticCliArguments } from './cli-launch.test-support.js';
 import { runArtifactPreflightCommand } from './cli-runtime.js';
 import { readPublicationJson } from './publication-command-storage.js';
 
@@ -136,13 +137,7 @@ describe('operator-provisioned workbook runtime preflight', () => {
       (resolve, reject) => {
         execFile(
           process.execPath,
-          [
-            '--conditions=development',
-            '--import',
-            import.meta.resolve('tsx'),
-            fileURLToPath(new URL('./cli.ts', import.meta.url)),
-            'review:runtime-preflight',
-          ],
+          [...syntheticCliArguments(import.meta.url), 'review:runtime-preflight'],
           { cwd: directory, encoding: 'utf8', timeout: 15_000, maxBuffer: 1024 * 1024 },
           (error, stdout, stderr) => {
             if (error !== null)

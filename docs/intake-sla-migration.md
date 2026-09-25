@@ -42,6 +42,15 @@ reviewer-owned values; immutable published evidence; stage readbacks and Run His
 remains read-only. No live run, schedule, cloud deployment, service-identity change, cache activation,
 UI or Salesforce operational-context utility is added by this migration.
 
+The standalone packaging path assembles the actual built runtime dependency closure, preserves
+external lockfile snapshots/integrities and uses the pinned frozen production install. It reuses
+Organic's command/link/fingerprint helpers without changing that workflow. Intake carries its full
+compiled synthetic suite as a runtime dependency; validation reruns that suite in a child selecting
+production exports, rather than relying on source aliases or a prior pass receipt. Outside-checkout
+CLI validation and synthetic workbook build/reimport/render/formula acceptance pass. Remaining
+source-command coverage and instruction/setup cutover still prevent treating the migration as an
+operational replacement.
+
 ## Package ownership map
 
 Names for new packages identify concrete boundaries, not one package per source script. A second

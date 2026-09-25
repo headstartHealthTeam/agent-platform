@@ -1308,6 +1308,13 @@ export {
   loadReportInterpreter,
 } from './report-runtime-inputs.js';
 export { runBuildReportCommand } from './cli-build.js';
+export { runValidationCommand, isValidationCommand } from './cli-validation.js';
+export {
+  checkIntakeDistribution,
+  type DistributionSafetyResult,
+  type DistributionFinding,
+} from './distribution-safety.js';
+export { validateIntakeRuntime } from './self-validation.js';
 export { isSourceCaptureCommand, runSourceCaptureCommand } from './cli-source-capture.js';
 export {
   saveNormalizedFirefliesDiscovery,
