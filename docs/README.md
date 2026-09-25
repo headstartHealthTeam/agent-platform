@@ -58,6 +58,11 @@ and examples.
 
 ## Concrete Examples
 
+- [Intake SLA migration ownership](intake-sla-migration.md) fixes the shared-provider versus Intake
+  policy boundary and source-parity requirements for the supervised engine migration.
+  [Local runtime setup](../packages/intake-sla-engine/docs/local-setup.md) and the
+  [operator runbook](../packages/intake-sla-engine/docs/automation-runbook.md) describe its separate
+  reviewed-runtime installation and unchanged supervised operation.
 - [Provider credentialing](../workflows/provider-credentialing/README.md) preserves the payer-neutral
   preparation contracts, investigative skill, synthetic evaluations and application artifacts.
   Its connected operation also needs the separately reviewed shared runtime and application changes.
@@ -119,6 +124,16 @@ flowchart TD
   primary-agent evidence access. They do not activate a workflow or provision credentials.
 - [`packages/google-read-transport/`](../packages/google-read-transport/README.md) owns sanitized
   ADC resolution and the explicit read-only Google HTTP operation allowlist.
+- [`packages/salesforce-read/`](../packages/salesforce-read/README.md) owns explicit Organization
+  verification and complete CLI read queries without workflow-specific selection or policy.
+- [`packages/fireflies-data/`](../packages/fireflies-data/README.md) owns vendor transcript metadata,
+  native body validation and sanitized failure/cooldown signals.
+- [`packages/slack-data/`](../packages/slack-data/README.md) owns native transport decoding and
+  explicit thread-completion contracts.
+- [`packages/artifact-workbook/`](../packages/artifact-workbook/README.md) owns injected local
+  workbook library operations without report layout or acceptance policy.
+- [`openai-platform/responses`](../packages/openai-platform/README.md#isolated-structured-responses-entry-point)
+  owns credential-injected, non-storing structured Responses execution independently of lifecycle policy.
 - [`packages/google-search-console/`](../packages/google-search-console/README.md),
   [`packages/google-analytics-data/`](../packages/google-analytics-data/README.md),
   [`packages/google-sheets-data/`](../packages/google-sheets-data/README.md), and
@@ -126,6 +141,8 @@ flowchart TD
   packages.
 - [`packages/organic-performance-engine/`](../packages/organic-performance-engine/README.md) owns
   live organic evidence collection, deterministic analysis, and the August regression contract.
+- [`packages/intake-sla-engine/`](../packages/intake-sla-engine/README.md) owns Intake-specific
+  evidence semantics and supervised composition; see its README for migration completeness.
 - [`apps/codex-runner/`](../apps/codex-runner/README.md) owns the managed Codex execution boundary.
 - Headstart application repositories retain business-system event sources and intake, durable
   business state, permissions, idempotent business writes, and application interfaces. The selected

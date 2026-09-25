@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { GoogleReadTransport } from './transport.js';
+import {
+  GoogleReadTransport,
+  type GoogleJsonReader,
+  type GoogleReadFetch,
+  type GoogleResponseReader,
+} from './index.js';
 
 describe('shared Drive and Docs transport', () => {
   afterEach(() => vi.unstubAllGlobals());
@@ -12,14 +17,17 @@ describe('shared Drive and Docs transport', () => {
     'https://docs.googleapis.com/v1/documents/abc?includeTabsContent=true',
   ])('uses the same explicit token provider and returns complete bytes: %s', async (url) => {
     const bytes = Buffer.from([0, 255, 3, 127]);
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(bytes));
+    const original = new Response(bytes);
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(original);
     vi.stubGlobal('fetch', fetcher);
     const transport = new GoogleReadTransport({
       getAccessToken: async (): Promise<string> => 'synthetic-token',
     });
-    expect(Buffer.from(await (await transport.readResponse(url, 'abc/key')).arrayBuffer())).toEqual(
-      bytes
-    );
+    const reader: GoogleResponseReader = transport;
+    const response = await reader.readResponse(url, 'abc/key');
+    expect(response).toBe(original);
+    expect(response.bodyUsed).toBe(false);
+    expect(Buffer.from(await response.arrayBuffer())).toEqual(bytes);
     expect(fetcher.mock.calls[0]?.[0]).toBe(url);
     expect(fetcher.mock.calls[0]?.[1]?.method).toBe('GET');
     expect(fetcher.mock.calls[0]?.[1]?.redirect).toBe('error');
@@ -28,6 +36,44 @@ describe('shared Drive and Docs transport', () => {
       Authorization: 'Bearer synthetic-token',
       'X-Goog-Drive-Resource-Keys': 'abc/key',
     });
+  });
+  it('preserves narrow JSON injection without pretending it supplies a binary response', async () => {
+    const json = vi.fn(async (): Promise<unknown> => ({ spreadsheetId: 'synthetic' }));
+    const fetchImpl = vi.fn<GoogleReadFetch>().mockResolvedValue({ ok: true, json });
+    const transport = new GoogleReadTransport(
+      { getAccessToken: async (): Promise<string> => 'synthetic-token' },
+      { fetchImpl }
+    );
+    const reader: GoogleJsonReader = transport;
+    await expect(
+      reader.request('https://sheets.googleapis.com/v4/spreadsheets/synthetic')
+    ).resolves.toEqual({ spreadsheetId: 'synthetic' });
+    expect(json).toHaveBeenCalledTimes(1);
+    await expect(
+      transport.readResponse('https://www.googleapis.com/drive/v3/files/a')
+    ).rejects.toMatchObject({ kind: 'invalid-response' });
+    expect(json).toHaveBeenCalledTimes(1);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+  it.each([429, 503])('retains header-only HTTP %s metadata for raw reads', async (status) => {
+    const json = vi.fn(async (): Promise<never> => {
+      throw new Error('must not consume private error body');
+    });
+    const fetchImpl = vi.fn<GoogleReadFetch>().mockResolvedValue({
+      ok: false,
+      status,
+      headers: new Headers({ 'Retry-After': '2.5' }),
+      json,
+    });
+    const transport = new GoogleReadTransport(
+      { getAccessToken: async (): Promise<string> => 'synthetic-token' },
+      { fetchImpl, readErrorDetails: false }
+    );
+    await expect(
+      transport.readResponse('https://www.googleapis.com/drive/v3/files/a')
+    ).rejects.toMatchObject({ status, retryAfterMs: 2500, transient: true });
+    expect(json).not.toHaveBeenCalled();
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
   it.each([
     'https://www.googleapis.com/drive/v3/files/abc/permissions',
