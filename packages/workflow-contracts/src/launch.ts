@@ -1,3 +1,4 @@
+import type { AgentCredentialProtection } from './credential-protection.js';
 import type { OperatorBinding } from './operator.js';
 
 /** Trusted application deployment input, never supplied by an operator or model. */
@@ -41,8 +42,35 @@ export interface AgentLaunchPreflight {
   target: string;
 }
 
+/** Ephemeral trusted deployment input. Real secret bytes are visible inside the hosted sandbox.
+ * Never persist with launch intent, put in an output directory, or return in a launch receipt.
+ */
+export interface AgentHostedCredentialFile {
+  path: string;
+  content: string;
+}
+
+/** Launch-only resolution; source credential availability must not gate existing-run controls. */
+export type AgentHostedCredentialFiles =
+  | readonly AgentHostedCredentialFile[]
+  | (() => Promise<readonly AgentHostedCredentialFile[] | undefined>);
+
+/** Non-secret setup receipt. The owner retains it before any credential is installed. It is
+ * not a session receipt and never establishes permission to replay uncertain session creation.
+ */
+export interface AgentCredentialVault extends AgentLaunchIdentity {
+  kind: 'openai-credential-vault';
+  id: string;
+}
+
 export interface AgentSessionCreateOptions {
   expectedTarget: string;
+  credentialVault?: AgentCredentialVault;
+  retainCredentialVault?: (vault: AgentCredentialVault) => Promise<void>;
+  /** Required with hosted credential files. Persist before any credential installation/dispatch;
+   * union prior hashes on a proven-undispatched retry and retain for the session's lifetime.
+   */
+  retainCredentialProtection?: (protection: AgentCredentialProtection) => Promise<void>;
   /** Called after validation/provider preflight, immediately before the one SDK create attempt.
    * The application must durably journal dispatch here. Throwing prevents the provider write.
    */
@@ -51,7 +79,10 @@ export interface AgentSessionCreateOptions {
 
 export type AgentSessionCreateResult =
   | { status: 'created'; receipt: AgentSessionReceipt; providerRequestId?: string }
-  | { status: 'not-attempted'; reason: 'validation' | 'preflight' | 'before-dispatch' }
+  | {
+      status: 'not-attempted';
+      reason: 'validation' | 'credential-protection' | 'preflight' | 'before-dispatch';
+    }
   | {
       status: 'unknown';
       reason: 'provider-outcome' | 'invalid-response';

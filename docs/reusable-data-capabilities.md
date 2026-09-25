@@ -108,6 +108,38 @@ Provider substitution is allowed only when the replacement passes the same reque
 response, target, permission, completeness, and conformance tests. An MCP, SDK, REST adapter, or
 managed identity is therefore an implementation choice rather than an engine dependency.
 
+## Runtime credentials without application coupling
+
+Source readers consume the existing `GoogleTokenProvider` port, not an application server.
+The [Drive runtime](../packages/google-drive-data/README.md) supports explicit supervised ADC,
+an operator-controlled local credential file, or a renewable HTTPS token endpoint. Selecting a
+hosted credential provider must not require backend imports, copy the reader into an application,
+or change the workflow's evidence contract. Local Google investigation and document parsing remain
+usable without the Headstart backend. Integrated application review and Headstart MCP are separate
+declared dependencies where those capabilities are needed.
+
+For hosted execution, keep long-lived Google signing keys and refresh tokens outside the sandbox.
+An optional trusted issuer supplies short-lived `drive.readonly` access tokens, and the runtime
+refreshes them behind the same port without a new agent session or an artificial workflow timeout.
+The private runtime profile selects the endpoint and an authorization environment-variable name;
+it contains no token. The issuer may be an existing application's authentication-only endpoint or
+another compatible deployment service. It owns authentication and issuance, never Google document
+search, reading, filtering, parsing or workflow judgment. Do not create a separate service merely
+to make this boundary reusable.
+
+In OpenAI-hosted environments, the existing native-vault placeholder can authenticate to the
+selected issuer's exact host. The short-lived Google token is then used directly by Agent Platform
+tools. Updating an environment credential in the vault does not update an existing sandbox, so a
+single expiring Google token injected at launch is not a renewal strategy. See
+[the provider's credential contract](https://developers.openai.com/api/docs/guides/agents-api/tools/vaults#rotate-or-remove-credentials).
+Stop/revocation can deny further issuance; a previously issued Google token remains usable until
+its actual Google expiry. This does not claim instant revocation or prevention of every possible
+data-exfiltration path. Full authorized evidence remains available; source permissions are not
+replaced with metadata-only access or summaries.
+
+Verify both the standalone path and repeated renewal in the same reader. Deployment identity,
+visibility, secret configuration and real hosted execution require separate acceptance evidence.
+
 ## Semrush boundary
 
 Do not vendor or repackage a complete Semrush MCP into a business engine. Bind one of these options

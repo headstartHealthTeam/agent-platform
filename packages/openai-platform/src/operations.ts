@@ -2,6 +2,8 @@ import { AGENT_FUNCTION_PAYLOAD_LIMIT } from '@headstart-health/workflow-contrac
 import type { AgentUpdateParams } from 'openai/resources/beta/agents/agents';
 import { z } from 'zod';
 
+import { hostedSetup, hostedSetupFields } from './hosted-setup.js';
+
 const reasoning = z
   .object({
     effort: z.enum(['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']),
@@ -147,12 +149,14 @@ const inlineSkill = z
   .strict();
 const template = z
   .object({
+    ...hostedSetupFields,
     name: z.string().nullable().optional(),
     network: network.optional(),
     skills: z.array(inlineSkill).optional(),
   })
   .strict()
   .transform((value) => ({
+    ...hostedSetup(value),
     ...(value.name === undefined ? {} : { name: value.name }),
     ...(value.network === undefined ? {} : { network: value.network }),
     ...(value.skills === undefined ? {} : { skills: value.skills }),
@@ -181,12 +185,14 @@ const environment = z.union([
   z
     .object({
       type: z.literal('openai_hosted'),
+      ...hostedSetupFields,
       environment_template_id: id.optional(),
       network: network.optional(),
     })
     .strict()
     .transform((value) => ({
       type: value.type,
+      ...hostedSetup(value),
       ...(value.environment_template_id === undefined
         ? {}
         : { environment_template_id: value.environment_template_id }),
@@ -194,7 +200,8 @@ const environment = z.union([
     })),
 ]);
 // Keep the supervised surface explicit: use one saved agent OR one inline configuration.
-// Overrides, capability-directory mounts and environment credentials are not accepted here.
+// Overrides and capability-directory mounts are not accepted here. Vault references contain no
+// secrets; managed launches separately provision/retain the run-specific credential vault.
 const sessionAgent = z
   .object({
     model,
@@ -211,6 +218,7 @@ const sessionAgent = z
   }));
 const sessionFields = {
   environment,
+  vault_ids: z.array(id).optional(),
   input: z.string().min(1).max(100_000).optional(),
   metadata: metadata.default({}),
 };
@@ -233,9 +241,10 @@ const sessionCreate = z
         )
       )
   )
-  .transform(({ input, ...value }) => ({
+  .transform(({ input, vault_ids, ...value }) => ({
     ...value,
     ...(input === undefined ? {} : { input }),
+    ...(vault_ids === undefined ? {} : { vault_ids }),
   }));
 const query = z
   .object({ limit: z.number().int().min(1).max(100).default(20), after: id.optional() })

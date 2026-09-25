@@ -21,7 +21,7 @@ complete real-source correction loop remain unverified; this decision changes no
 
 The build also emits `dist/preparation-definition.json`: the canonical skill, the
 [connected entry prompt](prompts/connected.md), both public input schemas, proposal schema and
-four function declarations. Its workflow revision hashes the complete definition. The artifact
+five function declarations. Its workflow revision hashes the complete definition. The artifact
 contains no fixtures, expected answers, credentials or private case data. Deploy/pin reviewed bytes
 alongside the validator; do not maintain a second instruction copy in backend.
 
@@ -36,13 +36,23 @@ not in a backend MCP module. Its standalone CLI reuses shared Google transport a
 [document parsing](../../packages/document-reading/README.md). It still requires an installed
 runtime artifact and explicit Google binding in the selected sandbox; those bindings and a real-source
 agent demonstration are not established by this package relocation. Do not infer availability
-from an employee's desktop connector. The source-neutral exact-byte retention contract is defined
+from an employee's desktop connector. Google authentication is a replaceable runtime binding: local ADC or an
+operator-controlled credential file works without backend; hosted execution uses renewable
+read-only tokens without putting the long-lived key in the sandbox. An optional deployment issuer
+does not own document reading/parsing and is not a mandatory workflow dependency. See
+[the shared credential boundary](../../docs/reusable-data-capabilities.md#runtime-credentials-without-application-coupling).
+The source-neutral exact-byte retention contract is defined
 in [workflow contracts](../../packages/workflow-contracts/README.md#responsibilities).
 It covers Drive originals, exports, Docs structure and runtime-derived artifacts alongside
 Salesforce originals. A runtime file or manifest is not a retained receipt: the trusted application
 handoff must verify the bytes, case/subject binding and exact parent lineage before publication.
-Binding hosted artifact delivery to that handoff remains a separate integration step; the capture
-function below still accepts Salesforce identifiers only.
+`queue_credentialing_review_package` queues a complete package plus exact output paths for
+the application's after-turn delivery worker. Queue admission is not successful retention or
+publication: the agent must end the turn so the provider can publish immutable outputs, then the
+application validates bytes, lineage and current case authority. The capture function below
+remains the direct Salesforce-original path; hosted delivery also supports full Drive/export and
+runtime-derived evidence. Connected verification, not the presence of these declarations, proves
+the complete integration.
 
 `capture_credentialing_source_document` is the protected original-file retention capability.
 It accepts exact Salesforce link/document/version identifiers discovered through MCP, verifies the

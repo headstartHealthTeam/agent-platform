@@ -3,7 +3,10 @@ import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { GoogleFileTokenProvider } from '@headstart-health/google-read-transport';
+import {
+  GcloudReadTokenProvider,
+  GoogleFileTokenProvider,
+} from '@headstart-health/google-read-transport';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { main } from './cli.js';
@@ -11,6 +14,7 @@ import {
   createDriveRuntime,
   driveRuntimeProfileSchema,
   driveRuntimeRequestSchema,
+  executeDriveRequest,
   runDriveCli,
 } from './runtime.js';
 
@@ -23,12 +27,14 @@ const metadata = {
 };
 const json = (value: unknown): Response => new Response(JSON.stringify(value));
 describe('deployable Drive runtime CLI', () => {
+  const fileTokens = vi.fn<() => Promise<string>>();
   beforeEach(() => {
-    vi.spyOn(GoogleFileTokenProvider.prototype, 'getAccessToken').mockResolvedValue(
-      'synthetic-token'
-    );
+    fileTokens.mockReset().mockResolvedValue('synthetic-token');
+    vi.spyOn(GoogleFileTokenProvider.prototype, 'getAccessToken').mockImplementation(fileTokens);
   });
   afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -235,5 +241,107 @@ describe('deployable Drive runtime CLI', () => {
     vi.stubGlobal('fetch', fetcher);
     await expect(runDriveCli(input)).rejects.toThrow('wrong-identity');
     expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it('renews the token in the same standalone reader without routing documents through the issuer', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    vi.stubEnv('SYNTHETIC_DRIVE_AUTH', 'synthetic-full-authorization-placeholder');
+    const profile = driveRuntimeProfileSchema.parse({
+      expectedIdentity: 'agent@example.com',
+      authentication: {
+        kind: 'token-endpoint',
+        endpoint: 'https://identity.example.com/google/token',
+        authorizationEnvironmentVariable: 'SYNTHETIC_DRIVE_AUTH',
+      },
+    });
+    let issued = 0;
+    const googleHeaders: string[] = [];
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async (input, init) => {
+      const url = new URL(input instanceof Request ? input.url : input);
+      const authorization = new Headers(init?.headers).get('authorization') ?? '';
+      if (url.hostname === 'identity.example.com') {
+        expect(url.href).toBe('https://identity.example.com/google/token');
+        expect(authorization).toBe('synthetic-full-authorization-placeholder');
+        expect(init?.method).toBe('GET');
+        expect(init?.body).toBeUndefined();
+        issued += 1;
+        return json({
+          access_token: `synthetic-google-token-${String(issued)}`,
+          token_type: 'Bearer',
+          expires_in: 300,
+          scope: 'https://www.googleapis.com/auth/drive.readonly',
+        });
+      }
+      googleHeaders.push(authorization);
+      expect(url.hostname).toBe('www.googleapis.com');
+      if (url.pathname.endsWith('/about'))
+        return json({ user: { emailAddress: 'agent@example.com' } });
+      if (url.searchParams.get('alt') === 'media')
+        return new Response('Complete original evidence');
+      return json(metadata);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    const reader = createDriveRuntime(profile);
+    const request = driveRuntimeRequestSchema.parse({
+      action: 'read',
+      input: { fileId: metadata.id, version: metadata.version, mode: 'original' },
+    });
+    const first = await executeDriveRequest(reader, profile, request);
+    expect(first.kind).toBe('read');
+    expect(JSON.stringify(first)).toContain(
+      Buffer.from('Complete original evidence').toString('base64')
+    );
+    expect(issued).toBe(1);
+    expect(new Set(googleHeaders)).toEqual(new Set(['Bearer synthetic-google-token-1']));
+    googleHeaders.length = 0;
+    vi.setSystemTime(Date.now() + 300_000);
+    expect(await executeDriveRequest(reader, profile, request)).toEqual(first);
+    expect(issued).toBe(2);
+    expect(new Set(googleHeaders)).toEqual(new Set(['Bearer synthetic-google-token-2']));
+    expect(fileTokens).not.toHaveBeenCalled();
+  });
+
+  it('keeps supervised ADC fully standalone with no token issuer', async () => {
+    const adc = vi
+      .spyOn(GcloudReadTokenProvider.prototype, 'getAccessToken')
+      .mockResolvedValue('synthetic-adc-token');
+    stubReads();
+    const profile = driveRuntimeProfileSchema.parse({
+      expectedIdentity: 'agent@example.com',
+      authentication: { kind: 'operator-adc' },
+    });
+    await expect(
+      executeDriveRequest(createDriveRuntime(profile), profile, {
+        action: 'metadata',
+        fileId: metadata.id,
+      })
+    ).resolves.toMatchObject({ kind: 'metadata', data: metadata });
+    expect(adc).toHaveBeenCalled();
+    expect(fileTokens).not.toHaveBeenCalled();
+  });
+
+  it('does not fall back to local credentials when the selected token endpoint fails', async () => {
+    vi.stubEnv('SYNTHETIC_DRIVE_AUTH', 'synthetic-placeholder');
+    const adc = vi.spyOn(GcloudReadTokenProvider.prototype, 'getAccessToken');
+    const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('issuer unavailable'));
+    vi.stubGlobal('fetch', fetcher);
+    const profile = driveRuntimeProfileSchema.parse({
+      expectedIdentity: 'agent@example.com',
+      authentication: {
+        kind: 'token-endpoint',
+        endpoint: 'https://identity.example.com/google/token',
+        authorizationEnvironmentVariable: 'SYNTHETIC_DRIVE_AUTH',
+      },
+    });
+    await expect(
+      executeDriveRequest(createDriveRuntime(profile), profile, {
+        action: 'metadata',
+        fileId: metadata.id,
+      })
+    ).rejects.toThrow();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(adc).not.toHaveBeenCalled();
+    expect(fileTokens).not.toHaveBeenCalled();
   });
 });

@@ -19,7 +19,7 @@ Credentialing is the first connected consumer, not the owner of reusable agent p
   is also shared; evidence semantics, package membership and access authority are not.
 
 While package distribution is unfinished, backend's `scripts/sync-agent-contracts.mjs` generates a
-checksum-pinned type snapshot from this package and the admin HTTP snapshot from backend's canonical
+checksum-pinned contract/guard snapshot from this package and the admin HTTP snapshot from backend's canonical
 source. Its default mode verifies source parity using explicitly supplied checkout roots. Change
 canonical types, regenerate and validate all three repositories together; do not independently edit
 snapshots. Local checksum tests detect body edits but cannot prove upstream freshness. This interim
@@ -29,16 +29,26 @@ the backend's explicit local composition. See its [artifact boundary](../package
 The protected deployment pin and source/lockfile provenance must travel together. This establishes
 dependency-independent local distribution, not automated package publication or production release.
 
-Launch contracts also live in `workflow-contracts`. Operator adapter `0.8.0` deliberately changes
+Launch contracts also live in `workflow-contracts`. Operator adapter `0.10.0` retains the change
 creation from a receipt-or-error promise to `created` / proven `not-attempted` / `unknown` outcomes.
 Its read-only descriptor preflight precedes issue-once credentials and pins the expected project;
 the dispatch callback lets backend commit its attempt journal after validation and immediately
 before the SDK call. Read-only candidate inspection and bounded, cursor-based exact-metadata
 discovery support backend-owned positive-match recovery after lost receipts. A zero-match scan is
 not proof of absence, and mutable metadata is not a uniqueness guarantee. Backend retains atomic
-journal/cursor/binding persistence, competing-candidate handling and Stop authority; Agent Platform
-does not add a recovery database or service. See the
+journal/cursor/binding persistence, competing-candidate handling and Stop authority. The adapter
+also requires a durably acknowledged non-secret per-launch vault receipt before delivering the
+existing run's MCP credential to hosted file tools. Proven-undispatched setup can reuse that vault;
+uncertain session creation still cannot be replayed. Agent Platform does not add a recovery
+database or service. See the
 [launch contract details](../packages/openai-platform/README.md#application-functions-and-normal-application-launch).
+
+Hosted credential files additionally require a restricted explicit egress allowlist and the
+`retainCredentialProtection` acknowledgement before any credential installation or session dispatch.
+The application stores the non-secret launch-bound file hashes, unions proven-undispatched retry
+hashes, and applies the canonical guard before function input/output or evidence bytes enter durable
+records. A secret-storage outage must not disable controls for existing runs. These protections
+target credentials, not the complete business evidence the agent needs to investigate.
 
 The backend tests the same shared core with unrelated invented inventory work, not just a second
 payer. Admin has a matching independent synthetic panel consumer. These prove reuse of mechanics;

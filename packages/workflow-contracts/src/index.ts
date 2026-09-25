@@ -21,7 +21,19 @@ export type {
 } from './evidence.js';
 
 export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from './functions.js';
+export {
+  credentialContentSha256,
+  containsCredentialBytes,
+  containsCredentialMaterial,
+  type AgentCredentialProtection,
+} from './credential-protection.js';
 export { AGENT_FUNCTION_PAYLOAD_LIMIT } from './functions.js';
+export type {
+  AgentArtifactRequest,
+  AgentArtifact,
+  AgentArtifactPort,
+  AgentArtifactFailureCode,
+} from './artifacts.js';
 export type {
   AgentLaunchDefinition,
   AgentLaunchRequest,
@@ -31,6 +43,9 @@ export type {
   AgentLaunchIdentity,
   AgentSessionCandidate,
   AgentLaunchPreflight,
+  AgentHostedCredentialFile,
+  AgentHostedCredentialFiles,
+  AgentCredentialVault,
   AgentSessionCreateOptions,
   AgentSessionCreateResult,
   AgentLaunchCandidateResult,

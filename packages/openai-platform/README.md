@@ -19,11 +19,21 @@ to IDs/statuses and exposes content only through `--include-content`.
 ## Hosted-First Development Direction
 
 Follow the [canonical connected-test pattern](../../docs/agent-workflow-development.md#hosted-first-connected-execution):
-normal local applications use OpenAI-hosted compute by default. Existing `openai_hosted` schema
-support is limited to template/network selection; package/file/setup configuration and actual
-credentialing acceptance remain unfinished. Extend this provider surface as needed, not a second
-launcher. The self-hosted implementation below is optional and retained, not required for hosted
-sessions or evidence that hosted execution cannot run our packages.
+normal local applications use OpenAI-hosted compute by default. Inline hosted sessions and reusable
+templates accept the official `packages`, `files`, `setup_commands` and non-secret `env` fields,
+alongside existing template/network selection. Files use a Files API ID or standard-base64 content
+at an absolute `/workspace/` destination. Omitted setup fields retain template inheritance; explicit
+null or empty fields are passed through. The adapter preserves ordered commands and package versions
+and includes all setup in exact-payload approval. It does not execute setup on the application host.
+
+Use reviewed, revision-pinned tools and verify their installation in setup before the agent starts.
+These fields come from trusted deployment composition, never reviewer input or model output. Do not
+put credentials in commands, non-secret profile files or `env`; use the separately provisioned hosted vault binding for
+runtime HTTPS reads. The [official hosted guide](https://developers.openai.com/api/docs/guides/agents-api/environments/openai-hosted)
+owns runtime-reserved variables, setup ordering and provider limits. Source-credential provisioning,
+deployed application composition and actual credentialing acceptance remain unfinished. The
+self-hosted implementation below is optional and retained, not required for hosted sessions or
+evidence that hosted execution cannot run our packages.
 
 ## Optional Self-Hosted Development Boundary
 
@@ -162,10 +172,13 @@ workstation credential resolver. Optional local compute does not define the host
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.8.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.10.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
+The service factory validates the same profile/target using `resolveRuntimeConfig`; it does not
+require a fictional 1Password reference when the application already supplies its key. CLI/local
+`resolveConfig` still requires the explicit private credential reference and has no fallback.
 
 Deploy the reviewed artifact to protected application storage and pin its exact SHA-256 in trusted
 deployment configuration alongside source revision and lockfile provenance. The backend's local
@@ -209,12 +222,139 @@ The optional second `createSession(request, credentials)` argument carries ephem
 browser. It does not mutate the saved request or reusable launch settings. Each binding must match
 exactly one required service-origin MCP server's label, HTTPS audience and allowed-tool subset;
 preexisting profile authorization, missing/duplicate bindings or environment-origin transports
-are rejected before creation. Authorization is attached only to that session's native MCP
-transport. The owning application provisions the non-human identity, issues and revokes run grants
+are rejected before creation. Authorization is attached to that session's native MCP transport;
+the explicit hosted binding below can also deliver the same grant to runtime file tools.
+The owning application provisions the non-human identity, issues and revokes run grants
 and enforces source permissions. This package does not implement employee OAuth or mint Headstart
 credentials. The same attachment path works with hosted and retained local execution; it does not
-make a credential valid at a different MCP deployment/database. Adapter `0.8.0` pins the credential
-and dispatch/recovery contract together, so an older artifact cannot silently ignore either.
+make a credential valid at a different MCP deployment/database. Adapter `0.10.0` pins the credential,
+vault-receipt and dispatch/recovery contracts together, so an older artifact cannot silently ignore them.
+
+For hosted file tools, trusted launch settings may additionally declare:
+
+```json
+{
+  "runtimeCredentials": [
+    { "serverLabel": "headstart", "environmentVariable": "HEADSTART_MCP_AUTHORIZATION" }
+  ]
+}
+```
+
+Each label must already have an admitted native MCP binding. `SessionLaunchPort` delivers that
+same Authorization header through a per-launch OpenAI credential vault, not plaintext `env`,
+setup scripts, prompts or files. OpenAI supplies a placeholder in the hosted environment and
+substitutes the credential only on HTTPS requests to the existing MCP audience's host. The
+hosted network policy must permit that host (port 443 or 8443); this is credential delivery,
+not another source-permission policy. The runtime profile refers to the environment variable.
+Google token issuance remains a separate, explicit authority. A runtime token provider may reuse
+this protected authorization header to call an approved authentication-only issuer on that same
+host; possessing MCP access alone must not grant Google access.
+With a template, runtime credentials require explicit complete `env` and `network` overrides:
+omitted settings cannot prove collision-free names or reachable destinations. Explicit `env: {}`
+or `null` intentionally replaces template variables. Template network overrides cannot broaden
+the provider's policy; an incompatible template must be corrected by the deployment owner.
+
+This mode requires both `beforeDispatch` and `retainCredentialVault` callbacks. The owning
+application must durably save the returned non-secret `AgentCredentialVault` receipt before any
+secret is installed, then pass it back as `credentialVault` if a proven-undispatched setup resumes.
+The adapter verifies the saved target/launch/revision, vault metadata and credential names/hosts,
+reusing and updating the same vault if a credential-write acknowledgement was lost. A lost
+vault-create acknowledgement can leave an empty vault, but cannot start a session or install its
+secret. A failed receipt acknowledgement prevents credential installation. Once session dispatch
+is uncertain, use existing launch recovery; do not repeat setup or create another session.
+
+All vault and credential operations use the pinned SDK's generated methods and types, with exact
+ownership/response validation. No separate HTTP client, SDK retry policy or CLI secret-write
+command is introduced. See the official
+[vault contract](https://developers.openai.com/api/docs/guides/agents-api/tools/vaults#use-vault-secrets-for-api-requests-from-a-sandbox).
+Existing Headstart grant expiry/revocation and Stop remain authoritative. Automatic provider-vault
+garbage collection is not implemented; deleting a vault would neither revoke the original token
+nor cancel a running session. Vault updates do not rotate an already-created sandbox's credential.
+Synthetic SDK/database tests prove the handoff and recovery contract, not hosted full-document access.
+The published vault documentation does not specify the project's vault quota. Confirm capacity
+and an owner-approved retention/cleanup procedure before hosted activation; do not invent a quota
+or delete vaults belonging to other sessions.
+
+For Google reads, use the [Drive runtime's renewable token provider](../google-drive-data/README.md),
+not a service-account key in the sandbox. Local supervised ADC/file authentication remains independent
+of any backend; hosted deployment may select an optional token issuer behind the same provider port.
+The issuer keeps signing/refresh credentials outside compute and returns only short-lived read-only
+tokens. Native-vault placeholders authenticate to the issuer, not perform local Google signing.
+See [credential ownership](../../docs/reusable-data-capabilities.md#runtime-credentials-without-application-coupling).
+
+For other explicitly approved ephemeral file credentials, trusted composition may provide
+`credentialFiles: [{ path, content }]` to the operator factory; the launch profile declares only
+matching `credentialFiles: [path]`. These files enter the native hosted `environment.files` request,
+not durable launch input or receipts. Output paths, duplicate/colliding files, unsupported compute
+types and native size/count overflows are rejected before dispatch. No personal ADC or alternate
+identity is discovered. Persistent Google service-account/user credentials and private-key PEM
+material are rejected at this boundary even with an exact Google host allowlist. This is a guard
+on trusted deployment input, not a universal detector of disguised or transformed secrets.
+The factory also accepts a launch-only async resolver for these files. Resolve them at launch
+preflight and creation, not operator construction: a source credential outage must not disable
+observation, recovery or cancellation of existing sessions. A later launch can retry resolution.
+When using an environment template, supply the complete explicit `environment.files` list (or
+explicit `null`/empty list when intentionally overriding inherited files); credential injection
+will not silently replace omitted/inherited runtime inputs.
+Every credential-file launch requires `network.access: "restricted"` and a nonempty explicit
+allowlist of exact DNS hosts, even with a template. Wildcards, single-label names and IP literals
+are rejected. The approved profile must include all tool, installation and source
+endpoints needed by the workflow: for the current Google reader that includes
+`www.googleapis.com` and `docs.googleapis.com`, plus the selected token issuer,
+the bound MCP host and any other reviewed investigation/tool destinations. This is an egress control,
+not a record/field/evidence restriction; do not silently remove necessary source access.
+
+`retainCredentialProtection` must durably acknowledge the exact injected-file SHA-256 digests before
+any credential installation or session dispatch. Preserve/union these non-secret digests through
+proven-undispatched retries and rotation; existing-run controls do not reread current Google keys.
+Failure to retain those digests returns `credential-protection` before the separate
+`beforeDispatch` journal callback runs.
+The shared `workflow-contracts` credential-material guard checks exact copies and unambiguous private
+key markers in original bytes and structured function input/output. Structured string values also
+check one canonical base64 wrapper; the binary-byte guard does not decode base64.
+Applications apply it before persistence and retention, not merely before reviewer display. It does
+not redact ordinary sensitive business evidence, and it is not an exhaustive transformed-secret or
+prompt-injection detector. Keep the network and identity boundaries as independent protections.
+
+Ephemeral file secrets and issued Google tokens are visible to sandbox code, unlike vault
+placeholders. The Google issuer fixes the approved identity and `drive.readonly` scope; provide
+Viewer visibility to all required evidence. Stop prevents further issuance through the owning
+authority but does not revoke a token already issued by Google; its actual expiry bounds that
+exposure. Identity approval, rotation and hosted-environment lifecycle remain explicit deployment
+responsibilities. Keep secret contents out of the repository, profile, output directory,
+model input, logs and application journal.
+The pinned SDK's session-read contract returns input-file metadata, excluding inline contents;
+`--include-content` does not add fields omitted by that API. This is documented/schema evidence,
+not a live-provider guarantee. A sufficiently privileged project key can still control a session;
+never treat metadata-only readback as protection from that authority.
+
+### Ended-turn file handoff
+
+`AgentArtifactPort` reads exact immutable output artifacts through the official SDK. The adapter
+first verifies that the originating root belongs to the bound workflow/session and has completed,
+then paginates artifact metadata and selects the exact session/turn/path. It bounds actual bytes,
+including stalled bodies. It never fetches arbitrary URLs or backend paths.
+A successful complete listing without the requested completed-turn output is an invalid reference,
+not an indefinite network retry. The application saves correction feedback so a corrected request
+can proceed; transport failures remain retryable.
+Failed/cancelled roots and non-root references are permanent identity failures. Actual bytes above
+the delivery limit are a permanent capacity failure; bytes above the declared size but within that
+limit are a permanent artifact-metadata mismatch. Pending turns and interrupted/truncated transport
+remain retryable. Runtime target or missing-transport configuration errors require operator setup
+repair and do not produce agent file-reference correction feedback. The official guide
+matches completed turn plus path and raises absence after listing; it does not document eventual
+listing lag or fallback to an earlier turn's unchanged file. Likewise the content API is a binary
+download, not a documented signed-URL redirect. The actual shared-client tests preserve
+`redirect: "error"`; never forward the application key to an unverified redirect destination.
+If hosted acceptance reveals a different provider behavior, capture sanitized evidence and revise
+that boundary explicitly rather than weakening provenance or guessing a retry window.
+
+OpenAI publishes output artifacts only after a turn completes. A function cannot synchronously
+wait for its own turn's files. The credentialing queue function therefore returns truthful queued
+admission; the agent finishes and backend's existing durable worker retains files and validates the
+package afterward, without new inference. Exact-byte/digest/lineage verification and current case
+authority remain in the consuming application; parsing and interpretation stay in this runtime.
+See [OpenAI's file lifecycle](https://developers.openai.com/api/docs/guides/agents-api/environments/files).
 
 Call `preflightLaunch(request, descriptors)` before issuing a run credential. Descriptors contain
 the intended MCP label, audience and tools, never authorization. This validates the same definition,

@@ -92,7 +92,7 @@ function setup(): {
   };
 }
 describe('application session launch', () => {
-  it.each(['self_hosted', 'none'])(
+  it.each(['self_hosted', 'none', 'openai_hosted'])(
     'attaches per-run service credentials without mutating shared settings (%s)',
     async (environment) => {
       const { platform, settings } = setup();
@@ -111,7 +111,18 @@ describe('application session launch', () => {
       };
       const configured = {
         ...settings,
-        environment: environment === 'none' ? { type: 'none' } : settings.environment,
+        environment:
+          environment === 'self_hosted'
+            ? settings.environment
+            : environment === 'none'
+              ? { type: 'none' }
+              : {
+                  type: 'openai_hosted',
+                  packages: { npm: ['pnpm@9.15.0'] },
+                  env: { HEADSTART_TOOLS_ROOT: '/workspace/tools' },
+                  files: [{ type: 'inline', path: '/workspace/config.json', data: 'e30=' }],
+                  setup_commands: [{ command: 'node --version' }],
+                },
         mcpServers: [server, referenceServer],
       };
       const port = new SessionLaunchPort(
@@ -120,7 +131,7 @@ describe('application session launch', () => {
         configured,
         Date.now() + 60000,
         ['publish'],
-        { ensure: vi.fn(), stop: vi.fn() }
+        environment === 'self_hosted' ? { ensure: vi.fn(), stop: vi.fn() } : undefined
       );
       const credential = {
         serverLabel: 'source',
@@ -140,6 +151,7 @@ describe('application session launch', () => {
       const action = actionSchema.parse(platform.apply.mock.calls[0]?.[0]);
       if (action.operation !== 'sessions.create' || !('agent' in action.body))
         throw new Error('Expected inline session');
+      expect(action.body.environment).toEqual(configured.environment);
       expect(action.body.agent.tools).toContainEqual({
         ...server,
         transport: { ...server.transport, authorization: credential.authorization },
