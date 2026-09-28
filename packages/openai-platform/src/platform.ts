@@ -278,6 +278,22 @@ export class OpenAIPlatform {
         return agents.sessions.turns.retrieve(request.turnId, { session_id: request.id });
       case 'sessions.items':
         return pageData(await agents.sessions.items.list(request.id, request.query));
+      case 'sessions.subagents':
+        return pageData(await agents.sessions.subagents.list(request.id, request.query));
+      case 'sessions.subagent.turns':
+        return pageData(
+          await agents.sessions.subagents.turns.list(request.subagentId, {
+            session_id: request.id,
+            ...request.query,
+          })
+        );
+      case 'sessions.subagent.items':
+        return pageData(
+          await agents.sessions.subagents.items.list(request.subagentId, {
+            session_id: request.id,
+            ...request.query,
+          })
+        );
       case 'templates.list':
         return pageData(await agents.environments.templates.list(request.query));
       case 'templates.get':

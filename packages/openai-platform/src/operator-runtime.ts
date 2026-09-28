@@ -20,10 +20,13 @@ import type {
   AgentArtifactRequest,
   AgentArtifact,
   AgentHostedCredentialFiles,
+  AgentConversationManifest,
+  AgentConversationPart,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
 import type { Target } from './config.js';
+import { exportConversation, deleteConversation } from './conversation-archive.js';
 import { HostedArtifactError } from './hosted-artifact-error.js';
 import type { Action } from './operations.js';
 import { operatorHistory } from './operator-history.js';
@@ -104,6 +107,30 @@ export class OperatorRuntimePort {
       this.executor,
       this.credentialFiles
     );
+  }
+  async exportConversation(
+    binding: OperatorBinding,
+    retain: (part: AgentConversationPart) => Promise<void>
+  ): Promise<AgentConversationManifest> {
+    this.requireOpen();
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
+    const manifest = await exportConversation(this.platform, binding, async (part) => {
+      this.requireOpen();
+      await retain(part);
+    });
+    this.requireOpen();
+    return manifest;
+  }
+  async deleteConversation(
+    archive: AgentConversationManifest,
+    beforeDispatch: () => Promise<void>
+  ): Promise<{ status: 'deleted' | 'absent' }> {
+    this.requireOpen();
+    if (archive.binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
+    return deleteConversation(this.platform, this.target, archive, async () => {
+      this.requireOpen();
+      await beforeDispatch();
+    });
   }
   async artifactTurnStatus(
     binding: OperatorBinding,

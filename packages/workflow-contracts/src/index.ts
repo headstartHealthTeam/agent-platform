@@ -55,6 +55,11 @@ export type {
 } from './launch.js';
 
 export type {
+  AgentConversationPart,
+  AgentConversationManifest,
+  AgentConversationPort,
+} from './conversation.js';
+export type {
   OperatorBinding,
   OperatorCommand,
   OperatorDelivery,

@@ -185,7 +185,7 @@ workstation credential resolver. Optional local compute does not define the host
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.11.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.12.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
@@ -216,6 +216,10 @@ including `client.beta.agents`; it is not the separate Agents SDK orchestration 
 
 ### Application functions and normal application launch
 
+Full saved-resource export and guarded deletion use `AgentConversationPort`, separate from the
+operator feed. See [conversation archives](../../docs/conversation-archives.md) for pagination,
+subagent history, exact manifest verification, portable retention sinks and owner-controlled cleanup.
+
 `pendingFunctions` / `completeFunction` share the verified session/root chain with operator
 observation. Only application-registered names are returned; `ask_operator` remains human-only.
 Each result binds to the exact currently pending call and requires the same bounded inference
@@ -240,7 +244,7 @@ the explicit hosted binding below can also deliver the same grant to runtime fil
 The owning application provisions the non-human identity, issues and revokes run grants
 and enforces source permissions. This package does not implement employee OAuth or mint Headstart
 credentials. The same attachment path works with hosted and retained local execution; it does not
-make a credential valid at a different MCP deployment/database. Adapter `0.11.0` pins the credential,
+make a credential valid at a different MCP deployment/database. The current adapter pins the credential,
 vault-receipt and dispatch/recovery contracts together, so an older artifact cannot silently ignore them.
 
 For hosted file tools, trusted launch settings may additionally declare:

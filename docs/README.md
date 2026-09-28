@@ -24,6 +24,10 @@ has not worked in this repository before.
 
 ## Choose The Smallest Durable Shape
 
+For full provider conversation retention and governed cleanup, see
+[Conversation archives](conversation-archives.md). The portable provider export is separate from
+the concise operator feed and from application-owned storage, access and retention policy.
+
 For hosted Codex planning, read the [Agents API compatibility assessment](agents-api-compatibility.md)
 alongside the architecture and roadmap. It maps current code to the proposed adapter, preserves the
 local-to-managed authoring path and separates documented capabilities from live acceptance questions.
