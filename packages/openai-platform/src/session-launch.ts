@@ -16,6 +16,7 @@ import type {
 import { credentialContentSha256 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
+import { bindCapabilityFiles } from './capability-files.js';
 import type { Target } from './config.js';
 import { bindHostedCredentialFiles, credentialFilePaths } from './hosted-credential-files.js';
 import { runtimeCredentialBindings } from './hosted-credentials.js';
@@ -293,6 +294,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
       throw new Error('Only native MCP source bindings are permitted');
     if (action.body.environment.type === 'self_hosted' && !this.executor)
       throw new Error('Self-hosted executor is not configured');
+    bindCapabilityFiles(action, request.definition.capabilities);
     this.runtimeBindings(settings, bindings);
     const files =
       typeof this.credentialFiles === 'function'

@@ -92,6 +92,35 @@ function setup(): {
   };
 }
 describe('application session launch', () => {
+  it('carries definition-owned skill files through the actual create boundary', async () => {
+    const { platform, settings } = setup();
+    const port = new SessionLaunchPort(
+      platform,
+      target,
+      { ...settings, environment: { type: 'openai_hosted' } },
+      Date.now() + 60000,
+      ['publish']
+    );
+    const capabilities = {
+      directories: ['/workspace/skills'],
+      files: [{ path: '/workspace/skills/example/SKILL.md', data: 'e30=' }],
+    };
+    const launch = { ...request, definition: { ...request.definition, capabilities } };
+    await port.preflightLaunch(launch);
+    expect(platform.apply).not.toHaveBeenCalled();
+    expect(await port.createSession(launch, undefined, createOptions)).toMatchObject({
+      status: 'created',
+    });
+    expect(platform.apply.mock.calls[0]?.[0]).toMatchObject({
+      body: {
+        environment: {
+          capability_directories: capabilities.directories,
+          files: [{ type: 'inline', ...capabilities.files[0] }],
+        },
+        agent: { instructions: request.definition.instructions, tools: request.definition.tools },
+      },
+    });
+  });
   it.each(['self_hosted', 'none', 'openai_hosted'])(
     'attaches per-run service credentials without mutating shared settings (%s)',
     async (environment) => {

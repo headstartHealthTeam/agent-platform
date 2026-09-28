@@ -21,9 +21,26 @@ complete real-source correction loop remain unverified; this decision changes no
 
 The build also emits `dist/preparation-definition.json`: the canonical skill, the
 [connected entry prompt](prompts/connected.md), both public input schemas, proposal schema and
-five function declarations. Its workflow revision hashes the complete definition. The artifact
+five function declarations. The instructions are a short mandatory entry, not an inlined manual.
+Its `capabilities` field carries exact canonical skill/supporting files at repository-relative
+locations under `/workspace/headstart-workflow`, with `/workspace/headstart-workflow/skills`
+registered for discovery. Schemas and connected instructions remain readable files. Declared skill
+dependencies are collected by the shared workflow runtime; unrelated skills and grading oracles
+are not shipped. Its workflow revision hashes the complete definition, including every file byte.
+The artifact
 contains no fixtures, expected answers, credentials or private case data. Deploy/pin reviewed bytes
 alongside the validator; do not maintain a second instruction copy in backend.
+
+Operator adapter `0.11.0` installs these files through normal OpenAI-hosted input-file setup and
+registers `capability_directories`. Deploy the matching backend loader and freshly pinned definition
+with that operator; older operators must not silently ignore the file contract. With an environment
+template, explicitly supply the complete `files` and `capability_directories` overrides so inherited
+tools/profiles cannot be silently dropped. Source files are not output evidence or credentials.
+Desktop authoring continues to use the identical canonical skill, prompt and schemas from the
+checkout, with independent tool/authentication bindings. This increment does not add file
+provisioning to the optional Docker executor; it rejects a packaged-file launch there before
+dispatch rather than pretending the files exist. Existing definitions without packaged files remain
+supported. A future self-hosted adoption must materialize and verify those same files explicitly.
 
 `get_credentialing_review_context` obtains the server-bound case, exact workflow/route pins,
 current revision, the complete saved package and saved feedback. `publish_credentialing_review_package` submits complete

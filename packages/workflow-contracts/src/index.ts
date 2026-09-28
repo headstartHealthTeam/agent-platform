@@ -35,6 +35,7 @@ export type {
   AgentArtifactFailureCode,
 } from './artifacts.js';
 export type {
+  AgentCapabilityFiles,
   AgentLaunchDefinition,
   AgentLaunchRequest,
   AgentSessionCredential,

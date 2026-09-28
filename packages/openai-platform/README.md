@@ -20,7 +20,7 @@ to IDs/statuses and exposes content only through `--include-content`.
 
 Follow the [canonical connected-test pattern](../../docs/agent-workflow-development.md#hosted-first-connected-execution):
 normal local applications use OpenAI-hosted compute by default. Inline hosted sessions and reusable
-templates accept the official `packages`, `files`, `setup_commands` and non-secret `env` fields,
+templates accept the official `packages`, `files`, `setup_commands`, `capability_directories` and non-secret `env` fields,
 alongside existing template/network selection. Files use a Files API ID or standard-base64 content
 at an absolute `/workspace/` destination. Omitted setup fields retain template inheritance; explicit
 null or empty fields are passed through. The adapter preserves ordered commands and package versions
@@ -34,6 +34,19 @@ owns runtime-reserved variables, setup ordering and provider limits. Source-cred
 deployed application composition and actual credentialing acceptance remain unfinished. The
 self-hosted implementation below is optional and retained, not required for hosted sessions or
 evidence that hosted execution cannot run our packages.
+
+Reviewed launch definitions may carry `capabilities`: exact non-secret source files plus their
+skill-discovery directories. The shared adapter installs them through hosted input files without
+changing the supplied function/MCP tools or putting the full instructions in the agent prompt.
+Paths, duplicates, file/directory collisions and provider capacity are checked before dispatch.
+With a template, explicitly supply complete `files` and `capability_directories` overrides;
+the adapter must not discard unknown inherited setup. Other configured files/directories are
+preserved, and credential files are bound separately afterward. Pin the complete definition bytes
+and matching operator version. The [official skill contract](https://developers.openai.com/api/docs/guides/tools-skills#agents-api)
+uses directory discovery for Agents API, not Responses API skill attachments.
+Automatic capability-file installation is hosted-only; it does not claim that an optional
+self-hosted environment already contains those files. Desktop use reads the same canonical source
+directly. Neither configuration tests nor source packaging establish live agent discovery.
 
 ## Optional Self-Hosted Development Boundary
 
@@ -172,7 +185,7 @@ workstation credential resolver. Optional local compute does not define the host
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.10.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.11.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
@@ -227,7 +240,7 @@ the explicit hosted binding below can also deliver the same grant to runtime fil
 The owning application provisions the non-human identity, issues and revokes run grants
 and enforces source permissions. This package does not implement employee OAuth or mint Headstart
 credentials. The same attachment path works with hosted and retained local execution; it does not
-make a credential valid at a different MCP deployment/database. Adapter `0.10.0` pins the credential,
+make a credential valid at a different MCP deployment/database. Adapter `0.11.0` pins the credential,
 vault-receipt and dispatch/recovery contracts together, so an older artifact cannot silently ignore them.
 
 For hosted file tools, trusted launch settings may additionally declare:

@@ -29,7 +29,7 @@ the backend's explicit local composition. See its [artifact boundary](../package
 The protected deployment pin and source/lockfile provenance must travel together. This establishes
 dependency-independent local distribution, not automated package publication or production release.
 
-Launch contracts also live in `workflow-contracts`. Operator adapter `0.10.0` retains the change
+Launch contracts also live in `workflow-contracts`. Operator adapter `0.11.0` retains the change
 creation from a receipt-or-error promise to `created` / proven `not-attempted` / `unknown` outcomes.
 Its read-only descriptor preflight precedes issue-once credentials and pins the expected project;
 the dispatch callback lets backend commit its attempt journal after validation and immediately

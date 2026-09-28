@@ -4,6 +4,7 @@ import { posix } from 'node:path';
 import type { AgentHostedCredentialFile } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
+import { validateHostedInputFiles } from './hosted-setup.js';
 import type { Action } from './operations.js';
 
 const privatePath = z
@@ -90,14 +91,6 @@ export function bindHostedCredentialFiles(
       data: Buffer.from(file.content).toString('base64'),
     })),
   ];
-  let inlineBytes = 0;
-  for (const file of combined) {
-    if (file.type !== 'inline') continue;
-    const size = Buffer.byteLength(file.data, 'base64');
-    if (size > 5 * 1024 * 1024) throw new Error('Hosted input-file capacity exceeded');
-    inlineBytes += size;
-  }
-  if (combined.length > 50 || inlineBytes > 10 * 1024 * 1024)
-    throw new Error('Hosted input-file capacity exceeded');
+  validateHostedInputFiles(combined);
   environment.files = combined;
 }

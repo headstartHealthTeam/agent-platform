@@ -127,6 +127,20 @@ describe('ephemeral hosted credential files', () => {
       ...settings,
       environment: { type: 'openai_hosted', files: [{ type: 'inline', path, data: 'eA==' }] },
     },
+    {
+      ...settings,
+      environment: {
+        type: 'openai_hosted',
+        files: [{ type: 'inline', path: '/workspace/.credentials', data: 'eA==' }],
+      },
+    },
+    {
+      ...settings,
+      environment: {
+        type: 'openai_hosted',
+        files: [{ type: 'inline', path: `${path}/SKILL.md`, data: 'eA==' }],
+      },
+    },
   ])('rejects mismatched or conflicting configuration before dispatch', async (profile) => {
     const { port, platform } = setup(profile);
     expect(

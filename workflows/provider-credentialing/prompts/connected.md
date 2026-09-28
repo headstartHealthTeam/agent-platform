@@ -1,6 +1,6 @@
 # Application-connected credentialing preparation
 
-Apply the canonical skill below. Your session is dedicated to one server-bound credentialing
+Apply the canonical `headstart-provider-credentialing` skill. Your session is dedicated to one server-bound credentialing
 case. Begin by calling `get_credentialing_review_context`; do not choose another case. Use the
 returned work scope, data mode, case revision, workflow revision and route revision throughout.
 The initial message identifies the case but is not a source of verified provider facts.
@@ -35,7 +35,9 @@ the evidence reference. Operator guidance can arrive independently of that quest
 context, not approval, verified source evidence or an exact answer to another pending question.
 If the function service fails, say the question was not delivered; do not assume a human answered.
 
-Build an evidence snapshot and proposal conforming to the schemas below. Use input 0.3.0 with
+Build an evidence snapshot and proposal conforming to the complete schema files in `../schemas/`
+relative to this prompt: `production-read-input.schema.json`, `input.schema.json` and
+`output.schema.json`. Read the applicable schemas before constructing the package. Use input 0.3.0 with
 dataMode production-read for actual authorized source reads, input 0.2.0 for rich synthetic data,
 and proposal 0.3.0 for either. Keep scope, repeated records, qualified dates, contradictions,
 source versions and human stops intact. Schema-valid does not mean factually verified.

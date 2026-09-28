@@ -200,7 +200,7 @@ const environment = z.union([
     })),
 ]);
 // Keep the supervised surface explicit: use one saved agent OR one inline configuration.
-// Overrides and capability-directory mounts are not accepted here. Vault references contain no
+// Agent overrides are not accepted here. Vault references contain no
 // secrets; managed launches separately provision/retain the run-specific credential vault.
 const sessionAgent = z
   .object({

@@ -1,9 +1,18 @@
 import type { AgentCredentialProtection } from './credential-protection.js';
 import type { OperatorBinding } from './operator.js';
 
+/** Reviewed non-secret source files, not case evidence or credentials. Paths are absolute sandbox
+ * paths; data is base64 of the exact source bytes. The definition revision covers the entire set.
+ */
+export interface AgentCapabilityFiles {
+  directories: string[];
+  files: { path: string; data: string }[];
+}
+
 /** Trusted application deployment input, never supplied by an operator or model. */
 export interface AgentLaunchDefinition {
   instructions: string;
+  capabilities?: AgentCapabilityFiles;
   tools: {
     type: 'function';
     name: string;

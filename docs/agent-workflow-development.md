@@ -43,6 +43,12 @@ remove the fallback code, clean up its resources or rotate its credentials becau
 
 - One reviewed Agent Platform source owns instructions, tool packages, schemas and evaluations.
   Environment setup supplies those dependencies without separate local/cloud prompt copies.
+- Package relevant canonical skills and supporting files as discoverable directories. Keep a short
+  mandatory entry instruction; let the agent read references and use the complete relevant toolkit
+  as needed. Do not inline entire manuals/schemas into every agent definition or turn discovery
+  into a rigid sequence. Hash all supplied content, not only the entry prompt. Credentialing's
+  [connected definition](../workflows/provider-credentialing/README.md#connected-preparation-definition)
+  is the implementation reference; live discovery still needs hosted acceptance.
 - Agents API supplies session execution and hosted compute; backend owns application permissions,
   run correlation, messages, reviews, durable artifacts and audit. Admin remains the operator UI.
   Reuse the existing provider adapter and application integration, not another control plane.
