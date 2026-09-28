@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { bindCapabilityFiles } from './capability-files.js';
 import type { Target } from './config.js';
 import { bindHostedCredentialFiles, credentialFilePaths } from './hosted-credential-files.js';
+import { exactCredentialHosts } from './hosted-credential-network.js';
 import { runtimeCredentialBindings } from './hosted-credentials.js';
 import { actionSchema, type Action } from './operations.js';
 import {
@@ -329,6 +330,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
       throw new Error(
         'Template runtime credentials require explicit environment and network settings'
       );
+    const allowedHosts = exactCredentialHosts(environment.network);
     return settings.runtimeCredentials.map((binding) => {
       const credential = credentials?.find((value) => value.serverLabel === binding.serverLabel);
       if (!credential || environment.env?.[binding.environmentVariable] !== undefined)
@@ -337,13 +339,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
       if (
         url.protocol !== 'https:' ||
         (url.port !== '' && url.port !== '443' && url.port !== '8443') ||
-        environment.network?.access === 'disabled' ||
-        (environment.network?.access === 'restricted' &&
-          !environment.network.allowed_domains?.some(
-            (domain) =>
-              domain === url.hostname ||
-              (domain.startsWith('*.') && url.hostname.endsWith(domain.slice(1)))
-          ))
+        !allowedHosts.includes(url.hostname)
       )
         throw new Error('Runtime credential destination unavailable');
       return {

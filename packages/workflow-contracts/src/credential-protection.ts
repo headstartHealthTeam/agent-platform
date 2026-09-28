@@ -10,17 +10,20 @@ export function credentialContentSha256(value: Uint8Array | string): string {
 }
 
 const privateKeyMarker = /-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED )?PRIVATE KEY-----/;
+const googleAccessTokenMarker = /\bya29\.[A-Za-z0-9._~-]{12,}/;
 
-/** Exact credential copies and unambiguous private keys, not a business-data redactor.
+/** Exact credential copies and recognizable key/token formats, not a business-data redactor.
  * Encoded/transformed/excerpted secrets are not exhaustively detectable by this guard.
  */
 export function containsCredentialBytes(
   value: Uint8Array | string,
   protection?: AgentCredentialProtection
 ): boolean {
+  const text = typeof value === 'string' ? value : Buffer.from(value).toString('utf8');
   return (
     protection?.contentSha256.includes(credentialContentSha256(value)) === true ||
-    privateKeyMarker.test(typeof value === 'string' ? value : Buffer.from(value).toString('utf8'))
+    privateKeyMarker.test(text) ||
+    googleAccessTokenMarker.test(text)
   );
 }
 

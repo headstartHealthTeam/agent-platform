@@ -38,9 +38,16 @@ describe('credential material boundary', () => {
       missing: null,
       bytes: Buffer.from('complete original evidence'),
       encoding: Buffer.from('ordinary encoded evidence').toString('base64'),
+      credentialingStatus: 'Full CV, license and application history; ya29 is not a token.',
     };
     expect(containsCredentialMaterial(evidence, policy)).toBe(false);
     expect(containsCredentialBytes(Buffer.from('ordinary evidence'), policy)).toBe(false);
+  });
+  it('detects newly issued Google access tokens without retaining their values or hashes', () => {
+    const token = `ya29.${'invented-only-'.repeat(4)}`;
+    expect(containsCredentialBytes(Buffer.from(`before ${token} after`))).toBe(true);
+    expect(containsCredentialMaterial({ result: { access_token: token } })).toBe(true);
+    expect(containsCredentialMaterial(Buffer.from(token).toString('base64'))).toBe(true);
   });
   it('handles deeply nested and cyclic structured values without recursion', () => {
     const root: Record<string, unknown> = {};

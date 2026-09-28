@@ -1,9 +1,9 @@
-import { isIP } from 'node:net';
 import { posix } from 'node:path';
 
 import type { AgentHostedCredentialFile } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
+import { exactCredentialHosts } from './hosted-credential-network.js';
 import { validateHostedInputFiles } from './hosted-setup.js';
 import type { Action } from './operations.js';
 
@@ -23,26 +23,30 @@ export const credentialFilePaths = z.array(privatePath).max(50);
 const filesSchema = z
   .array(z.object({ path: privatePath, content: z.string().min(1) }).strict())
   .max(50);
-const exactHostname = z.hostname().refine((domain) => {
-  if (!domain.includes('.') || domain.includes('*') || domain.endsWith('.')) return false;
-  // URL normalization also recognizes abbreviated, octal and hexadecimal IPv4 literals.
-  try {
-    return isIP(new URL(`https://${domain}`).hostname) === 0;
-  } catch {
-    return false;
-  }
-});
-
 function persistentGoogleCredential(content: string): boolean {
   if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(content)) return true;
   try {
     const value: unknown = JSON.parse(content);
-    if (value === null || typeof value !== 'object') return false;
-    return (
-      'private_key' in value ||
-      'refresh_token' in value ||
-      ('type' in value && ['service_account', 'authorized_user'].includes(String(value.type)))
-    );
+    const pending: unknown[] = [value];
+    while (pending.length) {
+      const entry = pending.pop();
+      if (entry === null || typeof entry !== 'object') continue;
+      if (
+        'private_key' in entry ||
+        'refresh_token' in entry ||
+        ('type' in entry &&
+          [
+            'service_account',
+            'authorized_user',
+            'impersonated_service_account',
+            'external_account',
+          ].includes(String(entry.type)))
+      )
+        return true;
+      const values: unknown[] = Object.values(entry);
+      for (const child of values) pending.push(child);
+    }
+    return false;
   } catch {
     return false;
   }
@@ -72,12 +76,7 @@ export function bindHostedCredentialFiles(
   const environment = action.body.environment;
   if (environment.type !== 'openai_hosted')
     throw new Error('Credential files require a hosted environment');
-  if (
-    environment.network?.access !== 'restricted' ||
-    !environment.network.allowed_domains?.length ||
-    environment.network.allowed_domains.some((domain) => !exactHostname.safeParse(domain).success)
-  )
-    throw new Error('Credential files require an explicit restricted exact-host allowlist');
+  exactCredentialHosts(environment.network);
   if (environment.environment_template_id && environment.files === undefined)
     throw new Error('Template credential files require an explicit complete input-file list');
   const existing = environment.files ?? [];

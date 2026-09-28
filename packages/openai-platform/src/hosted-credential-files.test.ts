@@ -82,6 +82,10 @@ describe('ephemeral hosted credential files', () => {
     { type: 'authorized_user', refresh_token: 'synthetic-refresh-token' },
     { private_key: 'synthetic-private-key' },
     { refresh_token: 'synthetic-refresh-token' },
+    { type: 'impersonated_service_account', source_credentials: { refresh_token: 'synthetic' } },
+    { type: 'external_account', credential_source: { file: 'synthetic' } },
+    [{ source_credentials: { refresh_token: 'synthetic' } }],
+    { nested: [{ private_key: 'synthetic' }] },
   ])('refuses persistent Google credentials even on exact Google hosts: %j', async (value) => {
     const { port, platform } = setup(settings, [{ path, content: JSON.stringify(value) }]);
     await expect(port.preflightLaunch(request)).rejects.toThrow('preflight failed');

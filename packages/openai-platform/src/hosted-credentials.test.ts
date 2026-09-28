@@ -342,6 +342,14 @@ describe('hosted run credential delivery through the official SDK transport', ()
   );
   it.each([
     { environment: { type: 'none' } },
+    { environment: { type: 'openai_hosted' } },
+    { environment: { type: 'openai_hosted', network: { access: 'enabled' } } },
+    ...['*.example.com', '*.com', 'localhost', '127.1', 'mcp.example.com.'].map((host) => ({
+      environment: {
+        type: 'openai_hosted',
+        network: { access: 'restricted', allowed_domains: ['mcp.example.com', host] },
+      },
+    })),
     { environment: { type: 'openai_hosted', network: { access: 'disabled' } } },
     {
       environment: {

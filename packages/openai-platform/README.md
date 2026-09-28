@@ -256,12 +256,17 @@ For hosted file tools, trusted launch settings may additionally declare:
 Each label must already have an admitted native MCP binding. `SessionLaunchPort` delivers that
 same Authorization header through a per-launch OpenAI credential vault, not plaintext `env`,
 setup scripts, prompts or files. OpenAI supplies a placeholder in the hosted environment and
-substitutes the credential only on HTTPS requests to the existing MCP audience's host. The
-hosted network policy must permit that host (port 443 or 8443); this is credential delivery,
+substitutes the credential in HTTPS request headers to the existing MCP audience's host. The
+hosted network policy must use a restricted exact-host allowlist including that host (port 443
+or 8443), just as credential-file launches do; open or wildcard network settings are rejected.
+This is credential delivery,
 not another source-permission policy. The runtime profile refers to the environment variable.
 Google token issuance remains a separate, explicit authority. A runtime token provider may reuse
 this protected authorization header to call an approved authentication-only issuer on that same
-host; possessing MCP access alone must not grant Google access.
+host; possessing MCP access alone must not grant Google access. The issuer URL belongs in that
+reviewed runtime profile and must use the same host. The documented [vault request pattern](https://developers.openai.com/api/docs/guides/agents-api/tools/vaults#call-the-api-from-the-sandbox)
+passes the unchanged placeholder in an HTTPS header; this implementation does not rely on body
+substitution or local signing.
 With a template, runtime credentials require explicit complete `env` and `network` overrides:
 omitted settings cannot prove collision-free names or reachable destinations. Explicit `env: {}`
 or `null` intentionally replaces template variables. Template network overrides cannot broaden
@@ -300,9 +305,12 @@ For other explicitly approved ephemeral file credentials, trusted composition ma
 matching `credentialFiles: [path]`. These files enter the native hosted `environment.files` request,
 not durable launch input or receipts. Output paths, duplicate/colliding files, unsupported compute
 types and native size/count overflows are rejected before dispatch. No personal ADC or alternate
-identity is discovered. Persistent Google service-account/user credentials and private-key PEM
-material are rejected at this boundary even with an exact Google host allowlist. This is a guard
-on trusted deployment input, not a universal detector of disguised or transformed secrets.
+identity is discovered. Persistent Google service-account/user, impersonation and external-account
+credentials, nested/array-wrapped signing or refresh material, and private-key PEM material are
+rejected at this boundary even with an exact Google host allowlist. This is a guard on the explicit
+credential-file channel, not a universal detector of disguised or transformed secrets. Reviewed
+source files, non-secret environment settings and setup commands are trusted deployment code;
+never put authentication material there. They are not a second supported credential channel.
 The factory also accepts a launch-only async resolver for these files. Resolve them at launch
 preflight and creation, not operator construction: a source credential outage must not disable
 observation, recovery or cancellation of existing sessions. A later launch can retry resolution.
@@ -336,6 +344,14 @@ authority but does not revoke a token already issued by Google; its actual expir
 exposure. Identity approval, rotation and hosted-environment lifecycle remain explicit deployment
 responsibilities. Keep secret contents out of the repository, profile, output directory,
 model input, logs and application journal.
+Allowed Google hosts still expose upload/token endpoints (including Drive and Storage uploads on
+`www.googleapis.com`); exact-host restrictions are not operation-level filtering or universal
+exfiltration prevention. Do not silently restrict the approved business evidence to a case folder
+to compensate. Approve the evidence identity and required source visibility separately.
+The endpoint provider caches within its process; independent CLI calls renew through the issuer
+again. They must remain isolated by authenticated grant in issuer rate limiting, not share an
+anonymous egress-IP bucket. An issuance refusal is a sanitized failure, not proof that Stop was the
+reason; local ADC remains independent of this optional issuer.
 The pinned SDK's session-read contract returns input-file metadata, excluding inline contents;
 `--include-content` does not add fields omitted by that API. This is documented/schema evidence,
 not a live-provider guarantee. A sufficiently privileged project key can still control a session;
