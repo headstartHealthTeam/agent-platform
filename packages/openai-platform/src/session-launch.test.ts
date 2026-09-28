@@ -92,7 +92,36 @@ function setup(): {
   };
 }
 describe('application session launch', () => {
-  it.each(['self_hosted', 'none'])(
+  it('carries definition-owned skill files through the actual create boundary', async () => {
+    const { platform, settings } = setup();
+    const port = new SessionLaunchPort(
+      platform,
+      target,
+      { ...settings, environment: { type: 'openai_hosted' } },
+      Date.now() + 60000,
+      ['publish']
+    );
+    const capabilities = {
+      directories: ['/workspace/skills'],
+      files: [{ path: '/workspace/skills/example/SKILL.md', data: 'e30=' }],
+    };
+    const launch = { ...request, definition: { ...request.definition, capabilities } };
+    await port.preflightLaunch(launch);
+    expect(platform.apply).not.toHaveBeenCalled();
+    expect(await port.createSession(launch, undefined, createOptions)).toMatchObject({
+      status: 'created',
+    });
+    expect(platform.apply.mock.calls[0]?.[0]).toMatchObject({
+      body: {
+        environment: {
+          capability_directories: capabilities.directories,
+          files: [{ type: 'inline', ...capabilities.files[0] }],
+        },
+        agent: { instructions: request.definition.instructions, tools: request.definition.tools },
+      },
+    });
+  });
+  it.each(['self_hosted', 'none', 'openai_hosted'])(
     'attaches per-run service credentials without mutating shared settings (%s)',
     async (environment) => {
       const { platform, settings } = setup();
@@ -111,7 +140,18 @@ describe('application session launch', () => {
       };
       const configured = {
         ...settings,
-        environment: environment === 'none' ? { type: 'none' } : settings.environment,
+        environment:
+          environment === 'self_hosted'
+            ? settings.environment
+            : environment === 'none'
+              ? { type: 'none' }
+              : {
+                  type: 'openai_hosted',
+                  packages: { npm: ['pnpm@9.15.0'] },
+                  env: { HEADSTART_TOOLS_ROOT: '/workspace/tools' },
+                  files: [{ type: 'inline', path: '/workspace/config.json', data: 'e30=' }],
+                  setup_commands: [{ command: 'node --version' }],
+                },
         mcpServers: [server, referenceServer],
       };
       const port = new SessionLaunchPort(
@@ -120,7 +160,7 @@ describe('application session launch', () => {
         configured,
         Date.now() + 60000,
         ['publish'],
-        { ensure: vi.fn(), stop: vi.fn() }
+        environment === 'self_hosted' ? { ensure: vi.fn(), stop: vi.fn() } : undefined
       );
       const credential = {
         serverLabel: 'source',
@@ -140,6 +180,7 @@ describe('application session launch', () => {
       const action = actionSchema.parse(platform.apply.mock.calls[0]?.[0]);
       if (action.operation !== 'sessions.create' || !('agent' in action.body))
         throw new Error('Expected inline session');
+      expect(action.body.environment).toEqual(configured.environment);
       expect(action.body.agent.tools).toContainEqual({
         ...server,
         transport: { ...server.transport, authorization: credential.authorization },

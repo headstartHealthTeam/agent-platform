@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 
+import type { AgentHostedCredentialFiles } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
 import { credentialSchema, resolveConfig } from './config.js';
@@ -16,6 +17,7 @@ export async function createLocalOperatorRuntimePort(options: {
   applicationFunctions?: string[];
   launchSettings?: unknown;
   executorSettings?: unknown;
+  credentialFiles?: AgentHostedCredentialFiles;
 }): Promise<OperatorRuntimePort> {
   const config = resolveConfig(JSON.parse(await readFile(options.configPath, 'utf8')));
   const key = await readCredential(config.credential);
@@ -55,6 +57,7 @@ export async function createLocalOperatorRuntimePort(options: {
     expiry,
     options.applicationFunctions,
     options.launchSettings,
-    executor
+    executor,
+    options.credentialFiles
   );
 }

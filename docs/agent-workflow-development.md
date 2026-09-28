@@ -43,6 +43,12 @@ remove the fallback code, clean up its resources or rotate its credentials becau
 
 - One reviewed Agent Platform source owns instructions, tool packages, schemas and evaluations.
   Environment setup supplies those dependencies without separate local/cloud prompt copies.
+- Package relevant canonical skills and supporting files as discoverable directories. Keep a short
+  mandatory entry instruction; let the agent read references and use the complete relevant toolkit
+  as needed. Do not inline entire manuals/schemas into every agent definition or turn discovery
+  into a rigid sequence. Hash all supplied content, not only the entry prompt. Credentialing's
+  [connected definition](../workflows/provider-credentialing/README.md#connected-preparation-definition)
+  is the implementation reference; live discovery still needs hosted acceptance.
 - Agents API supplies session execution and hosted compute; backend owns application permissions,
   run correlation, messages, reviews, durable artifacts and audit. Admin remains the operator UI.
   Reuse the existing provider adapter and application integration, not another control plane.
@@ -55,16 +61,25 @@ remove the fallback code, clean up its resources or rotate its credentials becau
 
 ### Implementation Follow-Through
 
-This documentation change does not implement hosted setup. The current provider schema in
-[`operations.ts`](../packages/openai-platform/src/operations.ts) accepts `openai_hosted` with template
-and network settings, but not the documented package/file/setup fields. The existing
+The provider schema in [`operations.ts`](../packages/openai-platform/src/operations.ts) now accepts
+hosted package/file/setup and non-secret environment fields for inline sessions and templates;
+the [provider README](../packages/openai-platform/README.md#hosted-first-development-direction) owns
+the precise supported contract and its remaining credential/deployment boundaries. The existing
 [`SessionLaunchPort`](../packages/openai-platform/src/session-launch.ts) already separates optional
 self-hosted provisioning from session control. Extend those existing boundaries rather than add a
 parallel launcher. The credentialing application composition still needs a hosted profile and
 connected verification; a configuration-label change alone does not complete that work.
 
-The next implementation checkpoint is one normal-app source-to-review/correction demonstration.
-Its reviewable changes have these distinct owners:
+The shared adapter also supports explicit same-run MCP credential delivery to hosted tools through
+OpenAI's credential vault. Backend persists only its non-secret launch-correlated receipt and can
+resume proven-undispatched setup after restart. Its `openai-service` composition supplies the
+application key from an explicitly selected managed secret, while `openai-local` retains the
+workstation resolver; both use the same provider artifact. Renewable Google token binding and
+completed-turn artifact reads are separate shared adapter capabilities; the owning application
+supplies protected deployment credentials and retains exact reviewer evidence. Configuration,
+deployment and live-source acceptance remain separate from these code-level contracts.
+
+Normal-app source-to-review/correction acceptance has these distinct owners:
 
 | Change                                     | Includes / owning files or subsystem                                                                                                                                                                                      | Explicitly excludes                                                                                                    | Verification                                                                                                                                                                        |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -75,8 +90,11 @@ Its reviewable changes have these distinct owners:
 Keep safe coding and preflight ahead of live execution; do not add another standalone playground.
 Before a paid check, verify required identities, source visibility, package compatibility and the
 approved test scope. Google credential delivery must be supported by the actual reader and hosting
-configuration; neither a Desktop connector nor an MCP grant supplies it automatically. Missing
-configuration calls for completing that binding, not inventing a new credential service.
+configuration; neither a Desktop connector nor an MCP grant supplies it automatically. Preserve the
+[standalone credential-provider boundary](reusable-data-capabilities.md#runtime-credentials-without-application-coupling):
+local ADC/file authentication does not require backend, while hosted execution uses a compatible
+renewable token provider. An optional application endpoint may issue tokens under existing run
+authority; it must not become the Google reader or a mandatory workflow dependency.
 
 Hosted startup is provider-managed; the application still records launch intent/receipt, observes
 setup failures and reconciles the known session. Stop is not session deletion or loss of retained

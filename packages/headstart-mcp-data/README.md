@@ -54,9 +54,12 @@ earlier evidence. Local files are working evidence, not backend-retained reviewe
 Synthetic tests exercise the real MCP SDK over authenticated localhost HTTP, exact byte delivery,
 late content, invalid/missing originals and non-overwrite behavior. They do not prove a particular
 hosted environment has these tools or this credential binding installed. The current native
-service-origin MCP binding **does not automatically populate this CLI's environment variable**.
-Complete that runtime provisioning with the same run grant and verify a full document through the
-actual agent before claiming connected full-evidence acceptance. Do not reintroduce backend
+service-origin MCP binding alone **does not populate this CLI's environment variable**. Hosted
+application composition can explicitly map its server label to `HEADSTART_MCP_AUTHORIZATION`
+using the OpenAI adapter's [per-launch vault binding](../openai-platform/README.md#application-functions-and-normal-application-launch).
+It delivers the same grant as a provider-managed placeholder usable by this client's HTTP
+Authorization header. Configure that mapping and verify a full document through the actual
+agent before claiming connected full-evidence acceptance. Do not reintroduce backend
 parsing or substitute a summary to avoid completing the handoff.
 
 Run the standard package build, types, lint and coverage tests, then repository `pnpm qa`.

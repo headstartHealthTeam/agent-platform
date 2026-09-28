@@ -184,11 +184,14 @@ Example create: `{"operation":"agents.create","body":{"model":"APPROVED_MODEL","
 Updates preserve omitted fields; supplied arrays/objects replace the whole field. Review existing
 metadata/tools before replacing them. Tool schemas support web search, tool search, application
 functions, and credential-free HTTPS MCP with explicit tool allowlists. Declaring a function does
-not install its responder. Credential vault provisioning and secret-bearing tool configuration are
-not implemented here.
+not install its responder. The CLI accepts existing `vault_ids` for session creation, but does not
+provision secrets. The shared application's explicit per-launch credential handoff is documented
+in the [operator integration](../packages/openai-platform/README.md#application-functions-and-normal-application-launch);
+it is not permission to place raw secrets in CLI request files or environment setup.
 
 The CLI environment surface supports `none`, `openai_hosted` with an optional approved
-`environment_template_id` and explicit network policy, and `self_hosted` with an explicit normalized
+`environment_template_id`, network policy, packages, input files, setup commands and non-secret
+environment variables, and `self_hosted` with an explicit normalized
 absolute POSIX `workspace_directory`. Hosted templates can carry prepared inline skills; templates
 do not apply to self-hosted environments. No automatic fallback creates compute or widens network
 access. Additional SDK capabilities need a reviewed typed adapter extension; unsupported fields

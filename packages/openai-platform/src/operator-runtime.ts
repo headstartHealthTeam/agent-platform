@@ -17,15 +17,20 @@ import type {
   AgentLaunchCandidatePage,
   OperatorHistoryCursor,
   OperatorHistoryPage,
+  AgentArtifactRequest,
+  AgentArtifact,
+  AgentHostedCredentialFiles,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
 import type { Target } from './config.js';
+import { HostedArtifactError } from './hosted-artifact-error.js';
 import type { Action } from './operations.js';
 import { operatorHistory } from './operator-history.js';
 import type { OperatorItems } from './operator-items.js';
 import { operatorText } from './operator-items.js';
 import type { verifiedOperatorRoots } from './operator-provenance.js';
+import { OperatorProvenanceError } from './operator-provenance.js';
 import { OperatorTurns } from './operator-turns.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 import type { OpenAIPlatform } from './platform.js';
@@ -40,10 +45,12 @@ export type {
 } from '@headstart-health/workflow-contracts';
 
 const wrongTarget = 'Wrong runtime target';
+const artifactIdentity = 'artifact-identity';
 const noInferenceAuthority = 'No current bounded inference authorization';
 const sessionGet = 'sessions.get' as const;
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
-type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight' | 'openOperatorObservation'>;
+type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight' | 'openOperatorObservation'> &
+  Partial<Pick<OpenAIPlatform, 'readHostedArtifact'>>;
 function operatorStatus(
   status: ReturnType<typeof verifiedOperatorRoots>['root']['status'],
   hasQuestions: boolean
@@ -78,7 +85,8 @@ export class OperatorRuntimePort {
     private readonly billableUntil = 0,
     private readonly appFunctions: readonly string[] = [],
     private readonly launchSettings?: unknown,
-    private readonly executor?: SessionExecutor
+    private readonly executor?: SessionExecutor,
+    private readonly credentialFiles?: AgentHostedCredentialFiles
   ) {
     z.array(z.string().regex(/^[A-Za-z0-9_-]{1,100}$/))
       .max(30)
@@ -93,8 +101,38 @@ export class OperatorRuntimePort {
       this.launchSettings,
       this.billableUntil,
       this.appFunctions,
-      this.executor
+      this.executor,
+      this.credentialFiles
     );
+  }
+  async artifactTurnStatus(
+    binding: OperatorBinding,
+    turnId: string
+  ): Promise<'pending' | 'completed' | 'failed' | 'cancelled'> {
+    this.requireOpen();
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
+    const observed = await this.turns.read(this.platform, binding).catch((error: unknown) => {
+      if (error instanceof OperatorProvenanceError) throw new HostedArtifactError(artifactIdentity);
+      throw error;
+    });
+    const turn = observed.roots.find((candidate) => candidate.id === turnId);
+    if (!turn) throw new HostedArtifactError(artifactIdentity);
+    return turn.status === 'completed' || turn.status === 'failed' || turn.status === 'cancelled'
+      ? turn.status
+      : 'pending';
+  }
+  async readArtifact(
+    binding: OperatorBinding,
+    request: AgentArtifactRequest
+  ): Promise<AgentArtifact> {
+    const status = await this.artifactTurnStatus(binding, request.turnId);
+    if (status === 'failed' || status === 'cancelled')
+      throw new HostedArtifactError(artifactIdentity);
+    if (status !== 'completed') throw new Error('Hosted artifact turn has not completed');
+    if (!this.platform.readHostedArtifact)
+      throw new Error('Hosted artifact transport is not configured');
+    this.requireOpen();
+    return this.platform.readHostedArtifact(binding.sessionId, request);
   }
   preflightLaunch(
     request: AgentLaunchRequest,

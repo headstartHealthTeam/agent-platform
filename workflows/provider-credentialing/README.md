@@ -21,9 +21,26 @@ complete real-source correction loop remain unverified; this decision changes no
 
 The build also emits `dist/preparation-definition.json`: the canonical skill, the
 [connected entry prompt](prompts/connected.md), both public input schemas, proposal schema and
-four function declarations. Its workflow revision hashes the complete definition. The artifact
+five function declarations. The instructions are a short mandatory entry, not an inlined manual.
+Its `capabilities` field carries exact canonical skill/supporting files at repository-relative
+locations under `/workspace/headstart-workflow`, with `/workspace/headstart-workflow/skills`
+registered for discovery. Schemas and connected instructions remain readable files. Declared skill
+dependencies are collected by the shared workflow runtime; unrelated skills and grading oracles
+are not shipped. Its workflow revision hashes the complete definition, including every file byte.
+The artifact
 contains no fixtures, expected answers, credentials or private case data. Deploy/pin reviewed bytes
 alongside the validator; do not maintain a second instruction copy in backend.
+
+Operator adapter `0.11.0` installs these files through normal OpenAI-hosted input-file setup and
+registers `capability_directories`. Deploy the matching backend loader and freshly pinned definition
+with that operator; older operators must not silently ignore the file contract. With an environment
+template, explicitly supply the complete `files` and `capability_directories` overrides so inherited
+tools/profiles cannot be silently dropped. Source files are not output evidence or credentials.
+Desktop authoring continues to use the identical canonical skill, prompt and schemas from the
+checkout, with independent tool/authentication bindings. This increment does not add file
+provisioning to the optional Docker executor; it rejects a packaged-file launch there before
+dispatch rather than pretending the files exist. Existing definitions without packaged files remain
+supported. A future self-hosted adoption must materialize and verify those same files explicitly.
 
 `get_credentialing_review_context` obtains the server-bound case, exact workflow/route pins,
 current revision, the complete saved package and saved feedback. `publish_credentialing_review_package` submits complete
@@ -36,13 +53,23 @@ not in a backend MCP module. Its standalone CLI reuses shared Google transport a
 [document parsing](../../packages/document-reading/README.md). It still requires an installed
 runtime artifact and explicit Google binding in the selected sandbox; those bindings and a real-source
 agent demonstration are not established by this package relocation. Do not infer availability
-from an employee's desktop connector. The source-neutral exact-byte retention contract is defined
+from an employee's desktop connector. Google authentication is a replaceable runtime binding: local ADC or an
+operator-controlled credential file works without backend; hosted execution uses renewable
+read-only tokens without putting the long-lived key in the sandbox. An optional deployment issuer
+does not own document reading/parsing and is not a mandatory workflow dependency. See
+[the shared credential boundary](../../docs/reusable-data-capabilities.md#runtime-credentials-without-application-coupling).
+The source-neutral exact-byte retention contract is defined
 in [workflow contracts](../../packages/workflow-contracts/README.md#responsibilities).
 It covers Drive originals, exports, Docs structure and runtime-derived artifacts alongside
 Salesforce originals. A runtime file or manifest is not a retained receipt: the trusted application
 handoff must verify the bytes, case/subject binding and exact parent lineage before publication.
-Binding hosted artifact delivery to that handoff remains a separate integration step; the capture
-function below still accepts Salesforce identifiers only.
+`queue_credentialing_review_package` queues a complete package plus exact output paths for
+the application's after-turn delivery worker. Queue admission is not successful retention or
+publication: the agent must end the turn so the provider can publish immutable outputs, then the
+application validates bytes, lineage and current case authority. The capture function below
+remains the direct Salesforce-original path; hosted delivery also supports full Drive/export and
+runtime-derived evidence. Connected verification, not the presence of these declarations, proves
+the complete integration.
 
 `capture_credentialing_source_document` is the protected original-file retention capability.
 It accepts exact Salesforce link/document/version identifiers discovered through MCP, verifies the

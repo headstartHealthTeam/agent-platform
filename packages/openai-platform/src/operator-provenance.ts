@@ -1,6 +1,12 @@
 import type { OperatorBinding } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
+export class OperatorProvenanceError extends Error {
+  constructor() {
+    super('Run provenance changed');
+  }
+}
+
 const rootSchema = z.object({
   id: z.string(),
   session_id: z.string(),
@@ -11,8 +17,7 @@ const rootSchema = z.object({
 /** Strip full provider payloads page by page and retain only verified root identity/status. */
 export function operatorRootPage(sessionId: string, data: unknown[]): z.infer<typeof rootSchema>[] {
   const turns = z.array(rootSchema).parse(data);
-  if (turns.some((turn) => turn.session_id !== sessionId))
-    throw new Error('Run provenance changed');
+  if (turns.some((turn) => turn.session_id !== sessionId)) throw new OperatorProvenanceError();
   return turns.filter((turn) => turn.subagent_id === null);
 }
 
@@ -42,6 +47,6 @@ export function verifiedOperatorRoots(
     new Set(roots.map((turn) => turn.id)).size !== roots.length ||
     roots.slice(0, -1).some((turn) => !['completed', 'failed', 'cancelled'].includes(turn.status))
   )
-    throw new Error('Run provenance changed');
+    throw new OperatorProvenanceError();
   return { roots, root };
 }

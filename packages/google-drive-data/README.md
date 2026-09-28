@@ -87,6 +87,31 @@ implicit ADC fallback, employee OAuth prompt per run or secret in workflow instr
 An explicitly selected `{"kind":"operator-adc"}` is supported for approved supervised desktop use,
 not a managed default. It follows the existing organization's ADC recovery procedure.
 
+For deployments that keep renewable Google credentials outside the agent environment, the same
+runtime also supports an optional token endpoint:
+
+```json
+{
+  "expectedIdentity": "agent@example.com",
+  "authentication": {
+    "kind": "token-endpoint",
+    "endpoint": "https://identity.example.com/google/token",
+    "authorizationEnvironmentVariable": "GOOGLE_TOKEN_AUTHORIZATION"
+  }
+}
+```
+
+That environment variable contains the complete authorization header or its runtime-vault
+placeholder, not a Google private key. The endpoint only supplies renewable Google access tokens;
+all Drive/Docs discovery, complete file retrieval and parsing still execute in this package and
+its Agent Platform dependencies. It need not be a Headstart backend endpoint. The
+[shared token-provider contract](../google-read-transport/README.md#renewable-token-endpoint-binding)
+defines response, expiry and failure behavior. Drive pins exactly the `drive.readonly` scope and
+continues to verify the expected Google identity. It does not add case/folder filters or replace
+full content with summaries. Endpoint failure never switches to the operator's local identity.
+The same reader can renew tokens between reads without starting a new workflow or session.
+Neither this optional mode nor hosted deployment changes the standalone ADC/credential-file paths.
+
 The agent writes a request file, then invokes the same CLI:
 
 ```sh
@@ -126,9 +151,11 @@ executor still needs this artifact installed/mounted, an approved Google profile
 availability in its runtime instructions. Neither an unrelated desktop connector nor adding names
 to Headstart's MCP tool list provides that binding.
 
-Headstart MCP's per-run grants govern MCP calls, not this direct Google credential. Managed
-composition must protect the Google secret and terminate runtime work when Stop ends the executor.
-Connected verification must establish that behavior; this package does not claim per-run Google
+Headstart MCP's per-run grants alone govern MCP calls, not direct Google credentials. An optional
+token issuer must separately authorize Google token issuance. Managed composition must protect its
+long-lived secrets and terminate runtime work when Stop ends the executor. Denying token renewal
+does not invalidate an already issued Google token before its actual expiry. Connected verification
+must establish the deployment behavior; this package does not claim immediate per-run Google
 credential revocation or retract already delivered evidence.
 
 Credentialing's named capture function remains Salesforce-specific. Drive originals/exports and
