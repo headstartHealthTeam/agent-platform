@@ -185,7 +185,7 @@ workstation credential resolver. Optional local compute does not define the host
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.11.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.12.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
@@ -215,6 +215,10 @@ including `client.beta.agents`; it is not the separate Agents SDK orchestration 
 [official session input/recovery contract](https://developers.openai.com/api/docs/guides/agents-api/sessions).
 
 ### Application functions and normal application launch
+
+Full saved-resource export and guarded deletion use `AgentConversationPort`, separate from the
+operator feed. See [conversation archives](../../docs/conversation-archives.md) for pagination,
+subagent history, exact manifest verification, portable retention sinks and owner-controlled cleanup.
 
 `pendingFunctions` / `completeFunction` share the verified session/root chain with operator
 observation. Only application-registered names are returned; `ask_operator` remains human-only.

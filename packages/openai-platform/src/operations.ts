@@ -291,6 +291,23 @@ export const readSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('sessions.turns'), id, query: historyQuery }).strict(),
   z.object({ operation: z.literal('sessions.turn.get'), id, turnId: id }).strict(),
   z.object({ operation: z.literal('sessions.items'), id, query: historyQuery }).strict(),
+  z.object({ operation: z.literal('sessions.subagents'), id, query: historyQuery }).strict(),
+  z
+    .object({
+      operation: z.literal('sessions.subagent.turns'),
+      id,
+      subagentId: id,
+      query: historyQuery,
+    })
+    .strict(),
+  z
+    .object({
+      operation: z.literal('sessions.subagent.items'),
+      id,
+      subagentId: id,
+      query: historyQuery,
+    })
+    .strict(),
   z.object({ operation: z.literal('templates.list'), query }).strict(),
   z.object({ operation: z.literal('templates.get'), id }).strict(),
 ]);
