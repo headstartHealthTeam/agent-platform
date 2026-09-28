@@ -90,7 +90,7 @@ jobs:
   required:
     name: Required
     if: ${{ always() }}
-    needs: [quality, dependency-audit]
+    needs: [quality, dependency-audit, hosted-runtime]
     runs-on: ubuntu-latest
 
     steps:
@@ -98,9 +98,50 @@ jobs:
         env:
           QUALITY_RESULT: ${{ needs.quality.result }}
           DEPENDENCY_AUDIT_RESULT: ${{ needs.dependency-audit.result }}
+          HOSTED_RUNTIME_RESULT: ${{ needs.hosted-runtime.result }}
         run: |
-          if [ "$QUALITY_RESULT" != "success" ] || [ "$DEPENDENCY_AUDIT_RESULT" != "success" ]; then
+          if [ "$QUALITY_RESULT" != "success" ] || [ "$DEPENDENCY_AUDIT_RESULT" != "success" ] || [ "$HOSTED_RUNTIME_RESULT" != "success" ]; then
             printf '%s\n' "Quality result: $QUALITY_RESULT"
             printf '%s\n' "Dependency audit result: $DEPENDENCY_AUDIT_RESULT"
+            printf '%s\n' "Hosted runtime result: $HOSTED_RUNTIME_RESULT"
             exit 1
           fi
+
+  hosted-runtime:
+    name: Hosted Linux runtime artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact release source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Install pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          run_install: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Assemble and verify the installed runtime
+        run: |
+          set -euo pipefail
+          pnpm install --frozen-lockfile
+          pnpm build
+          node --import tsx scripts/package-credentialing-runtime.ts --target "$RUNNER_TEMP/credentialing-runtime"
+          node --import tsx scripts/verify-credentialing-runtime.ts --runtime "$RUNNER_TEMP/credentialing-runtime"
+          tar -czf "$RUNNER_TEMP/credentialing-runtime.tar.gz" -C "$RUNNER_TEMP/credentialing-runtime" .
+          test "$(stat -c %s "$RUNNER_TEMP/credentialing-runtime.tar.gz")" -le 52428800
+          cp "$RUNNER_TEMP/credentialing-runtime/runtime-receipt.json" "$RUNNER_TEMP/runtime-receipt.json"
+          sha256sum "$RUNNER_TEMP/credentialing-runtime.tar.gz"
+      - name: Retain immutable runtime deployment input
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: credentialing-linux-runtime-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/credentialing-runtime.tar.gz
+            ${{ runner.temp }}/runtime-receipt.json
+          if-no-files-found: error
+          retention-days: 30

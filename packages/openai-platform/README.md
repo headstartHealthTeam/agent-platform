@@ -18,6 +18,13 @@ to IDs/statuses and exposes content only through `--include-content`.
 
 ## Hosted-First Development Direction
 
+For the pinned installed runtime, supervised archive upload and actual application release
+boundary, use [Credentialing hosted release](../../docs/credentialing-hosted-release.md).
+Prepared definitions carry a `runtimeRevision` instead of inline capabilities. Operator `0.13.0`
+verifies that revision and the selected template snapshot before new launches; existing-session
+controls are independent. `files.upload` captures exact digest-approved deployment bytes through
+the native Files API without a model run. Configuration and hosted acceptance remain separate.
+
 Follow the [canonical connected-test pattern](../../docs/agent-workflow-development.md#hosted-first-connected-execution):
 normal local applications use OpenAI-hosted compute by default. Inline hosted sessions and reusable
 templates accept the official `packages`, `files`, `setup_commands`, `capability_directories` and non-secret `env` fields,

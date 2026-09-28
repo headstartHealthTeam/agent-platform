@@ -1,3 +1,5 @@
+import { isAbsolute } from 'node:path';
+
 import { AGENT_FUNCTION_PAYLOAD_LIMIT } from '@headstart-health/workflow-contracts';
 import type { AgentUpdateParams } from 'openai/resources/beta/agents/agents';
 import { z } from 'zod';
@@ -312,6 +314,13 @@ export const readSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('templates.get'), id }).strict(),
 ]);
 export const actionSchema = z.discriminatedUnion('operation', [
+  z
+    .object({
+      operation: z.literal('files.upload'),
+      path: z.string().refine(isAbsolute),
+      sha256: fingerprint,
+    })
+    .strict(),
   z.object({ operation: z.literal('agents.create'), body: agentCreate }).strict(),
   z
     .object({

@@ -13,6 +13,10 @@ export interface AgentCapabilityFiles {
 export interface AgentLaunchDefinition {
   instructions: string;
   capabilities?: AgentCapabilityFiles;
+  /** Content identity of an independently installed runtime. Mutually exclusive with inline
+   * capability files; the provider must verify its pinned deployment binding before dispatch.
+   */
+  runtimeRevision?: string;
   tools: {
     type: 'function';
     name: string;

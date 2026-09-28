@@ -3,6 +3,10 @@
   "version": "0.3.0",
   "private": true,
   "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "description": "Draft credentialing workflow with payer-neutral synthetic contracts and investigative tools",
   "engines": {
     "node": ">=22"
@@ -26,6 +30,9 @@
     "clean": "rimraf dist .turbo coverage"
   },
   "dependencies": {
+    "@headstart-health/document-reading": "workspace:*",
+    "@headstart-health/google-drive-data": "workspace:*",
+    "@headstart-health/headstart-mcp-data": "workspace:*",
     "zod": "^4.6.5"
   },
   "devDependencies": {

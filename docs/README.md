@@ -24,6 +24,9 @@ has not worked in this repository before.
 
 ## Choose The Smallest Durable Shape
 
+For the prepared credentialing runtime and application release boundary, see
+[Credentialing hosted release](credentialing-hosted-release.md).
+
 For full provider conversation retention and governed cleanup, see
 [Conversation archives](conversation-archives.md). The portable provider export is separate from
 the concise operator feed and from application-owned storage, access and retention policy.
