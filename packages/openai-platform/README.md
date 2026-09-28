@@ -244,7 +244,7 @@ the explicit hosted binding below can also deliver the same grant to runtime fil
 The owning application provisions the non-human identity, issues and revokes run grants
 and enforces source permissions. This package does not implement employee OAuth or mint Headstart
 credentials. The same attachment path works with hosted and retained local execution; it does not
-make a credential valid at a different MCP deployment/database. Adapter `0.11.0` pins the credential,
+make a credential valid at a different MCP deployment/database. The current adapter pins the credential,
 vault-receipt and dispatch/recovery contracts together, so an older artifact cannot silently ignore them.
 
 For hosted file tools, trusted launch settings may additionally declare:
