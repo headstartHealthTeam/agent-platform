@@ -254,6 +254,10 @@ Before adding a shared package or changing the runner:
 - Prefer TypeScript for new substantial scripts. A retained script in another cross-platform
   runtime must declare that runtime, remain tested, and have a concrete migration cost that exceeds
   its current benefit.
+- Before changing filesystem identity checks, subprocesses, launchers or package installation,
+  inspect existing implementations and follow the
+  [portability checks](standards/testing-and-release.md#portability-sensitive-changes). Reuse tested
+  helpers and exercise the real entrypoint on the supported CI platforms.
 - Never place credentials, tokens, PHI, production records, or downloaded private artifacts in
   fixtures.
 - Scripts that can write to external systems must default to dry-run behavior and require an
@@ -362,6 +366,12 @@ corepack pnpm qa
 - Do not commit generated installation metadata or installed skill copies.
 - Pull requests must identify affected skills, behavior changes, compatibility impact, evaluations,
   and script validation. Include a `## Release Notes` section.
+- Open authorized implementation PRs ready for review unless the user explicitly requests a draft,
+  so CI and automated review run. Publication is an intermediate checkpoint, not task completion.
+- After every push, follow the [PR completion procedure](standards/testing-and-release.md#pr-completion)
+  at the current head: inspect the full CI matrix and automated feedback, fix failures, and recheck
+  the resulting commit before handing the work back as validated. Do not end ordinary delivery with
+  checks still running merely because local QA passed. Completion does not authorize merging.
 - The full CI workflow must run for every same-repository feature-branch pull request targeting
   `main` and again for every push or merge to `main`. Keep `workflow_dispatch` as a recovery path,
   never as a substitute for either automatic trigger. Cancel stale PR runs only; never cancel a
