@@ -28,12 +28,13 @@ import {
   MutationOutcomeUnknownError,
   type OpenAIPlatform,
 } from './platform.js';
+import { preparedRuntimeBinding, verifyPreparedRuntime } from './prepared-runtime.js';
 import { selfHostedExecutorConnection } from './self-hosted.js';
 import type { SessionExecutor } from './session-executor.js';
 import { visitSessionHistory } from './session-history.js';
 import { inspectLaunchCandidate, discoverLaunchCandidates } from './session-recovery.js';
 
-const launchSettings = z
+export const launchSettings = z
   .object({
     model: z.string().min(1),
     reasoning: z.unknown(),
@@ -41,6 +42,7 @@ const launchSettings = z
     mcpServers: z.array(z.unknown()).default([]),
     runtimeCredentials: runtimeCredentialBindings.optional(),
     credentialFiles: credentialFilePaths.optional(),
+    preparedRuntime: preparedRuntimeBinding.optional(),
   })
   .strict();
 
@@ -295,6 +297,15 @@ export class SessionLaunchPort implements AgentLaunchPort {
       throw new Error('Only native MCP source bindings are permitted');
     if (action.body.environment.type === 'self_hosted' && !this.executor)
       throw new Error('Self-hosted executor is not configured');
+    if (request.definition.runtimeRevision && settings.credentialFiles?.length)
+      throw new Error('Prepared runtimes use renewable runtime credentials, not file overrides');
+    await verifyPreparedRuntime(
+      this.platform,
+      action,
+      request.definition.runtimeRevision,
+      settings.preparedRuntime,
+      request.definition.capabilities !== undefined
+    );
     bindCapabilityFiles(action, request.definition.capabilities);
     this.runtimeBindings(settings, bindings);
     const files =

@@ -28,6 +28,7 @@ import {
 } from './operations.js';
 import { OperatorItems } from './operator-items.js';
 import { pendingFunctionCalls } from './pending-functions.js';
+import { prepareRuntimeUpload } from './runtime-upload.js';
 
 export { fingerprint } from './fingerprint.js';
 export interface ActionPlan {
@@ -315,6 +316,10 @@ export class OpenAIPlatform {
     ) {
       throw new Error('Exact plan approval and separate billable authorization are required.');
     }
+    const upload =
+      action.operation === 'files.upload'
+        ? await prepareRuntimeUpload(action.path, action.sha256)
+        : undefined;
     await this.preflight();
     await this.checkCurrentAgent(action);
     await this.checkPendingFunction(action);
@@ -322,7 +327,7 @@ export class OpenAIPlatform {
     // it remain uncertain; accepting a generic header does not establish create idempotency.
     await options?.beforeDispatch?.();
     try {
-      const data = await this.mutate(action);
+      const data = await this.mutate(action, upload);
       return { data: data ?? null, fingerprint: fingerprint(data) };
     } catch (error) {
       throw sanitizedMutationError(action, error);
@@ -365,9 +370,15 @@ export class OpenAIPlatform {
     }
   }
 
-  private async mutate(action: Action): Promise<unknown> {
+  private async mutate(
+    action: Action,
+    upload?: Awaited<ReturnType<typeof prepareRuntimeUpload>>
+  ): Promise<unknown> {
     const agents = this.#client.beta.agents;
     switch (action.operation) {
+      case 'files.upload':
+        if (!upload) throw new Error('Missing reviewed runtime upload');
+        return this.#client.files.create({ file: upload, purpose: 'user_data' });
       case 'agents.create':
         return agents.create(action.body);
       case 'agents.update':

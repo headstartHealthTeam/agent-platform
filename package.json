@@ -32,6 +32,7 @@
     "skills:update": "node --import tsx scripts/update-skills.ts",
     "reporting:package": "node --import tsx scripts/package-organic-runtime.ts",
     "drive:package": "node --import tsx scripts/package-drive-runtime.ts",
+    "credentialing:package": "node --import tsx scripts/package-credentialing-runtime.ts",
     "validate:docs": "node --import tsx scripts/validate-documentation.ts",
     "validate:skills": "node --import tsx scripts/validate-skills.ts",
     "validate:workflows": "node --conditions=development --import tsx scripts/validate-workflows.ts",
@@ -40,6 +41,7 @@
     "qa": "npm run check:secrets && npm run lint && npm run check-types && npm run test:coverage && npm run validate:skills && npm run validate:workflows && npm run validate:docs && npm run test:collector && npm run build && npm run format:check"
   },
   "devDependencies": {
+    "@cantoo/pdf-lib": "2.11.1",
     "@eslint-community/eslint-plugin-eslint-comments": "^4.8.1",
     "@eslint/js": "^10.0.1",
     "@headstart-health/workflow-runtime": "workspace:*",
@@ -60,6 +62,7 @@
     "github-slugger": "^2.0.0",
     "globals": "^17.12.0",
     "husky": "^9.1.7",
+    "jszip": "^3.10.1",
     "lint-staged": "^16.2.7",
     "mdast-util-to-string": "^4.0.0",
     "prettier": "^3.9.8",
@@ -75,6 +78,7 @@
     "unist-util-visit": "^5.0.0",
     "vite": "^8.3.0",
     "vitest": "^4.1.11",
-    "yaml": "^2.9.1"
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
   }
 }
