@@ -158,14 +158,17 @@ describe('ownership-aware template upgrades', () => {
     const unlink = vi.spyOn(fs, 'unlinkSync').mockImplementation(() => {
       throw new Error('unlink fixture failure');
     });
+    let cleanupError: unknown;
     try {
       withWorkspaceLock(root, () => {
         throw new Error('preserve me');
       });
     } catch (error) {
-      expect(error).toBeInstanceOf(AggregateError);
-      if (error instanceof AggregateError) expect(error.cause).toEqual(new Error('preserve me'));
+      cleanupError = error;
     }
+    expect(cleanupError).toBeInstanceOf(AggregateError);
+    if (cleanupError instanceof AggregateError)
+      expect(cleanupError.cause).toEqual(new Error('preserve me'));
     unlink.mockRestore();
   });
 });
