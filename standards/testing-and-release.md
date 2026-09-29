@@ -94,6 +94,51 @@ commits unreliable. Moderate-or-higher production and development findings are b
 are fixed, shown to be non-applicable, or intentionally accepted through the repository's review
 process.
 
+### Portability-Sensitive Changes
+
+Before implementing filesystem identity checks, subprocesses, module loading or generated launchers,
+inspect the existing scripts and their integration tests. Extend a compatible helper rather than
+reimplementing its operating-system behavior. In particular:
+
+- Compare existing Git/filesystem identities through
+  [`canonicalPath`](../scripts/canonical-path.ts), which resolves native paths and Windows casing.
+  Retain separate containment, symlink, origin and worktree-registration checks; normalizing a path
+  does not prove authorization or repository ownership.
+- Convert filesystem paths to file URLs at Node ESM import boundaries, including `--import` and
+  dynamic imports. Exercise the generated launcher as a child process; inspecting template text is
+  not entrypoint validation.
+- Cover relevant path spaces, Windows separators/casing, explicit working directories, inherited
+  Git environment and subprocess failures. Run the same meaningful assertions in the normal CI
+  matrix; a local macOS run is only macOS evidence.
+
+### PR Completion
+
+The authoring agent owns the result after publication as well as the local implementation:
+
+1. Run the required local checks and publish the authorized PR ready for review. Draft status is an
+   explicit user choice, not a way to postpone automated feedback.
+2. After every push, read the live PR head, its CI runs/checks and automated reviews. Wait at a bounded
+   cadence with useful progress updates until the required matrix and automated reviews finish.
+   Pending, missing, skipped or cancelled required checks are not passing checks.
+3. Read failure logs, identify the cause, make the smallest correction and add regression coverage
+   where needed. Validate through the normal hooks and push to the same PR. Rerun without a code
+   change only when evidence establishes a transient infrastructure failure.
+4. Inspect every automated finding against the code. Address valid findings and give a concrete
+   disposition for others, following the task's communication permissions. A new commit invalidates
+   previous completion evidence; repeat the check for the new head.
+5. Before the final handoff, verify the complete required CI matrix and aggregate `Required` check
+   pass for the current PR revision, automated feedback has been handled, and claimed host or
+   operator acceptance has actually been exercised. Identify any remaining acceptance separately.
+
+Use the available repository integration for live status and logs. Do not substitute a local result,
+an earlier commit's green run, a PR checklist or a cached summary for current GitHub evidence. Link the
+PR and relevant run in the handoff. Report a user-requested pause or a genuine external blocker
+precisely, with the outstanding check and next action; ordinary CI runtime is not a reason to stop at
+"published, checks pending." Human review and merge authorization remain separate.
+
+CI and branch protection enforce the merge boundary; repository instructions govern the agent's
+follow-through and claims. These instructions do not themselves prevent an agent from ending a turn.
+
 ## Pull Request Evidence
 
 A skill or workflow PR identifies changed behavior, affected hosts or runtimes, dependencies,

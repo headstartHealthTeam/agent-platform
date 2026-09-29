@@ -56,6 +56,11 @@ such as:
 > execution and whether one-pass, loop, or graph topology is justified: [describe the business
 > outcome and current manual process].
 
+For a new workstation workspace, start with the [workspace onboarding guide](docs/workspace-onboarding.md)
+and [`headstart-workspace-setup`](skills/headstart-workspace-setup/SKILL.md). It scaffolds six repository
+hubs, searchable Markdown knowledge, Codex/Claude Code routing, shared skills and reviewed upgrades.
+Installed helpers run from the workspace itself; verify actual client behavior during onboarding.
+
 ## Local And Managed Consumption
 
 Most Headstart use of this repository is expected to begin and often remain on team members'
@@ -120,6 +125,7 @@ installing these skills does not install credentials, runtime packages or a host
 | [`headstart-openai-platform`](skills/headstart-openai-platform/SKILL.md)                             | Verify project identity and inspect Headstart OpenAI resources independently of desktop login         |
 | [`headstart-openai-agent-development`](skills/headstart-openai-agent-development/SKILL.md)           | Prepare canonical skills and manage explicitly approved OpenAI agent, template and session lifecycles |
 | [`headstart-engineering-setup`](skills/headstart-engineering-setup/SKILL.md)                         | Establish typed quality checks, appropriate tests, package boundaries, and repository agent guidance  |
+| [`headstart-workspace-setup`](skills/headstart-workspace-setup/SKILL.md)                             | Scaffold repository hubs, knowledge routing and checked local worktrees                               |
 | [`headstart-pr-review-context`](skills/headstart-pr-review-context/SKILL.md)                         | Headstart repository, Linear, integration, privacy, and side-effect context                           |
 | [`headstart-pr-review`](skills/headstart-pr-review/SKILL.md)                                         | Complete Headstart review workflow that composes the two review skills                                |
 | [`headstart-dev-to-main-pr`](skills/headstart-dev-to-main-pr/SKILL.md)                               | Explicit-only production promotion inventory and PR workflow                                          |

@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Headstart Workspace Setup'
+  short_description: 'Scaffold and inspect a local Headstart workspace'
+  default_prompt: 'Use $headstart-workspace-setup to inspect my setup and scaffold the appropriate Headstart workspace with repository hubs and knowledge routing.'
+policy:
+  allow_implicit_invocation: true

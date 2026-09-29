@@ -95,7 +95,7 @@ describe('MCP original-file materialization', () => {
     await expect(downloadMcpOriginal(client, selection, directory)).rejects.toMatchObject({
       code: 'EEXIST',
     });
-  });
+  }, 15_000); // Full filesystem/materialization integration takes about 6 seconds on Windows CI.
   it.each([
     { content: [], isError: true },
     { content: [{ type: 'text', text: 'A summary' }] },
