@@ -10,6 +10,7 @@ export const exportGitSnapshot = (
   destination: string,
   runGit: (cwd: string, args: string[]) => string
 ): void => {
+  const snapshotRoot = path.resolve(destination);
   const entries = runGit(repository, ['ls-tree', '-r', '-z', commit, '--', 'README.md', 'skills'])
     .split('\0')
     .filter(Boolean);
@@ -17,8 +18,8 @@ export const exportGitSnapshot = (
     const match = /^(100644|100755) blob ([a-f0-9]{40,64})\t(.+)$/.exec(entry);
     if (!match?.[2] || !match[3])
       throw new Error('Candidate skills contain an unsupported Git entry.');
-    const target = path.resolve(destination, match[3]);
-    if (!target.startsWith(`${destination}${path.sep}`))
+    const target = path.resolve(snapshotRoot, match[3]);
+    if (!target.startsWith(`${snapshotRoot}${path.sep}`))
       throw new Error('Candidate path escapes its snapshot.');
     const result = spawnSync('git', ['cat-file', 'blob', match[2]], {
       cwd: repository,

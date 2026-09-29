@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { canonicalPath } from './canonical-path.js';
 import {
   inspectInstalledSkills,
   installReviewedSkills,
@@ -432,4 +433,9 @@ const main = (): void => {
     process.exitCode = 1;
   }
 };
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+if (
+  process.argv[1] &&
+  fs.existsSync(process.argv[1]) &&
+  canonicalPath(process.argv[1]) === canonicalPath(fileURLToPath(import.meta.url))
+)
+  main();

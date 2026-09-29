@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { canonicalPath } from './canonical-path.js';
 import { exportGitSnapshot } from './git-snapshot.js';
 import {
   createInstallPlan,
@@ -226,11 +227,6 @@ export const runGitCommand: GitRunner = (repositoryRoot, arguments_) => {
     throw new Error(`Git command failed: git ${arguments_.join(' ')}`);
   }
   return result.stdout.trim();
-};
-
-const canonicalPath = (value: string): string => {
-  const normalized = path.normalize(fs.realpathSync.native(value));
-  return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
 };
 
 const parseDistance = (rawDistance: string): { ahead: number; behind: number } => {

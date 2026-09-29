@@ -354,7 +354,12 @@ describe('installed onboarding flow', () => {
       git(seed, ['add', '.']);
       git(seed, ['-c', 'commit.gpgsign=false', 'commit', '-m', 'binary fixture']);
       const snapshot = path.join(fixture(), 'snapshot');
-      exportGitSnapshot(seed, git(seed, ['rev-parse', 'HEAD']), snapshot, git);
+      exportGitSnapshot(
+        seed,
+        git(seed, ['rev-parse', 'HEAD']),
+        `${path.relative(process.cwd(), snapshot)}${path.sep}`,
+        git
+      );
       expect(fs.readFileSync(path.join(snapshot, 'skills/example/binary.dat'))).toEqual(binary);
       expect(fs.existsSync(path.join(snapshot, '.git'))).toBe(false);
       expect(() => {

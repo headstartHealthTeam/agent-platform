@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { canonicalPath } from './canonical-path.js';
 import { withoutRepositoryLocalGitEnvironment } from './run-python-tests.js';
 import { repositoryUrl, type WorkspaceRepository } from './workspace-catalog.js';
 import { createFile, workspacePath, workspaceRoot } from './workspace-files.js';
@@ -59,8 +60,8 @@ const assertRegisteredWorktree = (
   const common = git(checkout, ['rev-parse', '--path-format=absolute', '--git-common-dir']);
   const top = git(checkout, ['rev-parse', '--show-toplevel']);
   if (
-    fs.realpathSync(common) !== fs.realpathSync(anchor) ||
-    fs.realpathSync(top) !== fs.realpathSync(checkout)
+    canonicalPath(common) !== canonicalPath(anchor) ||
+    canonicalPath(top) !== canonicalPath(checkout)
   ) {
     throw new Error('Worktree location or Git common directory does not match its hub.');
   }
@@ -68,7 +69,9 @@ const assertRegisteredWorktree = (
   if (
     !registrations.some(
       (entry) =>
-        entry.startsWith('worktree ') && path.resolve(entry.slice(9)) === path.resolve(checkout)
+        entry.startsWith('worktree ') &&
+        fs.existsSync(entry.slice(9)) &&
+        canonicalPath(entry.slice(9)) === canonicalPath(checkout)
     )
   )
     throw new Error('Worktree is not registered with the hub anchor.');
@@ -83,7 +86,7 @@ export const assertFeatureWorktree = (
   const resolved = workspaceRoot(root);
   const target = path.resolve(checkout);
   if (
-    path.dirname(target) !== path.join(resolved, repository.hub) ||
+    canonicalPath(path.dirname(target)) !== canonicalPath(path.join(resolved, repository.hub)) ||
     !validWorktreeName(path.basename(target))
   ) {
     throw new Error('Use a feature/review worktree directly under the matching repository hub.');
