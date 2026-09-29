@@ -37,7 +37,7 @@
       "shouldActivate": true,
       "expectedBehaviors": [
         "Explains the Git-root discovery boundary",
-        "Requires actual host verification and explicit root/hub routing until bridges are proven",
+        "Verifies the selected host scoped user routing and tracked instructions in actual fresh root/worktree sessions",
         "Does not confuse doctor with agent behavioral acceptance"
       ]
     },
@@ -62,7 +62,27 @@
       "expectedBehaviors": [
         "Keeps personal content and credentials out of shared templates",
         "Separates scoped onboarding from scheduling and global changes",
-        "Does not enable unsupported workspace upgrades or weaken guards"
+        "Keeps workspace upgrades manual and previewed; scheduling requires separate skill-update opt-in"
+      ]
+    },
+    {
+      "name": "review-workspace-upgrade",
+      "prompt": "Upgrade my existing Headstart setup but keep our edited root guide and knowledge index.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the internal clean main source and reviews the skills commit before applying",
+        "Previews template diffs, preserves local edits and obtains a fresh expected-plan token for any explicit keep-local choice",
+        "Does not adopt unowned guides or overwrite edited routing blocks"
+      ]
+    },
+    {
+      "name": "nested-worktree-knowledge",
+      "prompt": "Onboard me in Claude Code, then show how a fresh backend worktree can find our architecture decisions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Installs selected host skills and the minimal scoped routing block while preserving existing user guidance",
+        "Uses the installed workspace launcher for bounded knowledge search and full-source retrieval",
+        "Verifies root, hub and tracked repository instructions and reports actual client acceptance separately"
       ]
     }
   ]

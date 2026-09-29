@@ -23,7 +23,8 @@ has not worked in this repository before.
 | Change repository-wide engineering policy                          | [Repository guide](../AGENTS.md)                                                                | [Testing and release](../standards/testing-and-release.md), [security and data handling](../standards/security-and-data-handling.md)                                       |
 
 For local workstation onboarding, read the [workspace scaffold guide](workspace-onboarding.md).
-It separates deterministic setup from skills, credentials, host discovery and application readiness.
+It connects repository setup, shared skills, agent routing, knowledge search and reviewed upgrades,
+with separate checks for credentials, actual host behavior and application readiness.
 
 ## Choose The Smallest Durable Shape
 

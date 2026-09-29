@@ -2,32 +2,32 @@
 
 [Documentation hub](README.md) · [Setup skill](../skills/headstart-workspace-setup/SKILL.md)
 
-This first release creates a predictable Headstart directory and repository topology through a
-supervised skill and deterministic CLI. It includes a knowledge starter, safe reruns, repository
-provisioning, worktree creation/assertion and local diagnostics. Host bridges, template upgrades,
-standalone launchers and optional indexed search remain follow-up work.
+One supervised setup creates a Headstart workspace with six repository hubs, isolated worktree
+helpers, a Markdown knowledge starter, and shared skills and instruction routing for Codex and
+Claude Code. Deterministic commands handle filesystem, Git and update checks; the setup agent helps
+select scope, review conflicts and explain the working model.
 
-## Start from a reviewed source checkout
+## Install once
 
-Use an existing clean Agent Platform checkout with Git, Node.js 22+ and the pinned pnpm 9.15.0.
-Install its dependencies with `pnpm install --frozen-lockfile`. Follow any existing workspace's
-instructions when selecting that checkout. This command does not relocate its own source or install
-application dependencies in the repositories it creates. Keep the source checkout available for
-workspace commands. Skill installation alone does not install the CLI.
-
-Preview the chosen root, then apply the requested scope:
+Start from a clean reviewed Agent Platform checkout with Git, Node.js 22+ and the repository's pinned
+pnpm. Follow existing workspace instructions when selecting that checkout. Install dependencies with
+`corepack pnpm install --frozen-lockfile`, then preview the requested setup:
 
 ```bash
-pnpm workspace -- setup --root ~/headstart --repositories all --clone
-pnpm workspace -- setup --root ~/headstart --repositories all --apply --clone
-pnpm workspace -- doctor --root ~/headstart --repositories all
+pnpm workspace -- setup --root ~/headstart --repositories all --hosts codex,claude-code --clone
+pnpm workspace -- setup --root ~/headstart --repositories all --hosts codex,claude-code --clone --apply
 ```
 
-Preview only inspects local paths. It creates no files and does not contact GitHub. `--apply` creates
-missing guidance and the Markdown knowledge starter. With `--apply`, `--clone` initializes the selected
-bare anchors, fetches their catalog origins and creates detached baseline worktrees. Use a comma
-list such as `--repositories backend,frontend`, or `none` for no repository inspection/provisioning.
-All six hub guides remain available as the company repository map.
+Select only hosts the operator uses. A setup preview inspects local files, shows the exact routing
+block and reports skill-name collisions without writing or contacting GitHub. Applying the selected
+hosts installs all shared skills with the existing updater's receipts and appends that routing block
+to their user instructions. Existing unrelated instructions remain intact. Unreceipted skill
+collisions require review and an explicit `--adopt-skills` choice.
+
+`--repositories backend,frontend` provisions a smaller set; `none` creates guidance without application
+repositories. Selecting a host also includes Agent Platform, which supplies the runtime and skill
+source. All six hub guides remain available as the company repository map. Omit `--hosts` for
+files/repositories only on first setup; later runs default to previously configured hosts.
 
 | Hub            | GitHub repository under `headstartHealthTeam` | Baseline |
 | -------------- | --------------------------------------------- | -------- |
@@ -38,93 +38,125 @@ All six hub guides remain available as the company repository map.
 | website        | headstart-health-website                      | dev      |
 | salesforce     | salesforce-dev                                | dev      |
 
-New workspaces contain root `README.md`, `AGENTS.md`, and a thin `CLAUDE.md`; a `Headstart/`
-knowledge directory with its own entry points, index, projects, wiki and source references; and the
-six hub guides with `.idea-shared` artifact directories. Provisioned hubs also contain `.bare/`
-and their baseline checkout. `.headstart/receipt.json` records the template version, exact source
-revision and hashes of files first created by this installation. Root, hub and knowledge templates
-are newly authored shared guidance; the scaffold does not import personal content or populate
-company knowledge.
+Provisioning creates each selected hub's `.bare/` Git anchor and baseline branch checkout. Agent
+Platform is pinned to the exact reviewed bootstrap commit; application repositories use their
+remote baseline. Dependencies are installed only for Agent Platform's workspace helpers, using its
+frozen lockfile and normal hooks. The installed source lives at `agent-platform/main`; the bootstrap
+checkout is no longer needed to run workspace commands. Application dependencies, credentials and
+service startup follow each repository's own runbooks.
 
-## Work in isolated checkouts
+New workspaces also contain root `README.md`, `AGENTS.md` and a thin `CLAUDE.md`; `Headstart/` knowledge
+entry points, index, projects, wiki and source references; and hub guides and `.idea-shared/` temporary
+artifact directories. This is shared guidance and an empty knowledge starter. Setup does not import
+another operator's notes, credentials or company data.
 
-Read root and hub guidance, then inspect the baseline's tracked instructions for branch conventions.
-Run from the source checkout:
+## Use the installed workspace
+
+Run these commands from the workspace root. POSIX users can use `bin/headstart`; Windows users can
+use `bin\headstart.cmd`. The Node form works on every supported OS and from any working directory
+when given an absolute launcher path:
 
 ```bash
-pnpm workspace -- new-worktree --root ~/headstart --repo backend --name example --branch feature/example
-pnpm workspace -- assert-worktree --root ~/headstart --repo backend --path ~/headstart/backend/example
+node bin/headstart.mjs doctor
+node bin/headstart.mjs new-worktree --repo backend --name example --branch feature/example
+node bin/headstart.mjs assert-worktree --repo backend --path backend/example
+node bin/headstart.mjs search --query "architecture decision"
+node bin/headstart.mjs read --page "index.md"
 ```
 
-`new-worktree` fetches the hub's origin, resolves its default remote baseline to a commit and creates
-a new branch in a direct hub child. Use `--base feature/previous-slice` for stacked work; an explicit
-base is honored for every repository. Choose the actual repository-approved branch name; website
-work rejects the `codex/` namespace. The helper does not install application dependencies.
+Read root and hub guidance, then the baseline's tracked instructions for branch conventions before
+creating a worktree. Use `--base <ref>` for stacked work. Creation fetches the hub's origin and
+resolves the requested base to a commit. Website work rejects the `codex/` branch namespace.
+Assertion checks the direct-child path, reserved baseline names, catalog origin, Git common directory,
+checkout root and registration. A correctly named directory attached to another clone fails.
 
-Assertion checks the direct-child path, reserved baseline names, expected origin, actual Git common
-directory, checkout root and registration with that anchor. A correctly named directory attached
-to another clone fails. `main` and `dev` are reserved orientation paths. These commands do not impose
-OS-level write locks, police all other Git invocations, refresh baselines, remove worktrees or replace
-an existing workspace's local helper policy.
+`main` and `dev` are orientation/source checkouts. Implementation belongs in feature/review worktrees.
+The updater may explicitly fast-forward Agent Platform's clean `main`; it is not an authoring path.
+These helpers do not impose OS-level locks, police every Git command or remove worktrees.
 
-## Reruns, failures and existing setups
+Knowledge search matches all query terms on a Markdown line, returning up to 50 bounded excerpts.
+It covers top-level knowledge pages plus `projects/`, `wiki/`, `sources/` and `reports/`, skips hidden
+entries and symlinks, and excludes code repositories and raw directories. Read the full source page
+after discovery; pages over 1 MiB require direct inspection. Verify volatile status with Linear,
+GitHub or the owning source. No search service is required. Obsidian, QMD and reviewed company
+knowledge distribution are optional additions; a directory alone does not provide synchronization.
 
-- Matching files are left unchanged. Files recorded as owned in the receipt are preserved when
-  edited, including a growing knowledge index. New templates are not applied over those edits.
-- Differing unowned files or directory collisions stop setup before writes. Inspect the preview
-  and compare guidance before a separately scoped adoption. Identical preexisting files are not
-  claimed as owned by the receipt. Malformed receipts fail closed.
-- Existing baseline worktrees are verified without fetching or advancing them. Existing unowned
-  anchors without a valid baseline are not adopted. Legacy standalone clones are never moved.
-- A failed fetch leaves an explicitly marked initialization that can be retried. Retry with the
-  same root and `--repositories <hub> --apply --clone`. Corrupt or partially initialized anchors
-  require manual diagnosis; the tool does not delete or rebuild them automatically.
-- Repository failures do not stop other selected repositories. A requested Git failure returns exit
-  code 1. Doctor returns 1 for missing files, conflicts or selected repository gaps. Neither success
-  code claims complete workstation readiness.
-- Mutating CLI operations take an exclusive `.headstart/operation.lock`. Concurrent operations fail.
-  A crashed process can leave a stale lock; verify no operation is running before manual recovery.
-- Symlinks in target paths, traversal, filesystem/home roots and a Git checkout used as the workspace
-  root are rejected. Choose a dedicated physical directory. No credentials or global configuration
-  are written, and Git failures omit raw credential-helper output.
+## Agent context
 
-The implementation uses cross-platform Node/Git APIs. Local synthetic acceptance was developed on
-macOS; repository CI and a real second-operator trial are required before claiming Windows workshop
-readiness. Tests isolate Git environment inherited from hooks and use local synthetic remotes only.
+Codex's Git-root discovery boundary means a root README alone cannot reliably route a session opened
+inside a worktree. Setup adds a small rule to the selected host's user instructions, conditional on
+working inside this exact workspace. The rule directs the agent to root, hub, tracked repository and
+applicable nested instructions, then the knowledge entry point when needed. It leaves detailed rules
+in their owners and preserves repository-specific guidance.
 
-## Context and skill installation are separate checks
+Codex uses its effective nonempty `AGENTS.override.md`, otherwise `AGENTS.md`, under its configured
+home. Claude Code uses `CLAUDE.md` under its configured home; thin `CLAUDE.md` imports also accompany
+workspace guides. Existing custom `CODEX_HOME` and `CLAUDE_CONFIG_DIR` are respected for routing.
+Skill destinations retain the existing installer contract: Codex's user `.agents/skills` and Claude
+Code's user `.claude/skills`. Hosts configured to use different skill roots need explicit verification.
+Other hosts can read the portable guides directly, but do not receive a claimed automatic adapter.
 
-A README is navigation. Agent instructions have host-specific discovery rules. Codex can stop at a
-Git root, so being somewhere under the workspace does not prove the root's guidance is loaded.
-Claude Code has different ancestor/import behavior. See the official
+Start a fresh session after setup. Check root and nested worktree launch locations in the actual
+client: ask it to identify the applicable instruction files, create an approved feature worktree,
+and retrieve a synthetic knowledge page with its source. Doctor verifies local files, anchors,
+installed routing, runtime presence and skill bytes against the source. It does not test model
+compliance, credentials or application readiness. See the official
 [Codex instructions guide](https://learn.chatgpt.com/docs/agent-configuration/agents-md) and
-[Claude Code memory guide](https://code.claude.com/docs/en/memory) (reviewed September 29, 2026).
-Documentation and synthetic file tests do not establish actual agent behavior.
+[Claude Code memory guide](https://code.claude.com/docs/en/memory) for discovery semantics.
 
-For this release, explicitly tell worktree sessions to read the workspace root and hub `AGENTS.md`
-as well as tracked repository instructions. Verify this in the actual client version before claiming
-automatic attachment. Future adapters must preserve existing repository instructions rather than
-silently replace them with an override. Doctor does not launch models or change host settings.
+## Review upgrades
 
-Install global skills through [the existing updater](../skills/headstart-skills-update/SKILL.md).
-Its clean-main source requirement is not satisfied by the detached orientation checkout created
-here. Keep using a supported source checkout for that updater. This release does not connect workspace
-provisioning to the updater or its opt-in schedule; updater/baseline compatibility belongs in the
-upgrade integration work.
+Use the installed source for manual skill and workspace updates:
 
-Knowledge is directly usable as Markdown. Choosing a company knowledge source, optional Obsidian
-configuration and scoped QMD indexing are separate decisions. Do not copy another operator's vault,
-create a global index over all repositories or infer shared synchronization from the directory name.
+```bash
+node bin/headstart.mjs skills
+node bin/headstart.mjs skills --apply --expected-commit <sha-from-preview>
+node bin/headstart.mjs upgrade --diff
+node bin/headstart.mjs upgrade --diff --apply --expected-plan <hash-from-preview>
+```
 
-## Remaining acceptance gates
+The skills preview fetches protected `main`, validates its exact contents using a disposable file
+snapshot, and reports changes without advancing the checkout or replacing installed skills. Apply
+requires that same remote commit, fast-forwards the clean internal `main`, installs the selected
+hosts through the existing managed updater and refreshes helper dependencies. Dirty, ahead,
+divergent or unexpected-origin sources are refused. There is no temporary Git worktree outside the
+workspace. `headstart-skills-update` remains the canonical contract for skills and opt-in scheduling.
+Daily skill refresh is offered separately and never enabled by setup. Scheduled skill refresh does
+not apply workspace template changes or replace the manual runtime/template verification step.
 
-1. Non-destructive host bridges and launch helpers, verified from root and nested worktree sessions
-   in fresh Codex and Claude Code clients without personal global routing.
-2. A second teammate's onboarding with partial Git access, interruption/recovery and a real task;
-   verify each intended OS/client combination.
-3. Receipt-aware reviewed template upgrades and explicit integration with manual skill updates,
-   reconciling baseline mutation and temporary-checkout assumptions before enabling them together.
-4. A reviewed knowledge distribution choice and optional scoped search with full-source retrieval.
+Template upgrades are local and write-free until `--apply`. The preview token binds the exact source,
+current file hashes, proposed content and host instructions. Any intervening change requires another
+preview. `.headstart/receipt.json` records created files and their template hashes; `.headstart/hosts.json`
+records managed routing blocks. Unmodified owned templates update; edited templates stay intact when
+the template has not changed. If both changed, review `--diff` and manually reconcile, or preview again
+with `--keep-local AGENTS.md,Headstart/index.md` to explicitly retain those owned customizations.
+Apply the token from that new preview with the same options. Unowned files are never adopted by this
+flag. Identical preexisting files are left unowned.
 
-Report these states separately from scaffold completion. This foundation is not the complete
-workshop acceptance gate for automatic context management.
+A changed managed routing block requires manual reconciliation before upgrade. Text outside the
+block is preserved. Template updates do not delete retired files or move existing repositories.
+
+## Failures and existing setups
+
+- Rerun setup to complete missing files or repositories; it preserves owned edits. Existing baselines
+  are verified without moving their commits. An existing internal source at a different revision
+  must be updated through its own helpers before another setup source can install host skills.
+- Differing unowned files, malformed receipts, symlinks, traversal, home/filesystem roots and a Git
+  checkout used as the workspace root fail closed. Review existing local guides instead of replacing
+  them. Legacy standalone clones are never moved or adopted automatically.
+- Repository failures are reported separately and return a nonzero exit. A failed fetch leaves a
+  marked initialization that can be retried with the same root and `--repositories <hub> --clone
+--apply`. Other repositories may have completed. Corrupt anchors require diagnosis, not deletion.
+- Each completed template write records ownership before the next file. A later failure can be
+  resumed. Operations are not an all-files transaction; completed writes and installs are reported
+  truthfully. A failed receipt write requires review before retrying.
+- Mutations take an exclusive `.headstart/operation.lock`. A crashed process may leave a stale lock;
+  verify that no operation is active before manual recovery. Cleanup attempts preserve the original
+  failure as well as cleanup errors.
+- Git failures omit raw credential-helper output. Setup does not configure access or change host
+  permissions. Never place secrets or patient information in guides, knowledge or review artifacts.
+
+Synthetic tests cover setup, partial failures, ownership, host routing, launcher execution, upgrades,
+knowledge access and isolated Git environments. The normal CI matrix supplies OS verification.
+A teammate's actual client and Git access remain a workshop acceptance check; filesystem tests alone
+are not evidence of a successful real onboarding.

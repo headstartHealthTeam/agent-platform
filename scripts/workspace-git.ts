@@ -128,7 +128,8 @@ const initializeAnchor = (
 export const provisionRepository = (
   root: string,
   repository: WorkspaceRepository,
-  git: WorkspaceGit = runWorkspaceGit
+  git: WorkspaceGit = runWorkspaceGit,
+  sourceCommit?: string
 ): string => {
   const resolved = workspaceRoot(root);
   const stable = workspacePath(resolved, `${repository.hub}/${repository.baseline}`);
@@ -140,15 +141,14 @@ export const provisionRepository = (
   const anchor = initializeAnchor(resolved, repository, git);
   git(anchor, ['fetch', 'origin']);
   git(anchor, ['rev-parse', '--verify', `refs/remotes/origin/${repository.baseline}^{commit}`]);
-  git(anchor, [
-    'worktree',
-    'add',
-    '--detach',
-    stable,
-    `refs/remotes/origin/${repository.baseline}`,
-  ]);
+  const base =
+    repository.hub === 'agent-platform' && sourceCommit
+      ? sourceCommit
+      : `refs/remotes/origin/${repository.baseline}`;
+  git(anchor, ['rev-parse', '--verify', `${base}^{commit}`]);
+  git(anchor, ['worktree', 'add', '-b', repository.baseline, stable, base]);
   assertRegisteredWorktree(resolved, repository, stable, git);
-  return 'created bare anchor and detached orientation worktree';
+  return 'created bare anchor and stable source worktree';
 };
 
 export interface NewWorktreeOptions {

@@ -1,10 +1,14 @@
 import { WORKSPACE_REPOSITORIES } from './workspace-catalog.js';
+import { launcherTemplate } from './workspace-launcher.js';
 
-export const TEMPLATE_VERSION = 1;
+export const TEMPLATE_VERSION = 2;
 const CLAUDE_IMPORT = '@AGENTS.md\n';
 
 export const workspaceTemplates = (): Map<string, string> => {
   const files = new Map<string, string>([
+    ['bin/headstart.mjs', launcherTemplate()],
+    ['bin/headstart', '#!/usr/bin/env sh\nexec node "$(dirname "$0")/headstart.mjs" "$@"\n'],
+    ['bin/headstart.cmd', '@echo off\nnode "%~dp0headstart.mjs" %*\n'],
     [
       'README.md',
       `# Headstart workspace
@@ -13,11 +17,20 @@ Start an agent at this root and read AGENTS.md. For implementation, select the a
 repository hub, read its guide and the checkout's tracked instructions, then use an isolated
 worktree. Headstart/ holds durable Markdown knowledge; repository hubs hold code.
 
-This starter contains guidance, not a populated company knowledge base. Install shared skills
-separately through Agent Platform's reviewed skill installer. Credentials, application dependencies,
-services, Obsidian and indexed search are separate setup steps.
+This starter contains guidance and searchable Markdown, not a populated company knowledge base.
+Setup with selected hosts installs shared skills and workspace routing. Credentials, application
+dependencies, services, Obsidian and indexed search follow separate setup steps.
 
-Run workspace commands from a reviewed Agent Platform source checkout with dependencies installed:
+Use bin/headstart (or node bin/headstart.mjs on any supported OS) from this workspace.
+Its runtime and shared skills source live in agent-platform/main. For example:
+
+- bin/headstart doctor
+- bin/headstart search --query "architecture"
+- bin/headstart read --page "index.md"
+- bin/headstart upgrade --diff (preview; apply with its --expected-plan token)
+- bin/headstart skills --hosts codex (preview; apply with its --expected-commit SHA)
+
+The equivalent source commands remain available:
 
 - pnpm workspace -- setup --root <this-directory> (preview; add --apply to create missing files)
 - pnpm workspace -- setup --root <this-directory> --repositories all --apply --clone
@@ -26,13 +39,14 @@ Run workspace commands from a reviewed Agent Platform source checkout with depen
 - pnpm workspace -- assert-worktree --root <this-directory> --repo backend --path <checkout>
 
 Clone operations require Git access. Failed repositories can be retried with --repositories <hub>.
-Existing files are never overwritten. Template conflicts need review; there is no automatic migration
-or cleanup. The receipt in .headstart records template hashes and source revision.
+Setup preserves existing owned edits. Reviewed upgrades can replace unmodified owned templates;
+conflicting customizations need review. There is no automatic migration or cleanup. The receipt in
+.headstart records template hashes and source revision.
 
-Agent instruction discovery differs by host. Root AGENTS.md is not automatically inherited past
-every Git boundary. Until host bridges are verified, explicitly ask worktree sessions to read this
-root's AGENTS.md, their hub guide and tracked repository instructions. CLAUDE.md imports AGENTS.md
-for hosts that support that convention. Doctor does not certify agent discovery or runtime readiness.
+Setup with --hosts codex or --hosts claude-code installs a small workspace-scoped routing block
+in that host's active user instruction file. This handles repository-root discovery boundaries
+without replacing tracked repository instructions. Start a fresh session after installation.
+Doctor verifies installed routing and reports runtime readiness; it does not run a model.
 `,
     ],
     [
@@ -80,8 +94,9 @@ ${WORKSPACE_REPOSITORIES.map((repo) => `- ${repo.hub}/: ${repo.purpose}.`).join(
       'Headstart/AGENTS.md',
       `# Headstart knowledge
 
-Start with Start Here.md and index.md, then read the relevant project page in full. Use scoped
-text search if the index is insufficient. An installed search index is only a discovery aid;
+Start with Start Here.md and index.md, then read the relevant project page in full. Use bin/headstart search --query <terms> from the workspace root if the index is insufficient.
+Search covers Markdown in this knowledge directory only, skips symlinks and returns bounded excerpts.
+Use bin/headstart read --page <relative-page.md> to read the original page in full. An installed search index is only a discovery aid;
 read original Markdown and verify volatile state in its owning system.
 
 Keep one canonical page per initiative under projects/. Use wiki/ for reusable understanding and

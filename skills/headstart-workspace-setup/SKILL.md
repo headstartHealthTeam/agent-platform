@@ -1,88 +1,103 @@
 ---
 name: headstart-workspace-setup
-description: Scaffold or inspect a local Headstart workspace with repository hubs, isolated worktree commands and a durable knowledge starter. Use for workstation onboarding, a company setup workshop, or reviewing an existing workspace against the shared layout. Do not activate for ordinary feature implementation, application startup, or a request only to refresh installed skills.
-compatibility: Requires local filesystem access, Git, Node.js 22 or newer, pnpm 9.15 and a reviewed Agent Platform source checkout. Repository provisioning also requires the operator's existing Git access. Host discovery and application readiness require separate verification.
+description: Set up, inspect or upgrade a local Headstart workspace with repository hubs, isolated worktree helpers, agent instruction routing and searchable Markdown knowledge. Use for workstation onboarding, a company setup workshop, or reviewing an existing workspace against the shared layout. Do not activate for ordinary feature implementation, application startup, or a request only to refresh installed skills.
+compatibility: Requires local filesystem access, Git, Node.js 22 or newer, the repository-pinned pnpm and a reviewed Agent Platform source checkout. Repository provisioning needs the operator's existing Git access. Automatic routing supports Codex and Claude Code; other hosts can consume the portable guides directly.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.2.0'
   headstart-requires: headstart-skills-update
 ---
 
 # Headstart Workspace Setup
 
-Help a teammate understand and create the shared workspace layout. Deterministic commands own
-filesystem and Git operations; the agent handles explanation, role selection and conflict review.
-The first release provides the scaffold foundation. Do not claim complete automatic context loading,
-shared knowledge distribution or unattended workspace upgrades.
+Help a teammate create and understand the shared workspace. Deterministic commands own filesystem,
+Git, installation and upgrade checks; the agent handles scope, explanation and conflict review.
 
 ## Establish Scope
 
-Read existing workspace and repository instructions first. Identify the chosen workspace root and
-reviewed Agent Platform source checkout. Default a new root to `~/headstart`; preserve existing
-operator conventions. Select the needed repositories: Agent Platform, backend, frontend, admin
-panel, website and Salesforce. All six hub guides are generated; Git provisioning is separately
-selected. No role needs access to every repository to use the knowledge starter.
+Read existing workspace and repository instructions. Identify the chosen root, required repositories
+and agent hosts. Default a new root to `~/headstart`; preserve existing operator conventions. The
+catalog includes Agent Platform, backend, frontend, admin panel, website and Salesforce. All six hub
+guides are generated; clone only the repositories needed for the user's role. Selecting an agent host
+also provisions Agent Platform as the internal source/runtime.
 
-For an audit or plan, remain read-only. An authorized setup request allows the described local
-scaffold and requested clones; do not add another approval step once the target and scope are clear.
-Existing unowned instruction conflicts need a concrete comparison and a bounded adoption decision,
-not automatic replacement or deletion. Do not move standalone clones or edit personal/global
-instructions just to make the tool accept an existing setup.
+For an audit or plan, remain read-only. An authorized setup request permits the described local
+scaffold, selected clones and selected hosts' skill/routing installation. Explain that selected hosts
+receive a small workspace-scoped block in their user instructions, preserving unrelated text. Do not
+add a redundant approval pause when this scope is already authorized. Existing unowned conflicts need
+a concrete comparison and bounded adoption decision. Never copy personal content, move standalone
+clones, delete receipts or replace existing workspace helper policy to bypass a guard.
 
-Use a clean reviewed source checkout with its dependencies installed. Read the current
-[workspace guide](https://github.com/headstartHealthTeam/agent-platform/blob/main/docs/workspace-onboarding.md)
-and the source version's equivalent before running commands. Installed skill copies do not contain
-the source CLI. If a workspace already mandates its own worktree helpers, preserve that procedure;
-this scaffold does not authorize replacing it.
+Use a clean reviewed Agent Platform checkout with dependencies installed through its frozen lockfile.
+Read the source version's `docs/workspace-onboarding.md`, also available in the
+[shared guide](https://github.com/headstartHealthTeam/agent-platform/blob/main/docs/workspace-onboarding.md).
+An installed skill alone does not contain the CLI. Setup provisions the persistent source inside the
+new workspace; the original bootstrap checkout is not needed afterward.
 
 ## Preview And Apply
 
-Run from the Agent Platform source checkout, using the actual chosen root:
+From the reviewed source checkout, substitute the chosen root, repositories and hosts:
 
 ```bash
-pnpm workspace -- setup --root <workspace-root> --repositories all --clone
-pnpm workspace -- setup --root <workspace-root> --repositories all --apply --clone
-pnpm workspace -- doctor --root <workspace-root> --repositories all
+pnpm workspace -- setup --root <root> --repositories all --hosts codex,claude-code --clone
+pnpm workspace -- setup --root <root> --repositories all --hosts codex,claude-code --clone --apply
 ```
 
-Preview, including `--clone` without `--apply`, does not write or contact remotes. Omit `--clone` for guidance and the knowledge starter
-only; select `--repositories backend,frontend` to provision a smaller role-specific set. Commands
-report repository failures independently and return a nonzero exit for incomplete requested Git
-setup. Diagnose the named failure and retry that hub. Never say authentication succeeded merely
-because a local directory exists. Do not echo credential output during troubleshooting.
+Preview is write-free and does not contact remotes. Inspect file conflicts, the proposed host block
+and unreceipted skill-name collisions. Use `--adopt-skills` only after the replacement is authorized.
+For files only, omit hosts and `--clone`. For role-specific provisioning use, for example,
+`--repositories website`. No role needs access to every application repository.
 
-Reruns preserve owned local edits and do not update baseline commits. They stop before writing on
-unowned file conflicts. Review damaged receipts, unowned anchors and stale operation locks manually;
-do not remove or fabricate them to bypass a guard. The scaffold has no migration, deletion, template
-update or baseline-refresh command.
+Apply installs workspace helper dependencies and all shared skills for the selected hosts through
+the same receipts and byte verification as `headstart-skills-update`. Application dependencies,
+credentials and services remain governed by each application's runbooks. Diagnose named failures
+and retry the affected hub; do not infer successful authentication from directory existence.
 
 ## Explain The Working Model
 
 - Root instructions route work; hub guides identify repositories; tracked checkout instructions
-  govern implementation. Baselines are detached orientation checkouts. Work happens in isolated
-  feature/review worktrees with explicit repository-approved branch names.
-- Use `pnpm workspace -- new-worktree --root <root> --repo <hub> --name <slug> --branch <branch>`.
-  Supply `--base <ref>` for stacked work. Before editing, run
-  `pnpm workspace -- assert-worktree --root <root> --repo <hub> --path <checkout>`.
-- Knowledge starts at `Headstart/Start Here.md` and `Headstart/index.md`. Read original pages after
-  search; verify live state in its owner. This is an empty local Markdown starter, not imported
-  company knowledge. Do not copy personal material or index unrelated directories.
-- `.idea-shared` is for temporary sanitized evidence. Secrets and patient records stay in approved
-  storage; live work status remains in Linear/GitHub and operational procedure in repository docs.
+  govern implementation. Baseline branches are for orientation and reviewed source updates.
+  Feature/review work uses isolated worktrees and repository-approved branch names.
+- From the workspace, run `node bin/headstart.mjs new-worktree --repo <hub> --name <slug> --branch
+<branch>` and supply `--base <ref>` for stacked work. Before editing, run
+  `node bin/headstart.mjs assert-worktree --repo <hub> --path <checkout>`.
+- Knowledge starts at `Headstart/Start Here.md` and `Headstart/index.md`. Search with
+  `node bin/headstart.mjs search --query <terms>`, then retrieve the original using
+  `node bin/headstart.mjs read --page <relative.md>`. Verify volatile state with its live owner.
+  The starter is empty and local; it does not imply shared knowledge synchronization.
+- `.idea-shared` holds temporary sanitized evidence. Durable understanding belongs in knowledge;
+  live status belongs in Linear/GitHub and operational procedure in repository docs. Never copy
+  credentials, patient records or private personal notes into shared artifacts.
+
+## Review Updates
+
+The internal `agent-platform/main` source is compatible with the existing managed skill updater.
+From the workspace, preview `node bin/headstart.mjs skills`, review its commit, then apply with
+`--apply --expected-commit <sha>`. This refreshes selected host skills and helper dependencies.
+Follow the composed `headstart-skills-update` contract; never author in its clean source checkout.
+
+Then preview `node bin/headstart.mjs upgrade --diff`. Apply only the reviewed content with
+`--apply --expected-plan <hash>`. Unmodified owned templates update; local edits are preserved or
+reported as conflicts. When a template and a customization both changed, reconcile the content or
+preview an explicitly authorized `--keep-local <comma-separated-owned-paths>` choice and use its new
+token. Never use that flag to adopt an unowned file. Managed host-block conflicts need manual review.
+Setup/upgrade do not move clones, clean worktrees or modify application baselines.
 
 ## Verify And Hand Off
 
-Report scaffold files, selected repository results, unresolved conflicts and distinct remaining
-states: skill installation, credentials, application dependencies, service startup, knowledge
-population and actual host instruction discovery. Follow `headstart-skills-update` for global
-skills using its supported clean main source; detached orientation checkouts do not satisfy that
-updater's contract. Do not schedule updates as part of workspace setup.
+Run `node bin/headstart.mjs doctor` for the selected repositories and hosts. Report files, clone
+results, runtime, skill bytes, routing and unresolved conflicts separately from credentials,
+application readiness and actual agent behavior. The generated launcher uses `agent-platform/main`
+and works without the bootstrap checkout. Use `bin/headstart` on POSIX or `bin\headstart.cmd` on Windows
+as optional shortcuts.
 
-Codex can stop instruction discovery at a Git root. A root README or AGENTS.md is not proof that
-worktree sessions inherit it. Until host bridges are verified, explicitly direct each worktree
-session to the root and hub guides alongside tracked repository instructions. Test this in the
-operator's actual agent version before claiming automatic loading. A passing doctor checks local
-layout; it does not test the model, protect baselines at the OS level or establish application access.
+Start fresh sessions at the root and a nested worktree in the operator's actual clients. Verify that
+root/hub guidance and tracked repository instructions are all reached, and test a synthetic knowledge
+lookup and approved worktree task. Codex's Git-root boundary is handled by the scoped user rule;
+Claude Code also receives thin imports. Doctor does not prove model compliance. Report custom host
+configuration or client gaps honestly rather than claiming universal context attachment.
 
-Finish with the next concrete action appropriate to the operator's role. Do not add managed services,
-shared storage, QMD scheduling or a company-wide knowledge mirror to finish basic onboarding.
+After installing skills, ask whether the user wants the separate daily skill refresh described in
+`headstart-skills-update`. Enable it only on explicit opt-in. Workspace template upgrades remain
+manual and previewed. Finish with the operator's next concrete task; do not add managed services,
+shared storage, QMD scheduling or a company knowledge mirror to complete basic onboarding.

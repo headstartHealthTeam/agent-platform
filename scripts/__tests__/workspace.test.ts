@@ -74,7 +74,11 @@ describe('workspace scaffold', () => {
     const root = path.join(fixtureRoot(), 'missing');
     vi.spyOn(console, 'log').mockImplementation(() => undefined);
     expect(
-      runWorkspace(parseWorkspaceArgs(['setup', '--root', root, '--clone']), '/missing-source')
+      runWorkspace(
+        parseWorkspaceArgs(['setup', '--root', root, '--clone']),
+        '/source',
+        () => revision
+      )
     ).toBe(0);
     expect(fs.existsSync(root)).toBe(false);
     expect(WORKSPACE_REPOSITORIES.map((repo) => repo.hub)).toEqual([
@@ -367,6 +371,7 @@ describe('workspace command orchestration', () => {
         runWorkspace(parseWorkspaceArgs(['setup', '--root', root, '--apply']), source, git)
       ).toThrow('clean');
       expect(fs.existsSync(root)).toBe(false);
+      fs.unlinkSync(path.join(source, 'untracked.txt'));
       fs.mkdirSync(root);
       fs.writeFileSync(path.join(root, 'README.md'), 'existing setup');
       expect(() =>

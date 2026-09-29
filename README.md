@@ -58,7 +58,8 @@ such as:
 
 For a new workstation workspace, start with the [workspace onboarding guide](docs/workspace-onboarding.md)
 and [`headstart-workspace-setup`](skills/headstart-workspace-setup/SKILL.md). It scaffolds six repository
-hubs and a knowledge starter; actual host context discovery remains a separate acceptance check.
+hubs, searchable Markdown knowledge, Codex/Claude Code routing, shared skills and reviewed upgrades.
+Installed helpers run from the workspace itself; verify actual client behavior during onboarding.
 
 ## Local And Managed Consumption
 

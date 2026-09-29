@@ -87,6 +87,16 @@
       "prompt": "Create a new shared Headstart skill for reviewing payer documents.",
       "shouldActivate": false,
       "expectedBehaviors": ["Uses the shared skill authoring workflow instead"]
+    },
+    {
+      "name": "onboarded-workspace-refresh",
+      "prompt": "Refresh the skills in my existing scaffolded Headstart workspace and tell me whether its guides need updates.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the clean agent-platform/main source and installed workspace skills command",
+        "Requires the previewed commit before applying and then previews template changes separately",
+        "Does not silently replace customized guides or enable scheduled workspace upgrades"
+      ]
     }
   ]
 }
