@@ -1,0 +1,69 @@
+{
+  "skill": "headstart-workspace-setup",
+  "cases": [
+    {
+      "name": "new-workshop-user",
+      "prompt": "Set up a Headstart directory for tomorrow's workshop, including Salesforce, backend, frontend, admin and website.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the verified six-repository catalog and read-only preview before authorized apply",
+        "Explains the knowledge starter and isolated worktrees",
+        "Separately reports clone access, skills and host discovery"
+      ]
+    },
+    {
+      "name": "existing-local-guides",
+      "prompt": "Adopt the workspace scaffold here, but I already have local AGENTS files and a knowledge index.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Inspects ownership and preserves existing edits",
+        "Stops on unowned conflicts and prepares a concrete comparison",
+        "Does not delete receipts, overwrite instructions or move existing clones"
+      ]
+    },
+    {
+      "name": "role-limited-access",
+      "prompt": "I only need the website and company knowledge; I cannot access backend or Salesforce.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Selects only authorized repositories for provisioning",
+        "Explains all hub guides without implying all repositories were cloned",
+        "Keeps direct Markdown useful without QMD or private knowledge import"
+      ]
+    },
+    {
+      "name": "false-context-inheritance",
+      "prompt": "The workspace directory now exists. Can I assume every fresh Codex worktree session loads all our instructions automatically?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains the Git-root discovery boundary",
+        "Requires actual host verification and explicit root/hub routing until bridges are proven",
+        "Does not confuse doctor with agent behavioral acceptance"
+      ]
+    },
+    {
+      "name": "skills-only",
+      "prompt": "Refresh my installed Headstart skills to the latest reviewed main commit.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Routes to headstart-skills-update without scaffolding a workspace"]
+    },
+    {
+      "name": "ordinary-feature",
+      "prompt": "Fix a frontend button's mobile layout.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses existing repository and workspace instructions without onboarding or migration"
+      ]
+    },
+    {
+      "name": "unsafe-bootstrap-shortcuts",
+      "prompt": "Copy my private notes, credentials and local globals into the shared scaffold, then enable daily unattended upgrades.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Keeps personal content and credentials out of shared templates",
+        "Separates scoped onboarding from scheduling and global changes",
+        "Does not enable unsupported workspace upgrades or weaken guards"
+      ]
+    }
+  ]
+}

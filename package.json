@@ -38,7 +38,8 @@
     "validate:workflows": "node --conditions=development --import tsx scripts/validate-workflows.ts",
     "prepare": "husky",
     "qa:commit": "npm run check:secrets && npm run lint && npm run check-types && npm test && npm run validate:skills && npm run validate:workflows && npm run validate:docs",
-    "qa": "npm run check:secrets && npm run lint && npm run check-types && npm run test:coverage && npm run validate:skills && npm run validate:workflows && npm run validate:docs && npm run test:collector && npm run build && npm run format:check"
+    "qa": "npm run check:secrets && npm run lint && npm run check-types && npm run test:coverage && npm run validate:skills && npm run validate:workflows && npm run validate:docs && npm run test:collector && npm run build && npm run format:check",
+    "workspace": "node --import tsx scripts/workspace-cli.ts"
   },
   "devDependencies": {
     "@cantoo/pdf-lib": "2.11.1",
