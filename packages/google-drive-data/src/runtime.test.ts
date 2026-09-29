@@ -199,7 +199,8 @@ describe('deployable Drive runtime CLI', () => {
       expect(await readFile(path, 'utf8')).not.toContain('blob');
       expect(await readFile(path, 'utf8')).not.toContain('exportMimeType');
       expect(fetcher).toHaveBeenCalledTimes(4);
-    }
+    },
+    15_000 // Full filesystem/materialization integration exceeds 5 seconds on Windows CI.
   );
   it.each(['version', 'permission', 'invalid-structure'])(
     'does not materialize Docs bytes after a %s failure',
