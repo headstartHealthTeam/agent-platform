@@ -398,7 +398,7 @@ describe('installed onboarding flow', () => {
       expect(runWorkspace(parseWorkspaceArgs([...args, '--apply']), seed, git, services)).toBe(0);
       expect(read(home, '.agents/skills/example/SKILL.md')).toContain('Example');
       expect(read(home, '.claude/skills/example/SKILL.md')).toContain('Example');
-      expect(read(home, '.codex/AGENTS.md')).toContain(root);
+      expect(read(home, '.codex/AGENTS.md')).toContain(JSON.stringify(root));
       expect(git(workspaceSource(root), ['branch', '--show-current'])).toBe('main');
       const launcher = spawnSync(
         process.execPath,
