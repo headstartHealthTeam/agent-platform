@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import { packageBackendIntegration } from '../package-backend-integration.js';
 import { packageCredentialingRuntime } from '../package-credentialing-runtime.js';
+import { prepareCredentialingRelease } from '../prepare-credentialing-release.js';
 import { runtimeFingerprint, type RuntimeCommand } from '../runtime-packaging.js';
 import { verifyCredentialingRuntime } from '../verify-credentialing-runtime.js';
 
@@ -47,17 +48,20 @@ describe('credentialing release assembly', () => {
         if (args.includes('--version')) return '9.15.0';
         if (args.includes('rev-parse')) return 'a'.repeat(40);
         if (args.includes('status')) return '';
+        if (args.includes('audit')) return 'No known vulnerabilities found';
         expect(args).toContain('@headstart-health/workflow-provider-credentialing');
-        await mkdir(target);
+        const destination = args.at(-1);
+        if (!destination) throw new Error('Missing package destination');
+        await mkdir(destination);
         await writeFile(
-          join(target, 'package.json'),
+          join(destination, 'package.json'),
           JSON.stringify({
             name: '@headstart-health/workflow-provider-credentialing',
             version: '0.1.0',
           })
         );
         for (const name of ['document-reading', 'google-drive-data', 'headstart-mcp-data']) {
-          const path = join(target, `node_modules/@headstart-health/${name}/dist`);
+          const path = join(destination, `node_modules/@headstart-health/${name}/dist`);
           await mkdir(path, { recursive: true });
           await writeFile(join(path, 'cli.js'), '// installed production entry');
         }
@@ -93,6 +97,44 @@ describe('credentialing release assembly', () => {
         'operator-module.cjs',
         'prepared-definition.json',
       ]);
+      const release = join(directory, 'paired-release');
+      let verified = false;
+      await prepareCredentialingRelease(
+        source,
+        release,
+        'a'.repeat(40),
+        command,
+        async (runtime) => {
+          expect(await readFile(join(runtime, 'RUNTIME.md'), 'utf8')).toContain(
+            'Installed credentialing'
+          );
+          verified = true;
+        }
+      );
+      expect(verified).toBe(true);
+      const handoff: unknown = JSON.parse(await readFile(join(release, 'handoff.json'), 'utf8'));
+      expect(handoff).toMatchObject({
+        backendReleasePin: {
+          repository: 'headstartHealthTeam/agent-platform',
+          revision: 'a'.repeat(40),
+        },
+        runtime: { runtimeRevision: receipt['runtimeRevision'] },
+        integration: { runtimeRevision: receipt['runtimeRevision'] },
+        configurationRequired: true,
+      });
+      await expect(
+        prepareCredentialingRelease(source, join(source, 'inside'), 'a'.repeat(40), command)
+      ).rejects.toThrow('outside');
+      await expect(
+        prepareCredentialingRelease(source, release, 'a'.repeat(40), command)
+      ).rejects.toThrow();
+      const failed = join(directory, 'failed-release');
+      await expect(
+        prepareCredentialingRelease(source, failed, 'a'.repeat(40), command, () =>
+          Promise.reject(new Error('smoke failed'))
+        )
+      ).rejects.toThrow('smoke failed');
+      await expect(readFile(join(failed, 'handoff.json'))).rejects.toThrow();
       await expect(packageBackendIntegration(source, 'relative', command)).rejects.toThrow(
         'Absolute'
       );

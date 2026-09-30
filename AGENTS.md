@@ -357,6 +357,10 @@ corepack pnpm qa
 
 ## Git And Releases
 
+- Before a merge or paired runtime release, follow the README's
+  [dependency checks for agents and maintainers](README.md#dependency-checks-for-agents-and-maintainers).
+  Fresh exact-source security evidence is separate from deterministic QA and live review approval.
+
 - `main` is the stable source branch for this repository. Feature branches target `main`.
 - Use conventional commits and never force-push.
 - Do not commit generated installation metadata or installed skill copies.

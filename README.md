@@ -332,6 +332,39 @@ Read the [repository guide](AGENTS.md), [documentation hub](docs/README.md), and
 
 ## Release Policy
 
+### Dependency checks for agents and maintainers
+
+A green audit is time-sensitive: the lockfile fixes package versions, not the advisory database.
+Immediately before an authorized merge, use the clean exact PR head and run:
+
+```sh
+pnpm security:preflight --expected-source <40-character-reviewed-SHA> --output /absolute/new-audit-receipt.json
+pnpm security:preflight --expected-source <40-character-reviewed-SHA> --verify /absolute/new-audit-receipt.json
+```
+
+Both production and complete dependency inventories must pass the existing moderate threshold.
+The receipt binds source, lockfile and audit completion time and expires after 15 minutes. Refresh
+only the audit if it expires; any source change also invalidates it. Refresh live GitHub CI, review
+and thread state separately. This command does not merge, approve or waive a failed check; GitHub
+does not automatically expire an earlier green check. Keep registry access out of local QA/hooks.
+
+When a finding appears, inspect all current advisories, upstream patched versions and actual
+consumers together. Apply the smallest compatible correction, exercise regressions and keep normal
+QA. Do not disable audits, raise thresholds, add blanket exceptions or run an unreviewed mass update.
+For detailed failures, run `pnpm audit --prod --audit-level moderate` and
+`pnpm audit --audit-level moderate` directly; a network failure is not a clean security result.
+
+The daily **Dependency security watch** detects new advisories between code changes. Dependabot
+security updates must be enabled in GitHub; the checked-in group batches compatible patch/minor
+security updates, separately from weekly version updates. Neither mechanism auto-merges changes.
+Verify settings using the [public repository security contract](docs/public-repository-security.md).
+
+For credentialing, use the [paired release preparation](docs/credentialing-hosted-release.md#build)
+to produce both artifacts and a matching source-pin handoff. Do not update a backend pin and discover
+its runtime/profile dependency afterward. Provisioning, deployment, matching profile/IAM selection
+and complete rollback remain separately authorized. A fresh scan reduces late surprises; it cannot
+guarantee that no advisory will be published afterward.
+
 `main` contains stable reviewed source. Releases use semantic tags. Skill and workflow changes must
 identify their behavioral and compatibility impact, pass the repository QA command, and include
 release notes. Cloud or scheduled runtimes never follow an unreviewed branch automatically and must

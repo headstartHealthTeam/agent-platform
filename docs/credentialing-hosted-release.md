@@ -29,15 +29,22 @@ From the repository root:
 ```sh
 pnpm install --frozen-lockfile
 pnpm build
-pnpm credentialing:package --target /absolute/new-runtime-directory
-node --import tsx scripts/verify-credentialing-runtime.ts --runtime /absolute/new-runtime-directory
-node --import tsx scripts/package-backend-integration.ts --target /absolute/new-application-artifacts
+pnpm credentialing:release --expected-source <40-character-reviewed-SHA> --target /absolute/new-release-directory
 ```
+
+This reuses the existing packagers and installed-reader verifier to create `runtime/`,
+`backend-integration/` and, only after successful verification, `handoff.json`. The handoff records
+the fresh dependency audit, exact backend source-pin JSON, runtime receipt and integration digests.
+The output must be new and outside the checkout. A failed preparation may leave partial outputs;
+without a handoff they are not a completed release. No cloud resources or backend files are changed.
+The handoff is local/CI evidence, not a signed security attestation or permission to deploy. Recheck
+the audit before merge if its 15-minute freshness window has elapsed.
 
 The normal CI's **Hosted Linux runtime artifact** job runs the installed PDF page renderer and Office
 worker outside the checkout, checks the whole dependency tree, and produces a Linux x64 tarball plus
 receipt named `credentialing-linux-runtime-<exact-source-SHA>`. It enforces the hosted 50 MiB input
-limit. Mac/Windows build output is for that local platform, not a hosted release. The backend release
+limit and also retains the matching application artifacts and handoff. Mac/Windows build output is
+for that local platform, not a hosted release. The backend release
 build independently produces its small integration artifacts from the same exact source SHA.
 
 `runtimeRevision` binds source SHA, lockfile and canonical definition bytes. The runtime archive has

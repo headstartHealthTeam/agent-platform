@@ -85,6 +85,7 @@ jobs:
         run: pnpm audit --prod --audit-level moderate
 
       - name: Audit development dependencies
+        if: ${{ !cancelled() }}
         run: pnpm audit --audit-level moderate
 
   required:
@@ -126,15 +127,16 @@ jobs:
           node-version: 22
           cache: pnpm
       - name: Assemble and verify the installed runtime
+        env:
+          RELEASE_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
           pnpm install --frozen-lockfile
           pnpm build
-          node --import tsx scripts/package-credentialing-runtime.ts --target "$RUNNER_TEMP/credentialing-runtime"
-          node --import tsx scripts/verify-credentialing-runtime.ts --runtime "$RUNNER_TEMP/credentialing-runtime"
-          tar -czf "$RUNNER_TEMP/credentialing-runtime.tar.gz" -C "$RUNNER_TEMP/credentialing-runtime" .
+          pnpm credentialing:release --expected-source "$RELEASE_SOURCE" --target "$RUNNER_TEMP/credentialing-release"
+          tar -czf "$RUNNER_TEMP/credentialing-runtime.tar.gz" -C "$RUNNER_TEMP/credentialing-release/runtime" .
           test "$(stat -c %s "$RUNNER_TEMP/credentialing-runtime.tar.gz")" -le 52428800
-          cp "$RUNNER_TEMP/credentialing-runtime/runtime-receipt.json" "$RUNNER_TEMP/runtime-receipt.json"
+          cp "$RUNNER_TEMP/credentialing-release/runtime/runtime-receipt.json" "$RUNNER_TEMP/runtime-receipt.json"
           sha256sum "$RUNNER_TEMP/credentialing-runtime.tar.gz"
       - name: Retain immutable runtime deployment input
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -143,5 +145,7 @@ jobs:
           path: |
             ${{ runner.temp }}/credentialing-runtime.tar.gz
             ${{ runner.temp }}/runtime-receipt.json
+            ${{ runner.temp }}/credentialing-release/handoff.json
+            ${{ runner.temp }}/credentialing-release/backend-integration/
           if-no-files-found: error
           retention-days: 30
