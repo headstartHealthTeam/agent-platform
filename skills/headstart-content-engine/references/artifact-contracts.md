@@ -118,6 +118,11 @@ Record:
 - capabilities that were unavailable, including route validation, asset generation or inspection,
   reviewer-artifact export, rendered preview, or implementation-level link validation.
 
+For family content, include passage-level novice-reader comprehension findings: what the reader can
+understand or do, missing assumed knowledge, and the consequence of any defect. Record readability
+measurement as diagnostic evidence with tool/version and text scope, or `not_checked`; do not
+invent a grade or use it as the sole voice/usefulness gate.
+
 ## Revision Bundle
 
 A revision bundle contains the full new draft bundle plus:

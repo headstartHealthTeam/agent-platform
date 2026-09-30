@@ -2,6 +2,39 @@
   "skill": "write-headstart-tone-and-voice",
   "cases": [
     {
+      "name": "novice-parent-not-provider-language",
+      "prompt": "Rewrite this Headstart family paragraph using only its supplied meaning: 'Establish the ABA benefit under this specific plan. Verify network participation and practice capacity for the proposed setting.' Meaning: ask whether the child's exact plan covers ABA and what requirements apply; check whether the provider has a contract with that plan; ask about openings or a waitlist where care would happen. Assume no prior insurance knowledge. Add no promises or process claims.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains the reader's actual coverage, exact-plan network, and appointment questions in familiar adult language",
+        "Introduces necessary terminology through its practical meaning instead of swapping in another professional synonym",
+        "Preserves the distinction between insurance coverage and an available appointment",
+        "Adds no guarantee, assumed emotion, or unsupported Headstart process"
+      ]
+    },
+    {
+      "name": "cost-example-preserves-premises",
+      "prompt": "Explain coinsurance for a Headstart parent guide. Supplied hypothetical facts only: the deductible is already met, the covered charge is $100, the family pays 20%, the plan pays 80%, and no other charge applies. Make the explanation and a follow-up question usable. Do not imply this is a typical ABA price or every plan's arrangement.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains the term through the $20 family and $80 plan shares with correct arithmetic",
+        "Labels the example hypothetical and preserves all supplied assumptions",
+        "Offers a practical question about the reader's own share without inventing coverage or cost",
+        "Does not present a glossary definition alone as a complete explanation"
+      ]
+    },
+    {
+      "name": "reading-score-cannot-change-facts",
+      "prompt": "Simplify supplied Headstart family guidance toward a fourth-grade reading level. Required terms include TRICARE and prior authorization, which the supplied facts explain. An automated score is above grade four. Do not remove eligibility limits, change payer responsibilities, or invent a measured score.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses familiar connected explanations while retaining necessary terms and material qualifications",
+        "Treats the score as diagnostic rather than a hard acceptance threshold",
+        "Does not turn the adult article into fragments or childish speech",
+        "Does not claim an achieved numerical grade without measurement"
+      ]
+    },
+    {
       "name": "respectful-but-detached-opening",
       "prompt": "Revise only this Headstart family guide opening: 'The child remains an individual with strengths and relationships. The report supplies information for subsequent decisions.' The reviewer says it sounds cold and transactional. Supplied facts: the reader may bring questions to the evaluator and need not resolve every question immediately. Keep the next section unchanged and add no diagnosis, outcome, or emotional assumptions.",
       "shouldActivate": true,
