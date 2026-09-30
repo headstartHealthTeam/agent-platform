@@ -48,6 +48,11 @@ credible evidence patterns, weak or missing coverage, conversion patterns, and o
 length observations. Do not reproduce competitor expression or turn frequency into a mandatory
 outline.
 
+For family Resources, include a compact audience-language record using
+[the audience-language procedure](audience-language.md): source identity, retrieval scope,
+paraphrased questions, writer implications, and limitations. Keep this distinct from competitor
+findings and authoritative claim evidence. Record unavailable or substituted evidence explicitly.
+
 ### 5. Information-Gain Thesis
 
 State the specific contribution Headstart can make, the evidence that supports it, and what would
@@ -57,19 +62,19 @@ make the proposed Resource materially more useful than a generic synthesis.
 
 For each material claim or direction, record:
 
-| Field              | Meaning                                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| `claimId`          | Stable packet-local identifier                                                                 |
-| `claimOrDirection` | Fact, constraint, or editorial direction supported                                             |
-| `sourceId`         | Stable source URL or identifier                                                                |
-| `sourceTitle`      | Human-readable title                                                                           |
-| `publisherOrOwner` | Source authority                                                                               |
-| `retrievedAt`      | Retrieval date and time when available                                                         |
-| `locator`          | Section, heading, page, table, or concise anchor                                               |
-| `sourceRole`       | Primary, authoritative, approved Headstart, first-party performance, or competitor observation |
-| `sensitivity`      | Clinical, insurance, legal, geographic, availability, outcome, quantitative, or ordinary       |
-| `status`           | Supported, partial, conflicting, stale, missing, or human review required                      |
-| `notes`            | Qualifiers and prohibited interpretations                                                      |
+| Field              | Meaning                                                                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `claimId`          | Stable packet-local identifier                                                                                       |
+| `claimOrDirection` | Fact, constraint, or editorial direction supported                                                                   |
+| `sourceId`         | Stable source URL or identifier                                                                                      |
+| `sourceTitle`      | Human-readable title                                                                                                 |
+| `publisherOrOwner` | Source authority                                                                                                     |
+| `retrievedAt`      | Retrieval date and time when available                                                                               |
+| `locator`          | Section, heading, page, table, or concise anchor                                                                     |
+| `sourceRole`       | Primary, authoritative, approved Headstart, first-party performance, competitor observation, or audience observation |
+| `sensitivity`      | Clinical, insurance, legal, geographic, availability, outcome, quantitative, or ordinary                             |
+| `status`           | Supported, partial, conflicting, stale, missing, or human review required                                            |
+| `notes`            | Qualifiers and prohibited interpretations                                                                            |
 
 ### 7. Writer Brief
 
@@ -78,6 +83,9 @@ Provide:
 - working title and page job;
 - audience, likely entry question, and emotional or practical need supported by the opportunity or
   evidence rather than inferred as fact;
+- prior-knowledge assumptions, audience-language observations, and explanations needed before
+  tasks; apply the tone skill's family accessibility direction rather than making provider
+  terminology the default;
 - reader outcome;
 - decision sequence or journey stage showing when the reader can use each major section;
 - recommended semantic H1/H2/H3 structure and required subtopics;

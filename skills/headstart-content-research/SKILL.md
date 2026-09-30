@@ -4,7 +4,7 @@ description: Turn one approved Headstart content opportunity into a bounded, evi
 compatibility: Requires access to the exact approved opportunity source plus authenticated keyword and organic-search research, web-page retrieval, and approved Headstart source materials. Semrush is the preferred keyword and SERP evidence provider when available.
 metadata:
   author: headstart-health
-  version: '0.3.1'
+  version: '0.4.0'
 ---
 
 # Headstart Content Research
@@ -19,6 +19,8 @@ Read these references before starting:
 - [approved opportunity intake](references/approved-opportunity-intake.md);
 - [keyword, SERP, and competitive research](references/keyword-serp-research.md); and
 - [research packet contract](references/research-packet-contract.md).
+
+For family Resources, also read [audience-language research](references/audience-language.md).
 
 ## Capability And Authority Boundary
 
@@ -70,15 +72,19 @@ decisions, not mandatory links or blanket authority for clinical claims.
    inspect the pages themselves. Separate true editorial competitors from directories, ads,
    forums, videos, tools, and unrelated intent. Record recurring coverage, useful formats, gaps,
    weak claims, and conversion patterns.
-5. **Find information gain.** State what Headstart can add that a generic synthesis cannot: an
+5. **Understand the audience's language.** For family Resources, use the bounded audience-language
+   procedure to identify how parents ask about this topic, what they may not know, and which
+   concrete explanations would help. Keep observations separate from factual authority and record
+   retrieval limits. Other audiences need this pass only when the brief or evidence warrants it.
+6. **Find information gain.** State what Headstart can add that a generic synthesis cannot: an
    approved operational fact, first-party explanation, audience-specific decision aid, clearer
    framework, current local context, original example, or named expert input. If no defensible
    information gain exists, recommend revising or rejecting the opportunity instead of drafting
    commodity content.
-6. **Build the evidence ledger.** Preserve source title, URL or stable identifier, publisher,
+7. **Build the evidence ledger.** Preserve source title, URL or stable identifier, publisher,
    retrieval date, relevant section, supported claim, sensitivity, and freshness. Distinguish
    primary or authoritative sources, Headstart-approved facts, and competitor observations.
-7. **Prepare the brief.** Define the page job, reader outcome, primary query and supporting cluster,
+8. **Prepare the brief.** Define the page job, reader outcome, primary query and supporting cluster,
    required subtopics, semantic structure, claim constraints, outbound and inbound internal-link
    architecture, CTA, conversion role, imagery needs, and unresolved questions. For family
    Resources, also identify the reader's likely entry question, the practical or emotional context
@@ -89,7 +95,7 @@ decisions, not mandatory links or blanket authority for clinical claims.
    or decision it limits. For every proposed link, preserve route, page
    job, placement, anchor direction, reader rationale, destination state, and validation result.
    Competitor length may be recorded as context but must not become a word-count target.
-8. **Freeze and hand off.** Produce the complete packet defined in
+9. **Freeze and hand off.** Produce the complete packet defined in
    [the contract](references/research-packet-contract.md), assign a packet identifier and version,
    and stop. Later changes create a new packet version rather than silently replacing evidence.
 
