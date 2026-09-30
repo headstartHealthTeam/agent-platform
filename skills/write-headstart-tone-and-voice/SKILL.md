@@ -4,7 +4,7 @@ description: Write or revise Headstart Health audience-facing content for famili
 compatibility: Works with agents that can receive a content brief, draft, or factual source material.
 metadata:
   author: headstart-health
-  version: '1.2.1'
+  version: '1.3.0'
 ---
 
 # Write Headstart Tone And Voice
@@ -134,6 +134,14 @@ Headstart's role is a **calm guide**. The emotional job is to reduce uncertainty
 step clearer without making the family feel managed or talked down to.
 
 - Be calm, welcoming, and practical.
+- Assume no prior clinical or insurance knowledge. Aim roughly at a fourth-grade reading level
+  while speaking respectfully to an adult. Use familiar words and connected explanations; keep
+  necessary terms, accurate distinctions, and material limits. A readability score is diagnostic,
+  not proof of comprehension or a reason to remove facts, use fragments, or talk down to parents.
+- Use the supplied audience-language evidence to understand the family's question, not to mimic
+  forum slang or copy personal stories. Explain the answer before giving tasks. Do not make the
+  parent translate professional labels such as `capacity`, `benefit`, or `authorization` into what
+  happens next; name the practical meaning in context rather than banning those words.
 - Open educational content with the question or decision bringing the family to the page. Briefly
   recognize the significance of that moment when the topic supports it, explain why the information
   matters, and move into useful guidance. Grounded reassurance can help before procedural detail;
@@ -396,6 +404,9 @@ Before accepting polished copy, challenge it with these questions:
 - Is optional language preserving a real choice, or withholding a straightforward useful action?
 - Are questions, examples, and preparation details organized around when the family can use them?
 - Are clinical roles and terms explained before the copy relies on shorthand?
+- Can a parent new to the topic explain the main answer and use the next question without outside
+  knowledge? A glossary alone does not make a term useful, and short familiar words can still hide
+  an unclear action or missing explanation.
 
 If several answers expose generic language, rewrite with a concrete person, action, concern,
 example, or next step. Clean grammar is not enough when the writing feels impersonal or generated.
