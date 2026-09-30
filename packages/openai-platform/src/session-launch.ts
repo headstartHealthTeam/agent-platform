@@ -48,6 +48,18 @@ export const launchSettings = z
 
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,200}$/);
 const notAttempted = 'not-attempted';
+function uncertainCreate(error: unknown): AgentSessionCreateResult {
+  return {
+    status: 'unknown',
+    reason: 'provider-outcome',
+    ...(error instanceof MutationOutcomeUnknownError && error.providerRequestId
+      ? { providerRequestId: error.providerRequestId }
+      : {}),
+    ...(error instanceof MutationOutcomeUnknownError && error.launchDiagnostic
+      ? { diagnostic: error.launchDiagnostic }
+      : {}),
+  };
+}
 async function retainCredentialProtection(
   action: Extract<Action, { operation: 'sessions.create' }>,
   paths: string[] | undefined,
@@ -227,13 +239,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
       data = result.data;
     } catch (error) {
       if (!dispatch.crossed) return { status: notAttempted, reason: dispatch.reason };
-      return {
-        status: 'unknown',
-        reason: 'provider-outcome',
-        ...(error instanceof MutationOutcomeUnknownError && error.providerRequestId
-          ? { providerRequestId: error.providerRequestId }
-          : {}),
-      };
+      return uncertainCreate(error);
     }
     return creationResult(data, request, options.expectedTarget);
   }

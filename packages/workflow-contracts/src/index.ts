@@ -53,6 +53,7 @@ export type {
   AgentLaunchCandidatePage,
   AgentLaunchPort,
 } from './launch.js';
+export { agentLaunchDiagnostic, type AgentLaunchDiagnostic } from './launch-diagnostic.js';
 
 export type {
   AgentConversationPart,
