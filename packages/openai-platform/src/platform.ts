@@ -1,5 +1,10 @@
 import { verifyCapabilityPreflight } from '@headstart-health/capability-runtime';
-import type { AgentArtifact, AgentArtifactRequest } from '@headstart-health/workflow-contracts';
+import {
+  agentLaunchDiagnostic,
+  type AgentLaunchDiagnostic,
+  type AgentArtifact,
+  type AgentArtifactRequest,
+} from '@headstart-health/workflow-contracts';
 import OpenAI from 'openai';
 
 import {
@@ -31,6 +36,7 @@ import { pendingFunctionCalls } from './pending-functions.js';
 import { prepareRuntimeUpload } from './runtime-upload.js';
 
 export { fingerprint } from './fingerprint.js';
+const sessionCreate = 'sessions.create';
 export interface ActionPlan {
   operation: Action['operation'];
   target: Target;
@@ -66,9 +72,29 @@ export class OpenAIResourceMissingError extends Error {
     super('OpenAI read failed; the requested resource was not found.');
   }
 }
+function mutationFailureKind(error: unknown): AgentLaunchDiagnostic['kind'] {
+  if (error instanceof OpenAI.APIConnectionTimeoutError) return 'timeout';
+  if (error instanceof OpenAI.APIConnectionError) return 'connection';
+  if (error instanceof OpenAI.APIError && error.status !== undefined) return 'http';
+  return 'unclassified';
+}
+function launchFailure(error: unknown): AgentLaunchDiagnostic {
+  const diagnostic: AgentLaunchDiagnostic = {
+    operation: sessionCreate,
+    kind: mutationFailureKind(error),
+  };
+  if (!(error instanceof OpenAI.APIError)) return diagnostic;
+  // The SDK types some response fields as any. Preserve them as unknown until allowlisting.
+  const code: unknown = error.code;
+  const type: unknown = error.type;
+  const parameter: unknown = error.param;
+  const status: unknown = error.status;
+  return agentLaunchDiagnostic({ ...diagnostic, status, code, type, parameter }) ?? diagnostic;
+}
 export class MutationOutcomeUnknownError extends Error {
   readonly providerRequestId?: string;
-  constructor(error: unknown) {
+  readonly launchDiagnostic?: AgentLaunchDiagnostic;
+  constructor(error: unknown, operation?: Action['operation']) {
     super(
       'Mutation failed or outcome is unknown. Reconcile the resource before retrying; no automatic retry was attempted.'
     );
@@ -78,6 +104,7 @@ export class MutationOutcomeUnknownError extends Error {
       /^[A-Za-z0-9_-]{1,200}$/.test(error.requestID)
     )
       this.providerRequestId = error.requestID;
+    if (operation === sessionCreate) this.launchDiagnostic = launchFailure(error);
   }
 }
 function sanitizedReadError(error: unknown): Error {
@@ -101,7 +128,7 @@ function sanitizedMutationError(action: Action, error: unknown): Error {
   )
     return new InputNotSteerableError();
   // Never retain SDK errors as causes: they may carry request, response or credential content.
-  return new MutationOutcomeUnknownError(error);
+  return new MutationOutcomeUnknownError(error, action.operation);
 }
 
 // Never return or serialize an SDK Page: it contains transport state, not just API data.

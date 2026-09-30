@@ -413,6 +413,17 @@ A crash after `creating` is uncertain. Never infer safe recreation from a timeou
 failure or zero search matches, and never reset an issued credential merely because creation is
 uncertain. Retain separate Stop/revocation authority.
 
+For a failed session-create dispatch, the adapter retains the provider request ID and a
+`diagnostic` containing only the operation, HTTP/connection/timeout/unclassified category,
+numeric HTTP status and allowlisted error code/type/parameter. Array positions in recognized
+parameter paths are removed. Unrecognized strings become `unrecognized`; absent fields stay
+absent. Messages, bodies, headers, causes, tool arguments and credentials are never retained.
+The canonical workflow-contracts sanitizer also lets the application revalidate before storage.
+These fields explain a future failure; they do not change `unknown` into `not-attempted`, prove
+no session exists, or permit a retry. Errors discarded by an older adapter cannot be reconstructed
+by upgrading it: use the original request ID for provider-side investigation. Any controlled
+reproduction requires a separate explicit decision, not resetting the original launch journal.
+
 The result is `created` with a receipt, `not-attempted` with a sanitized local-validation,
 provider-preflight or pre-dispatch reason, or `unknown` after crossing the dispatch boundary or
 receiving an unusable response. Unknown results may retain a provider request ID and candidate

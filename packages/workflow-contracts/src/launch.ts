@@ -1,4 +1,5 @@
 import type { AgentCredentialProtection } from './credential-protection.js';
+import type { AgentLaunchDiagnostic } from './launch-diagnostic.js';
 import type { OperatorBinding } from './operator.js';
 
 /** Reviewed non-secret source files, not case evidence or credentials. Paths are absolute sandbox
@@ -99,6 +100,8 @@ export type AgentSessionCreateResult =
   | {
       status: 'unknown';
       reason: 'provider-outcome' | 'invalid-response';
+      /** Safe error metadata only; never permission to retry the create. */
+      diagnostic?: AgentLaunchDiagnostic;
       providerRequestId?: string;
       /** A response hint only: inspect and correlate it before adopting or cancelling. */
       candidateSessionId?: string;

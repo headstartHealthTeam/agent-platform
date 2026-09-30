@@ -1,9 +1,10 @@
 import type { AgentLaunchRequest } from '@headstart-health/workflow-contracts';
+import OpenAI from 'openai';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { resolveConfig } from './config.js';
 import { OperatorRuntimePort } from './operator-runtime.js';
-import { OpenAIPlatform, fingerprint } from './platform.js';
+import { OpenAIPlatform, fingerprint, MutationOutcomeUnknownError } from './platform.js';
 import { SessionLaunchPort } from './session-launch.js';
 
 const target = { organizationId: 'org-synthetic', projectId: 'proj_synthetic' };
@@ -105,6 +106,25 @@ function fixture(
 }
 afterEach(() => vi.useRealTimers());
 describe('session dispatch certainty at the official SDK boundary', () => {
+  it.each([
+    {
+      error: new OpenAI.APIConnectionTimeoutError({ message: 'invented-private-timeout' }),
+      kind: 'timeout',
+    },
+    {
+      error: new OpenAI.APIConnectionError({ message: 'invented-private-transport' }),
+      kind: 'connection',
+    },
+    { error: new Error('invented-private-failure'), kind: 'unclassified' },
+  ])('sanitizes $kind errors without a cause or raw payload', ({ error, kind }) => {
+    const result = new MutationOutcomeUnknownError(error, 'sessions.create');
+    expect(result.launchDiagnostic).toEqual({ operation: 'sessions.create', kind });
+    expect(result.cause).toBeUndefined();
+    expect(`${result.message}${JSON.stringify(result)}`).not.toContain('invented-private');
+    expect(
+      new MutationOutcomeUnknownError(error, 'sessions.send').launchDiagnostic
+    ).toBeUndefined();
+  });
   it('exposes recovery through the shared runtime port and never creates after close', async () => {
     const f = fixture();
     expect(await f.port.inspectLaunchCandidate(expectedTarget, session.id)).toEqual({
@@ -214,6 +234,9 @@ describe('session dispatch certainty at the official SDK boundary', () => {
         status: 'unknown',
         reason: 'provider-outcome',
         ...(loseResponse ? {} : { providerRequestId: 'req_synthetic' }),
+        diagnostic: loseResponse
+          ? { operation: 'sessions.create', kind: 'connection' }
+          : { operation: 'sessions.create', kind: 'http', status: 503, type: 'internal_error' },
       });
       expect(f.calls).toEqual(['GET /v1/agents', 'POST /v1/agents/sessions']);
     }
@@ -227,6 +250,63 @@ describe('session dispatch certainty at the official SDK boundary', () => {
       providerRequestId: 'req_synthetic',
     });
     expect(f.calls).toEqual(['GET /v1/agents', 'POST /v1/agents/sessions']);
+  });
+  it.each([400, 401, 403, 424, 429, 500])(
+    'retains safe create diagnostics for HTTP %s without granting permission to replay',
+    async (status) => {
+      const f = fixture({
+        mutationStatus: status,
+        mutationBody: {
+          error: {
+            message: 'invented private evidence and credentials',
+            type: 'invalid_request_error',
+            code: 'invalid_value',
+            param: 'agent.tools[0].transport.authorization',
+            details: { authorization: 'invented-private-token' },
+          },
+        },
+      });
+      expect(await f.port.createSession(request, undefined, { expectedTarget })).toEqual({
+        status: 'unknown',
+        reason: 'provider-outcome',
+        providerRequestId: 'req_synthetic',
+        diagnostic: {
+          operation: 'sessions.create',
+          kind: 'http',
+          status,
+          code: 'invalid_value',
+          type: 'invalid_request_error',
+          parameter: 'agent.tools.transport.authorization',
+        },
+      });
+      expect(f.calls).toEqual(['GET /v1/agents', 'POST /v1/agents/sessions']);
+    }
+  );
+  it('replaces unrecognized error metadata rather than persisting arbitrary provider strings', async () => {
+    const f = fixture({
+      mutationStatus: 400,
+      mutationBody: {
+        error: {
+          message: 'invented-private-message',
+          type: 'invented-private-type',
+          code: 'invented-private-code',
+          param: 'agent.tools[0].invented-private-field',
+        },
+      },
+    });
+    expect(await f.port.createSession(request, undefined, { expectedTarget })).toEqual({
+      status: 'unknown',
+      reason: 'provider-outcome',
+      providerRequestId: 'req_synthetic',
+      diagnostic: {
+        operation: 'sessions.create',
+        kind: 'http',
+        status: 400,
+        type: 'unrecognized',
+        code: 'unrecognized',
+        parameter: 'unrecognized',
+      },
+    });
   });
   it('rechecks inference authority after the journal callback without dispatching an expired request', async () => {
     vi.useFakeTimers();

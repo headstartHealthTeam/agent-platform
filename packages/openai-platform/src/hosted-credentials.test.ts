@@ -306,6 +306,7 @@ describe('hosted run credential delivery through the official SDK transport', ()
     expect(await f.port().createSession(request, [credential], f.options())).toEqual({
       status: 'unknown',
       reason: 'provider-outcome',
+      diagnostic: { operation: 'sessions.create', kind: 'connection' },
     });
     expect(f.calls.filter((call) => call.path === '/v1/agents/sessions')).toHaveLength(1);
     expect(f.state.retained).toEqual({
