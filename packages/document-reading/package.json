@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "exceljs": "^4.4.0",
-    "mammoth": "^1.12.3",
+    "mammoth": "^1.13.0",
     "pdf-parse": "^2.4.5",
     "unzipper-esm": "^0.13.2"
   },
