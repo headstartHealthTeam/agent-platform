@@ -90,6 +90,11 @@ contexts, not competing sources of truth.
 | `workflows/`                           | Deployable workflow prompts, schemas, ownership, triggers, and policy |
 | `packages/capability-*/`               | Provider-neutral capability profiles and runtime preflight            |
 | `packages/google-*/`                   | Reusable bounded Google read adapters and normalization               |
+| `packages/salesforce-read/`            | Explicit-target Salesforce organization verification and read queries |
+| `packages/fireflies-data/`             | Fireflies native transcript contracts and failure normalization       |
+| `packages/slack-data/`                 | Slack native response and complete-thread contracts                   |
+| `packages/artifact-workbook/`          | Injected local workbook library operations without report policy      |
+| `packages/openai-platform/`            | Supervised lifecycle access and isolated structured Responses         |
 | `packages/document-reading/`           | Source-independent full text, page/image and original-file evidence   |
 | `packages/semrush-data/`               | Reusable provider-neutral Semrush read contracts                      |
 | `packages/organic-performance-engine/` | Deterministic organic reporting evidence analysis                     |

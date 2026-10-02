@@ -1,0 +1,162 @@
+{
+  "version": "2026-07-29.2",
+  "timezone": "America/New_York",
+  "excludedStages": ["Pending Discharge"],
+  "terminalStages": ["Admitted", "Closed - Not Admitted", "Discharged"],
+  "stages": [
+    {
+      "order": 0,
+      "stage": "Insurance Verification",
+      "position": "Insurance Verification",
+      "unresolvedGate": "Complete VOB, eligibility, documents, and initial-authorization readiness",
+      "defaultOwner": "Insurance Ops",
+      "slaDays": 1,
+      "completionSignals": ["Initial_Auth_Submission_Date__c"],
+      "nextStages": ["IA Requested", "IA Approved - Pending Scheduling"]
+    },
+    {
+      "order": 10,
+      "stage": "IA Requested",
+      "position": "Initial authorization requested",
+      "unresolvedGate": "Receive the current Initial authorization determination",
+      "defaultOwner": "Insurance Ops",
+      "slaDays": 10,
+      "prerequisite": "Current Initial authorization submitted",
+      "completionSignals": ["Initial_Auth_Approval_Date__c", "Initial.No_Auth_Needed__c"],
+      "nextStages": ["IA Approved - Pending Scheduling"]
+    },
+    {
+      "order": 20,
+      "stage": "IA Approved - Pending Scheduling",
+      "position": "Initial authorization approved; assessment occurrence pending",
+      "unresolvedGate": "Commit an IA plan and confirm that the initial assessment occurred",
+      "defaultOwner": "CSM",
+      "slaDays": 1,
+      "prerequisite": "Current Initial authorization approved or no authorization needed",
+      "completionSignals": [
+        "Opportunity.IA_Completed_Date__c",
+        "Billing_and_Claims__c.Completed97151"
+      ],
+      "nextStages": [
+        "IC Scheduled - Pending Start",
+        "IC Scheduled – Pending Start",
+        "IC Completed - Pending Scheduling",
+        "IC Completed – Pending Scheduling",
+        "IA Scheduled",
+        "97151 Started - Pending Treatment Plan"
+      ]
+    },
+    {
+      "order": 30,
+      "stage": "IC Scheduled - Pending Start",
+      "aliases": ["IC Scheduled – Pending Start"],
+      "position": "Initial consultation scheduled",
+      "unresolvedGate": "Confirm that the initial consultation occurred",
+      "defaultOwner": "CSM",
+      "slaDays": 3,
+      "completionSignals": ["Opportunity.IC_Completed_Date__c"],
+      "nextStages": [
+        "IC Completed - Pending Scheduling",
+        "IC Completed – Pending Scheduling",
+        "IA Scheduled",
+        "97151 Started - Pending Treatment Plan"
+      ]
+    },
+    {
+      "order": 40,
+      "stage": "IC Completed - Pending Scheduling",
+      "aliases": ["IC Completed – Pending Scheduling"],
+      "position": "Initial consultation completed; assessment planning pending",
+      "unresolvedGate": "Commit an IA plan and confirm the assessment occurrence",
+      "defaultOwner": "CSM",
+      "slaDays": 1,
+      "completionSignals": [
+        "Opportunity.IA_Completed_Date__c",
+        "Billing_and_Claims__c.Completed97151"
+      ],
+      "nextStages": ["IA Scheduled", "97151 Started - Pending Treatment Plan"]
+    },
+    {
+      "order": 50,
+      "stage": "IA Scheduled",
+      "position": "Initial assessment scheduled",
+      "unresolvedGate": "Confirm that the initial assessment occurred",
+      "defaultOwner": "CSM",
+      "slaDays": 5,
+      "completionSignals": [
+        "Opportunity.IA_Completed_Date__c",
+        "Billing_and_Claims__c.Completed97151"
+      ],
+      "nextStages": ["97151 Started - Pending Treatment Plan"]
+    },
+    {
+      "order": 60,
+      "stage": "97151 Started - Pending Treatment Plan",
+      "position": "Initial assessment underway or complete; treatment plan pending",
+      "unresolvedGate": "Complete treatment-plan drafting, prerequisites, and signatures",
+      "defaultOwner": "CSM",
+      "slaDays": 14,
+      "completionSignals": [
+        "Treatment_Plan_Review_Date__c",
+        "Treatment Auth Request.Portal_Submission_Date__c"
+      ],
+      "nextStages": ["Treatment Plan In-review", "TA Requested", "TA Approved - Pending Scheduling"]
+    },
+    {
+      "order": 70,
+      "stage": "Treatment Plan In-review",
+      "position": "Treatment plan received by Headstart",
+      "unresolvedGate": "Complete Clinical Quality review and submit the Treatment authorization to the payer",
+      "defaultOwner": "Insurance Ops",
+      "slaDays": 5,
+      "completionSignals": ["Treatment.Treatment_Auth_Submission_Date__c"],
+      "nextStages": ["TA Requested", "TA Approved - Pending Scheduling"]
+    },
+    {
+      "order": 80,
+      "stage": "TA Requested",
+      "position": "Treatment authorization requested",
+      "unresolvedGate": "Receive the current Treatment authorization determination",
+      "defaultOwner": "Insurance Ops",
+      "slaDays": 10,
+      "prerequisite": "Current Treatment authorization submitted to payer",
+      "completionSignals": ["Treatment_Auth_Approval_Date__c", "Treatment.No_Auth_Needed__c"],
+      "nextStages": ["TA Approved - Pending Scheduling"]
+    },
+    {
+      "order": 90,
+      "stage": "TA Approved - Pending Scheduling",
+      "position": "Treatment authorization approved; staffing and start scheduling pending",
+      "unresolvedGate": "Secure RBT coverage and schedule the first 97153 service",
+      "defaultOwner": "CSM",
+      "slaDays": 1,
+      "prerequisite": "Current Treatment authorization approved or no authorization needed",
+      "entryDateSignals": [
+        "Opportunity.Active_RBT_Checked_At__c",
+        "Opportunity.TA_Approval_Checked_Timestamp__c",
+        "Opportunity.Treatment_Auth_Approval_Date__c"
+      ],
+      "entryDateRule": "Use the later of Active RBT checked and treatment-authorization approval checked/approved.",
+      "completionSignals": [
+        "Opportunity.X97153_Scheduled_For__c",
+        "Opportunity.TA_Approved_Pending_Start__c",
+        "Billing_and_Claims__c.Future97153"
+      ],
+      "nextStages": ["First Day of 97153 Scheduled", "Admitted"]
+    },
+    {
+      "order": 100,
+      "stage": "First Day of 97153 Scheduled",
+      "position": "First direct-care service scheduled",
+      "unresolvedGate": "Confirm the first 97153 service occurred and the client was admitted",
+      "defaultOwner": "CSM",
+      "slaDays": 7,
+      "completionSignals": [
+        "Opportunity.First_day_of_Treatment__c",
+        "Billing_and_Claims__c.Completed97153",
+        "Billing_and_Claims__c.Claimed97153ServiceDate"
+      ],
+      "nextStages": ["Admitted"]
+    }
+  ]
+}
