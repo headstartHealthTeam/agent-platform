@@ -36,8 +36,13 @@ Drive's `version` is a change counter, not a revision-download ID; this does not
 revision selection. Follow shortcut targets using their own IDs, versions and resource keys.
 
 For Google Docs, `mode: "text"` without an export returns a paginated view plus a complete JSON
-file resource from the same Docs structure bytes, including all tabs/child tabs and inline
-suggestions. The runtime writes `evidence-0.json` with the matching digest and byte length,
+file resource from the same Docs structure bytes, including all tabs/child tabs available to the
+configured identity. Requests use `DEFAULT_FOR_CURRENT_ACCESS`: Google returns inline suggestions
+when permitted, and a view without suggestions for a viewer. The receipt preserves the returned
+`suggestionsViewMode` and explicitly warns about visibility; a permitted document is not rejected
+merely because the identity cannot read suggestions. No fallback identity or additional access is
+used. Missing/hidden suggestions must not be reported as inspected. The runtime writes
+`evidence-0.json` with the matching digest and byte length,
 independently of the text offset. Retain that file rather than reconstructing JSON from text
 chunks. It is labeled `google-docs-structure`, not an original binary or Google export.
 Follow `nextOffset` until null when reading the text view; embedded

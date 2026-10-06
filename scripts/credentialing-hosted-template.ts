@@ -19,7 +19,7 @@ const httpsUrl = z.url().refine((value) => {
 });
 export const hostedRuntimeSelection = z
   .object({
-    fileId: z.string().regex(/^file-[A-Za-z0-9_-]+$/),
+    fileId: z.string().regex(/^file[-_][A-Za-z0-9_-]+$/),
     archiveSha256: z.string().regex(/^[a-f0-9]{64}$/),
     runtimeRevision: z.string().regex(/^[a-f0-9]{64}$/),
     mcpUrl: httpsUrl,
@@ -51,6 +51,7 @@ export function credentialingHostedTemplate(input: unknown): Readonly<Record<str
 const crypto = require('node:crypto');
 const cp = require('node:child_process');
 if (process.platform !== 'linux' || process.arch !== 'x64' || Number(process.versions.node.split('.')[0]) < 22) throw new Error('Unsupported hosted runtime');
+if (!process.allowedNodeEnvironmentFlags.has('--use-env-proxy') || process.env.NODE_USE_ENV_PROXY !== '1') throw new Error('Hosted runtime requires Node environment-proxy support');
 const bytes = fs.readFileSync('${archive}');
 if (crypto.createHash('sha256').update(bytes).digest('hex') !== '${value.archiveSha256}') throw new Error('Runtime archive mismatch');
 fs.mkdirSync('${root}');
@@ -75,6 +76,9 @@ fs.accessSync('${root}/workflows/provider-credentialing/prompts/connected.md');
     operation: 'templates.create',
     body: {
       name: `credentialing-${value.runtimeRevision.slice(0, 12)}`,
+      // Let every Node tool use the provider's proxy/NO_PROXY and existing CA configuration.
+      // This is a hosted binding only; standalone library/CLI consumers retain their own policy.
+      env: { NODE_USE_ENV_PROXY: '1' },
       files: [
         { type: 'file_id', path: archive, file_id: value.fileId },
         inline('/workspace/install-headstart.cjs', bootstrap),
