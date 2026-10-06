@@ -122,72 +122,76 @@ describe('credentialing runtime release boundary', () => {
     }
     expect(() => credentialingHostedTemplate({ ...selection, fileId: 'arbitrary' })).toThrow();
   });
-  it('uses the generated hosted environment for Node fetch while honoring NO_PROXY', async () => {
-    const template = z
-      .object({ body: z.object({ env: z.record(z.string(), z.string()) }) })
-      .parse(credentialingHostedTemplate(selection));
-    const proxy = createServer();
-    const direct = createServer((_request, response) => response.end('direct'));
-    const destinations: string[] = [];
-    proxy.on('connect', (request, socket) => {
-      destinations.push(request.url ?? '');
-      socket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
-      socket.once('data', () =>
-        socket.end('HTTP/1.1 200 OK\r\nContent-Length: 7\r\nConnection: close\r\n\r\nproxied')
-      );
-    });
-    await new Promise<void>((resolve) => proxy.listen(0, 'localhost', resolve));
-    await new Promise<void>((resolve) => direct.listen(0, 'localhost', resolve));
-    try {
-      const proxyAddress = proxy.address();
-      const directAddress = direct.address();
-      if (
-        proxyAddress === null ||
-        typeof proxyAddress === 'string' ||
-        directAddress === null ||
-        typeof directAddress === 'string'
-      )
-        throw new Error('Missing synthetic port');
-      const { stdout } = await promisify(execFile)(
-        process.execPath,
-        [
-          '--input-type=module',
-          '--eval',
-          'for (const url of process.argv.slice(1)) console.log(await (await fetch(url)).text());',
-          'http://synthetic-unresolvable.invalid/evidence',
-          `http://localhost:${String(directAddress.port)}/evidence`,
-        ],
-        {
-          timeout: 10_000,
-          env: {
-            ...process.env,
-            ...template.body.env,
-            HTTP_PROXY: `http://localhost:${String(proxyAddress.port)}`,
-            HTTPS_PROXY: '',
-            NO_PROXY: 'localhost',
-            http_proxy: `http://localhost:${String(proxyAddress.port)}`,
-            https_proxy: '',
-            no_proxy: 'localhost',
-            NODE_OPTIONS: '',
-          },
-        }
-      );
-      expect(stdout.trim().split(/\r?\n/)).toEqual(['proxied', 'direct']);
-      expect(destinations).toEqual(['synthetic-unresolvable.invalid:80']);
-    } finally {
-      proxy.closeAllConnections();
-      direct.closeAllConnections();
-      await Promise.all(
-        [proxy, direct].map(
-          (server) =>
-            new Promise<void>((resolve, reject) =>
-              server.close((error) => {
-                if (error) reject(error);
-                else resolve();
-              })
-            )
+  it.skipIf(!process.allowedNodeEnvironmentFlags.has('--use-env-proxy'))(
+    'uses the generated hosted environment for Node fetch while honoring NO_PROXY',
+    async () => {
+      const template = z
+        .object({ body: z.object({ env: z.record(z.string(), z.string()) }) })
+        .parse(credentialingHostedTemplate(selection));
+      const proxy = createServer();
+      const direct = createServer((_request, response) => response.end('direct'));
+      const destinations: string[] = [];
+      proxy.on('connect', (request, socket) => {
+        destinations.push(request.url ?? '');
+        socket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+        socket.once('data', () =>
+          socket.end('HTTP/1.1 200 OK\r\nContent-Length: 7\r\nConnection: close\r\n\r\nproxied')
+        );
+      });
+      await new Promise<void>((resolve) => proxy.listen(0, 'localhost', resolve));
+      await new Promise<void>((resolve) => direct.listen(0, 'localhost', resolve));
+      try {
+        const proxyAddress = proxy.address();
+        const directAddress = direct.address();
+        if (
+          proxyAddress === null ||
+          typeof proxyAddress === 'string' ||
+          directAddress === null ||
+          typeof directAddress === 'string'
         )
-      );
-    }
-  }, 20_000);
+          throw new Error('Missing synthetic port');
+        const { stdout } = await promisify(execFile)(
+          process.execPath,
+          [
+            '--input-type=module',
+            '--eval',
+            'for (const url of process.argv.slice(1)) console.log(await (await fetch(url)).text());',
+            'http://synthetic-unresolvable.invalid/evidence',
+            `http://localhost:${String(directAddress.port)}/evidence`,
+          ],
+          {
+            timeout: 10_000,
+            env: {
+              ...process.env,
+              ...template.body.env,
+              HTTP_PROXY: `http://localhost:${String(proxyAddress.port)}`,
+              HTTPS_PROXY: '',
+              NO_PROXY: 'localhost',
+              http_proxy: `http://localhost:${String(proxyAddress.port)}`,
+              https_proxy: '',
+              no_proxy: 'localhost',
+              NODE_OPTIONS: '',
+            },
+          }
+        );
+        expect(stdout.trim().split(/\r?\n/)).toEqual(['proxied', 'direct']);
+        expect(destinations).toEqual(['synthetic-unresolvable.invalid:80']);
+      } finally {
+        proxy.closeAllConnections();
+        direct.closeAllConnections();
+        await Promise.all(
+          [proxy, direct].map(
+            (server) =>
+              new Promise<void>((resolve, reject) =>
+                server.close((error) => {
+                  if (error) reject(error);
+                  else resolve();
+                })
+              )
+          )
+        );
+      }
+    },
+    20_000
+  );
 });
