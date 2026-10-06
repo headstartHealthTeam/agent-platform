@@ -128,9 +128,14 @@ describe('credentialing runtime release boundary', () => {
       const template = z
         .object({ body: z.object({ env: z.record(z.string(), z.string()) }) })
         .parse(credentialingHostedTemplate(selection));
-      const proxy = createServer();
-      const direct = createServer((_request, response) => response.end('direct'));
       const destinations: string[] = [];
+      // Newer Node fetch forwards plain HTTP; Node 22 tunnels it with CONNECT.
+      const proxy = createServer((request, response) => {
+        const target = new URL(request.url ?? '');
+        destinations.push(`${target.hostname}:${target.port || '80'}`);
+        response.end('proxied');
+      });
+      const direct = createServer((_request, response) => response.end('direct'));
       proxy.on('connect', (request, socket) => {
         destinations.push(request.url ?? '');
         socket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
