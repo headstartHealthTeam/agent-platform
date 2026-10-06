@@ -16,6 +16,7 @@ import { compatibleHttpTransport } from './transport.js';
 const roots: string[] = [];
 afterEach(async () => {
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
   await Promise.all(roots.splice(0).map((path) => rm(path, { recursive: true })));
 });
 async function paths(serverUrl: string): Promise<{ output: string; args: string[] }> {
@@ -38,6 +39,28 @@ async function paths(serverUrl: string): Promise<{ output: string; args: string[
 }
 
 describe('MCP runtime connection', () => {
+  it('does not follow an OAuth challenge when using the provisioned authorization header', async () => {
+    const fetchFunction = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response('private upstream response', {
+        status: 401,
+        headers: {
+          'WWW-Authenticate':
+            'Bearer resource_metadata="https://different.example/.well-known/oauth-protected-resource"',
+        },
+      })
+    );
+    vi.stubGlobal('fetch', fetchFunction);
+    vi.stubEnv('SYNTHETIC_MCP_AUTH', 'Bearer synthetic-test-only');
+    const input = await paths('https://mcp.example.com/mcp');
+
+    await expect(main(input.args)).rejects.toThrow('MCP connection failed');
+    expect(fetchFunction).toHaveBeenCalledTimes(1);
+    expect(fetchFunction.mock.calls[0]?.[0]).toEqual(new URL('https://mcp.example.com/mcp'));
+    const init = fetchFunction.mock.calls[0]?.[1];
+    expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer synthetic-test-only');
+    expect(init?.redirect).toBe('error');
+  });
+
   it('returns actionable diagnostics without raw source responses or credential values', () => {
     expect(
       mcpDocumentFailure(new McpDocumentReadError('Original-file content identity mismatch'))
