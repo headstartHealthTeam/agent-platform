@@ -37,9 +37,9 @@
   },
   "devDependencies": {
     "@headstart-health/workflow-runtime": "workspace:*",
-    "@types/node": "^22.20.4",
+    "@types/node": "^22.20.5",
     "@vitest/coverage-v8": "^4.1.11",
-    "eslint": "^10.11.0",
+    "eslint": "^10.12.0",
     "prettier": "^3.9.9",
     "rimraf": "^6.1.3",
     "tsup": "^8.5.0",
