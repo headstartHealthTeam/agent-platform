@@ -92,6 +92,46 @@ function setup(): {
   };
 }
 describe('application session launch', () => {
+  it('preserves prepared proxy support in the actual session-create payload', async () => {
+    const { platform, settings, session, roots } = setup();
+    const revision = 'a'.repeat(64);
+    const templateFingerprint = 'b'.repeat(64);
+    platform.read.mockImplementation(async (input) => {
+      const operation = readSchema.parse(input).operation;
+      return operation === 'templates.get'
+        ? { data: { id: 'env_template' }, fingerprint: templateFingerprint }
+        : {
+            data: operation === 'sessions.get' ? session : { data: roots, has_more: false },
+            fingerprint: 'f',
+          };
+    });
+    const port = new SessionLaunchPort(
+      platform,
+      target,
+      {
+        ...settings,
+        preparedRuntime: { revision, templateFingerprint },
+        environment: {
+          type: 'openai_hosted',
+          environment_template_id: 'env_template',
+          env: { NODE_USE_ENV_PROXY: '1' },
+        },
+      },
+      Date.now() + 60000,
+      ['publish']
+    );
+    const launch = { ...request, definition: { ...request.definition, runtimeRevision: revision } };
+    await port.preflightLaunch(launch);
+    expect(platform.apply).not.toHaveBeenCalled();
+    expect(await port.createSession(launch, undefined, createOptions)).toMatchObject({
+      status: 'created',
+    });
+    expect(platform.apply.mock.calls[0]?.[0]).toMatchObject({
+      body: {
+        environment: { environment_template_id: 'env_template', env: { NODE_USE_ENV_PROXY: '1' } },
+      },
+    });
+  });
   it('carries definition-owned skill files through the actual create boundary', async () => {
     const { platform, settings } = setup();
     const port = new SessionLaunchPort(

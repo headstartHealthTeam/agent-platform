@@ -20,13 +20,23 @@ import type { GoogleDriveReadPort } from './provider.js';
 
 const DOC_MIME = 'application/vnd.google-apps.document';
 const GOOGLE_EXPORT = 'google-export';
+const suggestionsView = z.enum([
+  'SUGGESTIONS_INLINE',
+  'PREVIEW_SUGGESTIONS_ACCEPTED',
+  'PREVIEW_WITHOUT_SUGGESTIONS',
+]);
 interface Download {
   bytes: Buffer;
   mimeType: string;
   representation: 'google-docs-structure' | 'google-export' | 'original';
+  suggestionsViewMode?: z.infer<typeof suggestionsView>;
 }
 export interface DriveReadResult extends DocumentReadResult {
-  source: DriveFile & { representation: Download['representation']; exportMimeType?: string };
+  source: DriveFile & {
+    representation: Download['representation'];
+    exportMimeType?: string;
+    suggestionsViewMode?: Download['suggestionsViewMode'];
+  };
 }
 function readable(file: DriveFile): void {
   if (file.trashed || !file.capabilities.canDownload)
@@ -103,12 +113,16 @@ export class GoogleDriveReader {
       const structure: unknown = await (
         await this.provider.get(
           `documents/${file.id}`,
-          { includeTabsContent: 'true', suggestionsViewMode: 'SUGGESTIONS_INLINE' },
+          { includeTabsContent: 'true', suggestionsViewMode: 'DEFAULT_FOR_CURRENT_ACCESS' },
           key
         )
       ).json();
       const parsed = z
-        .object({ documentId: z.literal(file.id), tabs: z.array(z.unknown()) })
+        .object({
+          documentId: z.literal(file.id),
+          tabs: z.array(z.unknown()),
+          suggestionsViewMode: suggestionsView.optional(),
+        })
         .loose()
         .safeParse(structure);
       if (!parsed.success)
@@ -117,6 +131,9 @@ export class GoogleDriveReader {
         bytes: Buffer.from(JSON.stringify(structure)),
         mimeType: 'application/json',
         representation: 'google-docs-structure',
+        ...(parsed.data.suggestionsViewMode === undefined
+          ? {}
+          : { suggestionsViewMode: parsed.data.suggestionsViewMode }),
       };
     }
     const native = file.mimeType.startsWith('application/vnd.google-apps.');
@@ -162,7 +179,10 @@ export class GoogleDriveReader {
       const structure = await readDocument(download.bytes, download.mimeType, { mode: 'original' });
       result.content = structure.content;
       result.document.warnings.push(
-        'Complete Google Docs JSON structure, including all tabs/child tabs and inline suggestions, is also supplied as a file resource. Text views remain paginated. Use explicit PDF export for visual inspection; this is not an original binary.'
+        'Complete Google Docs JSON structure returned for this identity, including all available tabs/child tabs, is also supplied as a file resource. Text views remain paginated. Use explicit PDF export for visual inspection; this is not an original binary.',
+        download.suggestionsViewMode === undefined
+          ? 'Suggestions visibility was not reported by Google; do not infer that hidden suggestions were read.'
+          : `Google suggestions view: ${download.suggestionsViewMode}. Only SUGGESTIONS_INLINE exposes suggestion markup and details; preview views do not establish full suggestion visibility.`
       );
     }
     if (download.representation === GOOGLE_EXPORT)
@@ -174,6 +194,9 @@ export class GoogleDriveReader {
       source: {
         ...file,
         representation: download.representation,
+        ...(download.suggestionsViewMode === undefined
+          ? {}
+          : { suggestionsViewMode: download.suggestionsViewMode }),
         ...(download.representation === GOOGLE_EXPORT ? { exportMimeType: download.mimeType } : {}),
       },
     };
