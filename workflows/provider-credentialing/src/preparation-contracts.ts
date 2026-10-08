@@ -69,7 +69,18 @@ export const preparationInputSchema = credentialingInputSchema.extend({
         relatedPartyId: reference.nullable(),
         locationIds: z.array(reference),
         period: period.nullable(),
-        addressRole: z.enum(['service', 'pay-to', 'mail-to']).nullable(),
+        addressRole: z
+          .enum(['service', 'pay-to', 'mail-to'])
+          .nullable()
+          .describe(
+            'Established payer role only. Null when the source address has no established payer mapping; preserve sourceAddressType and any unresolved mapping in the handoff.'
+          ),
+        sourceAddressType: reference
+          .regex(/\S/u)
+          .optional()
+          .describe(
+            'Source context such as business or registered-agent, not payer eligibility. Required for an address whose payer role is unknown. Omit for non-address records.'
+          ),
       })
       .strict()
   ),
@@ -83,7 +94,11 @@ export const preparationInputSchema = credentialingInputSchema.extend({
   evidence: z.array(
     credentialingInputSchema.shape.evidence.element.extend({
       locationIds: z.array(reference),
-      recordId: reference.nullable(),
+      recordId: reference
+        .nullable()
+        .describe(
+          'Internal records[].id or null for subject-wide evidence; never the external source record ID.'
+        ),
       observedAt: z.string().regex(z.regexes.datetime({})),
       source: z.object({ system: reference, recordId: reference, version: reference }).strict(),
     })

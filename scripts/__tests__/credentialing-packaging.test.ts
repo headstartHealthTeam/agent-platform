@@ -22,6 +22,7 @@ describe('credentialing release assembly', () => {
       await writeFile(join(source, 'pnpm-lock.yaml'), 'synthetic lock');
       await writeFile(join(workflow, 'index.js'), '// workflow');
       await writeFile(join(workflow, 'artifact-worker.cjs'), '// validator');
+      await writeFile(join(workflow, 'preparation-preflight-cli.cjs'), '// local validator');
       await writeFile(join(operator, 'operator-module.cjs'), '// application adapter');
       const definition = {
         protocol: 'credentialing-preparation/v1',
@@ -53,6 +54,11 @@ describe('credentialing release assembly', () => {
         const destination = args.at(-1);
         if (!destination) throw new Error('Missing package destination');
         await mkdir(destination);
+        await mkdir(join(destination, 'dist'));
+        await writeFile(
+          join(destination, 'dist/preparation-preflight-cli.cjs'),
+          '// installed local validator'
+        );
         await writeFile(
           join(destination, 'package.json'),
           JSON.stringify({
@@ -164,6 +170,11 @@ describe('credentialing release assembly', () => {
       });
       const program = `const fs = require('node:fs'); const path = require('node:path'); const a = process.argv; const output = a[a.indexOf('--output')+1]; fs.mkdirSync(output); fs.writeFileSync(path.join(output, 'result.json'), JSON.stringify({ content: 'Invented complete work history', mimeType: 'image/png' }));`;
       await writeFile(cli, program);
+      await mkdir(join(root, 'dist'));
+      await writeFile(
+        join(root, 'dist/preparation-preflight-cli.cjs'),
+        `const fs = require('node:fs'); const args = process.argv; const valid = fs.readFileSync(args[args.indexOf('--proposal') + 1], 'utf8') !== '{}'; process.stdout.write(JSON.stringify(valid ? { ok: true, readiness: 'needs-information' } : { ok: false })); process.exitCode = valid ? 0 : 1;`
+      );
       for (const name of ['google-drive-data', 'headstart-mcp-data']) {
         const path = join(root, `node_modules/@headstart-health/${name}/dist`);
         await mkdir(path, { recursive: true });

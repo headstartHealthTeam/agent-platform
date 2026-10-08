@@ -25,7 +25,7 @@ export const hostedDeliveryDefinition = {
   type: 'function',
   name: 'queue_credentialing_review_package',
   description:
-    "Queue complete package JSON plus exact files from this turn's /workspace/outputs. Finish the turn after acknowledgement: files publish only after it ends and backend then retains/validates them automatically. Queued is not published or approved. Do not send bytes or URLs. Originals must precede derived files; inspect saved delivery results through review context on a later turn.",
+    "Preflight complete package JSON and case binding, then queue exact files from this turn's /workspace/outputs. Repair validation errors before ending the turn. After acknowledgement finish the turn: backend then retains files and independently revalidates publication. Queued is not published or approved. Do not send bytes or URLs. Originals must precede same-subject conversions; omit optional generated analysis memos, not original evidence. Inspect saved delivery results through review context on a later turn.",
   parameters: object({
     expectedVersion: { type: 'integer', minimum: 0 },
     inputJson: text,

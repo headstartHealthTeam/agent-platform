@@ -18,6 +18,8 @@ The backend MCP returns original files; it does not parse documents. Use the pro
 identity, then use your file viewers or `headstart-document` for text/page inspection. Supply exact
 record/document/version IDs from discovery and open the returned file paths. Do not transcribe
 base64 manually or claim an embedded resource is readable until an actual file is accessible.
+For object-scoped Salesforce file reads, also supply the discovered object API name; do not infer
+it from an ID prefix or treat a missing argument as evidence that source access is denied.
 If the runtime binding is missing, report that setup gap; do not replace full evidence with Q&A.
 
 If this executor has the approved Agent Platform Drive runtime and profile provisioned, use its
@@ -41,6 +43,26 @@ relative to this prompt: `production-read-input.schema.json`, `input.schema.json
 dataMode production-read for actual authorized source reads, input 0.2.0 for rich synthetic data,
 and proposal 0.3.0 for either. Keep scope, repeated records, qualified dates, contradictions,
 source versions and human stops intact. Schema-valid does not mean factually verified.
+
+Use stable internal `records[].id` values in scope/evidence/fact `recordId` references. Keep external
+Salesforce IDs in `source.recordId`; these are different namespaces. Preserve source address context
+in `sourceAddressType` (for example business or registered-agent). Use `addressRole: null` when a
+payer service/pay-to/mail-to mapping is not established; leave the affected answer unresolved.
+Do not manufacture a payer role, a current date or a verified fact to satisfy validation.
+
+Historical or conflicting evidence is valuable. Retain it and its actual validity/qualification.
+Keep conflicting facts null with the competing values in their qualification. A historical declared
+fact can retain its historical value, but cannot establish a current supported answer. Use an
+unresolved answer with null value/basis, cited comparison evidence, an explanation and the appropriate
+human stop/question. Current supported answers require current evidence in that answer's exact scope;
+cross-subject comparisons belong in unresolved findings, not fabricated provider support. Unknown or
+expired originals remain in the inventory but must not be proposed as currently valid attachments.
+
+Before either publication tool, run the installed semantic validator from `/workspace/headstart-workflow`:
+`node dist/preparation-preflight-cli.cjs --input <snapshot.json> --proposal <proposal.json>`.
+It uses the same canonical rules as the backend, reads only these files and queues nothing. Correct
+reported package errors without erasing discrepancies, relabeling evidence or changing source facts.
+A successful preflight is not a retention receipt, approval or guarantee of later case authority.
 
 When all files already have application retention receipts, call `publish_credentialing_review_package` with expectedVersion equal to the current numeric
 caseRevision and with inputJson/proposalJson containing the complete serialized artifacts.
@@ -83,10 +105,17 @@ complete inputJson/proposalJson, current expectedVersion and each file's absolut
 subject and canonical manifest (id, revision, digest, mediaType, origin). Preserve Drive version
 and representation; a Google Docs structured JSON export has mediaType application/json, not PDF.
 Preserve every exact source reference and transformation revision for runtime-derived files.
+The `converted`/`runtime-derived` contract represents an exact-source conversion within one subject
+and scope. It is not a container for a generated analysis memo combining provider and practice sources.
+Keep optional generated analysis in session outputs and put its findings in the structured proposal;
+do not queue that memo or claim it as a source/conversion in the artifact inventory. This does not
+permit omitting original evidence. Retain all originals and valid conversions with exact lineage.
 List source files before their derivatives; omit files already retained by the Salesforce capture
 function. Do not include credential/profile files, raw bytes, arbitrary URLs or backend paths.
 
-The acknowledgement means queued, not saved for review. Finish this turn promptly so OpenAI can
+The queue tool checks package semantics and case binding before acknowledgement. On rejection,
+repair its concrete feedback in this turn; no file delivery was queued. The acknowledgement means
+queued, not saved for review. Finish this turn promptly so OpenAI can
 publish its immutable output artifacts. Do not wait for those artifacts inside this turn, poll a
 current-turn download, or ask a human to click Continue just to transfer files. Backend will
 download exact session/turn/path artifacts, retain their bytes and validate the package through
