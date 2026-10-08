@@ -56,10 +56,12 @@ describe('complete mixed-source historical preparation', () => {
   };
   const invalid: {
     name: string;
+    issue: RegExp;
     mutate: (input: PreparationInput, output: PreparationOutput) => void;
   }[] = [
     {
       name: 'address without source context or payer role',
+      issue: /Invalid address role:/,
       mutate: (input): void => {
         delete first(
           input.records.filter((item) => item.addressRole === null && item.kind === 'address')
@@ -68,6 +70,7 @@ describe('complete mixed-source historical preparation', () => {
     },
     {
       name: 'source address context on non-address',
+      issue: /Invalid address role:/,
       mutate: (input): void => {
         first(input.records.filter((item) => item.kind === 'education')).sourceAddressType =
           'business';
@@ -75,6 +78,7 @@ describe('complete mixed-source historical preparation', () => {
     },
     {
       name: 'external ID used as internal evidence record',
+      issue: /Invalid preparation scope:/,
       mutate: (input): void => {
         const item = first(input.evidence.filter((entry) => entry.recordId !== null));
         item.recordId = item.source.recordId;
@@ -82,16 +86,19 @@ describe('complete mixed-source historical preparation', () => {
     },
     {
       name: 'historical evidence promoted to current support',
+      issue: /Unavailable, stale or unknown evidence: historical-application/,
       mutate: (input, output): void => {
         const fact = first(input.facts.filter((item) => item.id === 'prior-declaration'));
         const answer = first(output.answers.filter((item) => item.factIds.includes(fact.id)));
         answer.disposition = 'supported';
         answer.value = fact.value;
         answer.basis = 'declared';
+        answer.evidence = fact.evidence;
       },
     },
     {
       name: 'cross-subject evidence claimed as current support',
+      issue: /Answer lacks scoped current evidence or basis:/,
       mutate: (input, output): void => {
         const answer = first(
           output.answers.filter(
@@ -112,6 +119,7 @@ describe('complete mixed-source historical preparation', () => {
     },
     {
       name: 'conflicting fact silently assigned a chosen value',
+      issue: /Unresolved or inapplicable fact carries a value:/,
       mutate: (input): void => {
         first(input.facts.filter((item) => item.disposition === 'conflicting')).value =
           'chosen without resolution';
@@ -119,6 +127,7 @@ describe('complete mixed-source historical preparation', () => {
     },
     {
       name: 'mixed-subject analysis memo labeled a conversion',
+      issue: /Invalid conversion source: optional-analysis-memo/,
       mutate: (input): void => {
         const provider = first(
           input.artifacts.filter((item) => item.scope.subjectId === input.work.providerId)
@@ -144,39 +153,74 @@ describe('complete mixed-source historical preparation', () => {
     },
     {
       name: 'changed original digest',
+      issue: /Invalid conversion source: license-pdf/,
       mutate: (input): void => {
         first(input.artifacts).digest = `sha256:${'9'.repeat(64)}`;
       },
     },
     {
       name: 'stale proposal',
+      issue: /Proposal does not match the current work and revisions/,
       mutate: (_input, output): void => {
         output.caseRevision = '999';
       },
     },
     {
       name: 'missing human exception stop',
+      issue: /Unresolved evidence requires an exception handoff/,
       mutate: (_input, output): void => {
         output.humanStops = output.humanStops.filter((item) => item !== 'H-02');
       },
     },
     {
       name: 'stopped execution',
+      issue: /Stop requested:/,
       mutate: (input): void => {
         input.execution.stopRequested = true;
       },
     },
   ];
-  it.each(invalid)('still rejects $name', ({ mutate }) => {
+  it.each(invalid)('still rejects $name', ({ mutate, issue }) => {
     const value = request();
     const input = preparationInputSchema.parse(JSON.parse(value.inputJson));
     const output = preparationOutputSchema.parse(JSON.parse(value.proposalJson));
     mutate(input, output);
-    expect(
+    const reply = artifactValidationReply({
+      inputJson: JSON.stringify(input),
+      proposalJson: JSON.stringify(output),
+    });
+    expect(reply).toMatchObject({ ok: false, code: 'invalid-artifacts' });
+    if (!reply.ok)
+      expect(reply.issues).toEqual(expect.arrayContaining([expect.stringMatching(issue)]));
+  });
+  it('isolates historical validity from cross-subject scope rejection', () => {
+    const value = request();
+    const input = preparationInputSchema.parse(JSON.parse(value.inputJson));
+    const output = preparationOutputSchema.parse(JSON.parse(value.proposalJson));
+    const fact = first(input.facts.filter((item) => item.id === 'prior-declaration'));
+    const answer = first(
+      output.answers.filter((item) => item.requirementId === 'current-declaration')
+    );
+    answer.disposition = 'supported';
+    answer.value = fact.value;
+    answer.basis = 'declared';
+    answer.evidence = fact.evidence;
+    const validate = (): ReturnType<typeof artifactValidationReply> =>
       artifactValidationReply({
         inputJson: JSON.stringify(input),
         proposalJson: JSON.stringify(output),
-      })
-    ).toMatchObject({ ok: false, code: 'invalid-artifacts' });
+      });
+    expect(validate()).toEqual({
+      ok: false,
+      code: 'invalid-artifacts',
+      issues: [
+        'Answer lacks scoped current evidence or basis: current-declaration',
+        'Unavailable, stale or unknown evidence: historical-application',
+      ],
+    });
+    // Counterfactual fixture only: changing validity is the sole difference, not a live correction.
+    first(input.evidence.filter((item) => item.id === 'historical-application')).validity =
+      'current';
+    expect(validate()).toMatchObject({ ok: true });
   });
 });
