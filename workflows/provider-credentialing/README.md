@@ -263,7 +263,10 @@ exports remain unchanged; artifact consumers use the explicit union exports.
   management, license and coverage. Separate rows retain their own subjects, related parties,
   locations and periods. Internal IDs are distinct from external `source.recordId` values. Address
   roles distinguish service, pay-to and mail-to; `addressRole: null` with `sourceAddressType` preserves
-  a source business/registered-agent context when its payer mapping is unknown. Unknown period
+  a source business/registered-agent context when its payer mapping is unknown. That context and
+  its documented facts remain in the source inventory; they cannot support a destination answer
+  scoped to that address until its payer role is established. Affected answers stay unresolved
+  with H-02, while unrelated mapped answers remain usable. Unknown period
   boundaries remain null; do not turn a proxy date into a record's verified date range.
 - `relatedParties` declare scoped people/organizations and cited relationship evidence. Their
   presence is not a tool authorization or proof of ownership/signing authority. Scope remains

@@ -54,6 +54,7 @@ const validateAnswerScope = (
     if (answer.basis !== null) issues.push(`Unresolved answer carries a basis: ${requirement.id}`);
     return issues;
   }
+  issues.push(...validateAnswerAddressRole(input, requirement));
   if (answer.basis === null || !currentEvidence(input, answer.evidence, requirement.scope)) {
     issues.push(`Answer lacks scoped current evidence or basis: ${requirement.id}`);
   }
@@ -76,6 +77,16 @@ const validateAnswerScope = (
     issues.push(`Answer cannot claim verification: ${requirement.id}`);
   }
   return issues;
+};
+
+const validateAnswerAddressRole = (
+  input: PreparationSnapshot,
+  requirement: PreparationSnapshot['requirements'][number]
+): string[] => {
+  const record = input.records.find((item) => item.id === requirement.scope.recordId);
+  return record?.kind === 'address' && record.addressRole === null
+    ? [`Answer requires an established payer address role: ${requirement.id}`]
+    : [];
 };
 
 const validateAttachment = (
