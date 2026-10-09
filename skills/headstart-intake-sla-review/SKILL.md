@@ -1,22 +1,25 @@
 ---
 name: headstart-intake-sla-review
 description: Run, monitor, or hand off the recurring Headstart Intake SLA Review Queue workflow, including live due-work checks, evidence collection, gated Google Sheet publication, and operator reporting. Use for the weekday full-refresh and catch-up schedule, a supervised backup-operator cutover, a blocked scheduled run, or a verified no-op. Do not use for general SLA policy design, Salesforce implementation, or unrelated spreadsheet reporting.
-compatibility: Requires a reviewed checkout of the private Intake SLA Evidence Engine, authorized Headstart source access, private run storage, and an approved Intake SLA Review Queue. Salesforce remains read-only; Google Sheet publication requires explicit operating authority and every documented gate.
+compatibility: Requires the reviewed Agent Platform Intake SLA runtime, authorized Headstart source access, private run storage, and an approved Intake SLA Review Queue. Salesforce remains read-only; Google Sheet publication requires explicit operating authority and every documented gate.
 metadata:
   author: headstart-health
-  version: '0.2.2'
+  version: '0.3.0'
 ---
 
 # Headstart Intake SLA Review
 
 Operate the recurring Intake SLA Review Queue as a supervised, code-assisted workflow. Use one agent
 pass by default. The skill owns the operator sequence, safety boundaries, handoff, and reporting
-contract. The private
-[Intake SLA Evidence Engine](https://github.com/headstartHealthTeam/intake-sla-evidence-engine)
-owns the deterministic code, detailed runbook, schedule template, and current operational status.
-This is the current supervised runtime boundary, not authorization to create another engine or
-activate a managed migration. Verify the skill and engine revisions independently; installing a
-skill does not install or rebuild its runtime.
+contract. Agent Platform's
+[Intake SLA engine package](https://github.com/headstartHealthTeam/agent-platform/tree/main/packages/intake-sla-engine)
+owns the deterministic code, detailed runbook and schedule template. Provision its reviewed runtime
+using [Local Setup](https://github.com/headstartHealthTeam/agent-platform/blob/main/packages/intake-sla-engine/docs/local-setup.md),
+selecting the exact reviewed revision rather than assuming the linked branch is an approved release.
+The former standalone Intake repository is a migration reference, not a runtime dependency.
+This remains person-supervised; no managed deployment or schedule is activated by migration.
+Verify the skill and runtime revisions independently; installing a skill does not install or rebuild
+its runtime. The agent retains contextual judgment and additional authorized tool use.
 
 This skill is instructional capability, not authorization. Authentication does not authorize a
 Production write, a Salesforce change, a new publication target, or a second active schedule.
@@ -42,12 +45,13 @@ or documented CLI fallback is acceptable only when the engine runbook permits it
 retains source identity and coverage evidence. If a required capability is unavailable, report it
 as blocked; never guess or present cached evidence as a fresh read.
 
-Before a queue refresh, read these files completely from the same reviewed engine checkout:
+Before a queue refresh, read these files completely from the same reviewed runtime artifact
+(or its owning `packages/intake-sla-engine/` directory in the reviewed source):
 
 1. `docs/automation-runbook.md`
 2. `docs/operator-handoff.md`
 3. `docs/scheduled-task-template.md` when creating, changing, or transferring the schedule
-4. `docs/mark-ooo-handoff.md` when it exists for the current coverage period
+4. the private operator coverage handoff when one exists for the current coverage period
 
 Also read [Operator Handoff](references/operator-handoff.md) before transferring ownership or
 activating a backup operator's schedule. The engine documents are authoritative if a detail here
