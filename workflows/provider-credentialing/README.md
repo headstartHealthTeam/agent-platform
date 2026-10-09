@@ -261,7 +261,12 @@ exports remain unchanged; artifact consumers use the explicit union exports.
 
 - `records` group fields by stable record ID for education, employment, address, ownership,
   management, license and coverage. Separate rows retain their own subjects, related parties,
-  locations and periods. Address roles distinguish service, pay-to and mail-to. Unknown period
+  locations and periods. Internal IDs are distinct from external `source.recordId` values. Address
+  roles distinguish service, pay-to and mail-to; `addressRole: null` with `sourceAddressType` preserves
+  a source business/registered-agent context when its payer mapping is unknown. That context and
+  its documented facts remain in the source inventory; they cannot support a destination answer
+  scoped to that address until its payer role is established. Affected answers stay unresolved
+  with H-02, while unrelated mapped answers remain usable. Unknown period
   boundaries remain null; do not turn a proxy date into a record's verified date range.
 - `relatedParties` declare scoped people/organizations and cited relationship evidence. Their
   presence is not a tool authorization or proof of ownership/signing authority. Scope remains
@@ -277,6 +282,9 @@ exports remain unchanged; artifact consumers use the explicit union exports.
   A converted artifact retains exact source references and the transformation ID/revision.
   Validation rejects missing/stale references and cycles and checks the whole proposed lineage.
   There is one declared revision per artifact ID in a snapshot; prior snapshots stay immutable.
+  Conversion lineage stays within one subject/scope. Optional generated cross-subject analysis
+  belongs in session outputs and structured findings, not the source/conversion inventory.
+  Historical/expired/unknown originals are retained without claiming current attachment validity.
 - Field and attachment requirements name their destination system/section/field. Protected-action
   requirements name action, designated actor/role, related documents and any fields/documents
   blocked by a mid-form human action. Each gets a `human-required` or `unresolved` disposition.
@@ -301,6 +309,15 @@ and `reconciliation` require blocked status and H-03. Unresolved answers indepen
 H-02; mixed conditions require both stops. Any outstanding question prevents prepared-for-review.
 Do not silently coerce old proposals or overwrite historical evaluation results. Schema/stop checks cannot prove
 that a question's classification is semantically correct; source review remains necessary.
+
+Before connected publication, use the installed read-only semantic preflight:
+`node dist/preparation-preflight-cli.cjs --input <snapshot.json> --proposal <proposal.json>` from the
+runtime root. It exits nonzero with canonical issues or reports readiness, without echoing source
+bodies, reading business systems or queueing a package. The backend checks semantics before queue
+acknowledgement and independently revalidates retained bytes, case revision and authority at final
+publication. Preflight success is not a retention receipt or review approval. The synthetic
+`historical-preparation` fixture preserves genuine conflicts, unresolved payer roles, historical
+comparisons and complete original inventory; a truthful incomplete package is a valid handoff.
 
 Malformed or inconsistent snapshots, stale references and invalid proposals fail validation.
 An evidence read failure is explicit, never an empty success. Stop and unknown-effect scenarios

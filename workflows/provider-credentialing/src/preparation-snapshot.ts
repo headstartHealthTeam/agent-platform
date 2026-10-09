@@ -123,7 +123,11 @@ const validateRecord = (
   ) {
     issues.push(`Invalid repeating record scope: ${record.id}`);
   }
-  if ((record.kind === 'address') !== (record.addressRole !== null))
+  if (
+    record.kind === 'address'
+      ? record.addressRole === null && !record.sourceAddressType
+      : record.addressRole !== null || record.sourceAddressType !== undefined
+  )
     issues.push(`Invalid address role: ${record.id}`);
   if (record.period?.start && record.period.end && record.period.start > record.period.end) {
     issues.push(`Reversed record period: ${record.id}`);

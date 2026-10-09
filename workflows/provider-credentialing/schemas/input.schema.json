@@ -604,7 +604,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "Internal records[].id or null for subject-wide evidence; never the external source record ID."
               },
               "observedAt": {
                 "type": "string",
@@ -901,7 +902,15 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "Established payer role only. Null when the source address has no established payer mapping; preserve sourceAddressType and any unresolved mapping in the handoff."
+              },
+              "sourceAddressType": {
+                "description": "Source context such as business or registered-agent, not payer eligibility. Required for an address whose payer role is unknown. Omit for non-address records.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "\\S"
               }
             },
             "required": [
