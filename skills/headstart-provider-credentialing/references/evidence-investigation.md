@@ -43,7 +43,30 @@ establishes it is inapplicable, explain that disposition instead of keeping an u
 question. A possible future route is not automatically required for the present route. Never change
 required flags merely to make a package ready; readiness and human stops remain canonical.
 
+Separate **the prerequisite for this step** from **the outcome this request is intended to obtain**.
+For initial enrollment, the absence of the applicant's approved affiliation or effective date is
+not itself a prerequisite failure: obtaining that enrollment is the requested outcome. Existing
+group enrollment, coverage of the selected service location, and any steps for linking the new
+applicant are different facts. Require prior approval only when the current authoritative route
+explicitly requires it for this step; cite that requirement and the exact subject/location. Do not
+generalize this initial-enrollment example into a waiver for group-add, renewal or maintenance.
+
+When the group entity, group identifier and group NPI are already supported draft answers, keep
+them and their citations in `review.knownContext`. If location coverage is unestablished, ask only
+whether that exact group enrollment covers the selected address and what affiliation steps apply.
+An empty location field or pre-submission applicant affiliation is not proof that the group lacks
+coverage. Investigate the relevant enrollment record and linked originals before escalating that
+residual uncertainty. Do not ask Ops to resupply known identifiers, infer approval, or claim payer
+acceptance. If an earlier question was overbroad, correct the saved package as well as explaining
+the narrower gap in chat; an explanation alone does not repair the operator's work queue.
+
 ## Ask for the smallest useful return
+
+While investigating, give a brief operator-facing update when the work changes stage: what source
+or question you are checking, and whether you found evidence, need information, or are preparing
+the package. Do not expose private reasoning, credentials or raw tool arguments, narrate every
+tool call, or claim that ended tool activity means publication succeeded. Keep detailed evidence
+in the cited package and use concise, readable lists in the conversation.
 
 Each saved question has one clear purpose and responsible actor. Use `review.title` for a short
 action label, `review.knownContext` for cited information already found (including qualifications),
