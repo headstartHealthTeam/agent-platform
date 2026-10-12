@@ -39,6 +39,98 @@ export const localConfig = {
 };
 const config = resolveConfig(localConfig);
 
+describe('abortable Agents API reads', () => {
+  it.each(['preflight', 'read', 'opening'] as const)(
+    'passes cancellation through %s to the real SDK transport',
+    async (phase) => {
+      const controller = new AbortController();
+      let began: () => void = () => {
+        throw new Error('Transport not initialized');
+      };
+      const started = new Promise<void>((resolve) => {
+        began = resolve;
+      });
+      let aborted = false;
+      const transport: typeof fetch = async (input, init) => {
+        const request = new Request(input, init);
+        if (phase !== 'preflight' && new URL(request.url).pathname.endsWith('/agents'))
+          return Response.json(
+            { data: [], has_more: false },
+            { headers: { 'openai-project': config.target.projectId } }
+          );
+        return new Promise((_resolve, reject) => {
+          request.signal.addEventListener(
+            'abort',
+            () => {
+              aborted = true;
+              reject(new Error('PRIVATE REQUEST DETAIL'));
+            },
+            { once: true }
+          );
+          began();
+        });
+      };
+      const platform = new OpenAIPlatform(config, 'synthetic-key', transport);
+      const reading =
+        phase === 'opening'
+          ? platform.openOperatorObservation(
+              { sessionId: 'session_synthetic', turnId: 'turn_synthetic' },
+              controller.signal
+            )
+          : platform.read(
+              { operation: 'sessions.get', id: 'session_synthetic' },
+              controller.signal
+            );
+      const assertion = expect(reading).rejects.not.toThrow('PRIVATE REQUEST DETAIL');
+      await started;
+      controller.abort();
+      await assertion;
+      expect(aborted).toBe(true);
+    }
+  );
+
+  it('gives an opened observer its own lifetime after the opening budget ends', async () => {
+    const controller = new AbortController();
+    let transportAborted = false;
+    const transport: typeof fetch = async (input, init) => {
+      const request = new Request(input, init);
+      if (new URL(request.url).pathname.endsWith('/agents'))
+        return Response.json(
+          { data: [], has_more: false },
+          { headers: { 'openai-project': config.target.projectId } }
+        );
+      return new Response(
+        new ReadableStream<Uint8Array>({
+          start(stream): void {
+            request.signal.addEventListener(
+              'abort',
+              () => {
+                transportAborted = true;
+                stream.error(new DOMException('Aborted', 'AbortError'));
+              },
+              { once: true }
+            );
+          },
+        }),
+        { headers: { 'content-type': 'text/event-stream' } }
+      );
+    };
+    const platform = new OpenAIPlatform(config, 'synthetic-key', transport);
+    const observation = await platform.openOperatorObservation(
+      { sessionId: 'session_synthetic', turnId: 'turn_synthetic' },
+      controller.signal
+    );
+    const completion = expect(observation.completion).rejects.toThrow(
+      'Operator observation closed'
+    );
+    controller.abort();
+    expect(transportAborted).toBe(false);
+    observation.close();
+    await completion;
+    expect(transportAborted).toBe(true);
+  });
+});
+
 describe('standalone operator factory', () => {
   it('uses the same live target check with a service-supplied key and no workstation reference', async () => {
     const serviceConfig = {
