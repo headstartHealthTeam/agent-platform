@@ -8,6 +8,11 @@ export interface ExactEvidenceReference {
 }
 export type EvidenceOrigin =
   | {
+      kind: 'headstart-knowledge';
+      itemId: string;
+      revision: string;
+    }
+  | {
       kind: 'salesforce';
       linkedRecordId: string;
       contentDocumentId: string;
@@ -36,6 +41,13 @@ export type EvidenceOrigin =
       sourceMediaType: 'application/vnd.google-apps.document';
     }
   | {
+      /** Full public original, with runtime-observed provenance, not source-system verification. */
+      kind: 'public-web';
+      url: string;
+      retrievedAt: string;
+      statedDate: string | null;
+    }
+  | {
       kind: 'runtime-derived';
       sources: [ExactEvidenceReference, ...ExactEvidenceReference[]];
       transformation: { id: string; revision: string };
@@ -43,4 +55,27 @@ export type EvidenceOrigin =
 export interface RetainedEvidenceManifest extends ExactEvidenceReference {
   mediaType: string;
   origin: EvidenceOrigin;
+}
+
+/** Generated review aids are not source evidence, conversions, or payer-submittable attachments. */
+export interface GeneratedReviewDocument extends ExactEvidenceReference {
+  title: string;
+  filename: string;
+  mediaType: string;
+  purpose: 'review-checklist' | 'preparation-package' | 'supporting-report';
+  sources: ExactEvidenceReference[];
+}
+export interface GeneratedDocumentOrigin {
+  kind: 'runtime-generated';
+  /** Exact snapshot that was used to generate this review aid. */
+  inputFingerprint: string;
+  title: string;
+  filename: string;
+  purpose: GeneratedReviewDocument['purpose'];
+  sources: ExactEvidenceReference[];
+}
+export type RetainedDocumentOrigin = EvidenceOrigin | GeneratedDocumentOrigin;
+export interface RetainedDocumentManifest extends ExactEvidenceReference {
+  mediaType: string;
+  origin: RetainedDocumentOrigin;
 }

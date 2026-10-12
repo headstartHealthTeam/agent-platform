@@ -26,6 +26,7 @@ const workflowFiles = await Promise.all(
 );
 const definition = {
   instructions: `Use the headstart-provider-credentialing skill. Before investigating or acting, read ${root}/skills/headstart-provider-credentialing/SKILL.md and ${root}/workflows/provider-credentialing/prompts/connected.md completely. Follow their evidence and human-authority boundaries. Read the referenced supporting files as needed; all relevant supplied tools remain available for investigation. If these required files are unavailable, report the setup failure instead of improvising or substituting a summary.`,
+  research: 'live-web-search',
   capabilities: {
     directories: [`${root}/skills`],
     files: [...skillFiles, ...workflowFiles].map((file) => ({
@@ -35,6 +36,18 @@ const definition = {
   },
   tools: [
     hostedDeliveryDefinition,
+    {
+      type: 'function',
+      name: 'research_public_sources',
+      description:
+        'Autonomously investigate current public payer instructions, blank forms and related authoritative references using a credential-free browser. Supply a public-only brief (no provider records, private evidence or credentials). Complete originals return to your environment with exact provenance/digests; read them yourself before judging applicability. No Ops approval for each public site. Use Salesforce MCP and Google Drive directly for private evidence, not this tool.',
+      parameters: {
+        type: 'object',
+        properties: { brief: { type: 'string', minLength: 1, maxLength: 12000 } },
+        required: ['brief'],
+        additionalProperties: false,
+      },
+    },
     {
       type: 'function',
       name: 'ask_operator',

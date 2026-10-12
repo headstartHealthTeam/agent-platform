@@ -18,7 +18,27 @@ const reasoning = z
   }));
 const tools = z.array(
   z.discriminatedUnion('type', [
-    z.object({ type: z.literal('web_search') }).strict(),
+    z
+      .object({
+        type: z.literal('web_search'),
+        mode: z.enum(['live', 'cached', 'disabled']).nullable().optional(),
+        allowed_domains: z.array(z.string().min(1)).max(100).nullable().optional(),
+        context_size: z.enum(['low', 'medium', 'high']).nullable().optional(),
+      })
+      .strict()
+      .transform(({ type, mode, allowed_domains, context_size }) => ({
+        type,
+        ...(mode === undefined ? {} : { mode }),
+        ...(allowed_domains === undefined ? {} : { allowed_domains }),
+        ...(context_size === undefined ? {} : { context_size }),
+      })),
+    z
+      .object({ type: z.literal('computer_use'), include_screenshots: z.boolean().optional() })
+      .strict()
+      .transform(({ type, include_screenshots }) => ({
+        type,
+        ...(include_screenshots === undefined ? {} : { include_screenshots }),
+      })),
     z.object({ type: z.literal('tool_search') }).strict(),
     z
       .object({
@@ -290,6 +310,7 @@ export const readSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('sessions.list'), query: sessionQuery }).strict(),
   z.object({ operation: z.literal('sessions.get'), id }).strict(),
   z.object({ operation: z.literal('sessions.pending-functions'), id, turnId: id }).strict(),
+  z.object({ operation: z.literal('sessions.pending-browser-approvals'), id, turnId: id }).strict(),
   z.object({ operation: z.literal('sessions.turns'), id, query: historyQuery }).strict(),
   z.object({ operation: z.literal('sessions.turn.get'), id, turnId: id }).strict(),
   z.object({ operation: z.literal('sessions.items'), id, query: historyQuery }).strict(),
@@ -350,6 +371,27 @@ export const actionSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('sessions.cancel'), id }).strict(),
   z
     .object({
+      operation: z.literal('sessions.browser-approval'),
+      id,
+      turnId: id,
+      requestId: id,
+      expectedRequestFingerprint: fingerprint,
+      response: z.discriminatedUnion('type', [
+        z
+          .object({
+            type: z.literal('browser_origin_access'),
+            decision: z.enum(['approve', 'deny', 'cancel']),
+          })
+          .strict(),
+        // Public research does not collect credentials or submit sign-in forms.
+        z
+          .object({ type: z.literal('browser_authentication'), action: z.literal('cancel') })
+          .strict(),
+      ]),
+    })
+    .strict(),
+  z
+    .object({
       operation: z.literal('sessions.tool-result'),
       id,
       turnId: id,
@@ -396,6 +438,7 @@ export function isBillable(action: Action): boolean {
   return (
     action.operation === 'sessions.create' ||
     action.operation === 'sessions.send' ||
-    action.operation === 'sessions.tool-result'
+    action.operation === 'sessions.tool-result' ||
+    action.operation === 'sessions.browser-approval'
   );
 }

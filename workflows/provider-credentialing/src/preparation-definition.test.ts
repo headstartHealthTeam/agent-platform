@@ -25,6 +25,7 @@ describe('connected preparation tool definition', () => {
       .object({
         workflowRevision: z.string(),
         definition: z.object({
+          research: z.literal('live-web-search'),
           instructions: z.string(),
           capabilities: z.object({
             directories: z.array(z.string()),

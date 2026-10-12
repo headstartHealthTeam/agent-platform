@@ -21,7 +21,7 @@ complete real-source correction loop remain unverified; this decision changes no
 
 The build also emits `dist/preparation-definition.json`: the canonical skill, the
 [connected entry prompt](prompts/connected.md), both public input schemas, proposal schema and
-five function declarations. The instructions are a short mandatory entry, not an inlined manual.
+six function declarations, including autonomous public-source research. The instructions are a short mandatory entry, not an inlined manual.
 Its `capabilities` field carries exact canonical skill/supporting files at repository-relative
 locations under `/workspace/headstart-workflow`, with `/workspace/headstart-workflow/skills`
 registered for discovery. Schemas and connected instructions remain readable files. Declared skill

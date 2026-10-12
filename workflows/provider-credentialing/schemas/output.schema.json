@@ -268,6 +268,10 @@
         "handoff": {
           "$ref": "#/$defs/__schema6"
         },
+        "deliverables": {
+          "description": "Generated review aids, retained separately from source evidence and payer attachments. Exact files must be queued and retained before publication. Their existence does not establish readiness or verification.",
+          "$ref": "#/$defs/__schema14"
+        },
         "opsReview": {
           "type": "object",
           "properties": {
@@ -278,7 +282,7 @@
               "maxItems": 8,
               "type": "array",
               "items": {
-                "$ref": "#/$defs/__schema14"
+                "$ref": "#/$defs/__schema19"
               }
             },
             "nextStep": {
@@ -324,7 +328,7 @@
             "type": "object",
             "properties": {
               "requirementId": {
-                "$ref": "#/$defs/__schema15"
+                "$ref": "#/$defs/__schema16"
               },
               "disposition": {
                 "type": "string",
@@ -333,21 +337,7 @@
               "artifact": {
                 "anyOf": [
                   {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "$ref": "#/$defs/__schema15"
-                      },
-                      "revision": {
-                        "$ref": "#/$defs/__schema15"
-                      },
-                      "digest": {
-                        "type": "string",
-                        "pattern": "^sha256:[a-f0-9]{64}$"
-                      }
-                    },
-                    "required": ["id", "revision", "digest"],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/__schema18"
                   },
                   {
                     "type": "null"
@@ -355,7 +345,7 @@
                 ]
               },
               "explanation": {
-                "$ref": "#/$defs/__schema16"
+                "$ref": "#/$defs/__schema20"
               }
             },
             "required": ["requirementId", "disposition", "artifact", "explanation"],
@@ -368,14 +358,14 @@
             "type": "object",
             "properties": {
               "requirementId": {
-                "$ref": "#/$defs/__schema15"
+                "$ref": "#/$defs/__schema16"
               },
               "disposition": {
                 "type": "string",
                 "enum": ["human-required", "unresolved"]
               },
               "explanation": {
-                "$ref": "#/$defs/__schema16"
+                "$ref": "#/$defs/__schema20"
               }
             },
             "required": ["requirementId", "disposition", "explanation"],
@@ -508,6 +498,88 @@
       "maxLength": 200
     },
     "__schema14": {
+      "maxItems": 20,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema15"
+      }
+    },
+    "__schema15": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "revision": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "digest": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "filename": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[^\\\\/\\p{Cc}]+$"
+        },
+        "mediaType": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "purpose": {
+          "type": "string",
+          "enum": ["review-checklist", "preparation-package", "supporting-report"]
+        },
+        "sources": {
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema18"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "digest",
+        "title",
+        "filename",
+        "mediaType",
+        "purpose",
+        "sources"
+      ],
+      "additionalProperties": false
+    },
+    "__schema16": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "__schema17": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "__schema18": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "revision": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "digest": {
+          "$ref": "#/$defs/__schema17"
+        }
+      },
+      "required": ["id", "revision", "digest"],
+      "additionalProperties": false
+    },
+    "__schema19": {
       "type": "object",
       "properties": {
         "text": {
@@ -524,12 +596,7 @@
       "required": ["text", "evidence"],
       "additionalProperties": false
     },
-    "__schema15": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
-    },
-    "__schema16": {
+    "__schema20": {
       "type": "string",
       "minLength": 1,
       "maxLength": 8000

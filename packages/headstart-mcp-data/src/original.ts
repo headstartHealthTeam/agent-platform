@@ -16,7 +16,7 @@ const matchingId = (expected: string): typeof id =>
   id.refine((actual) => actual.slice(0, 15) === expected.slice(0, 15));
 /** Only fixed local diagnostics, never arbitrary MCP response bodies. */
 export class McpDocumentReadError extends Error {}
-export const selectionSchema = z
+const salesforceSelectionSchema = z
   .object({
     recordIdOrUrl: id,
     object: z.string().min(1).optional(),
@@ -24,6 +24,16 @@ export const selectionSchema = z
     contentVersionId: id,
   })
   .strict();
+export const selectionSchema = z.union([
+  salesforceSelectionSchema,
+  z
+    .object({
+      source: z.literal('headstart-knowledge'),
+      id: z.uuid(),
+      revision: z.iso.datetime(),
+    })
+    .strict(),
+]);
 export type DocumentSelection = z.infer<typeof selectionSchema>;
 export interface McpToolReader {
   callTool(request: { name: string; arguments: Record<string, unknown> }): Promise<unknown>;
@@ -46,10 +56,13 @@ export async function downloadMcpOriginal(
 ): Promise<string> {
   if (!isAbsolute(directory)) throw new McpDocumentReadError('Use an absolute evidence directory');
   const input = selectionSchema.parse(selection);
+  const knowledge = 'source' in input;
   const result = resultSchema.parse(
     await client.callTool({
-      name: 'get_salesforce_record_files',
-      arguments: { ...input, contentMode: 'original' },
+      name: knowledge ? 'fetch' : 'get_salesforce_record_files',
+      arguments: knowledge
+        ? { id: input.id, revision: input.revision }
+        : { ...input, contentMode: 'original' },
     })
   );
   if (result.isError)
@@ -69,26 +82,41 @@ export async function downloadMcpOriginal(
   const digest = `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
   if (block.resource.uri !== `urn:headstart:document:${digest}`)
     throw new McpDocumentReadError('Original-file content identity mismatch');
-  z.object({
-    data: z.object({
-      contentMode: z.literal('original'),
-      truncated: z.literal(false),
-      linkedRecord: z.object({ recordId: matchingId(input.recordIdOrUrl) }),
-      files: z
-        .array(
-          z.object({
-            contentDocumentId: matchingId(input.contentDocumentId),
-            contentVersionId: matchingId(input.contentVersionId),
-          })
-        )
-        .length(1),
-      document: z.object({
-        digest: z.literal(digest),
-        byteLength: z.literal(bytes.length),
-        mimeType: z.literal(block.resource.mimeType),
+  if (knowledge) {
+    z.object({
+      data: z.object({
+        id: z.literal(input.id),
+        revision: z.literal(input.revision),
+        contentMode: z.literal('original'),
+        truncated: z.literal(false),
+        document: z.object({
+          digest: z.literal(digest),
+          byteLength: z.literal(bytes.length),
+          mimeType: z.literal(block.resource.mimeType),
+        }),
       }),
-    }),
-  }).parse(result.structuredContent);
+    }).parse(result.structuredContent);
+  } else
+    z.object({
+      data: z.object({
+        contentMode: z.literal('original'),
+        truncated: z.literal(false),
+        linkedRecord: z.object({ recordId: matchingId(input.recordIdOrUrl) }),
+        files: z
+          .array(
+            z.object({
+              contentDocumentId: matchingId(input.contentDocumentId),
+              contentVersionId: matchingId(input.contentVersionId),
+            })
+          )
+          .length(1),
+        document: z.object({
+          digest: z.literal(digest),
+          byteLength: z.literal(bytes.length),
+          mimeType: z.literal(block.resource.mimeType),
+        }),
+      }),
+    }).parse(result.structuredContent);
   await mkdir(directory, { mode: 0o700 });
   const artifacts = await materializeDocumentContent([block], directory);
   const path = join(directory, 'result.json');

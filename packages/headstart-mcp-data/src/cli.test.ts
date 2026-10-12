@@ -80,7 +80,8 @@ describe('MCP runtime connection', () => {
     server.registerTool(
       'get_salesforce_record_files',
       {
-        inputSchema: selectionSchema.extend({ contentMode: z.literal('original') }).shape,
+        inputSchema: selectionSchema.options[0].extend({ contentMode: z.literal('original') })
+          .shape,
       },
       async (input) => ({
         structuredContent: {

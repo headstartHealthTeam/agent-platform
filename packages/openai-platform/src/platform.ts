@@ -4,9 +4,12 @@ import {
   type AgentLaunchDiagnostic,
   type AgentArtifact,
   type AgentArtifactRequest,
+  type AgentResearchFileTransfer,
+  type AgentResearchFileReceipt,
 } from '@headstart-health/workflow-contracts';
 import OpenAI from 'openai';
 
+import { pendingBrowserApprovals } from './browser-approvals.js';
 import {
   ADAPTER_VERSION,
   CAPABILITY,
@@ -33,6 +36,7 @@ import {
 } from './operations.js';
 import { OperatorItems } from './operator-items.js';
 import { pendingFunctionCalls } from './pending-functions.js';
+import { transferResearchFile } from './research-file-transfer.js';
 import { prepareRuntimeUpload } from './runtime-upload.js';
 
 export { fingerprint } from './fingerprint.js';
@@ -140,6 +144,15 @@ function pageData(page: { data: { id: string | null }[]; has_more: boolean }): u
 export class OpenAIPlatform {
   readonly #client: OpenAI;
   readonly #config: RuntimeConfig;
+
+  public async stageResearchFile(
+    environmentId: string,
+    file: AgentResearchFileTransfer,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentResearchFileReceipt> {
+    await this.preflight();
+    return transferResearchFile(this.#client, environmentId, file, beforeDispatch);
+  }
 
   public async readHostedArtifact(
     sessionId: string,
@@ -300,6 +313,13 @@ export class OpenAIPlatform {
             turnId: request.turnId,
           }),
         };
+      case 'sessions.pending-browser-approvals':
+        return {
+          data: pendingBrowserApprovals(await agents.sessions.retrieve(request.id), {
+            sessionId: request.id,
+            turnId: request.turnId,
+          }),
+        };
       case 'sessions.turns':
         return pageData(await agents.sessions.turns.list(request.id, request.query));
       case 'sessions.turn.get':
@@ -350,6 +370,7 @@ export class OpenAIPlatform {
     await this.preflight();
     await this.checkCurrentAgent(action);
     await this.checkPendingFunction(action);
+    await this.checkPendingBrowserApproval(action);
     // No further read/preflight may be inserted after this journal boundary. SDK errors after
     // it remain uncertain; accepting a generic header does not establish create idempotency.
     await options?.beforeDispatch?.();
@@ -397,6 +418,26 @@ export class OpenAIPlatform {
     }
   }
 
+  private async checkPendingBrowserApproval(action: Action): Promise<void> {
+    if (action.operation !== 'sessions.browser-approval') return;
+    try {
+      const session = await this.#client.beta.agents.sessions.retrieve(action.id);
+      const pending = pendingBrowserApprovals(session, {
+        sessionId: action.id,
+        turnId: action.turnId,
+      }).find((request) => request.requestId === action.requestId);
+      if (
+        pending?.request.type !== action.response.type ||
+        pending.fingerprint !== action.expectedRequestFingerprint
+      )
+        throw new Error('Pending browser approval changed');
+    } catch {
+      throw new Error(
+        'Pending browser approval missing, changed or unverifiable; no response submitted.'
+      );
+    }
+  }
+
   private async mutate(
     action: Action,
     upload?: Awaited<ReturnType<typeof prepareRuntimeUpload>>
@@ -427,6 +468,16 @@ export class OpenAIPlatform {
       case 'sessions.cancel':
         return agents.sessions.events.create(action.id, {
           events: [{ type: 'agent.session.input.cancel' }],
+        });
+      case 'sessions.browser-approval':
+        return agents.sessions.events.create(action.id, {
+          events: [
+            {
+              type: 'agent.session.input.computer_use_approval_request_result',
+              request_id: action.requestId,
+              response: action.response,
+            },
+          ],
         });
       case 'sessions.tool-result':
         return agents.sessions.events.create(action.id, {

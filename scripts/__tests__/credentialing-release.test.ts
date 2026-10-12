@@ -22,6 +22,7 @@ describe('credentialing runtime release boundary', () => {
         protocol: 'credentialing-preparation/v1',
         definition: {
           instructions: 'Read the complete skill',
+          research: 'live-web-search',
           capabilities: {
             files: [
               {
@@ -43,9 +44,27 @@ describe('credentialing runtime release boundary', () => {
         await credentialingReleaseDefinition(directory, async () => 'a'.repeat(40))
       );
       expect(original.artifact.definition).not.toHaveProperty('capabilities');
+      expect(original.artifact.definition.research).toBe('live-web-search');
       expect(original.files).toEqual(definition.definition.capabilities.files);
       expect(original.artifact.workflowRevision).toBe(
         createHash('sha256').update(JSON.stringify(original.artifact.definition)).digest('hex')
+      );
+      await writeFile(
+        join(distribution, 'preparation-definition.json'),
+        JSON.stringify({
+          ...definition,
+          definition: { ...definition.definition, research: undefined },
+        })
+      );
+      const legacy = await credentialingReleaseDefinition(directory, async () => 'a'.repeat(40));
+      expect(legacy.artifact.definition).not.toHaveProperty('research');
+      expect(legacy.artifact.workflowRevision).not.toBe(original.artifact.workflowRevision);
+      expect(legacy.artifact.definition.runtimeRevision).not.toBe(
+        original.artifact.definition.runtimeRevision
+      );
+      await writeFile(
+        join(distribution, 'preparation-definition.json'),
+        JSON.stringify(definition)
       );
       await writeFile(join(directory, 'pnpm-lock.yaml'), 'lock-v2');
       expect(

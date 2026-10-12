@@ -169,6 +169,28 @@ export const productionReadInputSchema = preparationInputSchema.extend({
 
 export const preparationOutputSchema = credentialingOutputSchema.extend({
   schemaVersion: z.literal('0.3.0'),
+  deliverables: z
+    .array(
+      artifactReference
+        .extend({
+          title: z.string().trim().min(1).max(200),
+          filename: z
+            .string()
+            .min(1)
+            .max(200)
+            .regex(/^[^\\/\p{Cc}]+$/u)
+            .refine((value) => value.trim() === value && value !== '.' && value !== '..'),
+          mediaType: reference,
+          purpose: z.enum(['review-checklist', 'preparation-package', 'supporting-report']),
+          sources: z.array(artifactReference).max(100),
+        })
+        .strict()
+    )
+    .max(20)
+    .optional()
+    .describe(
+      'Generated review aids, retained separately from source evidence and payer attachments. Exact files must be queued and retained before publication. Their existence does not establish readiness or verification.'
+    ),
   opsReview: opsReviewSchema.optional(),
   questions: z.array(
     credentialingOutputSchema.shape.questions.element.extend({

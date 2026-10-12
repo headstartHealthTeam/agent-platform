@@ -1,6 +1,7 @@
 import { AGENT_FUNCTION_PAYLOAD_LIMIT } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
+import { browserApprovalRequest } from './browser-approvals.js';
 import { fingerprint } from './fingerprint.js';
 
 const id = z
@@ -47,6 +48,10 @@ export function pendingFunctionCalls(
       const kind = z.object({ type: z.string() }).parse(raw);
       // An environment connection request is not an application function to dispatch.
       if (kind.type === 'environment_connection') continue;
+      if (kind.type === 'computer_use_approval_request') {
+        browserApprovalRequest.parse(raw);
+        continue;
+      }
       const call = functionCall.parse(raw);
       const identity = `${call.turn_id}/${call.call_id}`;
       if (seen.has(identity)) throw new Error('Duplicate pending function.');

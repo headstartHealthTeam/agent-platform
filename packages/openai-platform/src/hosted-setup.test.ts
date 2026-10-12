@@ -18,6 +18,9 @@ describe('hosted environment setup contract', () => {
     { packages: null, files: null, env: null, setup_commands: null },
     { packages: { npm: null, python: null, system: null } },
     { setup_commands: [{ command: 'pwd', cwd: null }] },
+    { desktop: { enabled: true } },
+    { desktop: { enabled: false } },
+    { desktop: null },
   ])('preserves template inheritance and explicit clearing: %j', (setup) => {
     const environment = {
       type: 'openai_hosted',
@@ -37,6 +40,9 @@ describe('hosted environment setup contract', () => {
     { files: [{ type: 'inline', path: '/elsewhere/input', data: 'e30=' }] },
     { setup_commands: ['node --version'] },
     { setup_commands: [{ command: 'pwd', cwd: 'relative' }] },
+    { desktop: {} },
+    { desktop: { enabled: 'true' } },
+    { desktop: { enabled: true, browser: 'chrome' } },
   ])('rejects malformed provider configuration: %j', (setup) => {
     expect(() => parseEnvironment({ type: 'openai_hosted', ...setup })).toThrow();
   });
