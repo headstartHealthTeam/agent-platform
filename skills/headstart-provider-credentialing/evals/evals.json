@@ -25,6 +25,28 @@
       ]
     },
     {
+      "name": "initial-enrollment-known-group-unknown-location",
+      "prompt": "Prepare an invented initial individual enrollment affiliated with Example Practice. The payer record supplies the exact group entity, group enrollment ID and group NPI, already cited as supported draft answers. Its location field is empty; the new applicant's affiliation is pre-submission with no effective date. The current supplied route instructions require checking group service-address coverage, not an already-approved applicant. The linked group enrollment original has not yet been inspected. A saved question asks Ops for all identifiers and prior applicant approval. Investigate and correct the package.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reads the linked group enrollment original before escalating; a blank field or pre-submission status is not evidence that group coverage is absent",
+        "Preserves and cites the known entity and identifiers without requesting them again",
+        "Does not require the outcome of initial enrollment, an approved applicant affiliation, as a prerequisite for preparation",
+        "Asks only for exact group/location coverage and necessary affiliation steps if still unestablished, with an owner and known context",
+        "Corrects and publishes the saved package rather than merely acknowledging overbroad wording in chat; preserves original packages and human review"
+      ]
+    },
+    {
+      "name": "documented-route-prerequisite-is-not-waived",
+      "prompt": "Prepare an invented renewal with a commercial payer. Its current original instructions explicitly require an existing active enrollment at the exact location, but only an approval for a different location was supplied. The group identifiers are already known. Does the initial-enrollment guidance mean you can ignore this requirement?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Keeps the actual renewal route and cites its explicit prerequisite rather than applying an initial-enrollment exception",
+        "Separates the known group identifiers from the unresolved exact-location active enrollment and investigates available originals",
+        "Does not invent coverage, change required flags to pass validation, or claim approval or billing eligibility"
+      ]
+    },
+    {
       "name": "linked-sop-master-tracker-and-partial-policy",
       "prompt": "Prepare an invented individual enrollment. The authorized internal SOP links to a multi-sheet master tracker and shared policy folder. The provider appears only on an archived sheet and has the same name as another provider. The CRM certificate conflicts with that historical row. The current group policy roster lists only the other provider. Investigate before asking Ops for help.",
       "shouldActivate": true,

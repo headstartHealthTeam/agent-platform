@@ -363,6 +363,15 @@ multi-sheet workbook, paginated folder and returned original. These deterministi
 skill's added evaluation definitions are **not recorded passing model trials**. Repeated hosted
 behavior evaluation and the real-reference benchmark remain separate activation/acceptance gates.
 
+### Instruction revision 0.4.1 — request-stage and residual-gap accuracy
+
+The same canonical investigation reference now separates an enrollment's intended outcome from
+requirements for preparing it. Known group identifiers remain cited draft answers; unresolved
+group/location coverage is a narrower question, not a request to obtain the new applicant's approval
+before applying. An explicit current-route prerequisite still governs renewal or other requests.
+Overbroad saved questions must be corrected in a new package, not only explained in chat. The new
+initial-enrollment and renewal-control evaluation definitions are not passing hosted-model evidence.
+
 See the [documentation hub](../../docs/README.md),
 [authoring guide](../../docs/workflow-authoring-guide.md) and
 [managed architecture](../../docs/codex-managed-workflow-architecture.md).

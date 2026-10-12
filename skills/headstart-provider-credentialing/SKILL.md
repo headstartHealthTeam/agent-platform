@@ -4,7 +4,7 @@ description: Investigate provider credentialing or payer enrollment evidence and
 compatibility: Requires scoped case retrieval, evidence discovery and exact-version evidence reads. Can use synthetic tools during development. Live capabilities require separately verified identity, data authorization and destination permission.
 metadata:
   author: headstart-health
-  version: '0.5.0'
+  version: '0.5.1'
 ---
 
 # Headstart Provider Credentialing
