@@ -28,7 +28,9 @@ function investigationIssues(input: PreparationSnapshot, investigation: Investig
     investigated.add(item.source.id);
     if (item.discoveredFrom?.id === item.source.id)
       issues.push(`Investigation source cannot discover itself: ${item.source.id}`);
-    const evidence = input.evidence.find((source) => source.id === item.source.id);
+    const evidence = input.evidence.find(
+      (source) => source.id === item.source.id && source.revision === item.source.revision
+    );
     if (item.outcome === 'inspected' && evidence?.retrieval !== 'available')
       issues.push(`Unavailable evidence cannot be marked inspected: ${item.source.id}`);
   }

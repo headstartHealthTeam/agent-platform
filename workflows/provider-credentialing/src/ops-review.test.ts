@@ -101,6 +101,20 @@ describe('Ops handoff contract', () => {
     );
   });
 
+  it('checks retrieval for the exact inspected revision when an older revision is available', () => {
+    const { input, output } = fixture();
+    const evidence = input.evidence.find((source) => source.id === 'historical-application');
+    const investigation = output.opsReview?.investigation[0];
+    if (!evidence || !investigation) throw new Error('Missing fixture investigation');
+    input.evidence.push({ ...evidence, revision: 'r2', retrieval: 'missing' });
+    investigation.source.revision = 'r2';
+    expect(validateOpsReview(input, output)).toEqual([
+      'Unavailable evidence cannot be marked inspected: historical-application',
+    ]);
+    investigation.source.revision = 'r1';
+    expect(validateOpsReview(input, output)).toEqual([]);
+  });
+
   it('rejects duplicate sources and self-discovery without claiming to verify actual tool use', () => {
     const { input, output } = fixture();
     const review = output.opsReview;
