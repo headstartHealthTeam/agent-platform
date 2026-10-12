@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
+import { loadWorkflowPackage, validateWorkflowOutput } from '@headstart-health/workflow-runtime';
 import { describe, expect, it } from 'vitest';
 
 import { artifactValidationReply, type ArtifactValidationReply } from './artifact-validation.js';
@@ -9,6 +11,8 @@ import {
   type PreparationInput,
   type PreparationOutput,
 } from './preparation-contracts.js';
+
+const workflow = loadWorkflowPackage(fileURLToPath(new URL('../', import.meta.url)));
 
 const fixture = (): { input: PreparationInput; output: PreparationOutput } => {
   const read = (kind: string): unknown =>
@@ -93,11 +97,27 @@ describe('generated review deliverables', () => {
     'bad\nheader.md',
     '.',
     '..',
+    ' review.md',
+    'review.md ',
+    '\u00a0review.md',
+    'review\u2028name.md\u00a0',
   ])('rejects unsafe download filename %s', (filename) => {
     const packet = fixture();
     const file = packet.output.deliverables?.[0];
     if (!file) throw new Error('Missing synthetic fixture');
     file.filename = filename;
     expect(validate(packet).ok).toBe(false);
+    expect(validateWorkflowOutput(workflow, packet.output).valid).toBe(false);
   });
+  it.each(['a', '...', '.checklist.md', 'Review checklist.md', 'Résumé.md'])(
+    'accepts the same valid filename through both schema consumers: %s',
+    (filename) => {
+      const packet = fixture();
+      const file = packet.output.deliverables?.[0];
+      if (!file) throw new Error('Missing synthetic fixture');
+      file.filename = filename;
+      expect(validate(packet).ok).toBe(true);
+      expect(validateWorkflowOutput(workflow, packet.output).valid).toBe(true);
+    }
+  );
 });

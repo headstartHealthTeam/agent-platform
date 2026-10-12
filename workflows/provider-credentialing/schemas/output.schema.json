@@ -525,7 +525,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 200,
-          "pattern": "^[^\\\\/\\p{Cc}]+$"
+          "pattern": "^(?!\\.{1,2}$)(?!\\s)(?![\\s\\S]*\\s$)[^\\\\/\\p{Cc}]+$"
         },
         "mediaType": {
           "$ref": "#/$defs/__schema16"

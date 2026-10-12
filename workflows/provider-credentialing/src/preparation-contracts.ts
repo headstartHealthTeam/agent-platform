@@ -178,8 +178,7 @@ export const preparationOutputSchema = credentialingOutputSchema.extend({
             .string()
             .min(1)
             .max(200)
-            .regex(/^[^\\/\p{Cc}]+$/u)
-            .refine((value) => value.trim() === value && value !== '.' && value !== '..'),
+            .regex(/^(?!\.{1,2}$)(?!\s)(?![\s\S]*\s$)[^\\/\p{Cc}]+$/u),
           mediaType: reference,
           purpose: z.enum(['review-checklist', 'preparation-package', 'supporting-report']),
           sources: z.array(artifactReference).max(100),
