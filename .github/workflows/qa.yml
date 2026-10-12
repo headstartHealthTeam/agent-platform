@@ -56,7 +56,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The workspace Corepack shim shadows action-setup's pnpm inside npm/Turbo tasks.
+      # Hydrate its exact packageManager pin once, before parallel deterministic QA.
+      - name: Prepare pinned package manager
+        timeout-minutes: 5
+        run: node node_modules/corepack/dist/corepack.js install
+
       - name: Run quality checks
+        env:
+          COREPACK_ENABLE_NETWORK: '0'
         run: pnpm qa
 
   dependency-audit:
@@ -126,12 +134,17 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Prepare pinned package manager
+        timeout-minutes: 5
+        run: node node_modules/corepack/dist/corepack.js install
       - name: Assemble and verify the installed runtime
         env:
+          COREPACK_ENABLE_NETWORK: '0'
           RELEASE_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
-          pnpm install --frozen-lockfile
           pnpm build
           pnpm credentialing:release --expected-source "$RELEASE_SOURCE" --target "$RUNNER_TEMP/credentialing-release"
           tar -czf "$RUNNER_TEMP/credentialing-runtime.tar.gz" -C "$RUNNER_TEMP/credentialing-release/runtime" .

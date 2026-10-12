@@ -4,7 +4,7 @@ description: Investigate provider credentialing or payer enrollment evidence and
 compatibility: Requires scoped case retrieval, evidence discovery and exact-version evidence reads. Can use synthetic tools during development. Live capabilities require separately verified identity, data authorization and destination permission.
 metadata:
   author: headstart-health
-  version: '0.4.1'
+  version: '0.5.1'
 ---
 
 # Headstart Provider Credentialing
@@ -48,6 +48,8 @@ as scenario facts, not claims about actual payers.
 Before escalating a gap or preparing the operator handoff, read
 [Evidence investigation and Ops handoff](references/evidence-investigation.md). It covers linked
 source traversal, known facts versus verification, conditional requirements and returned evidence.
+It also covers autonomous public research and adaptive schema/query investigation across authorized
+sources. Do not replace that investigation with a fixed lookup list or per-website Ops approvals.
 
 1. Establish the work scope and inspect the case, current requirements and evidence inventory.
 2. Form hypotheses about gaps or contradictions, then retrieve the relevant evidence yourself.

@@ -18,6 +18,10 @@ export interface AgentLaunchDefinition {
    * capability files; the provider must verify its pinned deployment binding before dispatch.
    */
   runtimeRevision?: string;
+  /** Definition-owned capability, never an operator-supplied tool list. Public browser work
+   * uses a fresh credential-free environment, not the credentialed source-reading sandbox.
+   */
+  research?: 'live-web-search' | 'public-browser';
   tools: {
     type: 'function';
     name: string;

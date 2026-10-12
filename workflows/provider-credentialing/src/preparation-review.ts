@@ -7,6 +7,7 @@ export const validatePreparationProposal = (
   output: PreparationOutput
 ): string[] => {
   const issues = [
+    ...validateDeliverables(input, output),
     ...validateOpsReview(input, output),
     ...validateCoverage(input.attachmentRequirements, output.attachments),
     ...validateCoverage(input.protectedActionRequirements, output.protectedActions),
@@ -24,6 +25,31 @@ export const validatePreparationProposal = (
     issues.push(
       'Unresolved attachments or protected-action routing require an H-02 handoff, not readiness.'
     );
+  }
+  return issues;
+};
+
+const validateDeliverables = (input: PreparationSnapshot, output: PreparationOutput): string[] => {
+  const issues: string[] = [];
+  const ids = new Set(input.artifacts.map((file) => file.id));
+  const filenames = new Set<string>();
+  for (const file of output.deliverables ?? []) {
+    if (ids.has(file.id) || filenames.has(file.filename))
+      issues.push(`Duplicate generated document identity: ${file.id}`);
+    ids.add(file.id);
+    filenames.add(file.filename);
+    const sources = new Set<string>();
+    for (const ref of file.sources) {
+      if (
+        sources.has(ref.id) ||
+        !input.artifacts.some(
+          (source) =>
+            source.id === ref.id && source.revision === ref.revision && source.digest === ref.digest
+        )
+      )
+        issues.push(`Generated document needs an exact original inventory reference: ${file.id}`);
+      sources.add(ref.id);
+    }
   }
   return issues;
 };

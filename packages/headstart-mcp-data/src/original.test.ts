@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { downloadMcpOriginal } from './original.js';
+import { downloadMcpOriginal, type DocumentSelection } from './original.js';
 
 export const selection = {
   recordIdOrUrl: 'a00000000000001',
@@ -50,6 +50,61 @@ async function output(): Promise<string> {
 }
 
 describe('MCP original-file materialization', () => {
+  const reference = {
+    source: 'headstart-knowledge',
+    id: '00000000-0000-4000-8000-000000000001',
+    revision: '2026-01-01T00:00:00.000Z',
+  } satisfies DocumentSelection;
+  function referenceResponse(
+    bytes: Buffer,
+    overrides: Record<string, unknown> = {}
+  ): CallToolResult {
+    return {
+      ...response(bytes),
+      structuredContent: {
+        data: {
+          id: reference.id,
+          revision: reference.revision,
+          contentMode: 'original',
+          truncated: false,
+          document: {
+            digest: `sha256:${createHash('sha256').update(bytes).digest('hex')}`,
+            byteLength: bytes.length,
+            mimeType: 'text/plain',
+          },
+          ...overrides,
+        },
+      },
+    };
+  }
+  it('retrieves a complete internal reference at its exact discovered revision', async () => {
+    const bytes = Buffer.from(`${'complete reference\n'.repeat(8000)}FINAL REQUIREMENT`);
+    const client = { callTool: vi.fn(async () => referenceResponse(bytes)) };
+    const directory = await output();
+    const receipt = await downloadMcpOriginal(client, reference, directory);
+    expect(client.callTool).toHaveBeenCalledWith({
+      name: 'fetch',
+      arguments: { id: reference.id, revision: reference.revision },
+    });
+    // Compare every byte natively; generic object equality enumerates this large buffer.
+    expect((await readFile(join(directory, 'evidence-0.txt'))).equals(bytes)).toBe(true);
+    expect(await readFile(receipt, 'utf8')).toContain(reference.revision);
+  });
+  it.each([
+    { id: '00000000-0000-4000-8000-000000000002' },
+    { revision: '2026-01-02T00:00:00.000Z' },
+    { truncated: true },
+    { contentMode: 'summary' },
+    { document: { digest: 'wrong', byteLength: 1, mimeType: 'text/plain' } },
+  ])('rejects mismatched or incomplete internal references', async (overrides) => {
+    await expect(
+      downloadMcpOriginal(
+        { callTool: async () => referenceResponse(Buffer.from('original'), overrides) },
+        reference,
+        await output()
+      )
+    ).rejects.toThrow();
+  });
   it('accepts expanded Salesforce IDs but rejects different records, versions and case-sensitive identities', async () => {
     const expanded = {
       ...selection,
@@ -88,7 +143,7 @@ describe('MCP original-file materialization', () => {
       name: 'get_salesforce_record_files',
       arguments: { ...selection, contentMode: 'original' },
     });
-    expect(await readFile(join(directory, 'evidence-0.txt'))).toEqual(bytes);
+    expect((await readFile(join(directory, 'evidence-0.txt'))).equals(bytes)).toBe(true);
     const receipt = await readFile(path, 'utf8');
     expect(receipt).toContain(selection.contentVersionId);
     expect(receipt).not.toContain(bytes.toString('base64'));

@@ -29,6 +29,7 @@ import {
   type OpenAIPlatform,
 } from './platform.js';
 import { preparedRuntimeBinding, verifyPreparedRuntime } from './prepared-runtime.js';
+import { researchTools, validateResearchLaunch } from './research-launch.js';
 import { selfHostedExecutorConnection } from './self-hosted.js';
 import type { SessionExecutor } from './session-executor.js';
 import { visitSessionHistory } from './session-history.js';
@@ -267,6 +268,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
     id.parse(request.workflowRevision);
     const settings = launchSettings.parse(this.settings);
     const functions = request.definition.tools;
+    const nativeResearch = researchTools(request.definition.research);
     if (
       functions.some(
         (tool) => tool.name !== 'ask_operator' && !this.appFunctions.includes(tool.name)
@@ -284,6 +286,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
           instructions: request.definition.instructions,
           tools: [
             ...functions,
+            ...nativeResearch,
             ...this.bindCredentials(settings.mcpServers, bindings, includeAuthorization),
           ],
         },
@@ -292,15 +295,29 @@ export class SessionLaunchPort implements AgentLaunchPort {
         metadata: {
           workflow_revision: request.workflowRevision,
           launch_request: request.requestId,
+          ...(request.definition.research === 'public-browser'
+            ? { research_mode: 'public-browser' }
+            : {}),
         },
       },
     });
     if (
       action.operation !== 'sessions.create' ||
       !('agent' in action.body) ||
-      action.body.agent.tools?.slice(functions.length).some((tool) => tool.type !== 'mcp')
+      action.body.agent.tools
+        ?.slice(functions.length + nativeResearch.length)
+        .some((tool) => tool.type !== 'mcp')
     )
       throw new Error('Only native MCP source bindings are permitted');
+    validateResearchLaunch(
+      request.definition,
+      action,
+      bindings !== undefined ||
+        settings.runtimeCredentials !== undefined ||
+        settings.credentialFiles !== undefined ||
+        settings.preparedRuntime !== undefined ||
+        this.credentialFiles !== undefined
+    );
     if (action.body.environment.type === 'self_hosted' && !this.executor)
       throw new Error('Self-hosted executor is not configured');
     if (request.definition.runtimeRevision && settings.credentialFiles?.length)

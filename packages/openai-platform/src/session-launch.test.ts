@@ -92,6 +92,152 @@ function setup(): {
   };
 }
 describe('application session launch', () => {
+  it('enables live service-side search without widening the private source network or narrowing MCP tools', async () => {
+    const { platform, settings } = setup();
+    const environment = {
+      type: 'openai_hosted',
+      network: { access: 'restricted', allowed_domains: ['sources.example'] },
+    };
+    const mcp = {
+      type: 'mcp',
+      server_label: 'source',
+      connection_origin: 'service',
+      required: true,
+      allowed_tools: ['describe_schema', 'query_records', 'search_records', 'read_original'],
+      transport: { type: 'http', server_url: 'https://sources.example/mcp' },
+    };
+    const port = new SessionLaunchPort(
+      platform,
+      target,
+      { ...settings, environment, mcpServers: [mcp] },
+      Date.now() + 60_000,
+      ['publish']
+    );
+    const launch: AgentLaunchRequest = {
+      ...request,
+      definition: { ...request.definition, research: 'live-web-search' },
+    };
+    expect(await port.createSession(launch, undefined, createOptions)).toMatchObject({
+      status: 'created',
+    });
+    const action = actionSchema.parse(platform.apply.mock.calls[0]?.[0]);
+    if (action.operation !== 'sessions.create' || !('agent' in action.body))
+      throw new Error('Expected launch');
+    expect(action.body.environment).toEqual(environment);
+    expect(action.body.agent.tools).toEqual([
+      ...request.definition.tools,
+      { type: 'web_search', mode: 'live', context_size: 'high' },
+      mcp,
+    ]);
+  });
+
+  it('launches a fresh browser with native tools and a durable public-research marker, not inherited source credentials', async () => {
+    const { platform, settings } = setup();
+    const environment = {
+      type: 'openai_hosted',
+      desktop: { enabled: true },
+      network: { access: 'enabled' },
+    };
+    const port = new SessionLaunchPort(
+      platform,
+      target,
+      { ...settings, environment },
+      Date.now() + 60_000,
+      []
+    );
+    const launch: AgentLaunchRequest = {
+      ...request,
+      definition: {
+        instructions: 'Read public originals only.',
+        tools: [],
+        research: 'public-browser',
+      },
+    };
+    expect(await port.createSession(launch, undefined, createOptions)).toMatchObject({
+      status: 'created',
+    });
+    expect(platform.apply.mock.calls[0]?.[0]).toMatchObject({
+      body: {
+        environment,
+        metadata: { research_mode: 'public-browser', launch_request: request.requestId },
+        agent: {
+          tools: [
+            { type: 'web_search', mode: 'live', context_size: 'high' },
+            { type: 'computer_use', include_screenshots: false },
+          ],
+        },
+      },
+    });
+  });
+
+  it.each([
+    'template',
+    'files',
+    'env',
+    'setup',
+    'capabilities',
+    'functions',
+    'credential callback',
+    'runtime binding',
+    'mcp',
+    'missing desktop',
+  ])('rejects public research with %s before provider creation', async (scenario) => {
+    const { platform, settings } = setup();
+    const launch: AgentLaunchRequest = {
+      ...request,
+      definition: {
+        instructions: 'Read public originals only.',
+        tools: scenario === 'functions' ? request.definition.tools : [],
+        research: 'public-browser',
+        ...(scenario === 'capabilities'
+          ? { capabilities: { directories: ['/workspace/skills'], files: [] } }
+          : {}),
+      },
+    };
+    const environment = {
+      type: 'openai_hosted',
+      ...(scenario === 'missing desktop' ? {} : { desktop: { enabled: true } }),
+      network: { access: 'enabled' },
+      ...(scenario === 'template' ? { environment_template_id: 'private_template' } : {}),
+      ...(scenario === 'files'
+        ? { files: [{ type: 'inline', path: '/workspace/private', data: 'e30=' }] }
+        : {}),
+      ...(scenario === 'env' ? { env: { PRIVATE_REFERENCE: 'synthetic' } } : {}),
+      ...(scenario === 'setup' ? { setup_commands: [{ command: 'echo synthetic' }] } : {}),
+    };
+    const port = new SessionLaunchPort(
+      platform,
+      target,
+      {
+        ...settings,
+        environment,
+        ...(scenario === 'runtime binding' ? { runtimeCredentials: [] } : {}),
+        ...(scenario === 'mcp'
+          ? {
+              mcpServers: [
+                {
+                  type: 'mcp',
+                  server_label: 'private',
+                  required: true,
+                  allowed_tools: ['read'],
+                  transport: { type: 'http', server_url: 'https://source.example/mcp' },
+                },
+              ],
+            }
+          : {}),
+      },
+      Date.now() + 60_000,
+      ['publish'],
+      undefined,
+      scenario === 'credential callback' ? (): Promise<[]> => Promise.resolve([]) : undefined
+    );
+    expect(await port.createSession(launch, undefined, createOptions)).toEqual({
+      status: 'not-attempted',
+      reason: 'validation',
+    });
+    expect(platform.apply).not.toHaveBeenCalled();
+  });
+
   it('preserves prepared proxy support in the actual session-create payload', async () => {
     const { platform, settings, session, roots } = setup();
     const revision = 'a'.repeat(64);

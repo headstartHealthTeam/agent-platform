@@ -18,9 +18,25 @@ export type {
   ExactEvidenceReference,
   EvidenceOrigin,
   RetainedEvidenceManifest,
+  RetainedDocumentManifest,
+  GeneratedReviewDocument,
+  GeneratedDocumentOrigin,
+  RetainedDocumentOrigin,
 } from './evidence.js';
 
+export type {
+  AgentPublicResearchRequest,
+  AgentResearchFileTransfer,
+  AgentResearchFileReceipt,
+  AgentPublicResearchPort,
+} from './public-research.js';
+
 export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from './functions.js';
+export type {
+  AgentBrowserRequest,
+  AgentPublicBrowserDecision,
+  AgentPublicBrowserPort,
+} from './browser.js';
 export {
   credentialContentSha256,
   containsCredentialBytes,

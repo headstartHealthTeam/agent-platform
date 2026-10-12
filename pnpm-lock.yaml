@@ -169,7 +169,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@22.20.4)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@22.20.4)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
+        version: 4.1.11(@types/node@22.20.4)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@22.20.4)(esbuild@0.27.7)(tsx@4.23.15)(yaml@2.9.1))
 
   packages/capability-contracts:
     dependencies:
@@ -531,8 +531,8 @@ importers:
         specifier: 0.8.3
         version: 0.8.3
       openai:
-        specifier: 7.23.0
-        version: 7.23.0(zod@4.6.5)
+        specifier: 7.32.0
+        version: 7.32.0(zod@4.6.5)
       yaml:
         specifier: ^2.9.1
         version: 2.9.1
@@ -778,7 +778,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@22.20.4)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@22.20.4)(esbuild@0.27.7)(tsx@4.23.15)(yaml@2.9.1))
+        version: 4.1.11(@types/node@22.20.4)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@22.20.4)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
 
   workflows/synthetic-read-only-reference: {}
 
@@ -3305,8 +3305,8 @@ packages:
     resolution: {integrity: sha512-VXJjc87FScF88uafS3JllDgvAm+c/Slfz06lorj2uAY34rlUu0Nt+v8wreiImcrgAjjIHp1rXpTDlLOGw29WwQ==}
     engines: {node: '>=18'}
 
-  openai@7.23.0:
-    resolution: {integrity: sha512-0ecOXnFSMNWZq6cUBcTV6Lf93y+fm8BH/+QzFvpoP1UGNOE5pnytRa6HAPGCw+3IS9SIAW7rc1M8yyzN1PiBAQ==}
+  openai@7.32.0:
+    resolution: {integrity: sha512-avqxu/jl1gsVBCBgFNPr9sTh+wZppQphuhhFy1zEvAJxEaJ4t0ery6hZdOT9kws/EcNTARoQcZs2IT3bliE1SA==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       '@aws-sdk/credential-provider-node': '>=3.972.0 <4'
@@ -6531,7 +6531,7 @@ snapshots:
     dependencies:
       mimic-function: 5.0.1
 
-  openai@7.23.0(zod@4.6.5):
+  openai@7.32.0(zod@4.6.5):
     optionalDependencies:
       zod: 4.6.5
 

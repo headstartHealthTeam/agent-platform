@@ -111,6 +111,7 @@ function fixture(): {
       case 'agents.get':
       case 'sessions.list':
       case 'sessions.pending-functions':
+      case 'sessions.pending-browser-approvals':
       case 'sessions.turn.get':
       case 'templates.list':
       case 'templates.get':

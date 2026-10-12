@@ -22,9 +22,15 @@ import type {
   AgentHostedCredentialFiles,
   AgentConversationManifest,
   AgentConversationPart,
+  AgentBrowserRequest,
+  AgentPublicBrowserDecision,
+  AgentPublicResearchRequest,
+  AgentResearchFileTransfer,
+  AgentResearchFileReceipt,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
+import { pendingBrowserApprovals } from './browser-approvals.js';
 import type { Target } from './config.js';
 import { exportConversation, deleteConversation } from './conversation-archive.js';
 import { HostedArtifactError } from './hosted-artifact-error.js';
@@ -38,6 +44,9 @@ import { OperatorTurns } from './operator-turns.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 import type { OpenAIPlatform } from './platform.js';
 import { fingerprint, planAction, InputNotSteerableError } from './platform.js';
+import { publicBrowserDecision } from './public-browser-policy.js';
+import { publicResearchLaunch } from './public-research.js';
+import { publicResearchSettings } from './research-launch.js';
 import type { SessionExecutor } from './session-executor.js';
 import { SessionLaunchPort } from './session-launch.js';
 
@@ -53,7 +62,7 @@ const noInferenceAuthority = 'No current bounded inference authorization';
 const sessionGet = 'sessions.get' as const;
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
 type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight' | 'openOperatorObservation'> &
-  Partial<Pick<OpenAIPlatform, 'readHostedArtifact'>>;
+  Partial<Pick<OpenAIPlatform, 'readHostedArtifact' | 'stageResearchFile'>>;
 function operatorStatus(
   status: ReturnType<typeof verifiedOperatorRoots>['root']['status'],
   hasQuestions: boolean
@@ -97,16 +106,42 @@ export class OperatorRuntimePort {
     if (appFunctions.includes('ask_operator'))
       throw new Error('Human questions are not application functions');
   }
-  private launchPort(): SessionLaunchPort {
+  private launchPort(request?: AgentLaunchRequest): SessionLaunchPort {
+    const publicResearch = request?.definition.research === 'public-browser';
     return new SessionLaunchPort(
       this.platform,
       this.target,
-      this.launchSettings,
+      publicResearch ? publicResearchSettings(this.launchSettings) : this.launchSettings,
       this.billableUntil,
       this.appFunctions,
-      this.executor,
-      this.credentialFiles
+      publicResearch ? undefined : this.executor,
+      publicResearch ? undefined : this.credentialFiles
     );
+  }
+  publicResearchLaunch(request: AgentPublicResearchRequest): Promise<AgentLaunchRequest> {
+    return Promise.resolve(publicResearchLaunch(request));
+  }
+  async stageResearchFile(
+    binding: OperatorBinding,
+    file: AgentResearchFileTransfer,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentResearchFileReceipt> {
+    this.requireOpen();
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
+    const { session, root } = await this.turns.read(this.platform, binding);
+    if (['completed', 'cancelled', 'failed'].includes(root.status))
+      throw new Error('Research destination turn is no longer active');
+    const environment = z
+      .object({
+        environment: z.object({ type: z.literal('openai_hosted'), id: z.string().min(1) }),
+      })
+      .parse(session).environment;
+    if (!this.platform.stageResearchFile) throw new Error('Research file transfer is unavailable');
+    return this.platform.stageResearchFile(environment.id, file, async () => {
+      this.requireOpen();
+      await beforeDispatch();
+      this.requireOpen();
+    });
   }
   async exportConversation(
     binding: OperatorBinding,
@@ -166,7 +201,7 @@ export class OperatorRuntimePort {
     descriptors?: AgentSessionCredentialDescriptor[]
   ): Promise<AgentLaunchPreflight> {
     this.requireOpen();
-    return this.launchPort().preflightLaunch(request, descriptors);
+    return this.launchPort(request).preflightLaunch(request, descriptors);
   }
   createSession(
     request: AgentLaunchRequest,
@@ -174,7 +209,7 @@ export class OperatorRuntimePort {
     options?: AgentSessionCreateOptions
   ): Promise<AgentSessionCreateResult> {
     if (this.closed) return Promise.resolve({ status: 'not-attempted', reason: 'validation' });
-    return this.launchPort().createSession(request, credentials, options);
+    return this.launchPort(request).createSession(request, credentials, options);
   }
   inspectLaunchCandidate(
     expectedTarget: string,
@@ -327,6 +362,56 @@ export class OperatorRuntimePort {
       sessionId: binding.sessionId,
       turnId: root.id,
     }).filter((call) => this.appFunctions.includes(call.name));
+  }
+  /** Current provider requests only; reading never grants access or resumes inference. */
+  async pendingPublicBrowserRequests(binding: OperatorBinding): Promise<AgentBrowserRequest[]> {
+    this.requireOpen();
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
+    const { session, root } = await this.turns.read(this.platform, binding);
+    this.requireOpen();
+    z.object({ metadata: z.object({ research_mode: z.literal('public-browser') }) }).parse(session);
+    if (['completed', 'cancelled', 'failed'].includes(root.status)) return [];
+    return pendingBrowserApprovals(session, { sessionId: binding.sessionId, turnId: root.id });
+  }
+  async answerPublicBrowserRequest(
+    binding: OperatorBinding,
+    request: AgentBrowserRequest,
+    beforeDispatch: (decision: AgentPublicBrowserDecision) => Promise<void>
+  ): Promise<AgentPublicBrowserDecision> {
+    if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
+    const current = (await this.pendingPublicBrowserRequests(binding)).find(
+      (candidate) =>
+        candidate.fingerprint === request.fingerprint &&
+        candidate.requestId === request.requestId &&
+        candidate.turnId === request.turnId &&
+        candidate.sessionId === request.sessionId
+    );
+    if (!current) throw new Error('Public browser request is no longer pending');
+    // Derive from freshly read provider data, not the caller's copy or untrusted reason text.
+    const decision = await publicBrowserDecision(current);
+    const action: Action = {
+      operation: 'sessions.browser-approval',
+      id: binding.sessionId,
+      turnId: current.turnId,
+      requestId: current.requestId,
+      expectedRequestFingerprint: current.fingerprint,
+      response: decision.response,
+    };
+    this.requireOpen();
+    await this.platform.apply(
+      action,
+      { apply: true, allowBillable: true, digest: planAction(this.target, action).digest },
+      {
+        beforeDispatch: async () => {
+          this.requireOpen();
+          if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
+          await beforeDispatch(decision);
+          this.requireOpen();
+          if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
+        },
+      }
+    );
+    return decision;
   }
   async completeFunction(
     binding: OperatorBinding,

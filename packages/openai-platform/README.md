@@ -55,6 +55,57 @@ Automatic capability-file installation is hosted-only; it does not claim that an
 self-hosted environment already contains those files. Desktop use reads the same canonical source
 directly. Neither configuration tests nor source packaging establish live agent discovery.
 
+### Native public research capabilities
+
+Definition-owned `research: "live-web-search"` adds the Agents API's service-side live search tool
+with no payer/domain filter. It preserves the existing MCP tool selection, source credentials and
+restricted sandbox network. A prompt alone never enables search. Credentialing release packaging
+retains this field and binds it into the workflow/runtime revisions.
+
+`research: "public-browser"` adds native live search and `computer_use`. Its launch requires a fresh
+OpenAI-hosted environment with `desktop.enabled: true` and network access enabled. It rejects
+inherited templates, environment files/variables/setup, capabilities, runtime credentials, MCPs and
+application functions. Do not widen the source-reading sandbox's network or copy its private files
+and credentials to enable browsing. The application API key stays outside both environments.
+
+The owning application handles public origins automatically under the case's standing research
+authority. `pendingPublicBrowserRequests` reads only current required actions from an exactly bound
+public-research session. `answerPublicBrowserRequest` derives the decision from freshly read state:
+approve ordinary public HTTP(S) origins without a payer allowlist, deny non-public destinations and
+cancel sign-in. DNS failures leave the request pending; they are not questions for Ops. Before the
+one SDK response attempt, the required callback must journal the exact decision and recheck the
+owner's current Stop/authority state. Expiry is checked again afterward. Reads never send a response;
+uncertain dispatch is not automatically retried or replaced. Website reason text is untrusted.
+
+Origin handling is **not** a per-action write guard or provider-network firewall. The browser and
+code share the hosted network, and this application's DNS observation cannot guarantee the
+provider's later DNS resolution. A credential-free browser prevents borrowing private source
+credentials; it does not prove every public site interaction is read-only. The public research
+instructions must exclude login, payer/source writes and consequential actions. Full originals,
+source citations and any concrete retrieval limitation must return to the primary investigator;
+a second model's summary is not a substitute. The application owns durable research-task lifecycle,
+file transfer/retention and visibility. Adapter tests alone do not establish that integration or
+hosted acceptance.
+
+`publicResearchLaunch` supplies the canonical public-only helper definition. The normal operator
+port derives its fresh hosted settings from the primary model/reasoning only; it never resolves
+the primary credential-file callback. The backend consumer journals one child per pending
+`research_public_sources` call, rechecks the parent's authority/Stop, handles public origins, and
+returns complete originals before completing that function. This is independent of private
+Salesforce MCP/Drive investigation, which remains available to the primary agent.
+
+`stageResearchFile` uses the native [environment Files API](https://developers.openai.com/api/docs/guides/agents-api/environments/files)
+to transfer exact public-original bytes into a call/digest-bound primary workspace path. Files up
+to 5 MiB use inline transfer; larger supported originals use the SDK's Files upload/staging path.
+The current review-retention ceiling is 10 MiB per original, with a truthful capacity limitation,
+not silent truncation. Successful receipts retain any uploaded Files API ID. Unknown dispatches
+retain known IDs without automatic replay, overwrite, deletion or new helper creation. A path/size
+listing is not byte verification; the primary must verify the delivered digest before using it.
+
+These are [Agents API browser](https://developers.openai.com/api/docs/guides/agents-api/tools/computer-use)
+and [web-search](https://developers.openai.com/api/docs/guides/agents-api/tools/web-search) contracts,
+not Agents SDK, Responses API or desktop-browser settings.
+
 ## Optional Self-Hosted Development Boundary
 
 The supervised session-creation contract also accepts `self_hosted` with an explicit normalized

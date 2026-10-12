@@ -18,6 +18,7 @@ const sourceDefinition = z.object({
   protocol: z.literal('credentialing-preparation/v1'),
   definition: z.object({
     instructions: z.string(),
+    research: z.literal('live-web-search').optional(),
     capabilities: z.object({ files: z.array(z.object({ path: z.string(), data: z.string() })) }),
     tools: z.array(z.record(z.string(), z.unknown())),
   }),
@@ -33,7 +34,12 @@ export interface CredentialingReleaseDefinition {
   artifact: {
     protocol: string;
     workflowRevision: string;
-    definition: { instructions: string; runtimeRevision: string; tools: Record<string, unknown>[] };
+    definition: {
+      instructions: string;
+      runtimeRevision: string;
+      research?: 'live-web-search';
+      tools: Record<string, unknown>[];
+    };
   };
 }
 export async function credentialingReleaseDefinition(
@@ -51,6 +57,9 @@ export async function credentialingReleaseDefinition(
   const definition = {
     instructions: `${canonical.definition.instructions} Read ${runtimeRoot}/RUNTIME.md for the installed tool entrypoints and deployment profiles.`,
     runtimeRevision,
+    ...(canonical.definition.research === undefined
+      ? {}
+      : { research: canonical.definition.research }),
     tools: canonical.definition.tools,
   };
   return {

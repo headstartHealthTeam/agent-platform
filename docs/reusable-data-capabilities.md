@@ -58,7 +58,10 @@ Drive is a concrete second consumer of the shared Google transport, alongside re
 The [Drive package](../packages/google-drive-data/README.md) adds binary/Docs reads and a
 standalone runtime; [Document Reading](../packages/document-reading/README.md) owns format
 parsing without source credentials or workflow policy. Existing Headstart MCP remains the route
-to Salesforce capabilities it already exposes. New agent-owned tooling does not become a backend
+to Salesforce, internal references and other authorized operational readers it exposes. The
+service-principal catalog is distinct from an employee's catalog: discover current capabilities,
+then follow granted sources and pagination as the evidence requires. Missing tool authority is
+not evidence of an absent record. New agent-owned tooling does not become a backend
 module merely because backend owns that MCP. Application retention and reviewer permissions remain
 backend concerns; do not copy source connectors there to bridge an artifact handoff.
 Backend MCP exposes source discovery and exact original bytes. Document parsing/rendering runs
