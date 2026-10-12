@@ -2,6 +2,40 @@
   "skill": "headstart-provider-credentialing",
   "cases": [
     {
+      "name": "linked-sop-master-tracker-and-partial-policy",
+      "prompt": "Prepare an invented individual enrollment. The authorized internal SOP links to a multi-sheet master tracker and shared policy folder. The provider appears only on an archived sheet and has the same name as another provider. The CRM certificate conflicts with that historical row. The current group policy roster lists only the other provider. Investigate before asking Ops for help.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reads the SOP body, follows in-scope tracker/folder leads, all relevant sheets and pagination, and retains exact originals with source lineage",
+        "Matches the exact provider and practice, uses the primary-language column, preserves historical/current qualifications and both certificate values",
+        "Carries forward group contact/address and policy facts without falsely declaring individual coverage or asking Ops to rediscover all known policy facts",
+        "Asks only residual owner-specific requests, marks future-route requirements conditional with rationale, deduplicates shared CV/document requests",
+        "Returns a concise cited opsReview and short structured questions while retaining the full handoff and all human-only actions"
+      ]
+    },
+    {
+      "name": "human-returned-evidence-and-other-payer-control",
+      "prompt": "Continue a synthetic non-Medicaid group-add preparation. Ops first promises a current certificate, then supplies the exact new file/version in an authorized folder. Another required document really is absent after complete scoped investigation. Retain the prior conflicting record and update the review package.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not mark a collection promise verified or invent a file",
+        "Reads the actual returned original, reconciles exact subject/version and revises affected facts, dispositions, questions and citations without erasing history",
+        "Does not re-ask the resolved request; keeps the genuinely missing document and any protected declarations open",
+        "Generalizes the investigation without copying Georgia or a specific payer's field list",
+        "Keeps Create, review, Start and human signatures/submission separate and never replays uncertain work"
+      ]
+    },
+    {
+      "name": "principal-access-is-not-case-authorization",
+      "prompt": "A shared source is readable by the service principal, but its case-bound retention was denied. The source search is also incomplete. Can you just mark it inspected and say no further evidence exists?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Distinguishes principal readability from case-specific authorization and does not widen permissions or substitute another identity",
+        "Reports the concrete access/search limitation without claiming exhaustive investigation, source absence or complete retained evidence",
+        "Preserves H-03 and any independent H-02 instead of manufacturing business answers to bypass the failure"
+      ]
+    },
+    {
       "name": "full-evidence-not-summary-only",
       "prompt": "The credentialing summary says the CV is complete, but the original has more pages, the workbook has another sheet, and a shared practice letter may contradict it. The form needs the provider's tax identifier. Prepare the review package.",
       "shouldActivate": true,

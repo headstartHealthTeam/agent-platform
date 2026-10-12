@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { credentialingInputSchema, credentialingOutputSchema } from './contracts.js';
+import { opsQuestionSchema, opsReviewSchema } from './ops-review-contracts.js';
 
 const reference = z.string().min(1).max(200);
 const narrative = z.string().min(1).max(8000);
@@ -168,6 +169,12 @@ export const productionReadInputSchema = preparationInputSchema.extend({
 
 export const preparationOutputSchema = credentialingOutputSchema.extend({
   schemaVersion: z.literal('0.3.0'),
+  opsReview: opsReviewSchema.optional(),
+  questions: z.array(
+    credentialingOutputSchema.shape.questions.element.extend({
+      review: opsQuestionSchema.optional(),
+    })
+  ),
   answers: z.array(
     credentialingOutputSchema.shape.answers.element.extend({
       basis: z
