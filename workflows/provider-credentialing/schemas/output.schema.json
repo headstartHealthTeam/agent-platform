@@ -9,28 +9,19 @@
           "const": "0.2.0"
         },
         "workId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
+          "$ref": "#/$defs/__schema0"
         },
         "caseRevision": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
+          "$ref": "#/$defs/__schema0"
         },
         "workflowRevision": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
+          "$ref": "#/$defs/__schema0"
         },
         "routeRevision": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
+          "$ref": "#/$defs/__schema0"
         },
         "status": {
-          "type": "string",
-          "enum": ["prepared-for-review", "needs-information", "blocked"]
+          "$ref": "#/$defs/__schema1"
         },
         "answers": {
           "type": "array",
@@ -38,67 +29,22 @@
             "type": "object",
             "properties": {
               "requirementId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200
+                "$ref": "#/$defs/__schema0"
               },
               "value": {
-                "anyOf": [
-                  {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "maxLength": 8000
-                      },
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "type": "boolean"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "$ref": "#/$defs/__schema2"
               },
               "disposition": {
-                "type": "string",
-                "enum": ["supported", "unresolved", "not-applicable"]
+                "$ref": "#/$defs/__schema3"
               },
               "factIds": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                }
+                "$ref": "#/$defs/__schema4"
               },
               "evidence": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 200
-                    },
-                    "revision": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 200
-                    }
-                  },
-                  "required": ["id", "revision"],
-                  "additionalProperties": false
-                }
+                "$ref": "#/$defs/__schema5"
               },
               "explanation": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 8000
+                "$ref": "#/$defs/__schema6"
               }
             },
             "required": [
@@ -118,31 +64,19 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200
+                "$ref": "#/$defs/__schema0"
               },
               "kind": {
-                "type": "string",
-                "enum": ["evidence", "access", "reconciliation"],
-                "description": "evidence: unresolved evidence, mapping or readback discrepancy requiring H-02; access or reconciliation: authorized access recovery or uncertain-effect reconciliation requiring blocked status and H-03. Include both stops when both conditions exist."
+                "$ref": "#/$defs/__schema7"
               },
               "question": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 8000
+                "$ref": "#/$defs/__schema6"
               },
               "evidenceIds": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                }
+                "$ref": "#/$defs/__schema8"
               },
               "nextActor": {
-                "type": "string",
-                "enum": ["ops", "provider", "engineering"]
+                "$ref": "#/$defs/__schema9"
               }
             },
             "required": ["id", "kind", "question", "evidenceIds", "nextActor"],
@@ -150,16 +84,10 @@
           }
         },
         "humanStops": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["H-01", "H-02", "H-03", "H-04", "H-05"]
-          }
+          "$ref": "#/$defs/__schema10"
         },
         "handoff": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 8000
+          "$ref": "#/$defs/__schema6"
         }
       },
       "required": [
@@ -184,28 +112,19 @@
           "const": "0.3.0"
         },
         "workId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
+          "$ref": "#/$defs/__schema0"
         },
         "caseRevision": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
+          "$ref": "#/$defs/__schema0"
         },
         "workflowRevision": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
+          "$ref": "#/$defs/__schema0"
         },
         "routeRevision": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
+          "$ref": "#/$defs/__schema0"
         },
         "status": {
-          "type": "string",
-          "enum": ["prepared-for-review", "needs-information", "blocked"]
+          "$ref": "#/$defs/__schema1"
         },
         "answers": {
           "type": "array",
@@ -213,67 +132,22 @@
             "type": "object",
             "properties": {
               "requirementId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200
+                "$ref": "#/$defs/__schema0"
               },
               "value": {
-                "anyOf": [
-                  {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "maxLength": 8000
-                      },
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "type": "boolean"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "$ref": "#/$defs/__schema2"
               },
               "disposition": {
-                "type": "string",
-                "enum": ["supported", "unresolved", "not-applicable"]
+                "$ref": "#/$defs/__schema3"
               },
               "factIds": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                }
+                "$ref": "#/$defs/__schema4"
               },
               "evidence": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 200
-                    },
-                    "revision": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 200
-                    }
-                  },
-                  "required": ["id", "revision"],
-                  "additionalProperties": false
-                }
+                "$ref": "#/$defs/__schema5"
               },
               "explanation": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 8000
+                "$ref": "#/$defs/__schema6"
               },
               "basis": {
                 "anyOf": [
@@ -312,31 +186,76 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200
+                "$ref": "#/$defs/__schema0"
               },
               "kind": {
-                "type": "string",
-                "enum": ["evidence", "access", "reconciliation"],
-                "description": "evidence: unresolved evidence, mapping or readback discrepancy requiring H-02; access or reconciliation: authorized access recovery or uncertain-effect reconciliation requiring blocked status and H-03. Include both stops when both conditions exist."
+                "$ref": "#/$defs/__schema7"
               },
               "question": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 8000
+                "$ref": "#/$defs/__schema6"
               },
               "evidenceIds": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                }
+                "$ref": "#/$defs/__schema8"
               },
               "nextActor": {
-                "type": "string",
-                "enum": ["ops", "provider", "engineering"]
+                "$ref": "#/$defs/__schema9"
+              },
+              "review": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "knownContext": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "$ref": "#/$defs/__schema11"
+                        },
+                        "evidence": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/__schema12"
+                          }
+                        }
+                      },
+                      "required": ["text", "evidence"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "requestedItems": {
+                    "minItems": 1,
+                    "maxItems": 12,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/__schema11"
+                    }
+                  },
+                  "requirements": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": ["answer", "attachment", "protected-action"]
+                        },
+                        "id": {
+                          "$ref": "#/$defs/__schema13"
+                        }
+                      },
+                      "required": ["kind", "id"],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": ["title", "knownContext", "requestedItems", "requirements"],
+                "additionalProperties": false
               }
             },
             "required": ["id", "kind", "question", "evidenceIds", "nextActor"],
@@ -344,16 +263,60 @@
           }
         },
         "humanStops": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["H-01", "H-02", "H-03", "H-04", "H-05"]
-          }
+          "$ref": "#/$defs/__schema10"
         },
         "handoff": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 8000
+          "$ref": "#/$defs/__schema6"
+        },
+        "opsReview": {
+          "type": "object",
+          "properties": {
+            "summary": {
+              "$ref": "#/$defs/__schema11"
+            },
+            "findings": {
+              "maxItems": 8,
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema14"
+              }
+            },
+            "nextStep": {
+              "$ref": "#/$defs/__schema11"
+            },
+            "investigation": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "$ref": "#/$defs/__schema12"
+                  },
+                  "discoveredFrom": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/__schema12"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": ["inspected", "unavailable", "not-relevant"]
+                  },
+                  "detail": {
+                    "$ref": "#/$defs/__schema11"
+                  }
+                },
+                "required": ["source", "discoveredFrom", "outcome", "detail"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["summary", "findings", "nextStep", "investigation"],
+          "additionalProperties": false
         },
         "attachments": {
           "type": "array",
@@ -361,9 +324,7 @@
             "type": "object",
             "properties": {
               "requirementId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200
+                "$ref": "#/$defs/__schema15"
               },
               "disposition": {
                 "type": "string",
@@ -375,14 +336,10 @@
                     "type": "object",
                     "properties": {
                       "id": {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 200
+                        "$ref": "#/$defs/__schema15"
                       },
                       "revision": {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 200
+                        "$ref": "#/$defs/__schema15"
                       },
                       "digest": {
                         "type": "string",
@@ -398,9 +355,7 @@
                 ]
               },
               "explanation": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 8000
+                "$ref": "#/$defs/__schema16"
               }
             },
             "required": ["requirementId", "disposition", "artifact", "explanation"],
@@ -413,18 +368,14 @@
             "type": "object",
             "properties": {
               "requirementId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200
+                "$ref": "#/$defs/__schema15"
               },
               "disposition": {
                 "type": "string",
                 "enum": ["human-required", "unresolved"]
               },
               "explanation": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 8000
+                "$ref": "#/$defs/__schema16"
               }
             },
             "required": ["requirementId", "disposition", "explanation"],
@@ -448,5 +399,140 @@
       ],
       "additionalProperties": false
     }
-  ]
+  ],
+  "$defs": {
+    "__schema0": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "__schema1": {
+      "type": "string",
+      "enum": ["prepared-for-review", "needs-information", "blocked"]
+    },
+    "__schema2": {
+      "anyOf": [
+        {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 8000
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "__schema3": {
+      "type": "string",
+      "enum": ["supported", "unresolved", "not-applicable"]
+    },
+    "__schema4": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema0"
+      }
+    },
+    "__schema5": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/__schema0"
+          },
+          "revision": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "required": ["id", "revision"],
+        "additionalProperties": false
+      }
+    },
+    "__schema6": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8000
+    },
+    "__schema7": {
+      "type": "string",
+      "enum": ["evidence", "access", "reconciliation"],
+      "description": "evidence: unresolved evidence, mapping or readback discrepancy requiring H-02; access or reconciliation: authorized access recovery or uncertain-effect reconciliation requiring blocked status and H-03. Include both stops when both conditions exist."
+    },
+    "__schema8": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema0"
+      }
+    },
+    "__schema9": {
+      "type": "string",
+      "enum": ["ops", "provider", "engineering"]
+    },
+    "__schema10": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["H-01", "H-02", "H-03", "H-04", "H-05"]
+      }
+    },
+    "__schema11": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "__schema12": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "revision": {
+          "$ref": "#/$defs/__schema13"
+        }
+      },
+      "required": ["id", "revision"],
+      "additionalProperties": false
+    },
+    "__schema13": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "__schema14": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "evidence": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema12"
+          }
+        }
+      },
+      "required": ["text", "evidence"],
+      "additionalProperties": false
+    },
+    "__schema15": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "__schema16": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8000
+    }
+  }
 }

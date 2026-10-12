@@ -1,3 +1,4 @@
+import { validateOpsReview } from './ops-review.js';
 import type { PreparationSnapshot, PreparationOutput } from './preparation-contracts.js';
 import { coversScope, currentEvidence } from './preparation-snapshot.js';
 
@@ -6,6 +7,7 @@ export const validatePreparationProposal = (
   output: PreparationOutput
 ): string[] => {
   const issues = [
+    ...validateOpsReview(input, output),
     ...validateCoverage(input.attachmentRequirements, output.attachments),
     ...validateCoverage(input.protectedActionRequirements, output.protectedActions),
   ];

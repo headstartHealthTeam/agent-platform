@@ -344,6 +344,34 @@ backend's normal writes of packages, reviews, messages and audit. The added
 `full-evidence-not-summary-only` evaluation defines the expected behavior; it is not a recorded
 passing model trial. These requirements supersede earlier metadata-only or summary-only assumptions.
 
+## Instruction revision 0.4.0 — investigation and actionable Ops handoff
+
+New preparations read the canonical [investigation reference](../../skills/headstart-provider-credentialing/references/evidence-investigation.md)
+before escalating missing information. Follow authorized SOP links through complete workbooks,
+folders and originals; distinguish historical leads, partial evidence and concrete access limits.
+Read returned documents before revising the package. Do not substitute a collection promise or
+a similar-name record. Applicability remains payer-neutral agent judgment, not a backend rule.
+
+The additive `opsReview` and per-question `review` fields provide short cited findings, a next
+step, known context and residual requests. Canonical validation binds their evidence revisions
+and unresolved requirements; it does not prove thorough investigation or factual correctness.
+Older artifacts remain valid and retain their full handoff. Application labels/test/archive
+metadata never becomes credentialing evidence or changes the immutable work scope.
+
+`evidence-investigation.test.ts` exercises real document readers with an invented linked SOP,
+multi-sheet workbook, paginated folder and returned original. These deterministic tests and the
+skill's added evaluation definitions are **not recorded passing model trials**. Repeated hosted
+behavior evaluation and the real-reference benchmark remain separate activation/acceptance gates.
+
+### Instruction revision 0.4.1 — request-stage and residual-gap accuracy
+
+The same canonical investigation reference now separates an enrollment's intended outcome from
+requirements for preparing it. Known group identifiers remain cited draft answers; unresolved
+group/location coverage is a narrower question, not a request to obtain the new applicant's approval
+before applying. An explicit current-route prerequisite still governs renewal or other requests.
+Overbroad saved questions must be corrected in a new package, not only explained in chat. The new
+initial-enrollment and renewal-control evaluation definitions are not passing hosted-model evidence.
+
 See the [documentation hub](../../docs/README.md),
 [authoring guide](../../docs/workflow-authoring-guide.md) and
 [managed architecture](../../docs/codex-managed-workflow-architecture.md).

@@ -44,6 +44,14 @@ dataMode production-read for actual authorized source reads, input 0.2.0 for ric
 and proposal 0.3.0 for either. Keep scope, repeated records, qualified dates, contradictions,
 source versions and human stops intact. Schema-valid does not mean factually verified.
 
+For new packages, include `opsReview` and each question's structured `review` from the proposal
+schema. Follow the skill's evidence-investigation reference: keep an exact-source investigation
+record, concise cited findings, known context and specific residual requests. Historical packages
+without these optional fields remain readable; do not copy their dense handoff style or rewrite
+their saved bytes. Keep the full `handoff` and question rationale as detailed evidence, not the
+default operator summary. Access/reconciliation questions may have no requirement mapping when
+the failure prevents discovering requirements; explain the actual limitation without inventing one.
+
 Use stable internal `records[].id` values in scope/evidence/fact `recordId` references. Keep external
 Salesforce IDs in `source.recordId`; these are different namespaces. Preserve source address context
 in `sourceAddressType` (for example business or registered-agent). Use `addressRole: null` when a

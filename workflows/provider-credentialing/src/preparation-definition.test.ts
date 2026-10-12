@@ -58,7 +58,10 @@ describe('connected preparation tool definition', () => {
     expect(generated.definition.capabilities.directories).toEqual([
       '/workspace/headstart-workflow/skills',
     ]);
-    expect(generated.definition.capabilities.files).toHaveLength(5);
+    expect(generated.definition.capabilities.files).toHaveLength(6);
+    expect(generated.definition.capabilities.files.map((file) => file.path)).toContain(
+      '/workspace/headstart-workflow/skills/headstart-provider-credentialing/references/evidence-investigation.md'
+    );
     for (const file of generated.definition.capabilities.files) {
       const source = file.path.replace('/workspace/headstart-workflow/', '../../../');
       expect(Buffer.from(file.data, 'base64')).toEqual(

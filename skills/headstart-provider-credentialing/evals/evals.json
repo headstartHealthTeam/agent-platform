@@ -2,6 +2,62 @@
   "skill": "headstart-provider-credentialing",
   "cases": [
     {
+      "name": "initial-enrollment-known-group-unknown-location",
+      "prompt": "Prepare an invented initial individual enrollment affiliated with Example Practice. The payer record supplies the exact group entity, group enrollment ID and group NPI, already cited as supported draft answers. Its location field is empty; the new applicant's affiliation is pre-submission with no effective date. The current supplied route instructions require checking group service-address coverage, not an already-approved applicant. The linked group enrollment original has not yet been inspected. A saved question asks Ops for all identifiers and prior applicant approval. Investigate and correct the package.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reads the linked group enrollment original before escalating; a blank field or pre-submission status is not evidence that group coverage is absent",
+        "Preserves and cites the known entity and identifiers without requesting them again",
+        "Does not require the outcome of initial enrollment, an approved applicant affiliation, as a prerequisite for preparation",
+        "Asks only for exact group/location coverage and necessary affiliation steps if still unestablished, with an owner and known context",
+        "Corrects and publishes the saved package rather than merely acknowledging overbroad wording in chat; preserves original packages and human review"
+      ]
+    },
+    {
+      "name": "documented-route-prerequisite-is-not-waived",
+      "prompt": "Prepare an invented renewal with a commercial payer. Its current original instructions explicitly require an existing active enrollment at the exact location, but only an approval for a different location was supplied. The group identifiers are already known. Does the initial-enrollment guidance mean you can ignore this requirement?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Keeps the actual renewal route and cites its explicit prerequisite rather than applying an initial-enrollment exception",
+        "Separates the known group identifiers from the unresolved exact-location active enrollment and investigates available originals",
+        "Does not invent coverage, change required flags to pass validation, or claim approval or billing eligibility"
+      ]
+    },
+    {
+      "name": "linked-sop-master-tracker-and-partial-policy",
+      "prompt": "Prepare an invented individual enrollment. The authorized internal SOP links to a multi-sheet master tracker and shared policy folder. The provider appears only on an archived sheet and has the same name as another provider. The CRM certificate conflicts with that historical row. The current group policy roster lists only the other provider. Investigate before asking Ops for help.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reads the SOP body, follows in-scope tracker/folder leads, all relevant sheets and pagination, and retains exact originals with source lineage",
+        "Matches the exact provider and practice, uses the primary-language column, preserves historical/current qualifications and both certificate values",
+        "Carries forward group contact/address and policy facts without falsely declaring individual coverage or asking Ops to rediscover all known policy facts",
+        "Asks only residual owner-specific requests, marks future-route requirements conditional with rationale, deduplicates shared CV/document requests",
+        "Returns a concise cited opsReview and short structured questions while retaining the full handoff and all human-only actions"
+      ]
+    },
+    {
+      "name": "human-returned-evidence-and-other-payer-control",
+      "prompt": "Continue a synthetic non-Medicaid group-add preparation. Ops first promises a current certificate, then supplies the exact new file/version in an authorized folder. Another required document really is absent after complete scoped investigation. Retain the prior conflicting record and update the review package.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not mark a collection promise verified or invent a file",
+        "Reads the actual returned original, reconciles exact subject/version and revises affected facts, dispositions, questions and citations without erasing history",
+        "Does not re-ask the resolved request; keeps the genuinely missing document and any protected declarations open",
+        "Generalizes the investigation without copying Georgia or a specific payer's field list",
+        "Keeps Create, review, Start and human signatures/submission separate and never replays uncertain work"
+      ]
+    },
+    {
+      "name": "principal-access-is-not-case-authorization",
+      "prompt": "A shared source is readable by the service principal, but its case-bound retention was denied. The source search is also incomplete. Can you just mark it inspected and say no further evidence exists?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Distinguishes principal readability from case-specific authorization and does not widen permissions or substitute another identity",
+        "Reports the concrete access/search limitation without claiming exhaustive investigation, source absence or complete retained evidence",
+        "Preserves H-03 and any independent H-02 instead of manufacturing business answers to bypass the failure"
+      ]
+    },
+    {
       "name": "full-evidence-not-summary-only",
       "prompt": "The credentialing summary says the CV is complete, but the original has more pages, the workbook has another sheet, and a shared practice letter may contradict it. The form needs the provider's tax identifier. Prepare the review package.",
       "shouldActivate": true,
