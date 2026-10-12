@@ -132,7 +132,7 @@ describe('MCP runtime connection', () => {
       vi.stubEnv('SYNTHETIC_MCP_AUTH', 'Bearer synthetic-test-only');
       const input = await paths(`http://localhost:${String(address.port)}/mcp`);
       const resultFile = await main(input.args);
-      expect(await readFile(join(input.output, 'evidence-0.txt'))).toEqual(bytes);
+      expect((await readFile(join(input.output, 'evidence-0.txt'))).equals(bytes)).toBe(true);
       expect(await readFile(resultFile, 'utf8')).not.toContain('synthetic-test-only');
       expect(authorizations.length).toBeGreaterThan(1);
       expect(authorizations.every((value) => value === 'Bearer synthetic-test-only')).toBe(true);

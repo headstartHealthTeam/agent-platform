@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
+import { parse } from 'yaml';
 
 import {
   GIT_COMMAND_TIMEOUT,
@@ -43,6 +44,45 @@ afterEach(() => {
 });
 
 describe('canonical typed lint quality gates', () => {
+  it('prepares the pinned Corepack cache before QA and hosted packaging, with no lazy downloads', () => {
+    const workflow = parse(
+      fs.readFileSync(path.join(root, '.github/workflows/qa.yml'), 'utf8')
+    ) as {
+      jobs: Record<
+        string,
+        {
+          steps: {
+            name?: string;
+            run?: string;
+            env?: Record<string, string>;
+            'timeout-minutes'?: number;
+          }[];
+        }
+      >;
+    };
+    for (const [steps, execution] of [
+      [workflow.jobs['quality']?.steps, 'Run quality checks'],
+      [workflow.jobs['hosted-runtime']?.steps, 'Assemble and verify the installed runtime'],
+    ] as const) {
+      if (!steps) throw new Error(`Missing required CI execution: ${execution}`);
+      const install = steps.findIndex((step) => step.name === 'Install dependencies');
+      const prepare = steps.findIndex((step) => step.name === 'Prepare pinned package manager');
+      const execute = steps.findIndex((step) => step.name === execution);
+      expect(install).toBeGreaterThanOrEqual(0);
+      expect(prepare).toBeGreaterThan(install);
+      expect(execute).toBeGreaterThan(prepare);
+      expect(steps.at(prepare)).toMatchObject({
+        run: 'node node_modules/corepack/dist/corepack.js install',
+        'timeout-minutes': 5,
+      });
+      expect(steps.at(execute)?.env?.['COREPACK_ENABLE_NETWORK']).toBe('0');
+    }
+    const turbo = JSON.parse(fs.readFileSync(path.join(root, 'turbo.json'), 'utf8')) as {
+      globalPassThroughEnv: string[];
+    };
+    expect(turbo.globalPassThroughEnv).toContain('COREPACK_ENABLE_NETWORK');
+  });
+
   it('keeps slow process-integration timeouts scoped away from ordinary unit tests', () => {
     expect(UNIT_TEST_TIMEOUT).toBe(15_000);
     expect(GIT_COMMAND_TIMEOUT).toBe(30_000);

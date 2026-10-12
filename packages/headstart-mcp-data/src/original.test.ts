@@ -86,7 +86,8 @@ describe('MCP original-file materialization', () => {
       name: 'fetch',
       arguments: { id: reference.id, revision: reference.revision },
     });
-    expect(await readFile(join(directory, 'evidence-0.txt'))).toEqual(bytes);
+    // Compare every byte natively; generic object equality enumerates this large buffer.
+    expect((await readFile(join(directory, 'evidence-0.txt'))).equals(bytes)).toBe(true);
     expect(await readFile(receipt, 'utf8')).toContain(reference.revision);
   });
   it.each([
@@ -142,7 +143,7 @@ describe('MCP original-file materialization', () => {
       name: 'get_salesforce_record_files',
       arguments: { ...selection, contentMode: 'original' },
     });
-    expect(await readFile(join(directory, 'evidence-0.txt'))).toEqual(bytes);
+    expect((await readFile(join(directory, 'evidence-0.txt'))).equals(bytes)).toBe(true);
     const receipt = await readFile(path, 'utf8');
     expect(receipt).toContain(selection.contentVersionId);
     expect(receipt).not.toContain(bytes.toString('base64'));
