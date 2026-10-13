@@ -59,6 +59,9 @@ export type {
   AgentArtifact,
   AgentArtifactPort,
   AgentArtifactFailureCode,
+  AgentWorkspaceFile,
+  AgentWorkspaceFileReceipt,
+  AgentWorkspaceFilesPort,
 } from './artifacts.js';
 export type {
   AgentCapabilityFiles,

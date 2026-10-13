@@ -75,6 +75,30 @@ export async function transferResearchFile(
   z.string()
     .regex(/^\/workspace\/public-research\/[a-f0-9]{64}\/[0-9]+-[a-f0-9]{64}$/)
     .parse(file.path);
+  return transferFile(client, environmentId, file, beforeDispatch);
+}
+
+/** Same SDK transport, separate application-owned namespace; callers retain case authorization. */
+export async function transferWorkspaceFile(
+  client: OpenAI,
+  environmentId: string,
+  file: AgentResearchFileTransfer,
+  beforeDispatch: () => Promise<void>
+): Promise<AgentResearchFileReceipt> {
+  z.string()
+    .regex(
+      /^\/workspace\/operator-files\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-[a-f0-9]{64}$/
+    )
+    .parse(file.path);
+  return transferFile(client, environmentId, file, beforeDispatch);
+}
+
+async function transferFile(
+  client: OpenAI,
+  environmentId: string,
+  file: AgentResearchFileTransfer,
+  beforeDispatch: () => Promise<void>
+): Promise<AgentResearchFileReceipt> {
   if (
     !(file.bytes instanceof Uint8Array) ||
     !file.bytes.length ||

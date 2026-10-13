@@ -63,7 +63,7 @@ const noInferenceAuthority = 'No current bounded inference authorization';
 const sessionGet = 'sessions.get' as const;
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
 type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight' | 'openOperatorObservation'> &
-  Partial<Pick<OpenAIPlatform, 'readHostedArtifact' | 'stageResearchFile'>>;
+  Partial<Pick<OpenAIPlatform, 'readHostedArtifact' | 'stageResearchFile' | 'stageWorkspaceFile'>>;
 function operatorStatus(
   status: ReturnType<typeof verifiedOperatorRoots>['root']['status'],
   hasQuestions: boolean
@@ -121,6 +121,28 @@ export class OperatorRuntimePort {
   }
   publicResearchLaunch(request: AgentPublicResearchRequest): Promise<AgentLaunchRequest> {
     return Promise.resolve(publicResearchLaunch(request));
+  }
+  async stageWorkspaceFile(
+    binding: OperatorBinding,
+    file: AgentResearchFileTransfer,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentResearchFileReceipt> {
+    this.requireOpen();
+    if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
+    const { session, root } = await this.turns.read(this.platform, binding);
+    if (['cancelled', 'failed'].includes(root.status))
+      throw new Error('Destination turn is stopped or failed');
+    const environment = z
+      .object({
+        environment: z.object({ type: z.literal('openai_hosted'), id: z.string().min(1) }),
+      })
+      .parse(session).environment;
+    if (!this.platform.stageWorkspaceFile) throw new Error('Workspace upload is unavailable');
+    return this.platform.stageWorkspaceFile(environment.id, file, async () => {
+      this.requireOpen();
+      await beforeDispatch();
+      this.requireOpen();
+    });
   }
   async stageResearchFile(
     binding: OperatorBinding,

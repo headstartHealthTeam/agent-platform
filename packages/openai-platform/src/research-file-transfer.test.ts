@@ -4,11 +4,12 @@ import type { AgentResearchFileTransfer } from '@headstart-health/workflow-contr
 import OpenAI from 'openai';
 import { describe, expect, it, vi, type Mock } from 'vitest';
 
-import { transferResearchFile } from './research-file-transfer.js';
+import { transferResearchFile, transferWorkspaceFile } from './research-file-transfer.js';
 
 function fixture(
   size = 100,
-  fail: boolean | Response = false
+  fail: boolean | Response = false,
+  operator = false
 ): {
   client: OpenAI;
   requests: Request[];
@@ -17,7 +18,9 @@ function fixture(
 } {
   const bytes = new Uint8Array(size).fill(42);
   const digest = `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
-  const path = `/workspace/public-research/${'a'.repeat(64)}/0-${digest.slice(7)}`;
+  const path = operator
+    ? `/workspace/operator-files/10000000-0000-4000-8000-000000000001/10000000-0000-4000-8000-000000000002-${digest.slice(7)}`
+    : `/workspace/public-research/${'a'.repeat(64)}/0-${digest.slice(7)}`;
   const requests: Request[] = [];
   const before = vi.fn<() => Promise<void>>().mockResolvedValue();
   const client = new OpenAI({
@@ -50,6 +53,61 @@ function fixture(
   return { client, requests, before, file: { bytes, digest, path } };
 }
 describe('exact public originals through Agents API environment Files', () => {
+  it.each([100, 5 * 1024 * 1024 + 1])(
+    'stages %i-byte operator originals through the same documented SDK transport',
+    async (size) => {
+      const f = fixture(size, false, true);
+      const receipt = await transferWorkspaceFile(f.client, 'env_synthetic', f.file, f.before);
+      expect(receipt).toMatchObject({ path: f.file.path, size, digest: f.file.digest });
+      expect(f.before).toHaveBeenCalledOnce();
+      expect(f.requests).toHaveLength(size === 100 ? 1 : 2);
+      if (size === 100)
+        expect(await f.requests[0]?.json()).toEqual({
+          type: 'inline',
+          path: f.file.path,
+          data: Buffer.from(f.file.bytes).toString('base64'),
+        });
+      else {
+        const file = (await f.requests[0]?.formData())?.get('file');
+        if (!(file instanceof Blob)) throw new Error('Expected an entire original');
+        expect(
+          `sha256:${createHash('sha256')
+            .update(new Uint8Array(await file.arrayBuffer()))
+            .digest('hex')}`
+        ).toBe(f.file.digest);
+      }
+    }
+  );
+  it('rejects traversal, wrong namespace and changed bytes before an operator upload', async () => {
+    const f = fixture(100, false, true);
+    for (const path of ['/workspace/../secret', '/workspace/public-research/file'])
+      await expect(
+        transferWorkspaceFile(f.client, 'env_synthetic', { ...f.file, path }, f.before)
+      ).rejects.toThrow();
+    await expect(
+      transferWorkspaceFile(
+        f.client,
+        'env_synthetic',
+        { ...f.file, bytes: new Uint8Array([1]) },
+        f.before
+      )
+    ).rejects.toThrow();
+    expect(f.before).not.toHaveBeenCalled();
+    expect(f.requests).toHaveLength(0);
+  });
+  it('retains uncertain operator delivery without SDK retries, and respects Stop before dispatch', async () => {
+    const f = fixture(100, true, true);
+    await expect(
+      transferWorkspaceFile(f.client, 'env_synthetic', f.file, f.before)
+    ).rejects.toMatchObject({ code: 'research-transfer-unknown' });
+    expect(f.requests).toHaveLength(1);
+    const stopped = fixture(100, false, true);
+    stopped.before.mockRejectedValue(new Error('Stopped'));
+    await expect(
+      transferWorkspaceFile(stopped.client, 'env_synthetic', stopped.file, stopped.before)
+    ).rejects.toThrow('Stopped');
+    expect(stopped.requests).toHaveLength(0);
+  });
   it('stages complete inline bytes only after durable dispatch, without a source fetch', async () => {
     const f = fixture();
     expect(await transferResearchFile(f.client, 'env_synthetic', f.file, f.before)).toEqual({

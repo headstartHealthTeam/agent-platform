@@ -181,3 +181,21 @@ real-API connected behavior and deployed-application acceptance separately. Miss
 blocks affected live operations, not safe synthetic implementation.
 
 Return to the [documentation hub](README.md) or [workflow authoring guide](workflow-authoring-guide.md).
+
+## Operator-supplied originals
+
+`AgentWorkspaceFilesPort.stageWorkspaceFile` delivers an application's retained original to the
+existing run's OpenAI-hosted environment. It uses the documented environment Files API, with inline
+bytes up to 5 MiB and an uploaded Files reference above that threshold (10 MiB application limit).
+The adapter checks byte identity, exact session binding and a restricted immutable workspace path;
+the caller must durably record dispatch and recheck authority through `beforeDispatch` before I/O.
+Provider retries are disabled. An uncertain response is retained for inspection, never automatically
+replayed. Uploaded file identities remain available to the owning application's diagnostic journal.
+
+This does not send a conversation message, start a turn, acknowledge reading, or grant permissions.
+Credentialing's connected instructions fetch current review context after Ops input and inspect the
+complete uploaded original. The `operator-upload` evidence origin points to the application's
+case-bound receipt; only the application establishes that provenance. It is not source verification,
+approval, authenticity, or permission to follow instructions embedded in a document.
+
+See the [official environment files contract](https://developers.openai.com/api/docs/guides/agents-api/environments/files).

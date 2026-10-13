@@ -118,6 +118,43 @@ function fixture(
 afterEach(() => vi.useRealTimers());
 
 describe('operator runtime adapter', () => {
+  it('stages an operator original in the exact hosted workspace without sending a turn', async () => {
+    const f = fixture({
+      session: {
+        id: binding.sessionId,
+        metadata: { workflow_revision: binding.workflowRevision },
+        environment: { type: 'openai_hosted', id: 'env_synthetic' },
+      },
+    });
+    const before = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const stageWorkspaceFile = vi.fn<OpenAIPlatform['stageWorkspaceFile']>(
+      async (environmentId, file, journal) => {
+        await journal();
+        return { environmentId, path: file.path, size: file.bytes.length, digest: file.digest };
+      }
+    );
+    const port = new OperatorRuntimePort({ ...f.platform, stageWorkspaceFile }, target);
+    const file = {
+      path: '/workspace/operator-files/synthetic',
+      bytes: new Uint8Array([1]),
+      digest: `sha256:${'a'.repeat(64)}`,
+    };
+    try {
+      expect(await port.stageWorkspaceFile(binding, file, before)).toMatchObject({
+        environmentId: 'env_synthetic',
+        size: 1,
+      });
+      expect(before).toHaveBeenCalledOnce();
+      expect(f.platform.apply).not.toHaveBeenCalled();
+      await expect(
+        port.stageWorkspaceFile({ ...binding, target: 'wrong' }, file, before)
+      ).rejects.toThrow();
+      expect(stageWorkspaceFile).toHaveBeenCalledOnce();
+    } finally {
+      port.close();
+      f.port.close();
+    }
+  });
   it.each(['failed', 'cancelled', 'completed'])(
     'explicitly continues the exact %s root in the same session',
     async (status) => {
