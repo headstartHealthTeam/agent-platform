@@ -14,6 +14,7 @@ const message = itemBase.extend({
 const command = itemBase.extend({
   type: z.literal('command_execution'),
   status: z.enum(['in_progress', 'completed', 'incomplete', 'failed']),
+  exit_code: z.number().int().min(0).max(255).optional().catch(undefined),
 });
 const namedTool = itemBase.extend({
   type: z.enum(['function_call', 'mcp_call']),
@@ -176,10 +177,12 @@ export class OperatorItems {
         kind: 'tool',
         text:
           item.status === 'in_progress'
-            ? 'Agent is using a tool.'
+            ? 'Workspace command · In progress'
             : item.status === 'failed'
-              ? 'A tool call failed. Check the agent’s update and evidence before continuing.'
-              : 'Tool activity ended. Review the agent’s explanation and evidence for the outcome.',
+              ? `Workspace command · Failed${item.exit_code === undefined ? '' : ` (exit ${String(item.exit_code)})`}. Other agent work may continue.`
+              : item.status === 'incomplete'
+                ? 'Workspace command · Interrupted'
+                : 'Workspace command · Completed',
         final: item.status !== 'in_progress',
       };
     }
@@ -215,7 +218,7 @@ export class OperatorItems {
       kind: 'tool',
       text:
         item.name === 'ask_operator'
-          ? 'The agent could not complete a question request. Check the agent’s update before continuing.'
+          ? 'Ask operator · Failed. No new answer request was confirmed by this call.'
           : `${label} · ${status}`,
       final: item.status !== 'in_progress',
     };

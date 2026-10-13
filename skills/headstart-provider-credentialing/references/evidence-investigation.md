@@ -120,6 +120,9 @@ owner and a useful return; do not bundle every unknown site, tax, credential and
 one paragraph. A single CV or policy document can satisfy several requests: collect it once, link
 the affected requirements, and do not send duplicate collection requests.
 
+Route tool/transfer defects to Engineering, not Ops/provider evidence collection. State known versus
+unknown outcomes; correct misassigned saved questions. Retain verified facts.
+
 Preserve the full question/explanation and originals. `opsReview.summary` states the current outcome
 in a short sentence; `findings` gives a few cited, qualified findings; `nextStep` names the immediate
 next action. Do not put console IDs, revisions or digests into those labels. Saved questions are not

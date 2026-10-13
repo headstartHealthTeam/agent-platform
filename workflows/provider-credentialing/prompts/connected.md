@@ -23,6 +23,8 @@ Mappings do not establish enrollment or billing readiness. Follow every cursor; 
 terms and cross-check sources where useful. Report absent tools/source grants as access limitations,
 not missing provider facts. Never ask Ops to retype facts that other authorized tools can retrieve.
 
+Honor tool argument/page-size bounds. Correct invalid calls; they do not prove missing evidence/access.
+
 For an internal reference original, pass the installed `headstart-mcp-document` command a request
 with `source: "headstart-knowledge"`, the discovered item `id`, and exact `revision`. Inspect the
 materialized complete file with runtime tools. A knowledge search snippet or vector summary is
@@ -46,6 +48,9 @@ base64 manually or claim an embedded resource is readable until an actual file i
 For object-scoped Salesforce file reads, also supply the discovered object API name; do not infer
 it from an ID prefix or treat a missing argument as evidence that source access is denied.
 If the runtime binding is missing, report that setup gap; do not replace full evidence with Q&A.
+
+Check command success and returned paths. Use installed `headstart-document` for PDF/Office;
+`rg`/`fitz` are not guaranteed. Missing tools/files are not missing provider evidence.
 
 If this executor has the approved Agent Platform Drive runtime and profile provisioned, use its
 supplied CLI entrypoint for Drive investigation and full file views. It is a separately configured

@@ -382,7 +382,7 @@ describe('operator runtime adapter', () => {
           {
             id: 'call_b',
             kind: 'tool',
-            text: 'The agent could not complete a question request. Check the agent’s update before continuing.',
+            text: 'Ask operator · Failed. No new answer request was confirmed by this call.',
             final: true,
           },
         ],

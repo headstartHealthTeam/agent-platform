@@ -8,7 +8,7 @@ import { transferResearchFile } from './research-file-transfer.js';
 
 function fixture(
   size = 100,
-  fail = false
+  fail: boolean | Response = false
 ): {
   client: OpenAI;
   requests: Request[];
@@ -37,6 +37,7 @@ function fixture(
           filename: 'public-original',
           created_at: 1,
         });
+      if (fail instanceof Response) return fail;
       if (fail) throw new Error('private transport diagnostics');
       return Response.json({
         environment_id: 'env_synthetic',
@@ -103,6 +104,122 @@ describe('exact public originals through Agents API environment Files', () => {
       'Stopped'
     );
     expect(f.requests).toHaveLength(0);
+  });
+  it.each([100, 5 * 1024 * 1024 + 1])(
+    'retains safe provider diagnostics for a rejected %i-byte transfer without a replay',
+    async (size) => {
+      const f = fixture(
+        size,
+        Response.json(
+          {
+            error: {
+              message: 'private source and credential details',
+              type: 'rate_limit_error',
+              code: 'files_api_rate_limit_exceeded',
+              param: 'private parameter value',
+            },
+          },
+          { status: 429 }
+        )
+      );
+      let failure: unknown;
+      try {
+        await transferResearchFile(f.client, 'env_synthetic', f.file, f.before);
+      } catch (error) {
+        failure = error;
+      }
+      expect(failure).toMatchObject({
+        code: 'research-transfer-unknown',
+        diagnostic: {
+          operation: 'environment-file-transfer',
+          phase: 'environment-create',
+          transport: size === 100 ? 'inline' : 'file-id',
+          kind: 'http',
+          status: 429,
+          code: 'files_api_rate_limit_exceeded',
+        },
+      });
+      expect(JSON.stringify(failure)).not.toMatch(/private|credential|parameter/);
+      expect(f.requests).toHaveLength(size === 100 ? 1 : 2);
+    }
+  );
+  it('distinguishes a bad receipt from a transport failure without accepting it', async () => {
+    const f = fixture(
+      100,
+      Response.json({ environment_id: 'other', path: '/other', size_bytes: 100 })
+    );
+    await expect(
+      transferResearchFile(f.client, 'env_synthetic', f.file, f.before)
+    ).rejects.toMatchObject({
+      diagnostic: {
+        operation: 'environment-file-transfer',
+        phase: 'receipt-validation',
+        transport: 'inline',
+        kind: 'invalid-receipt',
+      },
+    });
+    expect(f.requests).toHaveLength(1);
+  });
+  it('identifies failure of the initial Files API upload, before any environment copy', async () => {
+    const f = fixture(5 * 1024 * 1024 + 1);
+    vi.spyOn(f.client.files, 'create').mockImplementation(() => {
+      throw new OpenAI.APIError(
+        503,
+        { code: 'server_error', message: 'private' },
+        undefined,
+        new Headers()
+      );
+    });
+    await expect(
+      transferResearchFile(f.client, 'env_synthetic', f.file, f.before)
+    ).rejects.toMatchObject({
+      uploadedFileIds: [],
+      diagnostic: {
+        phase: 'files-upload',
+        transport: 'file-id',
+        kind: 'http',
+        status: 503,
+        code: 'server_error',
+      },
+    });
+    expect(f.requests).toHaveLength(0);
+    expect(f.before).toHaveBeenCalledOnce();
+  });
+  it.each([
+    { error: new OpenAI.APIConnectionTimeoutError({ message: 'private' }), kind: 'timeout' },
+    { error: new OpenAI.APIUserAbortError({ message: 'private' }), kind: 'aborted' },
+    { error: new OpenAI.APIConnectionError({ message: 'private' }), kind: 'connection' },
+    { error: new Error('private'), kind: 'unclassified' },
+  ])('distinguishes $kind without retaining the SDK error', async ({ error, kind }) => {
+    const f = fixture();
+    vi.spyOn(f.client.beta.agents.environments.files, 'create').mockImplementation(() => {
+      throw error;
+    });
+    let failure: unknown;
+    try {
+      await transferResearchFile(f.client, 'env_synthetic', f.file, f.before);
+    } catch (caught) {
+      failure = caught;
+    }
+    expect(failure).toMatchObject({
+      diagnostic: { phase: 'environment-create', transport: 'inline', kind },
+    });
+    expect(JSON.stringify(failure)).not.toContain('private');
+    expect(f.requests).toHaveLength(0);
+  });
+  it('identifies expiration of its owned deadline even when the SDK reports an abort', async () => {
+    const f = fixture();
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(AbortSignal.abort());
+    try {
+      await expect(
+        transferResearchFile(f.client, 'env_synthetic', f.file, f.before)
+      ).rejects.toMatchObject({
+        diagnostic: { phase: 'environment-create', kind: 'timeout' },
+      });
+      expect(f.requests).toHaveLength(0);
+    } finally {
+      timeout.mockRestore();
+    }
   });
   it.each(['digest', 'path', 'capacity'] as const)(
     'rejects invalid %s before dispatch',

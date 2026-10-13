@@ -25,6 +25,49 @@ const event = (
 
 describe('operator-safe activity projection', () => {
   it.each([
+    ['in_progress', 'Workspace command · In progress'],
+    ['completed', 'Workspace command · Completed'],
+    ['incomplete', 'Workspace command · Interrupted'],
+    ['failed', 'Workspace command · Failed (exit 1). Other agent work may continue.'],
+  ])(
+    'identifies command execution and its %s outcome without exposing arguments or output',
+    (status, text) => {
+      const items = new OperatorItems('session_a', 'turn_a');
+      const call = {
+        id: 'command_a',
+        turn_id: 'turn_a',
+        type: 'command_execution',
+        status,
+        exit_code: 1,
+        command: 'private-command',
+        output: 'private-output',
+      };
+      items.recover([call]);
+      expect(items.values()).toEqual([
+        { id: 'command_a', kind: 'tool', text, final: status !== 'in_progress' },
+      ]);
+      expect(JSON.stringify(items.values())).not.toMatch(/private/);
+    }
+  );
+  it.each([undefined, null, 'private', {}, -1, 256, 0.5])(
+    'does not display an untrusted command exit value: %s',
+    (exit_code) => {
+      const items = new OperatorItems('session_a', 'turn_a');
+      items.recover([
+        {
+          id: 'command_a',
+          turn_id: 'turn_a',
+          type: 'command_execution',
+          status: 'failed',
+          exit_code,
+        },
+      ]);
+      expect(items.values()[0]?.text).toBe(
+        'Workspace command · Failed. Other agent work may continue.'
+      );
+    }
+  );
+  it.each([
     ['constructor', 'Constructor'],
     ['toString', 'ToString'],
     ['valueOf', 'ValueOf'],
@@ -63,7 +106,7 @@ describe('operator-safe activity projection', () => {
       {
         id: 'call_b',
         kind: 'tool',
-        text: 'The agent could not complete a question request. Check the agent’s update before continuing.',
+        text: 'Ask operator · Failed. No new answer request was confirmed by this call.',
         final: true,
       },
     ]);
@@ -282,11 +325,13 @@ describe('operator-safe activity projection', () => {
       type: 'agent.session.turn.reasoning_summary.delta',
       delta: 'private reasoning',
     });
-    expect(items.values()).toMatchObject([{ kind: 'tool', text: 'Agent is using a tool.' }]);
+    expect(items.values()).toMatchObject([
+      { kind: 'tool', text: 'Workspace command · In progress' },
+    ]);
     items.recover([
       { id: 'tool_a', turn_id: 'turn_a', type: 'command_execution', status: 'completed' },
     ]);
-    expect(JSON.stringify(items.values())).not.toMatch(/private|command/);
+    expect(JSON.stringify(items.values())).not.toMatch(/private|"command":|"output":/);
     expect(items.values()[0]?.final).toBe(true);
   });
   it('redacts obvious secrets and keeps subsequent fragments withheld', () => {

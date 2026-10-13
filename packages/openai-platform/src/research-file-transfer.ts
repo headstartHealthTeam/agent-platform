@@ -1,18 +1,65 @@
 import { createHash } from 'node:crypto';
 
-import type {
-  AgentResearchFileReceipt,
-  AgentResearchFileTransfer,
+import {
+  agentResearchTransferDiagnostic,
+  type AgentResearchFileReceipt,
+  type AgentResearchFileTransfer,
+  type AgentResearchTransferDiagnostic,
 } from '@headstart-health/workflow-contracts';
-import type OpenAI from 'openai';
-import { toFile } from 'openai';
+import OpenAI, { toFile } from 'openai';
+import { AgentFileUploadError } from 'openai/lib/beta/agents/files';
 import { z } from 'zod';
 
 export class ResearchFileTransferUnknownError extends Error {
   readonly code = 'research-transfer-unknown';
-  constructor(readonly uploadedFileIds: string[]) {
+  constructor(
+    readonly uploadedFileIds: string[],
+    readonly diagnostic: AgentResearchTransferDiagnostic
+  ) {
     super('Public research file transfer unconfirmed; do not resend or overwrite');
   }
+}
+
+function transferFailureKind(error: unknown): AgentResearchTransferDiagnostic['kind'] {
+  if (error instanceof OpenAI.APIConnectionTimeoutError) return 'timeout';
+  if (error instanceof OpenAI.APIUserAbortError) return 'aborted';
+  if (error instanceof OpenAI.APIConnectionError) return 'connection';
+  if (error instanceof OpenAI.APIError) return 'http';
+  return 'unclassified';
+}
+
+function transferFailurePhase(
+  error: unknown,
+  transport: AgentResearchTransferDiagnostic['transport']
+): AgentResearchTransferDiagnostic['phase'] {
+  if (transport === 'inline') return 'environment-create';
+  if (error instanceof AgentFileUploadError)
+    return error.uploadedFiles.length > 0 ? 'environment-create' : 'files-upload';
+  return 'unclassified';
+}
+
+function transferDiagnostic(
+  error: unknown,
+  transport: AgentResearchTransferDiagnostic['transport'],
+  receiptReceived: boolean,
+  timedOut: boolean
+): AgentResearchTransferDiagnostic {
+  const wrapped = error instanceof AgentFileUploadError;
+  const cause = wrapped ? error.cause : error;
+  const diagnostic: AgentResearchTransferDiagnostic = {
+    operation: 'environment-file-transfer',
+    phase: receiptReceived ? 'receipt-validation' : transferFailurePhase(error, transport),
+    transport,
+    kind: receiptReceived ? 'invalid-receipt' : timedOut ? 'timeout' : transferFailureKind(cause),
+  };
+  const code: unknown = cause instanceof OpenAI.APIError ? cause.code : undefined;
+  const status: unknown = cause instanceof OpenAI.APIError ? cause.status : undefined;
+  return (
+    agentResearchTransferDiagnostic({
+      ...diagnostic,
+      ...(cause instanceof OpenAI.APIError ? { status, code } : {}),
+    }) ?? diagnostic
+  );
 }
 
 /** SDK-owned environment Files transport. No shell, external URL fetch, or secret propagation.
@@ -42,6 +89,7 @@ export async function transferResearchFile(
       : undefined;
   await beforeDispatch();
   let uploadedFileId: string | undefined;
+  let receiptReceived = false;
   try {
     const uploaded = upload
       ? await client.beta.agents.environments.files.upload(
@@ -58,6 +106,7 @@ export async function transferResearchFile(
           { type: 'inline', path: file.path, data: Buffer.from(file.bytes).toString('base64') },
           options
         );
+    receiptReceived = true;
     if (
       receipt.environment_id !== environmentId ||
       receipt.path !== file.path ||
@@ -75,7 +124,7 @@ export async function transferResearchFile(
     const parsed = z
       .object({
         uploadedFiles: z
-          .array(z.object({ id: z.string().regex(/^file-[A-Za-z0-9_-]{1,200}$/) }))
+          .array(z.object({ id: z.string().regex(/^file[-_][A-Za-z0-9_-]{1,200}$/) }))
           .max(1),
       })
       .safeParse(error);
@@ -84,7 +133,13 @@ export async function transferResearchFile(
         ? [uploadedFileId]
         : parsed.success
           ? parsed.data.uploadedFiles.map((file) => file.id)
-          : []
+          : [],
+      transferDiagnostic(
+        error,
+        upload ? 'file-id' : 'inline',
+        receiptReceived,
+        options.signal.aborted
+      )
     );
   }
 }

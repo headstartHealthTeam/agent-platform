@@ -28,8 +28,10 @@ export type {
   AgentPublicResearchRequest,
   AgentResearchFileTransfer,
   AgentResearchFileReceipt,
+  AgentResearchTransferDiagnostic,
   AgentPublicResearchPort,
 } from './public-research.js';
+export { agentResearchTransferDiagnostic } from './public-research.js';
 
 export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from './functions.js';
 export type {
