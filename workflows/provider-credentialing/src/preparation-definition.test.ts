@@ -65,9 +65,16 @@ describe('connected preparation tool definition', () => {
     );
     for (const file of generated.definition.capabilities.files) {
       const source = file.path.replace('/workspace/headstart-workflow/', '../../../');
-      expect(Buffer.from(file.data, 'base64')).toEqual(
-        await readFile(new URL(source, import.meta.url))
-      );
+      const original = await readFile(new URL(source, import.meta.url));
+      const installed = Buffer.from(file.data, 'base64');
+      if (source.endsWith('.schema.json')) {
+        expect(installed.toString('utf8')).toBe(
+          JSON.stringify(JSON.parse(original.toString('utf8')))
+        );
+        expect(JSON.parse(installed.toString('utf8'))).toEqual(
+          JSON.parse(original.toString('utf8'))
+        );
+      } else expect(installed).toEqual(original);
       expect(file.path).not.toMatch(/evals|fixtures|oracle/);
     }
     expect(Buffer.byteLength(content)).toBeLessThan(150_000);

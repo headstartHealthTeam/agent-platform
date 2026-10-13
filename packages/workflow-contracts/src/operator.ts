@@ -8,12 +8,21 @@ export interface OperatorBinding {
 }
 export type OperatorStatus = 'running' | 'waiting' | 'idle' | 'completed' | 'failed' | 'cancelled';
 export type OperatorItemKind = 'commentary' | 'tool' | 'final' | 'question';
+export interface OperatorActivity {
+  tool: 'workspace-command' | 'mcp' | 'function';
+  label: string;
+  status: 'in_progress' | 'completed' | 'failed' | 'incomplete';
+  turnId: string;
+  durationMs?: number;
+  exitCode?: number;
+}
 export interface OperatorItem {
   id: string;
   kind: OperatorItemKind;
   text: string;
   final: boolean;
   callFingerprint?: string;
+  activity?: OperatorActivity;
 }
 export interface OperatorCommand {
   id: string;

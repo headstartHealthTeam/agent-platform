@@ -24,11 +24,69 @@ const event = (
 });
 
 describe('operator-safe activity projection', () => {
+  it('uses supported duration and executable categories without exposing command content', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    items.recover([
+      {
+        id: 'command_safe',
+        turn_id: 'turn_a',
+        type: 'command_execution',
+        status: 'completed',
+        command: 'python3 /private/source.py secret',
+        duration_ms: 1234,
+        exit_code: 0,
+        cwd: '/private',
+        output: 'private records',
+      },
+    ]);
+    expect(items.values()[0]?.activity).toEqual({
+      tool: 'workspace-command',
+      label: 'Run a Python workspace script',
+      status: 'completed',
+      turnId: 'turn_a',
+      durationMs: 1234,
+      exitCode: 0,
+    });
+    expect(JSON.stringify(items.values())).not.toMatch(/private|secret|records/);
+  });
+  it.each(['constructor', 'toString', '__proto__', '/private/script', 'TOKEN=secret python3'])(
+    'never derives labels from unknown or inherited executables: %s',
+    (command) => {
+      const items = new OperatorItems('session_a', 'turn_a');
+      items.recover([
+        {
+          id: 'command_safe',
+          turn_id: 'turn_a',
+          type: 'command_execution',
+          status: 'completed',
+          command,
+          duration_ms: null,
+          exit_code: null,
+        },
+      ]);
+      expect(items.values()[0]?.activity).toEqual({
+        tool: 'workspace-command',
+        label: 'Workspace command',
+        status: 'completed',
+        turnId: 'turn_a',
+      });
+    }
+  );
+  it('preserves supported null-phase assistant updates as commentary, not final answers', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    items.recover([{ ...message('A real saved update', 'completed'), phase: null }]);
+    expect(items.values()).toEqual([
+      { id: 'item_a', kind: 'commentary', text: 'A real saved update', final: true },
+    ]);
+  });
   it.each([
     ['in_progress', 'Workspace command · In progress'],
     ['completed', 'Workspace command · Completed'],
     ['incomplete', 'Workspace command · Interrupted'],
-    ['failed', 'Workspace command · Failed (exit 1). Other agent work may continue.'],
+    [
+      'failed',
+      'Workspace command · Failed (exit 1). This step did not succeed; the agent may try another approach. This alone does not mean preparation stopped.',
+    ],
   ])(
     'identifies command execution and its %s outcome without exposing arguments or output',
     (status, text) => {
@@ -44,7 +102,19 @@ describe('operator-safe activity projection', () => {
       };
       items.recover([call]);
       expect(items.values()).toEqual([
-        { id: 'command_a', kind: 'tool', text, final: status !== 'in_progress' },
+        {
+          id: 'command_a',
+          kind: 'tool',
+          text,
+          final: status !== 'in_progress',
+          activity: {
+            tool: 'workspace-command',
+            label: 'Workspace command',
+            status,
+            turnId: 'turn_a',
+            exitCode: 1,
+          },
+        },
       ]);
       expect(JSON.stringify(items.values())).not.toMatch(/private/);
     }
@@ -63,7 +133,7 @@ describe('operator-safe activity projection', () => {
         },
       ]);
       expect(items.values()[0]?.text).toBe(
-        'Workspace command · Failed. Other agent work may continue.'
+        'Workspace command · Failed. This step did not succeed; the agent may try another approach. This alone does not mean preparation stopped.'
       );
     }
   );
@@ -77,7 +147,18 @@ describe('operator-safe activity projection', () => {
       const items = new OperatorItems('session_a', 'turn_a');
       const call = { id: 'tool_a', turn_id: 'turn_a', type, name, status: 'completed' };
       const label = readableName ?? (type === 'mcp_call' ? 'Source tool' : 'Agent tool');
-      const expected = { id: 'tool_a', kind: 'tool', text: `${label} · Completed`, final: true };
+      const expected = {
+        id: 'tool_a',
+        kind: 'tool',
+        text: `${label} · Completed`,
+        final: true,
+        activity: {
+          tool: type === 'mcp_call' ? 'mcp' : 'function',
+          label,
+          status: 'completed',
+          turnId: 'turn_a',
+        },
+      };
       items.recover([call]);
       expect(items.values()).toEqual([expected]);
       expect(items.finalized(call)).toEqual(expected);
@@ -108,6 +189,7 @@ describe('operator-safe activity projection', () => {
         kind: 'tool',
         text: 'Ask operator · Failed. No new answer request was confirmed by this call.',
         final: true,
+        activity: { tool: 'function', label: 'Ask operator', status: 'failed', turnId: 'turn_b' },
       },
     ]);
     const recovered = new OperatorItems('session_a', 'turn_b');

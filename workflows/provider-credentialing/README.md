@@ -100,6 +100,24 @@ Medicaid route, reads back the result and hands protected actions to a human. Te
 group-add is an early design contrast, not a second implemented portal. The core carries payer,
 product, jurisdiction, request, location and prior-affiliation scope without Georgia branches.
 
+## Public Research Handoff And Technical Limitations
+
+The shared `workflow-contracts` public-research manifest owns exact metadata bounds. The public
+research child receives a Python standard-library preflight generated from those same bounds and
+must validate metadata, complete original bytes and digests before ending its turn. Repair metadata
+without truncating source originals or inventing provenance. A successful producer preflight is not
+proof that the application's subsequent file transfer completed.
+
+`get_credentialing_review_context` may include application-owned `executionLimitations`. Copy those
+exact mechanical delivery facts into the proposal and disclose them in standalone generated review
+aids. A ZIP includes `execution-limitations.json` at its root. The paired backend checks these facts
+before queueing and publication; they are not new Ops questions, payer judgments, or permission to
+replay a failed attempt. Existing packages without the optional field remain readable.
+
+The prepared definition minifies embedded JSON schemas without changing their parsed constraints;
+tracked schema sources remain formatted. Non-JSON instruction assets retain their exact bytes.
+The installed definition digest covers the actual installed bytes.
+
 ## Reuse And Ownership
 
 - Reuse the [workflow runtime](../../packages/workflow-runtime/README.md) for package/schema loading.

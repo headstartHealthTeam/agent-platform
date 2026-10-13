@@ -19,10 +19,15 @@ const workflowFiles = await Promise.all(
     'schemas/production-read-input.schema.json',
     'schemas/input.schema.json',
     'schemas/output.schema.json',
-  ].map(async (path) => ({
-    path: `workflows/provider-credentialing/${path}`,
-    data: (await readFile(new URL(`../${path}`, import.meta.url))).toString('base64'),
-  }))
+  ].map(async (path) => {
+    const bytes = await readFile(new URL(`../${path}`, import.meta.url));
+    // Transport canonical schemas without indentation. No constraint is removed or rewritten;
+    // definition hashing covers these exact installed bytes. Markdown remains byte-identical.
+    const data = path.endsWith('.schema.json')
+      ? Buffer.from(JSON.stringify(JSON.parse(bytes.toString('utf8'))))
+      : bytes;
+    return { path: `workflows/provider-credentialing/${path}`, data: data.toString('base64') };
+  })
 );
 const definition = {
   instructions: `Use the headstart-provider-credentialing skill. Before investigating or acting, read ${root}/skills/headstart-provider-credentialing/SKILL.md and ${root}/workflows/provider-credentialing/prompts/connected.md completely. Follow their evidence and human-authority boundaries. Read the referenced supporting files as needed; all relevant supplied tools remain available for investigation. If these required files are unavailable, report the setup failure instead of improvising or substituting a summary.`,
