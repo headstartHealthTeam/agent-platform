@@ -205,7 +205,13 @@ actual provider I/O per run, including Stop, and must not release that serializa
 timeout while a detached send can still run. SDK requests have bounded timeouts and no automatic retries.
 
 Observers are coalesced per binding, limited to 20 sessions and closed after 45 seconds without a
-snapshot request. Call `close()` on application teardown. Initial turn verification follows every
+snapshot request. Call `close()` on application teardown. Snapshot and history reads share one
+45-second budget per operation, including project checks, stream opening and parallel
+reads. Snapshot and history deadlines abort the actual SDK requests and await their settlement;
+callers must keep observation/retirement leases until that promise settles, not race a shorter
+unowned timer. A timeout carries only `operator-observation-timeout`, never provider payloads.
+This read cancellation neither stops the agent nor resends an input. An opened persistent observer
+retains its separate idle lifetime. Initial turn verification follows every
 page, then caches immutable ended roots and re-reads only the mutable/new tail. A process restart
 revalidates the chain. Live activity reads the newest 100 saved items alongside its stream; this is
 not the durable history lane or a session lifetime limit. The observer keeps a rolling window of 180

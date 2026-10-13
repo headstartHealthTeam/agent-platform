@@ -40,6 +40,7 @@ import type { OperatorItems } from './operator-items.js';
 import { operatorText } from './operator-items.js';
 import type { verifiedOperatorRoots } from './operator-provenance.js';
 import { OperatorProvenanceError } from './operator-provenance.js';
+import { operatorReadBudget } from './operator-read-budget.js';
 import { OperatorTurns } from './operator-turns.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 import type { OpenAIPlatform } from './platform.js';
@@ -248,7 +249,7 @@ export class OperatorRuntimePort {
       if (prior.binding !== identity) throw new Error('Observation binding changed');
       return prior.result;
     }
-    const result = this.observe(binding);
+    const result = operatorReadBudget(this.platform, (reader) => this.observe(binding, reader));
     this.pending.set(binding.sessionId, { binding: identity, result });
     try {
       return await result;
@@ -262,11 +263,16 @@ export class OperatorRuntimePort {
   ): Promise<OperatorHistoryPage> {
     this.requireOpen();
     if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
-    const page = await operatorHistory(this.platform, binding, cursor, this.turns);
+    const page = await operatorReadBudget(this.platform, (reader) =>
+      operatorHistory(reader, binding, cursor, this.turns)
+    );
     this.requireOpen();
     return page;
   }
-  private async observe(binding: OperatorBinding): Promise<OperatorSnapshot> {
+  private async observe(
+    binding: OperatorBinding,
+    reader: Pick<Platform, 'read' | 'openOperatorObservation'>
+  ): Promise<OperatorSnapshot> {
     if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
     let observation = this.observations.get(binding.sessionId);
     if (observation && observation.binding !== fingerprint(binding))
@@ -283,7 +289,7 @@ export class OperatorRuntimePort {
       this.opening += 1;
       let opened: Awaited<ReturnType<Platform['openOperatorObservation']>>;
       try {
-        opened = await this.platform.openOperatorObservation(binding);
+        opened = await reader.openOperatorObservation(binding);
       } finally {
         this.opening -= 1;
       }
@@ -306,8 +312,8 @@ export class OperatorRuntimePort {
     }
     observation.expiry.refresh();
     const [{ session, roots, root }, history] = await Promise.all([
-      this.turns.read(this.platform, binding),
-      this.platform.read({
+      this.turns.read(reader, binding),
+      reader.read({
         operation: 'sessions.items',
         id: binding.sessionId,
         query: { limit: 100, order: 'desc' },
