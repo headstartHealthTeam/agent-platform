@@ -20,6 +20,72 @@ const metadata = (id: string, mimeType = 'text/plain', version = '1'): DriveFile
  * All identities, links and documents below are invented. No network/source credentials exist.
  */
 describe('linked evidence investigation regression', () => {
+  it('retains distinct workbook revisions for a current address read without replacing the prior original', async () => {
+    const originals = await Promise.all(
+      ['100 Example Mail Way', '200 Example Mail Way'].map(async (mailingAddress) => {
+        const workbook = new Workbook();
+        workbook.addWorksheet('headstart_info').addRows([
+          ['Role', 'Synthetic value'],
+          ['Enrolling entity', 'Example Enrolling Entity'],
+          ['Default practice', '300 Example Practice Way'],
+          ['Mailing', mailingAddress],
+          ['Service modalities', 'Home; clinic; telehealth'],
+        ]);
+        return Buffer.from(await workbook.xlsx.writeBuffer());
+      })
+    );
+    let revision = 1;
+    const get = vi.fn<GoogleDriveReadPort['get']>(async (path, query) => {
+      if (path !== 'files/maintained_reference') throw new Error('Unexpected synthetic resource');
+      const bytes = originals[revision - 1];
+      if (!bytes) throw new Error('Missing invented workbook');
+      return query['alt'] === 'media'
+        ? new Response(Uint8Array.from(bytes))
+        : json(
+            metadata(
+              'maintained_reference',
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              String(revision)
+            )
+          );
+    });
+    const reader = new GoogleDriveReader({ get });
+    const before = await reader.read({
+      fileId: 'maintained_reference',
+      version: '1',
+      mode: 'original',
+    });
+    const beforeJson = JSON.stringify(before);
+    revision = 2;
+    await expect(
+      reader.read({ fileId: 'maintained_reference', version: '1', mode: 'text' })
+    ).rejects.toThrow();
+    const after = await reader.read({
+      fileId: 'maintained_reference',
+      version: '2',
+      mode: 'original',
+    });
+    const current = await reader.read({
+      fileId: 'maintained_reference',
+      version: '2',
+      mode: 'text',
+    });
+    expect(current.document.text).toContain('headstart_info');
+    expect(current.document.text).toContain('200 Example Mail Way');
+    expect(current.document.text).not.toContain('100 Example Mail Way');
+    expect(current.document.text).toContain('300 Example Practice Way');
+    expect(before.source.version).toBe('1');
+    expect(after.source.version).toBe('2');
+    expect(JSON.stringify(before)).toBe(beforeJson);
+    for (const [index, result] of [before, after].entries()) {
+      const resource = result.content[0];
+      if (resource?.type !== 'resource' || !('blob' in resource.resource))
+        throw new Error('Missing retained workbook original');
+      expect(resource.resource.blob).toBe(originals.at(index)?.toString('base64'));
+    }
+    // This proves exact-version retrieval/bytes, not model mapping or application publication.
+  });
+
   it('can follow a read SOP to every workbook sheet and paginated policy lead without a summary substitute', async () => {
     const workbook = new Workbook();
     workbook.addWorksheet('Group contacts').addRows([

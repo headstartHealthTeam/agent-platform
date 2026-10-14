@@ -85,7 +85,9 @@ policy field. Likewise, a business address is not a payer billing/pay-to address
 Keep the enrolling legal entity and each address role explicit. Headstart's state-specific
 credentialing entity/address, the provider's business or registered-agent address, the service
 location, and mailing/pay-to addresses are not interchangeable. Use an authoritative, current
-Headstart entity/address reference alongside the selected payer's actual requirements. A practice's
+Headstart entity/address reference alongside the selected payer's actual requirements. Use the
+[maintained workbook and dated Ops clarification](headstart-entity-addresses.md) for this reference;
+do not infer the selection policy from unlabeled adjacent cells. A practice's
 state or a checked address alone does not establish which entity/address a payer field requires.
 If the authoritative mapping is unavailable, preserve the known addresses and request only that
 mapping; do not infer a Headstart address, overwrite provider facts or hard-code a state/payer rule.
