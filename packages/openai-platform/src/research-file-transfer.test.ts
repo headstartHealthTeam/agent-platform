@@ -54,6 +54,37 @@ function fixture(
 }
 describe('exact public originals through Agents API environment Files', () => {
   it.each([100, 5 * 1024 * 1024 + 1])(
+    'snapshots %i-byte caller input before awaiting dispatch',
+    async (size) => {
+      const f = fixture(size, false, true);
+      const original = { path: f.file.path, digest: f.file.digest, size };
+      f.before.mockImplementation(async () => {
+        f.file.bytes.fill(7);
+        f.file.path = '/workspace/changed';
+        f.file.digest = 'sha256:' + '0'.repeat(64);
+      });
+      const receipt = await transferWorkspaceFile(f.client, 'env_synthetic', f.file, f.before);
+      expect(receipt).toMatchObject(original);
+      let bytes: Uint8Array;
+      if (size === 100) {
+        const body: unknown = await f.requests[0]?.json();
+        if (
+          body === null ||
+          typeof body !== 'object' ||
+          !('data' in body) ||
+          typeof body.data !== 'string'
+        )
+          throw new Error('Expected inline bytes');
+        bytes = Buffer.from(body.data, 'base64');
+      } else {
+        const file = (await f.requests[0]?.formData())?.get('file');
+        if (!(file instanceof Blob)) throw new Error('Expected complete original');
+        bytes = new Uint8Array(await file.arrayBuffer());
+      }
+      expect(`sha256:${createHash('sha256').update(bytes).digest('hex')}`).toBe(original.digest);
+    }
+  );
+  it.each([100, 5 * 1024 * 1024 + 1])(
     'stages %i-byte operator originals through the same documented SDK transport',
     async (size) => {
       const f = fixture(size, false, true);

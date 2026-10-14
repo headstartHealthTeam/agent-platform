@@ -103,16 +103,19 @@ export async function transferWorkspaceFile(
 async function transferFile(
   client: OpenAI,
   environmentId: string,
-  file: AgentResearchFileTransfer,
+  input: AgentResearchFileTransfer,
   beforeDispatch: () => Promise<void>,
   maximumBytes: number
 ): Promise<AgentResearchFileReceipt> {
   if (
-    !(file.bytes instanceof Uint8Array) ||
-    !file.bytes.length ||
-    file.bytes.length > maximumBytes ||
-    `sha256:${createHash('sha256').update(file.bytes).digest('hex')}` !== file.digest
+    !(input.bytes instanceof Uint8Array) ||
+    !input.bytes.length ||
+    input.bytes.length > maximumBytes
   )
+    throw new Error('Public research original identity invalid');
+  // Own the exact bytes and metadata across SDK conversion and the durable dispatch callback.
+  const file = { ...input, bytes: new Uint8Array(input.bytes) };
+  if (`sha256:${createHash('sha256').update(file.bytes).digest('hex')}` !== file.digest)
     throw new Error('Public research original identity invalid');
   const options = { maxRetries: 0, signal: AbortSignal.timeout(60_000) };
   const upload =

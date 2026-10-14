@@ -84,7 +84,8 @@ describe('linked evidence investigation regression', () => {
       expect(resource.resource.blob).toBe(originals.at(index)?.toString('base64'));
     }
     // This proves exact-version retrieval/bytes, not model mapping or application publication.
-  });
+    // The real Office worker owns a 30-second deadline; let it settle before the next test.
+  }, 35_000);
 
   it('can follow a read SOP to every workbook sheet and paginated policy lead without a summary substitute', async () => {
     const workbook = new Workbook();
