@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { publicResearchPreflightScript } from './public-research-preflight.js';
 
 describe('public research producer preflight', () => {
+  // Three separately bounded 10-second Python invocations plus large-file I/O on Windows CI.
   it('catches the observed metadata defect before completion and verifies original bytes after repair', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'research-preflight-'));
     try {
@@ -59,5 +60,5 @@ describe('public research producer preflight', () => {
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
-  });
+  }, 35_000);
 });
