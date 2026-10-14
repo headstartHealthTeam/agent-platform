@@ -8,7 +8,8 @@ const patterns = {
 /** Source-neutral limits shared by producer instructions and application admission. */
 export const publicResearchManifestLimits = {
   bytes: 256 * 1024,
-  originalBytes: 10 * 1024 * 1024,
+  originalBytes: 50 * 1024 * 1024,
+  totalOriginalBytes: 256 * 1024 * 1024,
   summary: 12000,
   limitations: 100,
   limitation: 2000,

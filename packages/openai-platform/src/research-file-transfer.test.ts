@@ -123,25 +123,30 @@ describe('exact public originals through Agents API environment Files', () => {
       data: Buffer.from(f.file.bytes).toString('base64'),
     });
   });
-  it('uses the SDK Files upload path for full originals beyond the inline limit', async () => {
-    const f = fixture(5 * 1024 * 1024 + 1);
-    expect(await transferResearchFile(f.client, 'env_synthetic', f.file, f.before)).toMatchObject({
-      size: f.file.bytes.length,
-      uploadedFileId: 'file-synthetic',
-    });
-    expect(f.requests).toHaveLength(2);
-    const form = await f.requests[0]?.formData();
-    const file = form?.get('file');
-    if (!(file instanceof Blob)) throw new Error('Expected full original');
-    const complete = new Uint8Array(await file.arrayBuffer());
-    expect(complete.length).toBe(f.file.bytes.length);
-    expect(`sha256:${createHash('sha256').update(complete).digest('hex')}`).toBe(f.file.digest);
-    expect(await f.requests[1]?.json()).toEqual({
-      type: 'file_id',
-      file_id: 'file-synthetic',
-      path: f.file.path,
-    });
-  });
+  it.each([5 * 1024 * 1024 + 1, 26_760_658, 50 * 1024 * 1024])(
+    'uses the SDK Files upload path for a complete %i-byte original',
+    async (size) => {
+      const f = fixture(size);
+      expect(await transferResearchFile(f.client, 'env_synthetic', f.file, f.before)).toMatchObject(
+        {
+          size: f.file.bytes.length,
+          uploadedFileId: 'file-synthetic',
+        }
+      );
+      expect(f.requests).toHaveLength(2);
+      const form = await f.requests[0]?.formData();
+      const file = form?.get('file');
+      if (!(file instanceof Blob)) throw new Error('Expected full original');
+      const complete = new Uint8Array(await file.arrayBuffer());
+      expect(complete.length).toBe(f.file.bytes.length);
+      expect(`sha256:${createHash('sha256').update(complete).digest('hex')}`).toBe(f.file.digest);
+      expect(await f.requests[1]?.json()).toEqual({
+        type: 'file_id',
+        file_id: 'file-synthetic',
+        path: f.file.path,
+      });
+    }
+  );
   it.each([100, 5 * 1024 * 1024 + 1])(
     'never retries an uncertain %i-byte upload and retains known public file ownership',
     async (size) => {
@@ -285,7 +290,10 @@ describe('exact public originals through Agents API environment Files', () => {
       const f = fixture();
       if (kind === 'digest') f.file.digest = `sha256:${'0'.repeat(64)}`;
       if (kind === 'path') f.file.path = '/workspace/private/credential';
-      if (kind === 'capacity') f.file.bytes = new Uint8Array(10 * 1024 * 1024 + 1);
+      if (kind === 'capacity') {
+        f.file.bytes = new Uint8Array(50 * 1024 * 1024 + 1);
+        f.file.digest = `sha256:${createHash('sha256').update(f.file.bytes).digest('hex')}`;
+      }
       await expect(
         transferResearchFile(f.client, 'env_synthetic', f.file, f.before)
       ).rejects.toThrow();
@@ -293,4 +301,12 @@ describe('exact public originals through Agents API environment Files', () => {
       expect(f.requests).toHaveLength(0);
     }
   );
+  it('keeps the separate operator upload limit at 10 MiB before dispatch', async () => {
+    const f = fixture(10 * 1024 * 1024 + 1, false, true);
+    await expect(
+      transferWorkspaceFile(f.client, 'env_synthetic', f.file, f.before)
+    ).rejects.toThrow();
+    expect(f.before).not.toHaveBeenCalled();
+    expect(f.requests).toHaveLength(0);
+  });
 });

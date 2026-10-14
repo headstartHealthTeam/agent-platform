@@ -15,6 +15,12 @@ the provider/group using exact identity evidence; a similar name is not a match.
 tool argument or representation problem through the existing toolkit before asking Ops to supply
 facts that are already readable. Do not expand permissions or create a new connector.
 
+Attribute failures to the exact resource and operation. Reading an SOP successfully does not mean
+all its links work; a linked workbook returning 404 does not mean the SOP was inaccessible or that
+the service identity lacks permission. Preserve successful originals and name the failed lead.
+Check installed tool help and argument/representation contracts before concluding a capability is
+missing; do not install speculative replacements or repeat an unchanged failing call.
+
 Keep a concise investigation record in `opsReview.investigation`: the exact source reference,
 the source that led to it when applicable, what was actually inspected, and the precise remaining
 limitation. Record unavailable leads as evidence with truthful retrieval state, not an inspected
@@ -76,6 +82,28 @@ insurer and policy dates without establishing one provider's inclusion. Missing 
 does not prove absence of insurance. Ask about the unresolved membership, not every already-known
 policy field. Likewise, a business address is not a payer billing/pay-to address until mapped.
 
+Keep the enrolling legal entity and each address role explicit. Headstart's state-specific
+credentialing entity/address, the provider's business or registered-agent address, the service
+location, and mailing/pay-to addresses are not interchangeable. Use an authoritative, current
+Headstart entity/address reference alongside the selected payer's actual requirements. A practice's
+state or a checked address alone does not establish which entity/address a payer field requires.
+If the authoritative mapping is unavailable, preserve the known addresses and request only that
+mapping; do not infer a Headstart address, overwrite provider facts or hard-code a state/payer rule.
+
+Preserve the exact credential designation and issuing authority from its original. QBA and BCBA
+are distinct designations, not spelling variants. Professional certification, state licensure,
+NPI taxonomy, payer participation and billing eligibility are separate claims; one does not prove
+the others. Read current route-specific authority before treating a designation as acceptable or
+ineligible. An official NPI response supports what the registry reports, not independent license
+verification. Match the exact number, entity type and named subject, retain the full response and
+its retrieval time, and distinguish no match from a retrieval failure. Do not manufacture a taxonomy
+code from a job title or classify an inaccessible registry as missing provider evidence.
+
+A CAQH identifier, old export or source mention is not a current CAQH profile review, attestation or
+confirmation that a payer has access. State precisely what was read and its date. Use available
+authorized evidence; if current profile status is required but unavailable, request that specific
+status/evidence without asking for passwords or declaring the whole provider record absent.
+
 Use the original source field/column meaning: do not say a designation is missing when an explicit
 source field supplies it. Present disagreements as disagreements, with both exact sources; do not
 silently choose a preferred value or promote an operator declaration to a verified original.
@@ -120,6 +148,11 @@ owner and a useful return; do not bundle every unknown site, tax, credential and
 one paragraph. A single CV or policy document can satisfy several requests: collect it once, link
 the affected requirements, and do not send duplicate collection requests.
 
+Write provider/onboarding requests so Ops can copy the short action and requested items without
+internal debugging details or a dump of the investigation. Keep Ops-owned decisions, Engineering
+failures and provider document corrections separate. This prepares a request; it does not send an
+email, update a source record or establish that the recipient acted.
+
 Route tool/transfer defects to Engineering, not Ops/provider evidence collection. State known versus
 unknown outcomes; correct misassigned saved questions. Retain verified facts.
 
@@ -135,3 +168,8 @@ against known facts and conflicts, update affected dispositions, remove only gen
 questions and publish a new complete package. Do not ask again for the same supplied information.
 Record why the remaining request persists. Preserve prior packages, current authority, Stop,
 protected human actions and renewed review; no payer/source write or automatic replay follows.
+
+When the host supplies explicitly released saved answers, reconcile each with its question and
+linked original documents. A locally saved draft is not a message to you; a revision request is
+not proof that a question is resolved. Do not restart stopped work or carry old answers into a new
+scope automatically. Publish the revised complete package and explain remaining questions.

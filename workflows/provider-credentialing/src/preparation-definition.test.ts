@@ -50,6 +50,10 @@ describe('connected preparation tool definition', () => {
       'contentDocumentId',
       'contentVersionId',
     ]);
+    expect(
+      generated.definition.tools.find((tool) => tool.name === 'lookup_credentialing_npi')
+        ?.parameters.required
+    ).toEqual(['number', 'enumerationType', 'subject']);
     const raw: unknown = JSON.parse(content);
     const parsed = z.object({ definition: z.record(z.string(), z.unknown()) }).parse(raw);
     expect(generated.workflowRevision).toBe(

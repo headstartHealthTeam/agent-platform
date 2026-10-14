@@ -27,6 +27,7 @@ try:
     files = value.get("files")
     require(isinstance(files, list) and len(files) <= limits["files"], "files")
     paths = set()
+    total_bytes = 0
     for index, item in enumerate(files):
         require(isinstance(item, dict), "file-shape", index)
         path = item.get("path")
@@ -49,6 +50,8 @@ try:
         require(0 < original_path.stat().st_size <= limits["originalBytes"], "original-size", index)
         original = original_path.read_bytes()
         require(len(original) <= limits["originalBytes"], "original-size", index)
+        total_bytes += len(original)
+        require(total_bytes <= limits["totalOriginalBytes"], "original-total-size", index)
         require("sha256:" + hashlib.sha256(original).hexdigest() == item["digest"], "digest-mismatch", index)
     print("Public research preflight passed: " + str(len(files)) + " complete originals checked.")
 except PreflightError as error:

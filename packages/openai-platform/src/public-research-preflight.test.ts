@@ -13,7 +13,8 @@ describe('public research producer preflight', () => {
   it('catches the observed metadata defect before completion and verifies original bytes after repair', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'research-preflight-'));
     try {
-      const original = Buffer.from('Complete synthetic public original.');
+      // Same size class as the complete handbook excluded by the former 10 MiB limit.
+      const original = Buffer.alloc(26_760_658, 42);
       await writeFile(join(directory, 'manual.txt'), original);
       const manifest = {
         summary: 'Synthetic',
@@ -50,7 +51,7 @@ describe('public research producer preflight', () => {
       expect(valid.status).toBe(0);
       expect(valid.stdout).toContain('1 complete originals checked');
       expect(parsePublicResearchManifest(await readFile(path)).files).toHaveLength(1);
-      expect(await readFile(join(directory, 'manual.txt'))).toEqual(original);
+      expect((await readFile(join(directory, 'manual.txt'))).equals(original)).toBe(true);
       await writeFile(join(directory, 'manual.txt'), 'Changed synthetic original');
       const changed = run();
       expect(changed.status).toBe(1);

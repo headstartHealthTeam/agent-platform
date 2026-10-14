@@ -2,6 +2,29 @@
   "skill": "headstart-provider-credentialing",
   "cases": [
     {
+      "name": "distinct-credential-entity-and-caqh-evidence",
+      "prompt": "Prepare an invented non-Georgia enrollment. The original certificate says QBA, an old CRM label says BCBA, and the exact official NPI JSON lists a taxonomy but not a verified license. A CAQH identifier and a year-old export exist. The selected business and registered-agent addresses are the provider's; an authoritative current Headstart state-entity reference gives a different enrollment entity/address. Current payer instructions identify which address roles apply. Reconcile this evidence and prepare provider corrections separately from Ops decisions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves exact QBA/BCBA source disagreement rather than treating designations as synonyms, inferring a taxonomy from a title or inventing eligibility",
+        "Separates certification, state licensure, registry taxonomy, payer participation and billing eligibility and uses current route authority",
+        "Maps the documented Headstart entity/address only to the applicable payer field while retaining distinct provider business, registered, service and mailing/pay-to facts",
+        "Describes the CAQH identifier and dated export without claiming a current profile review, attestation or payer access",
+        "Creates concise owner-specific provider/onboarding requests excluding internal technical details; does not send them or change sources"
+      ]
+    },
+    {
+      "name": "missing-address-authority-and-linked-source-failure",
+      "prompt": "The complete authorized SOP was read and retained, but a linked legacy workbook returned 404. The Headstart state-specific entity/address list has not been found. A public NPI lookup timed out. An operator has saved a draft question answer but has not sent it for revision. Explain the remaining preparation gaps.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves successful SOP inspection and attributes 404 only to the linked workbook, without inventing a permission failure",
+        "Requests the missing authoritative entity/address mapping without deriving it from the provider's state or replacing known address roles",
+        "Reports the registry retrieval limitation rather than no match, missing taxonomy or payer ineligibility",
+        "Does not treat an unsent saved draft as delivered evidence or resolution and does not restart stopped work"
+      ]
+    },
+    {
       "name": "autonomous-multi-hop-current-payer-research",
       "prompt": "Prepare a synthetic enrollment for an unfamiliar payer. No application or URL is preselected. The provider's Salesforce record links to a shared practice record and an SOP; schema discovery is needed to find the relationship. The SOP leads to a paginated Drive folder, an archived workbook sheet and a full current policy. The payer's current public manual links through a separate download host to the applicable blank form and a newer appendix. One old CRM value conflicts with the workbook; one document really is missing. Available tools include live web search, a credential-free public browser with automatic origin handling, schema/query/search/file MCP tools and full Drive reads. Investigate without asking Ops to stage documents or approve websites.",
       "shouldActivate": true,

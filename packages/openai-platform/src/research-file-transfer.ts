@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import {
   agentResearchTransferDiagnostic,
+  publicResearchManifestLimits,
   type AgentResearchFileReceipt,
   type AgentResearchFileTransfer,
   type AgentResearchTransferDiagnostic,
@@ -75,7 +76,13 @@ export async function transferResearchFile(
   z.string()
     .regex(/^\/workspace\/public-research\/[a-f0-9]{64}\/[0-9]+-[a-f0-9]{64}$/)
     .parse(file.path);
-  return transferFile(client, environmentId, file, beforeDispatch);
+  return transferFile(
+    client,
+    environmentId,
+    file,
+    beforeDispatch,
+    publicResearchManifestLimits.originalBytes
+  );
 }
 
 /** Same SDK transport, separate application-owned namespace; callers retain case authorization. */
@@ -90,19 +97,20 @@ export async function transferWorkspaceFile(
       /^\/workspace\/operator-files\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-[a-f0-9]{64}$/
     )
     .parse(file.path);
-  return transferFile(client, environmentId, file, beforeDispatch);
+  return transferFile(client, environmentId, file, beforeDispatch, 10 * 1024 * 1024);
 }
 
 async function transferFile(
   client: OpenAI,
   environmentId: string,
   file: AgentResearchFileTransfer,
-  beforeDispatch: () => Promise<void>
+  beforeDispatch: () => Promise<void>,
+  maximumBytes: number
 ): Promise<AgentResearchFileReceipt> {
   if (
     !(file.bytes instanceof Uint8Array) ||
     !file.bytes.length ||
-    file.bytes.length > 10 * 1024 * 1024 ||
+    file.bytes.length > maximumBytes ||
     `sha256:${createHash('sha256').update(file.bytes).digest('hex')}` !== file.digest
   )
     throw new Error('Public research original identity invalid');

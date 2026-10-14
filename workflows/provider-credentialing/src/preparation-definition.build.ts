@@ -43,6 +43,22 @@ const definition = {
     hostedDeliveryDefinition,
     {
       type: 'function',
+      name: 'lookup_credentialing_npi',
+      description:
+        'Read the official NPPES v2.1 registry for an exact public NPI already found in authorized case evidence. Validates the returned number and enumeration type, retains the complete original JSON for this case, and returns it with provenance. Reconcile the named subject yourself. A registry entry does not establish licensure, certification or payer eligibility. No name search, credentials, source writes or payer actions; unavailable in synthetic cases.',
+      parameters: {
+        type: 'object',
+        properties: {
+          number: { type: 'string', pattern: '^[12][0-9]{9}$' },
+          enumerationType: { type: 'string', enum: ['NPI-1', 'NPI-2'] },
+          subject: { type: 'string', enum: ['provider', 'practice'] },
+        },
+        required: ['number', 'enumerationType', 'subject'],
+        additionalProperties: false,
+      },
+    },
+    {
+      type: 'function',
       name: 'research_public_sources',
       description:
         'Autonomously investigate current public payer instructions, blank forms and related authoritative references using a credential-free browser. Supply a public-only brief (no provider records, private evidence or credentials). Complete originals return to your environment with exact provenance/digests; read them yourself before judging applicability. No Ops approval for each public site. Use Salesforce MCP and Google Drive directly for private evidence, not this tool.',
