@@ -24,6 +24,42 @@ const event = (
 });
 
 describe('operator-safe activity projection', () => {
+  it('labels a wrapped command and keeps a failed call distinct from a later corrected attempt', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    items.recover([
+      {
+        id: 'wrapped',
+        turn_id: 'turn_a',
+        type: 'command_execution',
+        status: 'completed',
+        command: "/bin/bash -lc 'headstart-mcp-document private-request.json'",
+        output: 'private bytes',
+      },
+      {
+        id: 'search_failed',
+        turn_id: 'turn_a',
+        type: 'mcp_call',
+        name: 'search',
+        status: 'failed',
+        arguments: 'private request',
+        error: 'private error',
+      },
+      {
+        id: 'search_corrected',
+        turn_id: 'turn_a',
+        type: 'mcp_call',
+        name: 'search',
+        status: 'completed',
+      },
+    ]);
+    expect(items.values()[0]?.activity?.label).toBe('Retrieve an authorized source document');
+    expect(items.values()[1]?.text).toContain(
+      'This call did not succeed; later activity may show a corrected attempt'
+    );
+    expect(items.values()[1]?.activity?.status).toBe('failed');
+    expect(items.values()[2]?.activity?.status).toBe('completed');
+    expect(JSON.stringify(items.values())).not.toContain('private');
+  });
   it('uses supported duration and executable categories without exposing command content', () => {
     const items = new OperatorItems('session_a', 'turn_a');
     items.recover([

@@ -39,14 +39,86 @@ class ArtifactValidationError extends Error {
   }
 }
 
+function schemaIssueDetail(issue: z.core.$ZodIssue): string {
+  switch (issue.code) {
+    case 'invalid_type':
+      return `; expected ${issue.expected}`;
+    case 'too_small':
+      return `; minimum ${String(issue.minimum)}`;
+    case 'too_big':
+      return `; maximum ${String(issue.maximum)}`;
+    case 'invalid_value':
+      return '; use an allowed value from the published schema';
+    case 'unrecognized_keys':
+      return '; remove fields not declared in the published schema';
+    case 'custom':
+    case 'invalid_format':
+    case 'not_multiple_of':
+    case 'invalid_union':
+    case 'invalid_key':
+    case 'invalid_element':
+      return '';
+  }
+}
+
+/** Explain constraints, never echo supplied values, arbitrary keys or raw Zod messages. */
+function schemaIssues(issues: readonly z.core.$ZodIssue[]): string[] {
+  return issues.flatMap((issue): string[] => {
+    if (issue.code === 'invalid_union') {
+      // Prefer a version-matching branch; legacy alternatives must not obscure the real defect.
+      const candidates = issue.errors.filter(
+        (branch) =>
+          !branch.some(
+            (entry) => entry.code === 'invalid_value' && entry.path.at(-1) === 'schemaVersion'
+          )
+      );
+      const closest = candidates.sort((a, b) => a.length - b.length)[0];
+      return closest
+        ? schemaIssues(closest)
+        : ['schemaVersion: unsupported schema version; read the published input/proposal schemas'];
+    }
+    const path =
+      issue.path
+        .map((part) =>
+          typeof part === 'number'
+            ? String(part)
+            : /^[A-Za-z][A-Za-z0-9_]{0,80}$/u.test(String(part))
+              ? String(part)
+              : '[field]'
+        )
+        .join('.') || 'root';
+    return [`${path}: ${issue.code}${schemaIssueDetail(issue)}`];
+  });
+}
+
+function parseArtifact<T>(schema: z.ZodType<T>, json: string, name: string): T {
+  let value: unknown;
+  try {
+    value = JSON.parse(json);
+  } catch {
+    throw new ArtifactValidationError([
+      `${name}: invalid JSON; provide the complete serialized artifact`,
+    ]);
+  }
+  const parsed = schema.safeParse(value);
+  if (!parsed.success) {
+    const issues = schemaIssues(parsed.error.issues);
+    const selected = issues.slice(0, 50).map((issue) => `${name}.${issue}`);
+    if (issues.length > 50)
+      selected.push(`${name}: additional schema issues omitted; correct these and validate again`);
+    throw new ArtifactValidationError(selected);
+  }
+  return parsed.data;
+}
+
 /** Canonical validation on trusted application compute, not a model-issued attestation. */
 export const validateReviewArtifacts = (request: unknown): ReviewArtifactValidation => {
   const { inputJson, proposalJson } = requestSchema.parse(request);
   if ([inputJson, proposalJson].some((value) => Buffer.byteLength(value) > artifactByteLimit)) {
     throw new ArtifactValidationError(['Each serialized artifact must be at most 1 MiB.']);
   }
-  const input = credentialingArtifactInputSchema.parse(JSON.parse(inputJson));
-  const proposal = credentialingArtifactOutputSchema.parse(JSON.parse(proposalJson));
+  const input = parseArtifact(credentialingArtifactInputSchema, inputJson, 'input');
+  const proposal = parseArtifact(credentialingArtifactOutputSchema, proposalJson, 'proposal');
   const issues = validateProposal(input, proposal);
   if (issues.length) throw new ArtifactValidationError(issues);
   const fingerprint = reviewFingerprint(input, proposal);

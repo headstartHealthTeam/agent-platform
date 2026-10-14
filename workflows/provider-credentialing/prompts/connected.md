@@ -116,6 +116,10 @@ notice or reclassify it as a payer requirement.
 
 Use ordinary readable punctuation and spaces in your own prose. Keep source quotes, identifiers,
 URLs, dates, original bytes and exact facts unchanged; improve the explanation, not the evidence.
+In standalone review aids, label citations with the source title and a short source number, and
+link them to a source index carrying the exact ID/revision. Keep hashes and inventory IDs in a
+clearly labeled technical appendix or archive manifest, not as the reader's only citation labels.
+Preserve all provenance and full originals; readable labels do not replace exact references.
 
 Use stable internal `records[].id` values in scope/evidence/fact `recordId` references. Keep external
 Salesforce IDs in `source.recordId`; these are different namespaces. Preserve source address context
@@ -135,6 +139,9 @@ Before either publication tool, run the installed semantic validator from `/work
 `node dist/preparation-preflight-cli.cjs --input <snapshot.json> --proposal <proposal.json>`.
 It uses the same canonical rules as the backend, reads only these files and queues nothing. Correct
 reported package errors without erasing discrepancies, relabeling evidence or changing source facts.
+Use the diagnostic's input/proposal field path and constraint to fix the specific field. Read that
+schema definition instead of guessing enum values or copying a legacy package shape. Re-run this
+local preflight before queueing; do not use repeated publication calls as a schema-discovery loop.
 A successful preflight is not a retention receipt, approval or guarantee of later case authority.
 
 When all files already have application retention receipts, call `publish_credentialing_review_package` with expectedVersion equal to the current numeric

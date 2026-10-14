@@ -3,6 +3,8 @@ import { createHash } from 'node:crypto';
 import type { OperatorActivity } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
+import { operatorCommandLabel } from './operator-command-label.js';
+
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,200}$/);
 const itemBase = z.object({ id, turn_id: id, type: z.string() });
 const message = itemBase.extend({
@@ -39,27 +41,6 @@ export interface OperatorItem {
   final: boolean;
   callFingerprint?: string;
   activity?: OperatorActivity;
-}
-
-/** Classify a leading executable only; arguments, paths, scripts and output remain private. */
-function commandLabel(value: string | undefined): string {
-  const executable = value
-    ?.trim()
-    .match(/^(?:\/usr\/bin\/|\/bin\/)?([A-Za-z0-9_-]+)(?:\s|$)/u)?.[1];
-  const labels = new Map([
-    ['python', 'Run a Python workspace script'],
-    ['python3', 'Run a Python workspace script'],
-    ['node', 'Run a JavaScript workspace script'],
-    ['rg', 'Search workspace files'],
-    ['grep', 'Search workspace files'],
-    ['ls', 'List workspace files'],
-    ['find', 'Find workspace files'],
-    ['sha256sum', 'Verify file hashes'],
-    ['shasum', 'Verify file hashes'],
-    ['unzip', 'Inspect or extract an archive'],
-    ['zip', 'Build an archive'],
-  ]);
-  return labels.get(executable ?? '') ?? 'Workspace command';
 }
 
 function commandText(item: z.infer<typeof command>, label: string): string {
@@ -204,7 +185,7 @@ export class OperatorItems {
   private tool(raw: unknown, type: string): OperatorItem | null {
     if (type === 'command_execution') {
       const item = command.parse(raw);
-      const label = commandLabel(item.command);
+      const label = operatorCommandLabel(item.command);
       const activity: OperatorActivity = {
         tool: 'workspace-command',
         label,
@@ -254,7 +235,7 @@ export class OperatorItems {
       text:
         item.name === 'ask_operator'
           ? 'Ask operator · Failed. No new answer request was confirmed by this call.'
-          : `${label} · ${status}`,
+          : `${label} · ${status}${item.status === 'failed' ? '. This call did not succeed; later activity may show a corrected attempt. It does not by itself establish missing evidence or denied access.' : ''}`,
       final: item.status !== 'in_progress',
       activity: {
         tool: type === 'mcp_call' ? 'mcp' : 'function',
