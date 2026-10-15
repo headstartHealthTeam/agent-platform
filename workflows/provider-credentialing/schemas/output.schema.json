@@ -322,6 +322,10 @@
           "required": ["summary", "findings", "nextStep", "investigation"],
           "additionalProperties": false
         },
+        "executionLimitations": {
+          "description": "Copy the exact application-owned executionLimitations from current review context. Keep these technical failures visible in the review package, standalone reports and archive provenance; useful fallback work does not erase them.",
+          "$ref": "#/$defs/__schema20"
+        },
         "attachments": {
           "type": "array",
           "items": {
@@ -345,7 +349,7 @@
                 ]
               },
               "explanation": {
-                "$ref": "#/$defs/__schema20"
+                "$ref": "#/$defs/__schema22"
               }
             },
             "required": ["requirementId", "disposition", "artifact", "explanation"],
@@ -365,7 +369,7 @@
                 "enum": ["human-required", "unresolved"]
               },
               "explanation": {
-                "$ref": "#/$defs/__schema20"
+                "$ref": "#/$defs/__schema22"
               }
             },
             "required": ["requirementId", "disposition", "explanation"],
@@ -597,6 +601,32 @@
       "additionalProperties": false
     },
     "__schema20": {
+      "maxItems": 100,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema21"
+      }
+    },
+    "__schema21": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "kind": {
+          "type": "string",
+          "const": "public-research-incomplete"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      },
+      "required": ["id", "kind", "message"],
+      "additionalProperties": false
+    },
+    "__schema22": {
       "type": "string",
       "minLength": 1,
       "maxLength": 8000

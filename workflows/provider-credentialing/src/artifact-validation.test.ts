@@ -20,6 +20,25 @@ const proposalJson = fs.readFileSync(
 );
 
 describe('application artifact validation', () => {
+  it('identifies the version-matched artifact field and expected type without echoing data', () => {
+    const input: unknown = JSON.parse(inputJson);
+    if (input === null || typeof input !== 'object' || Array.isArray(input))
+      throw new Error('Invalid fixture');
+    const reply = artifactValidationReply({
+      inputJson: JSON.stringify({ ...input, work: 'private-person-record' }),
+      proposalJson,
+    });
+    expect(reply.ok).toBe(false);
+    if (reply.ok) throw new Error('Invalid input accepted');
+    expect(reply.issues).toContain('input.work: invalid_type; expected object');
+    expect(JSON.stringify(reply)).not.toMatch(/private-person-record|schemaVersion/);
+    const malformed = artifactValidationReply({ inputJson, proposalJson: 'private not JSON' });
+    expect(malformed).toEqual({
+      ok: false,
+      code: 'invalid-artifacts',
+      issues: ['proposal: invalid JSON; provide the complete serialized artifact'],
+    });
+  });
   it('validates the exact source bytes and exposes only the application handoff projection', () => {
     const result = validateReviewArtifacts({ inputJson, proposalJson });
     expect(result.protocol).toBe('credentialing-validation/v1');

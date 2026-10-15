@@ -97,7 +97,9 @@ Salesforce MCP/Drive investigation, which remains available to the primary agent
 `stageResearchFile` uses the native [environment Files API](https://developers.openai.com/api/docs/guides/agents-api/environments/files)
 to transfer exact public-original bytes into a call/digest-bound primary workspace path. Files up
 to 5 MiB use inline transfer; larger supported originals use the SDK's Files upload/staging path.
-The current review-retention ceiling is 10 MiB per original, with a truthful capacity limitation,
+The research ceiling is 50 MiB per original (the documented environment file-reference limit),
+with 256 MiB of originals per handoff. Operator-supplied files retain their separate 10 MiB ceiling.
+Report a truthful capacity limitation,
 not silent truncation. Successful receipts retain any uploaded Files API ID. Unknown dispatches
 retain known IDs without automatic replay, overwrite, deletion or new helper creation. A path/size
 listing is not byte verification; the primary must verify the delivered digest before using it.

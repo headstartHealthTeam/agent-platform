@@ -1,19 +1,25 @@
 import { createHash } from 'node:crypto';
 
+import type { OperatorActivity } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
+
+import { operatorCommandLabel } from './operator-command-label.js';
 
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,200}$/);
 const itemBase = z.object({ id, turn_id: id, type: z.string() });
 const message = itemBase.extend({
   type: z.literal('message'),
   role: z.literal('assistant'),
-  phase: z.enum(['commentary', 'final_answer']),
+  phase: z.enum(['commentary', 'final_answer']).nullable(),
   status: z.enum(['in_progress', 'completed', 'incomplete']),
   content: z.array(z.object({ type: z.literal('output_text'), text: z.string() })),
 });
 const command = itemBase.extend({
   type: z.literal('command_execution'),
   status: z.enum(['in_progress', 'completed', 'incomplete', 'failed']),
+  exit_code: z.number().int().min(0).max(255).optional().catch(undefined),
+  command: z.string().optional(),
+  duration_ms: z.number().nonnegative().max(86_400_000).optional().catch(undefined),
 });
 const namedTool = itemBase.extend({
   type: z.enum(['function_call', 'mcp_call']),
@@ -34,6 +40,14 @@ export interface OperatorItem {
   text: string;
   final: boolean;
   callFingerprint?: string;
+  activity?: OperatorActivity;
+}
+
+function commandText(item: z.infer<typeof command>, label: string): string {
+  if (item.status === 'failed')
+    return `${label} · Failed${item.exit_code === undefined ? '' : ` (exit ${String(item.exit_code)})`}. This step did not succeed; the agent may try another approach. This alone does not mean preparation stopped.`;
+  if (item.status === 'in_progress') return `${label} · In progress`;
+  return `${label} · ${item.status === 'incomplete' ? 'Interrupted' : 'Completed'}`;
 }
 export const operatorText = (value: string): string =>
   /\bsk-|\bBearer\s+[A-Za-z0-9._~-]{8,}|-----BEGIN [A-Z ]*PRIVATE KEY/i.test(value)
@@ -171,16 +185,21 @@ export class OperatorItems {
   private tool(raw: unknown, type: string): OperatorItem | null {
     if (type === 'command_execution') {
       const item = command.parse(raw);
+      const label = operatorCommandLabel(item.command);
+      const activity: OperatorActivity = {
+        tool: 'workspace-command',
+        label,
+        status: item.status,
+        turnId: item.turn_id,
+        ...(item.duration_ms === undefined ? {} : { durationMs: item.duration_ms }),
+        ...(item.exit_code === undefined ? {} : { exitCode: item.exit_code }),
+      };
       return {
         id: item.id,
         kind: 'tool',
-        text:
-          item.status === 'in_progress'
-            ? 'Agent is using a tool.'
-            : item.status === 'failed'
-              ? 'A tool call failed. Check the agent’s update and evidence before continuing.'
-              : 'Tool activity ended. Review the agent’s explanation and evidence for the outcome.',
+        text: commandText(item, label),
         final: item.status !== 'in_progress',
+        activity,
       };
     }
     if (type === 'function_call' || type === 'mcp_call') return this.namedTool(raw, type);
@@ -215,9 +234,15 @@ export class OperatorItems {
       kind: 'tool',
       text:
         item.name === 'ask_operator'
-          ? 'The agent could not complete a question request. Check the agent’s update before continuing.'
-          : `${label} · ${status}`,
+          ? 'Ask operator · Failed. No new answer request was confirmed by this call.'
+          : `${label} · ${status}${item.status === 'failed' ? '. This call did not succeed; later activity may show a corrected attempt. It does not by itself establish missing evidence or denied access.' : ''}`,
       final: item.status !== 'in_progress',
+      activity: {
+        tool: type === 'mcp_call' ? 'mcp' : 'function',
+        label,
+        status: item.status,
+        turnId: item.turn_id,
+      },
     };
   }
   private message(raw: unknown, live: boolean): OperatorItem | null {
@@ -229,7 +254,7 @@ export class OperatorItems {
     if (live && !completed && !this.items.has(item.id)) this.liveText.add(item.id);
     return {
       id: item.id,
-      kind: item.phase === 'commentary' ? 'commentary' : 'final',
+      kind: item.phase === 'final_answer' ? 'final' : 'commentary',
       text:
         !live && !completed
           ? 'Agent is writing an update…'

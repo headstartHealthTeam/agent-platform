@@ -8,6 +8,11 @@ export interface ExactEvidenceReference {
 }
 export type EvidenceOrigin =
   | {
+      /** Receipt attests operator supply, not document authenticity or factual correctness. */
+      kind: 'operator-upload';
+      attachmentId: string;
+    }
+  | {
       kind: 'headstart-knowledge';
       itemId: string;
       revision: string;

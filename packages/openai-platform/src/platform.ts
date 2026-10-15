@@ -36,7 +36,7 @@ import {
 } from './operations.js';
 import { OperatorItems } from './operator-items.js';
 import { pendingFunctionCalls } from './pending-functions.js';
-import { transferResearchFile } from './research-file-transfer.js';
+import { transferResearchFile, transferWorkspaceFile } from './research-file-transfer.js';
 import { prepareRuntimeUpload } from './runtime-upload.js';
 
 export { fingerprint } from './fingerprint.js';
@@ -144,6 +144,15 @@ function pageData(page: { data: { id: string | null }[]; has_more: boolean }): u
 export class OpenAIPlatform {
   readonly #client: OpenAI;
   readonly #config: RuntimeConfig;
+
+  public async stageWorkspaceFile(
+    environmentId: string,
+    file: AgentResearchFileTransfer,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentResearchFileReceipt> {
+    await this.preflight();
+    return transferWorkspaceFile(this.#client, environmentId, file, beforeDispatch);
+  }
 
   public async stageResearchFile(
     environmentId: string,

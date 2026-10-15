@@ -191,6 +191,21 @@ export const preparationOutputSchema = credentialingOutputSchema.extend({
       'Generated review aids, retained separately from source evidence and payer attachments. Exact files must be queued and retained before publication. Their existence does not establish readiness or verification.'
     ),
   opsReview: opsReviewSchema.optional(),
+  executionLimitations: z
+    .array(
+      z
+        .object({
+          id: reference,
+          kind: z.literal('public-research-incomplete'),
+          message: z.string().min(1).max(1000),
+        })
+        .strict()
+    )
+    .max(100)
+    .optional()
+    .describe(
+      'Copy the exact application-owned executionLimitations from current review context. Keep these technical failures visible in the review package, standalone reports and archive provenance; useful fallback work does not erase them.'
+    ),
   questions: z.array(
     credentialingOutputSchema.shape.questions.element.extend({
       review: opsQuestionSchema.optional(),

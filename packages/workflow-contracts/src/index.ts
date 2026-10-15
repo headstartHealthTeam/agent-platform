@@ -28,8 +28,18 @@ export type {
   AgentPublicResearchRequest,
   AgentResearchFileTransfer,
   AgentResearchFileReceipt,
+  AgentResearchTransferDiagnostic,
   AgentPublicResearchPort,
 } from './public-research.js';
+export { agentResearchTransferDiagnostic } from './public-research.js';
+export {
+  publicResearchManifestLimits,
+  parsePublicResearchManifest,
+  AgentPublicResearchManifestError,
+  type AgentPublicResearchManifest,
+  type AgentPublicResearchFile,
+  type PublicResearchManifestCode,
+} from './public-research-manifest.js';
 
 export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from './functions.js';
 export type {
@@ -49,6 +59,9 @@ export type {
   AgentArtifact,
   AgentArtifactPort,
   AgentArtifactFailureCode,
+  AgentWorkspaceFile,
+  AgentWorkspaceFileReceipt,
+  AgentWorkspaceFilesPort,
 } from './artifacts.js';
 export type {
   AgentCapabilityFiles,
@@ -82,6 +95,7 @@ export type {
   OperatorDelivery,
   OperatorSnapshot,
   OperatorItem,
+  OperatorActivity,
   OperatorItemKind,
   OperatorStatus,
   OperatorHistoryCursor,

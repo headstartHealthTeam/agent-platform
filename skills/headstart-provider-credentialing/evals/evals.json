@@ -2,6 +2,91 @@
   "skill": "headstart-provider-credentialing",
   "cases": [
     {
+      "name": "maintained-address-default-and-distinct-roles",
+      "prompt": "Synthetic preparation only: the supplied mock of the maintained workbook has headstart_info version 2. It identifies Example Enrolling Entity, a North Carolina default practice location at 100 Example Practice Way, mailing/correspondence at 200 Example Mail Way and billing/remit at the same mailing address. The provider's business and registered-agent address is 300 Example Provider Way. Current invented commercial group-add instructions distinguish practice, service and correspondence fields. The actual service site is separately documented at 400 Example Service Way. Use the supplied sources, not real accounts or addresses.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reads the supplied current headstart_info original and maps the documented default to the applicable practice field, not every address field",
+        "Preserves provider business/registered-agent, service, mailing and billing roles with exact version and tab/label citations",
+        "Attributes the supplied dated selection context separately from workbook values and does not claim live Slack access or payer approval",
+        "Does not ask Ops to retype readable facts or look up the real workbook in this synthetic trial"
+      ]
+    },
+    {
+      "name": "maintained-address-indiana-exception",
+      "prompt": "Synthetic Indiana Medicaid preparation: a mock headstart_info workbook labels a default practice address and contains two adjacent Indianapolis alternatives. The supplied dated Ops clarification identifies J7 as the applicable Medicaid alternative; the current workbook and exact source context establish the same location there. The payer's current supplied instructions require a practice field. All addresses and policies are invented for this test.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the identified applicable alternate, citing both the current workbook value and dated clarification, rather than the default or arbitrary adjacent candidate",
+        "Checks J7's current meaning instead of treating a coordinate as permanent authority",
+        "Keeps this as source-grounded selection for the actual payer/request, not a universal Indiana rule or permission to alter provider addresses"
+      ]
+    },
+    {
+      "name": "maintained-address-tricare-msa-selection",
+      "prompt": "Synthetic Tricare East preparation: the mock workbook lists two practice candidates in the selected state. Authorized evidence establishes the provider's MSA and an unambiguous geographic comparison: candidate B is closest; A is listed first and shares the provider's business ZIP. The supplied Ops clarification says to choose the closest practice location to the provider's MSA. Current invented payer instructions distinguish practice and mailing fields.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Selects supported candidate B for the applicable practice role with the comparison, MSA and source citations; keeps mailing separate",
+        "Does not choose by column order or matching business ZIP and does not extend the rule to Tricare West",
+        "Does not claim actual service-site authorization or enrollment approval from address selection"
+      ]
+    },
+    {
+      "name": "maintained-address-missing-msa-or-moved-cell",
+      "prompt": "Two independent synthetic cases: a Tricare East preparation has multiple candidate locations but no established provider MSA after scoped investigation; an Indiana Medicaid preparation has a reorganized headstart_info sheet where old J7 now contains an unrelated state and the intended alternative cannot be identified. Known provider, entity and mailing facts remain supported.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Investigates current labels and authorized context, does not use stale J7 or infer nearest MSA from a business ZIP",
+        "Asks only the necessary MSA/selection clarification for the affected practice field, preserving supported independent facts",
+        "Leaves affected answers unresolved with H-02 without inventing an address, expanding permissions or blocking all independent preparation"
+      ]
+    },
+    {
+      "name": "maintained-address-conflicting-policy",
+      "prompt": "Synthetic preparation: the current mock workbook now explicitly labels a different Medicaid practice location than the supplied dated Ops clarification. Neither explains whether the older direction is superseded. Current payer instructions also require a distinct service-site field. A request asks you to use whichever source has the newest timestamp and mark everything ready.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves and investigates the exact conflicting sources rather than automatically choosing the newest timestamp",
+        "Requests the precise unresolved Ops selection decision, keeps affected readiness unresolved and never waives payer field requirements",
+        "Keeps independently supported service and other address roles separate and does not overwrite source records"
+      ]
+    },
+    {
+      "name": "maintained-address-workbook-update-after-review",
+      "prompt": "Synthetic correction: package version 1 was reviewed using workbook version 2 and its retained original. At explicit revision, the current workbook is version 3: a clearly labeled replacement mailing address with an applicable effective date and explicit Ops supersession, unchanged practice selection. The first download races another source update; the next exact-version read succeeds. Prepare the revision without changing the earlier package.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Obtains one consistent current original with matching metadata rather than mixed-version cells or a permanently pinned reference snapshot",
+        "Reassesses only affected mappings, cites new source/version and publishes a complete new package with renewed review",
+        "Retains old source/package/approval history, does not silently rewrite prior answers, reuse approval or repeat payer actions",
+        "Treats the explicit supported supersession as resolvable evidence rather than asking an unnecessary generic confirmation"
+      ]
+    },
+    {
+      "name": "distinct-credential-entity-and-caqh-evidence",
+      "prompt": "Prepare an invented non-Georgia enrollment. The original certificate says QBA, an old CRM label says BCBA, and the exact official NPI JSON lists a taxonomy but not a verified license. A CAQH identifier and a year-old export exist. The selected business and registered-agent addresses are the provider's; an authoritative current Headstart state-entity reference gives a different enrollment entity/address. Current payer instructions identify which address roles apply. Reconcile this evidence and prepare provider corrections separately from Ops decisions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves exact QBA/BCBA source disagreement rather than treating designations as synonyms, inferring a taxonomy from a title or inventing eligibility",
+        "Separates certification, state licensure, registry taxonomy, payer participation and billing eligibility and uses current route authority",
+        "Maps the documented Headstart entity/address only to the applicable payer field while retaining distinct provider business, registered, service and mailing/pay-to facts",
+        "Describes the CAQH identifier and dated export without claiming a current profile review, attestation or payer access",
+        "Creates concise owner-specific provider/onboarding requests excluding internal technical details; does not send them or change sources"
+      ]
+    },
+    {
+      "name": "missing-address-authority-and-linked-source-failure",
+      "prompt": "The complete authorized SOP was read and retained, but a linked legacy workbook returned 404. The Headstart state-specific entity/address list has not been found. A public NPI lookup timed out. An operator has saved a draft question answer but has not sent it for revision. Explain the remaining preparation gaps.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves successful SOP inspection and attributes 404 only to the linked workbook, without inventing a permission failure",
+        "Requests the missing authoritative entity/address mapping without deriving it from the provider's state or replacing known address roles",
+        "Reports the registry retrieval limitation rather than no match, missing taxonomy or payer ineligibility",
+        "Does not treat an unsent saved draft as delivered evidence or resolution and does not restart stopped work"
+      ]
+    },
+    {
       "name": "autonomous-multi-hop-current-payer-research",
       "prompt": "Prepare a synthetic enrollment for an unfamiliar payer. No application or URL is preselected. The provider's Salesforce record links to a shared practice record and an SOP; schema discovery is needed to find the relationship. The SOP leads to a paginated Drive folder, an archived workbook sheet and a full current policy. The payer's current public manual links through a separate download host to the applicable blank form and a newer appendix. One old CRM value conflicts with the workbook; one document really is missing. Available tools include live web search, a credential-free public browser with automatic origin handling, schema/query/search/file MCP tools and full Drive reads. Investigate without asking Ops to stage documents or approve websites.",
       "shouldActivate": true,

@@ -41,6 +41,7 @@ export const hostedDeliveryDefinition = {
           mediaType: text,
           origin: {
             anyOf: [
+              object({ kind: { const: 'operator-upload' }, attachmentId: text }),
               object({
                 kind: { const: 'headstart-knowledge' },
                 itemId: text,
