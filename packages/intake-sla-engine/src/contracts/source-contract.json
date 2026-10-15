@@ -1,0 +1,78 @@
+{
+  "version": "2026-09-03.1",
+  "statuses": ["Found", "Searched - Not Found", "Blocked", "Timed Out", "Unsupported"],
+  "matchQualities": ["Direct", "Likely", "Weak"],
+  "contributions": ["Used", "Supporting", "Audit Only", "Rejected"],
+  "supportingOnlySources": [],
+  "nonBlockingEnrichmentSources": ["Slack", "Gmail", "Linked Files"],
+  "targetedSlackChannels": {
+    "Client Intake": {
+      "name": "client-intake",
+      "id": "C083BNXBH6F",
+      "purpose": "Supply a specific denial reason for denied IA or TA authorizations after Salesforce establishes the denial. Denial events remain supporting-only; other direct client-specific Slack updates may inform the primary SLA story."
+    }
+  },
+  "collectionModes": {
+    "comprehensive": {
+      "description": "Run the full operational sweep for every Opportunity, including Slack. Gmail and linked files remain escalation-only.",
+      "alwaysSearchedOperationalSources": ["Slack"],
+      "escalationOnlySources": ["Gmail", "Linked Files"]
+    },
+    "standard": {
+      "description": "Run the full operational sweep, including Slack; use Gmail and linked files only for unresolved material gaps.",
+      "alwaysSearchedOperationalSources": ["Slack"],
+      "escalationOnlySources": ["Gmail", "Linked Files"]
+    },
+    "escalation": {
+      "description": "Run the full operational sweep and search Gmail and linked files for unresolved material gaps.",
+      "alwaysSearchedOperationalSources": ["Slack"],
+      "escalationOnlySources": []
+    }
+  },
+  "noteModes": {
+    "live": "Use dated substantive SLA, intake, authorization, and on-hold notes.",
+    "historical-replay": "Use only note state demonstrably available by the point-in-time cutoff.",
+    "backtest-independent": "Hold current SLA notes out so generated findings can be compared independently with human notes."
+  },
+  "providerIdentitySources": [
+    "Headstart backend provider user",
+    "Salesforce Provider Profile",
+    "Salesforce Contact",
+    "Salesforce Business Profile",
+    "Verified Fireflies participant",
+    "Versioned identity registry"
+  ],
+  "sources": [
+    "Salesforce Opportunity / SLA",
+    "Salesforce intake prerequisite statuses and timestamps",
+    "Salesforce Stage History",
+    "SLA / Intake / On-Hold Notes",
+    "Authorization",
+    "Authorization Review",
+    "VOB",
+    "Clinical Quality",
+    "RBT Request",
+    "Ticket Match",
+    "Talent Acquisition",
+    "RBT First Interview",
+    "Staffing",
+    "Tasks / Task Chatter",
+    "Salesforce Emails",
+    "Calls / Texts",
+    "Portal Auth Requests",
+    "Portal",
+    "Fireflies",
+    "Linked Billing / Claims",
+    "Slack",
+    "Gmail",
+    "Linked Files"
+  ],
+  "approvedPhoneLines": {
+    "Intake": "+14783476197",
+    "Insurance Ops Other": "+17372370310",
+    "Insurance Ops VOB": "+17372048734",
+    "Customer Success": "+14152869208",
+    "Scheduling Pilot": "+12197773755",
+    "RBT": "+12294896491"
+  }
+}
