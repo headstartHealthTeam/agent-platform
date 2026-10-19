@@ -74,6 +74,7 @@ export type {
   AgentLaunchIdentity,
   AgentSessionCandidate,
   AgentLaunchPreflight,
+  AgentPreparedSessionStartResult,
   AgentHostedCredentialFile,
   AgentHostedCredentialFiles,
   AgentCredentialVault,

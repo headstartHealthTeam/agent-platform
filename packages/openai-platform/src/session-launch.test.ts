@@ -95,6 +95,27 @@ function setup(): {
   };
 }
 describe('application session launch', () => {
+  it('creates a hosted restoration workspace with explicit deferred input and no turn request', async () => {
+    const f = setup();
+    const port = new SessionLaunchPort(
+      f.platform,
+      target,
+      { ...f.settings, environment: { type: 'openai_hosted' } },
+      Date.now() + 60_000,
+      ['publish']
+    );
+    expect(
+      await port.createSession({ ...request, input: null }, undefined, createOptions)
+    ).toMatchObject({ status: 'created' });
+    const action = actionSchema.parse(f.platform.apply.mock.calls[0]?.[0]);
+    if (action.operation !== 'sessions.create') throw new Error('Expected creation');
+    expect(action.body.input).toBeUndefined();
+    expect(action.body.metadata['deferred_input']).toBe(request.requestId);
+    expect(
+      await f.port.createSession({ ...request, input: null }, undefined, createOptions)
+    ).toEqual({ status: 'not-attempted', reason: 'validation' });
+    expect(f.platform.apply).toHaveBeenCalledOnce();
+  });
   it('rechecks application-owned launch authority after durable dispatch admission', async () => {
     const f = setup();
     const authorize = vi.fn<AgentInferenceAuthorizer['authorize']>().mockResolvedValue(true);

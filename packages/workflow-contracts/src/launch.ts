@@ -1,3 +1,4 @@
+import type { AgentWorkspaceFile, AgentWorkspaceFileReceipt } from './artifacts.js';
 import type { AgentCredentialProtection } from './credential-protection.js';
 import type { AgentLaunchDiagnostic } from './launch-diagnostic.js';
 import type { OperatorBinding } from './operator.js';
@@ -34,7 +35,9 @@ export interface AgentLaunchRequest {
   requestId: string;
   workflowRevision: string;
   definition: AgentLaunchDefinition;
-  input: string;
+  /** Explicit null creates a hosted workspace without starting inference. The owner must retain
+   * its receipt, restore inputs, and journal startPreparedSession before the first turn. */
+  input: string | null;
 }
 
 export interface AgentSessionReceipt {
@@ -89,6 +92,9 @@ export interface AgentSessionCandidate extends AgentSessionReceipt {
 export interface AgentLaunchPreflight {
   target: string;
 }
+
+export type AgentPreparedSessionStartResult =
+  { status: 'accepted' } | { status: 'not-attempted' } | { status: 'unknown' };
 
 /** Read-only provider observation. Disconnection is not proof that a workspace is lost.
  * No error payload, installed files, credentials, reconnect action or replay authority is exposed.
@@ -201,6 +207,20 @@ export interface AgentLaunchPort {
    * evidence of expiry and never authorizes replacement. No session, input or keep-alive is sent.
    */
   inspectEnvironment?(receipt: AgentSessionReceipt): Promise<AgentEnvironmentSnapshot>;
+  /** Restore exact retained inputs into a connected, not-yet-started hosted session. This never
+   * starts inference. The owner journals each file dispatch and preserves uncertain outcomes. */
+  stagePreparedSessionFile?(
+    receipt: AgentSessionReceipt,
+    file: AgentWorkspaceFile,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentWorkspaceFileReceipt>;
+  /** One initial-input attempt after complete restoration. Uses the receipt's stable message
+   * identity; an uncertain result is reconciled, never replaced with another create/input. */
+  startPreparedSession?(
+    receipt: AgentSessionReceipt,
+    input: string,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentPreparedSessionStartResult>;
   /** Resolves only after metadata-verified provider quiescence (idle/failed), not event acceptance.
    * No polling: unconfirmed cleanup throws for durable reconciliation. Quiescence is neither
    * deletion nor a permanent session stop; the application must retain its own no-input intent.

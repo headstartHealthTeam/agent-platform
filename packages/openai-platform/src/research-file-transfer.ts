@@ -100,6 +100,19 @@ export async function transferWorkspaceFile(
   return transferFile(client, environmentId, file, beforeDispatch, 10 * 1024 * 1024);
 }
 
+/** Complete retained originals/history, isolated from runtime files and earlier workspaces. */
+export async function transferPreparedSessionFile(
+  client: OpenAI,
+  environmentId: string,
+  file: AgentResearchFileTransfer,
+  beforeDispatch: () => Promise<void>
+): Promise<AgentResearchFileReceipt> {
+  z.string()
+    .regex(/^\/workspace\/restored-context\/[a-f0-9-]{36}\/[0-9]+-[a-f0-9]{64}$/)
+    .parse(file.path);
+  return transferFile(client, environmentId, file, beforeDispatch, 50 * 1024 * 1024);
+}
+
 async function transferFile(
   client: OpenAI,
   environmentId: string,

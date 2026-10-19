@@ -29,6 +29,9 @@ import type {
   AgentPublicResearchRequest,
   AgentResearchFileTransfer,
   AgentResearchFileReceipt,
+  AgentWorkspaceFile,
+  AgentWorkspaceFileReceipt,
+  AgentPreparedSessionStartResult,
 } from '@headstart-health/workflow-contracts';
 import { z } from 'zod';
 
@@ -52,6 +55,7 @@ import { OperatorTurns } from './operator-turns.js';
 import { pendingFunctionCalls } from './pending-functions.js';
 import type { OpenAIPlatform } from './platform.js';
 import { fingerprint, planAction, InputNotSteerableError } from './platform.js';
+import { PreparedSessionPort } from './prepared-session.js';
 import { publicBrowserDecision } from './public-browser-policy.js';
 import { publicResearchLaunch } from './public-research.js';
 import { publicResearchSettings } from './research-launch.js';
@@ -70,7 +74,12 @@ const artifactIdentity = 'artifact-identity';
 const sessionGet = 'sessions.get' as const;
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
 type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight' | 'openOperatorObservation'> &
-  Partial<Pick<OpenAIPlatform, 'readHostedArtifact' | 'stageResearchFile' | 'stageWorkspaceFile'>>;
+  Partial<
+    Pick<
+      OpenAIPlatform,
+      'readHostedArtifact' | 'stageResearchFile' | 'stageWorkspaceFile' | 'stagePreparedSessionFile'
+    >
+  >;
 function operatorStatus(
   status: ReturnType<typeof verifiedOperatorRoots>['root']['status'],
   hasQuestions: boolean
@@ -264,6 +273,38 @@ export class OperatorRuntimePort {
   inspectEnvironment(receipt: AgentSessionReceipt): Promise<AgentEnvironmentSnapshot> {
     this.requireOpen();
     return this.launchPort().inspectEnvironment(receipt);
+  }
+  stagePreparedSessionFile(
+    receipt: AgentSessionReceipt,
+    file: AgentWorkspaceFile,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentWorkspaceFileReceipt> {
+    this.requireOpen();
+    return new PreparedSessionPort(this.platform, this.target, this.inferenceAuthority).stage(
+      receipt,
+      file,
+      async () => {
+        this.requireOpen();
+        await beforeDispatch();
+        this.requireOpen();
+      }
+    );
+  }
+  startPreparedSession(
+    receipt: AgentSessionReceipt,
+    input: string,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentPreparedSessionStartResult> {
+    this.requireOpen();
+    return new PreparedSessionPort(this.platform, this.target, this.inferenceAuthority).start(
+      receipt,
+      input,
+      async () => {
+        this.requireOpen();
+        await beforeDispatch();
+        this.requireOpen();
+      }
+    );
   }
   cancelSession(receipt: AgentSessionReceipt): Promise<void> {
     this.requireOpen();

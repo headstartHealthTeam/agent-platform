@@ -285,6 +285,11 @@ export class SessionLaunchPort implements AgentLaunchPort {
     id.parse(request.workflowRevision);
     const settings = launchSettings.parse(this.settings);
     if (
+      request.input === null &&
+      z.object({ type: z.string() }).parse(settings.environment).type !== 'openai_hosted'
+    )
+      throw new Error('Deferred initial input requires hosted execution');
+    if (
       typeof this.inferenceAuthority !== 'number' &&
       z.object({ type: z.string() }).parse(settings.environment).type !== 'openai_hosted'
     )
@@ -313,10 +318,11 @@ export class SessionLaunchPort implements AgentLaunchPort {
           ],
         },
         environment: settings.environment,
-        input: request.input,
+        ...(request.input === null ? {} : { input: request.input }),
         metadata: {
           workflow_revision: request.workflowRevision,
           launch_request: request.requestId,
+          ...(request.input === null ? { deferred_input: request.requestId } : {}),
           ...(request.definition.research === 'public-browser'
             ? { research_mode: 'public-browser' }
             : {}),
