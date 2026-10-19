@@ -1,3 +1,4 @@
+import type { AgentInferenceAuthorizer } from '@headstart-health/workflow-contracts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { resolveRuntimeConfig } from './config.js';
@@ -48,7 +49,13 @@ const approval = {
 };
 
 function fixture(
-  options: { mode?: string; status?: string; expiry?: number; failPost?: boolean } = {}
+  options: {
+    mode?: string;
+    status?: string;
+    expiry?: number;
+    failPost?: boolean;
+    authority?: AgentInferenceAuthorizer;
+  } = {}
 ): {
   port: OperatorRuntimePort;
   requests: Request[];
@@ -96,7 +103,7 @@ function fixture(
     port: new OperatorRuntimePort(
       new OpenAIPlatform(config, 'synthetic-invalid-key', fetchImplementation),
       config.target,
-      options.expiry ?? Date.now() + 60000
+      options.authority ?? options.expiry ?? Date.now() + 60000
     ),
   };
 }
@@ -106,6 +113,30 @@ afterEach(() => {
 });
 
 describe('automatic public browser request delivery', () => {
+  it('rechecks application authority after journaling and never posts a revoked decision', async () => {
+    const authorize = vi.fn<AgentInferenceAuthorizer['authorize']>().mockResolvedValue(true);
+    const { port, requests } = fixture({ authority: { authorize } });
+    try {
+      const [pending] = await port.pendingPublicBrowserRequests(binding);
+      if (!pending) throw new Error('Missing request');
+      await expect(
+        port.answerPublicBrowserRequest(binding, pending, async () => {
+          authorize.mockResolvedValue(false);
+        })
+      ).rejects.toThrow('No current inference authorization');
+      expect(authorize).toHaveBeenCalledTimes(3);
+      expect(authorize).toHaveBeenLastCalledWith({
+        operation: 'public-browser',
+        binding,
+        turnId: pending.turnId,
+        requestId: pending.requestId,
+        fingerprint: pending.fingerprint,
+      });
+      expect(requests.every((request) => request.method === 'GET')).toBe(true);
+    } finally {
+      port.close();
+    }
+  });
   it('recovers current requests read-only and sends the automatically derived decision after the owner journals it', async () => {
     const { port, requests } = fixture();
     const [pending] = await port.pendingPublicBrowserRequests(binding);

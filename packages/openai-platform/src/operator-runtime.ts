@@ -13,6 +13,7 @@ import type {
   AgentSessionCreateResult,
   AgentLaunchPreflight,
   AgentLaunchIdentity,
+  AgentInferenceRequest,
   AgentLaunchCandidateResult,
   AgentLaunchCandidatePage,
   OperatorHistoryCursor,
@@ -34,6 +35,11 @@ import { pendingBrowserApprovals } from './browser-approvals.js';
 import type { Target } from './config.js';
 import { exportConversation, deleteConversation } from './conversation-archive.js';
 import { HostedArtifactError } from './hosted-artifact-error.js';
+import {
+  requireInferenceAuthority,
+  noInferenceAuthority,
+  type InferenceAuthority,
+} from './inference-authority.js';
 import type { Action } from './operations.js';
 import { operatorHistory } from './operator-history.js';
 import type { OperatorItems } from './operator-items.js';
@@ -58,8 +64,8 @@ export type {
 } from '@headstart-health/workflow-contracts';
 
 const wrongTarget = 'Wrong runtime target';
+const publicBrowser = 'public-browser';
 const artifactIdentity = 'artifact-identity';
-const noInferenceAuthority = 'No current bounded inference authorization';
 const sessionGet = 'sessions.get' as const;
 const sessionSchema = z.object({ id: z.string(), metadata: z.record(z.string(), z.string()) });
 type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight' | 'openOperatorObservation'> &
@@ -95,12 +101,14 @@ export class OperatorRuntimePort {
   constructor(
     private readonly platform: Platform,
     private readonly target: Target,
-    private readonly billableUntil = 0,
+    private readonly inferenceAuthority: InferenceAuthority = 0,
     private readonly appFunctions: readonly string[] = [],
     private readonly launchSettings?: unknown,
     private readonly executor?: SessionExecutor,
     private readonly credentialFiles?: AgentHostedCredentialFiles
   ) {
+    if (executor && typeof inferenceAuthority !== 'number')
+      throw new Error('Self-hosted execution requires bounded inference authorization');
     z.array(z.string().regex(/^[A-Za-z0-9_-]{1,100}$/))
       .max(30)
       .parse(appFunctions);
@@ -108,12 +116,12 @@ export class OperatorRuntimePort {
       throw new Error('Human questions are not application functions');
   }
   private launchPort(request?: AgentLaunchRequest): SessionLaunchPort {
-    const publicResearch = request?.definition.research === 'public-browser';
+    const publicResearch = request?.definition.research === publicBrowser;
     return new SessionLaunchPort(
       this.platform,
       this.target,
       publicResearch ? publicResearchSettings(this.launchSettings) : this.launchSettings,
-      this.billableUntil,
+      this.inferenceAuthority,
       this.appFunctions,
       publicResearch ? undefined : this.executor,
       publicResearch ? undefined : this.credentialFiles
@@ -397,7 +405,7 @@ export class OperatorRuntimePort {
     if (binding.target !== fingerprint(this.target)) throw new Error(wrongTarget);
     const { session, root } = await this.turns.read(this.platform, binding);
     this.requireOpen();
-    z.object({ metadata: z.object({ research_mode: z.literal('public-browser') }) }).parse(session);
+    z.object({ metadata: z.object({ research_mode: z.literal(publicBrowser) }) }).parse(session);
     if (['completed', 'cancelled', 'failed'].includes(root.status)) return [];
     return pendingBrowserApprovals(session, { sessionId: binding.sessionId, turnId: root.id });
   }
@@ -406,7 +414,14 @@ export class OperatorRuntimePort {
     request: AgentBrowserRequest,
     beforeDispatch: (decision: AgentPublicBrowserDecision) => Promise<void>
   ): Promise<AgentPublicBrowserDecision> {
-    if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
+    const authority: AgentInferenceRequest = {
+      operation: publicBrowser,
+      binding,
+      turnId: request.turnId,
+      requestId: request.requestId,
+      fingerprint: request.fingerprint,
+    };
+    await requireInferenceAuthority(this.inferenceAuthority, authority);
     const current = (await this.pendingPublicBrowserRequests(binding)).find(
       (candidate) =>
         candidate.fingerprint === request.fingerprint &&
@@ -432,10 +447,10 @@ export class OperatorRuntimePort {
       {
         beforeDispatch: async () => {
           this.requireOpen();
-          if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
+          await requireInferenceAuthority(this.inferenceAuthority, authority);
           await beforeDispatch(decision);
           this.requireOpen();
-          if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
+          await requireInferenceAuthority(this.inferenceAuthority, authority);
         },
       }
     );
@@ -446,7 +461,14 @@ export class OperatorRuntimePort {
     call: AgentFunctionCall,
     result: AgentFunctionResult
   ): Promise<void> {
-    if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
+    const authority = {
+      operation: 'function-result' as const,
+      binding,
+      turnId: call.turnId,
+      callId: call.callId,
+      fingerprint: call.fingerprint,
+    };
+    await requireInferenceAuthority(this.inferenceAuthority, authority);
     const pending = (await this.pendingFunctions(binding)).find(
       (item) =>
         item.callId === call.callId &&
@@ -466,11 +488,16 @@ export class OperatorRuntimePort {
       result,
     };
     this.requireOpen();
-    await this.platform.apply(action, {
-      apply: true,
-      digest: planAction(this.target, action).digest,
-      allowBillable: true,
-    });
+    await this.platform.apply(
+      action,
+      { apply: true, digest: planAction(this.target, action).digest, allowBillable: true },
+      {
+        beforeDispatch: async () => {
+          this.requireOpen();
+          await requireInferenceAuthority(this.inferenceAuthority, authority);
+        },
+      }
+    );
   }
   async send(binding: OperatorBinding, command: OperatorCommand): Promise<OperatorDelivery> {
     return this.dispatch(binding, command, false);
@@ -496,11 +523,25 @@ export class OperatorRuntimePort {
         : await this.inputAction(binding, command, recovering);
     this.requireOpen();
     try {
-      await this.platform.apply(action, {
-        apply: true,
-        digest: planAction(this.target, action).digest,
-        allowBillable: command.kind !== 'stop',
-      });
+      await this.platform.apply(
+        action,
+        {
+          apply: true,
+          digest: planAction(this.target, action).digest,
+          allowBillable: command.kind !== 'stop',
+        },
+        {
+          beforeDispatch: async () => {
+            this.requireOpen();
+            if (command.kind !== 'stop')
+              await requireInferenceAuthority(this.inferenceAuthority, {
+                operation: 'input',
+                binding,
+                commandId: command.id,
+              });
+          },
+        }
+      );
     } catch (error) {
       if (
         ['guidance', 'continue'].includes(command.kind) &&
@@ -536,7 +577,11 @@ export class OperatorRuntimePort {
     command: OperatorCommand,
     recovering: boolean
   ): Promise<Action> {
-    if (Date.now() >= this.billableUntil) throw new Error(noInferenceAuthority);
+    await requireInferenceAuthority(this.inferenceAuthority, {
+      operation: 'input',
+      binding,
+      commandId: command.id,
+    });
     // Subscribe before sending, and recover the latest root rather than replying to the launch turn.
     const current = await this.snapshot(binding);
     if (command.kind === 'continue') {

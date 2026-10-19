@@ -198,13 +198,24 @@ Subscribe/reconcile before input. An exact HTTP 400/409 `active_turn_not_steerab
 returned as `rejected/not_steerable`; preserve that result and allow the pending exact answer rather
 than automatically retrying or interrupting the agent. Other failures remain uncertain. Delivery
 does not prove the agent acknowledged or used a correction. Messages and function replies require
-a bounded caller-authorized inference window;
-observation and cancellation do not create one. A successful send means API acceptance, not a
+current inference authority; observation and cancellation do not create it. A successful send means API acceptance, not a
 completed action. Initial start uses the separate launch boundary below. Local compute uses the
 retained provisioner below. It is not safe to call its write
 methods directly from an untrusted agent. The owner serializes
 actual provider I/O per run, including Stop, and must not release that serialization on a local
 timeout while a detached send can still run. SDK requests have bounded timeouts and no automatic retries.
+
+Adapter `0.15.0` accepts either a finite `billableUntil` for supervised trials or a trusted
+`AgentInferenceAuthorizer` supplied by the owning application. These modes are mutually exclusive.
+The callback receives identity-only launch, binding, command or pending-call correlation and must
+return explicit `true` from current durable application policy. It is checked again immediately
+before inference dispatch, is never cached, and fails closed with a sanitized error. The owner
+must retain its dispatch serialization and original-actor, Stop, revocation and FIFO checks;
+this callback neither grants source access nor replaces those controls. Do not call remote source
+systems or acquire a competing application dispatch lease from the callback. Self-hosted local
+executors retain their finite deadline; application-owned authority is supported only for hosted
+execution. Stop and read-only recovery remain available after authority expires or is revoked.
+This transport contract does not implement credential renewal or restore a lost hosted workspace.
 
 Observers are coalesced per binding, limited to 20 sessions and closed after 45 seconds without a
 snapshot request. Call `close()` on application teardown. Snapshot and history reads share one

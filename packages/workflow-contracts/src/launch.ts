@@ -51,6 +51,36 @@ export interface AgentLaunchIdentity {
   workflowRevision: string;
 }
 
+/** Application-owned authorization for inference-producing transport, not model instructions.
+ * The owner resolves these immutable identities against its durable records and current policy.
+ * Never pass a model/operator-supplied callback, credential, payload, or database entity here.
+ */
+export type AgentInferenceRequest =
+  | { operation: 'launch'; identity: AgentLaunchIdentity }
+  | { operation: 'input'; binding: OperatorBinding; commandId: string }
+  | {
+      operation: 'function-result';
+      binding: OperatorBinding;
+      turnId: string;
+      callId: string;
+      fingerprint: string;
+    }
+  | {
+      operation: 'public-browser';
+      binding: OperatorBinding;
+      turnId: string;
+      requestId: string;
+      fingerprint: string;
+    }
+  | { operation: 'environment'; receipt: AgentSessionReceipt };
+
+export interface AgentInferenceAuthorizer {
+  /** Only explicit true grants this attempt. Failure/unavailability denies it. Called again at
+   * dispatch; must be idempotent and must not create runs, replay commands or widen authority.
+   */
+  authorize(request: AgentInferenceRequest): Promise<boolean>;
+}
+
 export interface AgentSessionCandidate extends AgentSessionReceipt {
   /** Provider creation time in Unix seconds; never sufficient by itself to claim ownership. */
   createdAt: number;

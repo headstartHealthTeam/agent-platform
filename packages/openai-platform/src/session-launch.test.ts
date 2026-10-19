@@ -1,4 +1,7 @@
-import type { AgentLaunchRequest } from '@headstart-health/workflow-contracts';
+import type {
+  AgentInferenceAuthorizer,
+  AgentLaunchRequest,
+} from '@headstart-health/workflow-contracts';
 import { describe, expect, it, vi, type Mock } from 'vitest';
 
 import { actionSchema, readSchema } from './operations.js';
@@ -92,6 +95,48 @@ function setup(): {
   };
 }
 describe('application session launch', () => {
+  it('rechecks application-owned launch authority after durable dispatch admission', async () => {
+    const f = setup();
+    const authorize = vi.fn<AgentInferenceAuthorizer['authorize']>().mockResolvedValue(true);
+    const port = new SessionLaunchPort(
+      f.platform,
+      target,
+      { ...f.settings, environment: { type: 'openai_hosted' } },
+      { authorize },
+      ['publish']
+    );
+    const beforeDispatch = vi.fn(async () => {
+      authorize.mockResolvedValue(false);
+    });
+    expect(
+      await port.createSession(request, undefined, { ...createOptions, beforeDispatch })
+    ).toEqual({
+      status: 'not-attempted',
+      reason: 'before-dispatch',
+    });
+    expect(beforeDispatch).toHaveBeenCalledOnce();
+    expect(authorize).toHaveBeenLastCalledWith({
+      operation: 'launch',
+      identity: {
+        target: receipt.target,
+        workflowRevision: request.workflowRevision,
+        requestId: request.requestId,
+      },
+    });
+    await expect(port.reconcileEnvironment(receipt, 'stop')).resolves.toBeUndefined();
+  });
+
+  it('does not make self-hosted executor deadlines unbounded', async () => {
+    const f = setup();
+    const authorize = vi.fn<AgentInferenceAuthorizer['authorize']>().mockResolvedValue(true);
+    const port = new SessionLaunchPort(f.platform, target, f.settings, { authorize }, ['publish']);
+    expect(await port.createSession(request, undefined, createOptions)).toEqual({
+      status: 'not-attempted',
+      reason: 'validation',
+    });
+    expect(f.platform.apply).not.toHaveBeenCalled();
+  });
+
   it('enables live service-side search without widening the private source network or narrowing MCP tools', async () => {
     const { platform, settings } = setup();
     const environment = {
