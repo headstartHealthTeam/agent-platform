@@ -113,6 +113,14 @@ describe('receipt-bound pre-turn restoration', () => {
       idempotencyKey: `initial-${receipt.requestId}`,
     });
     expect(f.authority.authorize).toHaveBeenCalledTimes(2);
+    expect(f.authority.authorize).toHaveBeenNthCalledWith(1, {
+      operation: 'prepared-start',
+      receipt,
+    });
+    expect(f.authority.authorize).toHaveBeenNthCalledWith(2, {
+      operation: 'prepared-start',
+      receipt,
+    });
   });
   it.each(['pending', 'ready', 'disconnected', 'expired', 'failed', 'suspended'])(
     'does not transfer or infer while workspace is %s',
@@ -141,6 +149,15 @@ describe('receipt-bound pre-turn restoration', () => {
       expect(f.platform.stagePreparedSessionFile).not.toHaveBeenCalled();
     }
   );
+  it('does not infer under environment-reconciliation-only authority', async () => {
+    const f = fixture();
+    f.authority.authorize.mockImplementation(
+      async (request) => request.operation === 'environment'
+    );
+    const before = vi.fn(async () => undefined);
+    expect(await f.port.start(receipt, 'Resume.', before)).toEqual({ status: 'not-attempted' });
+    expect(before).not.toHaveBeenCalled();
+  });
   it('rechecks authorization after the journal and distinguishes an uncertain dispatch', async () => {
     const f = fixture();
     expect(

@@ -71,6 +71,15 @@ describe('exact public originals through Agents API environment Files', () => {
       expect(f.requests.every((request) => !request.url.includes('/sessions/'))).toBe(true);
     }
   );
+  it('rejects a restored path claiming a different digest before dispatch', async () => {
+    const f = fixture(100, false, false, true);
+    const path = f.file.path.slice(0, -64) + '0'.repeat(64);
+    await expect(
+      transferPreparedSessionFile(f.client, 'env_synthetic', { ...f.file, path }, f.before)
+    ).rejects.toThrow('Restored file path is not bound to its digest');
+    expect(f.before).not.toHaveBeenCalled();
+    expect(f.requests).toHaveLength(0);
+  });
   it('does not permit restored evidence to overwrite runtime files or escape its namespace', async () => {
     const f = fixture(100, false, false, true);
     for (const path of [

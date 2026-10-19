@@ -107,9 +107,13 @@ export async function transferPreparedSessionFile(
   file: AgentResearchFileTransfer,
   beforeDispatch: () => Promise<void>
 ): Promise<AgentResearchFileReceipt> {
-  z.string()
+  const suffix = z
+    .string()
     .regex(/^\/workspace\/restored-context\/[a-f0-9-]{36}\/[0-9]+-[a-f0-9]{64}$/)
-    .parse(file.path);
+    .parse(file.path)
+    .slice(-64);
+  if (file.digest !== `sha256:${suffix}`)
+    throw new Error('Restored file path is not bound to its digest');
   return transferFile(client, environmentId, file, beforeDispatch, 50 * 1024 * 1024);
 }
 

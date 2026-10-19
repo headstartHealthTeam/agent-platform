@@ -100,9 +100,15 @@ export class PreparedSessionPort {
         },
         {
           beforeDispatch: async () => {
-            await requireInferenceAuthority(this.authority, { operation: 'environment', receipt });
+            await requireInferenceAuthority(this.authority, {
+              operation: 'prepared-start',
+              receipt,
+            });
             await beforeDispatch();
-            await requireInferenceAuthority(this.authority, { operation: 'environment', receipt });
+            await requireInferenceAuthority(this.authority, {
+              operation: 'prepared-start',
+              receipt,
+            });
             await this.ready(receipt);
             dispatch.crossed = true;
           },

@@ -75,7 +75,8 @@ export type AgentInferenceRequest =
       requestId: string;
       fingerprint: string;
     }
-  | { operation: 'environment'; receipt: AgentSessionReceipt };
+  | { operation: 'environment'; receipt: AgentSessionReceipt }
+  | { operation: 'prepared-start'; receipt: AgentSessionReceipt };
 
 export interface AgentInferenceAuthorizer {
   /** Only explicit true grants this attempt. Failure/unavailability denies it. Called again at
