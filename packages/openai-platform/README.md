@@ -217,6 +217,13 @@ executors retain their finite deadline; application-owned authority is supported
 execution. Stop and read-only recovery remain available after authority expires or is revoked.
 This transport contract does not implement credential renewal or restore a lost hosted workspace.
 
+`inspectEnvironment(receipt)` verifies the exact session target and launch metadata, then uses the
+installed SDK's read-only environment retrieval to return only its ID, hosting type and observed
+status. It remains usable without inference authority. `disconnected` and `suspended` are distinct
+from `expired`; unknown responses, missing resources and transport failures remain unconfirmed.
+The owner must not interpret those failures as permission to replace the session or replay input.
+This observation neither sends a keep-alive nor claims to restore files or renew credentials.
+
 Observers are coalesced per binding, limited to 20 sessions and closed after 45 seconds without a
 snapshot request. Call `close()` on application teardown. Snapshot and history reads share one
 45-second budget per operation, including project checks, stream opening and parallel

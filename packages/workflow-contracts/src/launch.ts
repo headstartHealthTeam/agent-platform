@@ -90,6 +90,18 @@ export interface AgentLaunchPreflight {
   target: string;
 }
 
+/** Read-only provider observation. Disconnection is not proof that a workspace is lost.
+ * No error payload, installed files, credentials, reconnect action or replay authority is exposed.
+ */
+export type AgentEnvironmentSnapshot =
+  | { type: 'none' }
+  | {
+      type: 'openai_hosted' | 'self_hosted';
+      environmentId: string;
+      status:
+        'pending' | 'ready' | 'connected' | 'disconnected' | 'suspended' | 'expired' | 'failed';
+    };
+
 /** Ephemeral trusted deployment input. Real secret bytes are visible inside the hosted sandbox.
  * Never persist with launch intent, put in an output directory, or return in a launch receipt.
  */
@@ -185,6 +197,10 @@ export interface AgentLaunchPort {
   ): Promise<AgentLaunchCandidatePage>;
   /** Recover the first root of the exact owned session; never creates or sends input. */
   inspectSession(receipt: AgentSessionReceipt): Promise<OperatorBinding | null>;
+  /** Optional for older artifacts. Missing support or an unreadable/unknown response is not
+   * evidence of expiry and never authorizes replacement. No session, input or keep-alive is sent.
+   */
+  inspectEnvironment?(receipt: AgentSessionReceipt): Promise<AgentEnvironmentSnapshot>;
   /** Resolves only after metadata-verified provider quiescence (idle/failed), not event acceptance.
    * No polling: unconfirmed cleanup throws for durable reconciliation. Quiescence is neither
    * deletion nor a permanent session stop; the application must retain its own no-input intent.

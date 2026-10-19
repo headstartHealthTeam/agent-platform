@@ -331,6 +331,8 @@ export class OpenAIPlatform {
         return pageData(await agents.sessions.list(request.query, options));
       case 'sessions.get':
         return agents.sessions.retrieve(request.id, options);
+      case 'environments.get':
+        return agents.environments.retrieve(request.id, options);
       case 'sessions.pending-functions':
         return {
           data: pendingFunctionCalls(await agents.sessions.retrieve(request.id, options), {

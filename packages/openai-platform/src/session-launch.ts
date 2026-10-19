@@ -2,6 +2,7 @@ import type {
   AgentLaunchPort,
   AgentLaunchRequest,
   AgentSessionReceipt,
+  AgentEnvironmentSnapshot,
   AgentSessionCredential,
   AgentSessionCredentialDescriptor,
   AgentSessionCreateOptions,
@@ -18,6 +19,7 @@ import { z } from 'zod';
 
 import { bindCapabilityFiles } from './capability-files.js';
 import type { Target } from './config.js';
+import { observeEnvironment } from './environment-observation.js';
 import { bindHostedCredentialFiles, credentialFilePaths } from './hosted-credential-files.js';
 import { exactCredentialHosts } from './hosted-credential-network.js';
 import { runtimeCredentialBindings } from './hosted-credentials.js';
@@ -502,6 +504,9 @@ export class SessionLaunchPort implements AgentLaunchPort {
           workflowRevision: receipt.workflowRevision,
         }
       : null;
+  }
+  async inspectEnvironment(receipt: AgentSessionReceipt): Promise<AgentEnvironmentSnapshot> {
+    return observeEnvironment(this.platform, await this.session(receipt));
   }
   private async session(value: AgentSessionReceipt): Promise<unknown> {
     const receipt = receiptSchema.parse(value);

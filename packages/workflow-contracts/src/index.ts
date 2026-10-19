@@ -70,6 +70,7 @@ export type {
   AgentSessionCredential,
   AgentSessionCredentialDescriptor,
   AgentSessionReceipt,
+  AgentEnvironmentSnapshot,
   AgentLaunchIdentity,
   AgentSessionCandidate,
   AgentLaunchPreflight,

@@ -7,6 +7,7 @@ import type {
   AgentFunctionResult,
   AgentLaunchRequest,
   AgentSessionReceipt,
+  AgentEnvironmentSnapshot,
   AgentSessionCredential,
   AgentSessionCredentialDescriptor,
   AgentSessionCreateOptions,
@@ -259,6 +260,10 @@ export class OperatorRuntimePort {
   inspectSession(receipt: AgentSessionReceipt): Promise<OperatorBinding | null> {
     this.requireOpen();
     return this.launchPort().inspectSession(receipt);
+  }
+  inspectEnvironment(receipt: AgentSessionReceipt): Promise<AgentEnvironmentSnapshot> {
+    this.requireOpen();
+    return this.launchPort().inspectEnvironment(receipt);
   }
   cancelSession(receipt: AgentSessionReceipt): Promise<void> {
     this.requireOpen();
