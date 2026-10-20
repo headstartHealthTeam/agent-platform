@@ -169,6 +169,13 @@ for cross-repository ownership and the interim generated-contract distribution b
 assistant commentary/final text and generic tool-activity notices. They omit private reasoning,
 shell arguments, raw results and routing content. Failed question requests and other failed tools
 produce explicit, sanitized notices; they never invent a pending question or imply business failure.
+Adapter `0.15.1` gives failed `ask_operator` activity its own deterministic identity, distinct from
+the call identity of an already-finalized question. Live observation, reconnect and paginated
+history use the same failure identity. Applications retain the original question/answer unchanged;
+the notice neither proves answer delivery nor grants reply authority. Older failure notices already
+retained under the raw item ID remain historical and may coexist with the new notice after upgrade;
+do not rewrite them or relax immutable-event checks. A cold history read of a failed call recovers
+only its sanitized failure, not an invented previously pending question.
 New messages can stream incrementally; saved
 final items win during recovery. When reconnect misses a message's opening event, show an explicit
 writing placeholder until its complete text arrives rather than guessing overlapping delta offsets.
@@ -290,7 +297,7 @@ workstation credential resolver. Optional local compute does not define the host
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.15.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.15.1`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.

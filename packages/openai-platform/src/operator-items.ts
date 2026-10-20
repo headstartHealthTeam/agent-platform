@@ -211,6 +211,7 @@ export class OperatorItems {
     const item = parsed.data;
     // The separate question projection owns pending question text and reply controls.
     if (item.name === 'ask_operator' && item.status !== 'failed') return null;
+    const failedQuestion = type === 'function_call' && item.name === 'ask_operator';
     const labels = new Map<string, string>([
       ['describe_salesforce_schema', 'Inspect Salesforce fields and relationships'],
       ['query_salesforce_records', 'Read Salesforce records'],
@@ -230,10 +231,15 @@ export class OperatorItems {
       incomplete: 'Interrupted',
     }[item.status];
     return {
-      id: item.id,
+      // A question may already be retained as final under call_id (which can equal id).
+      // Its later failure is a separate fact, not a replacement for that immutable question.
+      id: failedQuestion
+        ? `question_failure_${createHash('sha256').update(item.id).digest('hex')}`
+        : item.id,
       kind: 'tool',
-      text:
-        item.name === 'ask_operator'
+      text: failedQuestion
+        ? 'Ask operator · Failed. This notice does not confirm answer delivery or reopen an earlier question.'
+        : item.name === 'ask_operator'
           ? 'Ask operator · Failed. No new answer request was confirmed by this call.'
           : `${label} · ${status}${item.status === 'failed' ? '. This call did not succeed; later activity may show a corrected attempt. It does not by itself establish missing evidence or denied access.' : ''}`,
       final: item.status !== 'in_progress',

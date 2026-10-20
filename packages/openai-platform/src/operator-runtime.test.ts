@@ -522,9 +522,8 @@ describe('operator runtime adapter', () => {
         pendingQuestionIds: [],
         items: [
           {
-            id: 'call_b',
             kind: 'tool',
-            text: 'Ask operator · Failed. No new answer request was confirmed by this call.',
+            text: 'Ask operator · Failed. This notice does not confirm answer delivery or reopen an earlier question.',
             final: true,
           },
         ],
@@ -534,6 +533,69 @@ describe('operator runtime adapter', () => {
       f.port.close();
     }
   });
+  it.each(['call_a', 'item_a'])(
+    'keeps a failed question activity separate from its previously finalized question (%s)',
+    async (itemId) => {
+      const turn = {
+        id: binding.turnId,
+        session_id: binding.sessionId,
+        subagent_id: null,
+        status: 'in_progress',
+      };
+      const options = {
+        expiry: Date.now() + 60_000,
+        session: {
+          id: binding.sessionId,
+          metadata: { workflow_revision: binding.workflowRevision },
+          required_actions: [question],
+        },
+        turns: [turn],
+        history: { data: [{ ...question, id: itemId, status: 'in_progress' }], has_more: false },
+      };
+      const f = fixture(options);
+      try {
+        const waiting = await f.port.snapshot(binding);
+        const retainedQuestion = waiting.items[0];
+        expect(retainedQuestion).toMatchObject({ id: 'call_a', kind: 'question', final: true });
+        expect(waiting.pendingQuestionIds).toEqual(['call_a']);
+
+        options.session.required_actions = [];
+        turn.status = 'completed';
+        options.history.data[0] = { ...question, id: itemId, status: 'failed' };
+        const ended = await f.port.snapshot(binding);
+        expect(ended).toMatchObject({ status: 'idle', pendingQuestionIds: [] });
+        expect(ended.items).toHaveLength(1);
+        const failure = ended.items[0];
+        expect(failure).toMatchObject({
+          kind: 'tool',
+          final: true,
+          activity: { status: 'failed' },
+        });
+        expect(failure?.id).not.toBe(retainedQuestion?.id);
+        expect(failure?.id).not.toBe(itemId);
+        expect(failure?.callFingerprint).toBeUndefined();
+
+        // A reconnect and independent durable-history read must select the same new identity.
+        f.fail();
+        await Promise.resolve();
+        expect((await f.port.snapshot(binding)).items).toEqual(ended.items);
+        expect((await f.port.history(binding, null)).items).toEqual([{ ...failure, position: 0 }]);
+        const cold = fixture(options);
+        try {
+          expect((await cold.port.snapshot(binding)).items).toEqual(ended.items);
+        } finally {
+          cold.port.close();
+        }
+        expect(await f.port.recover(binding, reply)).toMatchObject({
+          status: 'superseded',
+          reason: 'question_closed',
+        });
+        expect(f.platform.apply).not.toHaveBeenCalled();
+      } finally {
+        f.port.close();
+      }
+    }
+  );
   it('returns a definitive refusal but never retries an uncertain write or answers the pending tool instead', async () => {
     const f = fixture({ expiry: Date.now() + 60_000 });
     const command: OperatorCommand = {
