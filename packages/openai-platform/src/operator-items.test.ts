@@ -219,11 +219,11 @@ describe('operator-safe activity projection', () => {
       call,
       { ...call, id: 'output_b', type: 'function_call_output', output: 'private output' },
     ]);
-    expect(items.values()).toEqual([
+    expect(items.values()[0]?.id).toMatch(/^question_failure_[a-f0-9]{64}$/);
+    expect(items.values()).toMatchObject([
       {
-        id: 'call_b',
         kind: 'tool',
-        text: 'Ask operator · Failed. No new answer request was confirmed by this call.',
+        text: 'Ask operator · Failed. This notice does not confirm answer delivery or reopen an earlier question.',
         final: true,
         activity: { tool: 'function', label: 'Ask operator', status: 'failed', turnId: 'turn_b' },
       },

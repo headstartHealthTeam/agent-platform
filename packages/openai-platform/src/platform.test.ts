@@ -178,7 +178,7 @@ describe('standalone operator factory', () => {
   });
   it('keeps transport construction credential-free until explicitly configured', () => {
     expect(protocol).toBe('headstart-openai-operator/v1');
-    expect(adapterVersion).toBe('0.15.0');
+    expect(adapterVersion).toBe('0.15.1');
     const fetchImplementation = vi.fn<typeof fetch>();
     for (const billableUntil of [undefined, '2026-09-17T12:00:00Z']) {
       const port = createOperatorRuntimePort({
