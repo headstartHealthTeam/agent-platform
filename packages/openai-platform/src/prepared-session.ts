@@ -31,7 +31,8 @@ export class PreparedSessionPort {
   constructor(
     private readonly platform: Platform,
     private readonly target: Target,
-    private readonly authority: InferenceAuthority
+    private readonly authority: InferenceAuthority,
+    private readonly requireOpen?: () => void
   ) {}
 
   private async ready(value: AgentSessionReceipt): Promise<string> {
@@ -105,11 +106,14 @@ export class PreparedSessionPort {
               receipt,
             });
             await beforeDispatch();
+            await this.ready(receipt);
+            // Provider reads can outlive application authority or close the owning port.
+            // Nothing may read remotely after these final dispatch checks.
             await requireInferenceAuthority(this.authority, {
               operation: 'prepared-start',
               receipt,
             });
-            await this.ready(receipt);
+            this.requireOpen?.();
             dispatch.crossed = true;
           },
         }

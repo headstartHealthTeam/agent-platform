@@ -296,15 +296,13 @@ export class OperatorRuntimePort {
     beforeDispatch: () => Promise<void>
   ): Promise<AgentPreparedSessionStartResult> {
     this.requireOpen();
-    return new PreparedSessionPort(this.platform, this.target, this.inferenceAuthority).start(
-      receipt,
-      input,
-      async () => {
-        this.requireOpen();
-        await beforeDispatch();
-        this.requireOpen();
-      }
-    );
+    return new PreparedSessionPort(this.platform, this.target, this.inferenceAuthority, () => {
+      this.requireOpen();
+    }).start(receipt, input, async () => {
+      this.requireOpen();
+      await beforeDispatch();
+      this.requireOpen();
+    });
   }
   cancelSession(receipt: AgentSessionReceipt): Promise<void> {
     this.requireOpen();
