@@ -198,13 +198,52 @@ Subscribe/reconcile before input. An exact HTTP 400/409 `active_turn_not_steerab
 returned as `rejected/not_steerable`; preserve that result and allow the pending exact answer rather
 than automatically retrying or interrupting the agent. Other failures remain uncertain. Delivery
 does not prove the agent acknowledged or used a correction. Messages and function replies require
-a bounded caller-authorized inference window;
-observation and cancellation do not create one. A successful send means API acceptance, not a
+current inference authority; observation and cancellation do not create it. A successful send means API acceptance, not a
 completed action. Initial start uses the separate launch boundary below. Local compute uses the
 retained provisioner below. It is not safe to call its write
 methods directly from an untrusted agent. The owner serializes
 actual provider I/O per run, including Stop, and must not release that serialization on a local
 timeout while a detached send can still run. SDK requests have bounded timeouts and no automatic retries.
+
+Adapter `0.15.0` accepts either a finite `billableUntil` for supervised trials or a trusted
+`AgentInferenceAuthorizer` supplied by the owning application. These modes are mutually exclusive.
+The callback receives identity-only launch, binding, command or pending-call correlation and must
+return explicit `true` from current durable application policy. It is checked again immediately
+before inference dispatch, is never cached, and fails closed with a sanitized error. The owner
+must retain its dispatch serialization and original-actor, Stop, revocation and FIFO checks;
+this callback neither grants source access nor replaces those controls. Do not call remote source
+systems or acquire a competing application dispatch lease from the callback. Self-hosted local
+executors retain their finite deadline; application-owned authority is supported only for hosted
+execution. Stop and read-only recovery remain available after authority expires or is revoked.
+This authorization contract does not itself renew credentials or restore a lost hosted workspace.
+
+`inspectEnvironment(receipt)` verifies the exact session target and launch metadata, then uses the
+installed SDK's read-only environment retrieval to return only its ID, hosting type and observed
+status. It remains usable without inference authority. `disconnected` and `suspended` are distinct
+from `expired`; unknown responses, missing resources and transport failures remain unconfirmed.
+The owner must not interpret those failures as permission to replace the session or replay input.
+This observation neither sends a keep-alive nor claims to restore files or renew credentials.
+
+### Prepared successor workspaces
+
+The launch port accepts explicit `input: null` only for hosted execution. It creates a session
+without an initial message, using the SDK's documented omitted-input contract. The application
+must retain the original receipt, confirm expiry separately from disconnection, and authorize any
+successor. This is not an API reset of the old session or a resumable sandbox snapshot.
+
+`stagePreparedSessionFile` restores complete original bytes (up to 50 MiB each) into an exact
+request/ordinal/digest-bound `/workspace/restored-context/` path. It checks the receipt's ownership,
+the deferred-input marker, an empty turn history and a connected hosted environment, then invokes
+the application's durable dispatch callback immediately before transfer. Receipts retain exact
+path, digest, size and any Files API upload identity; uncertain transfers must not be replayed.
+
+`startPreparedSession` sends the first message only after the owner confirms every required file
+and rechecks current authority/Stop. It uses the stable `initial-<requestId>` message identity.
+It returns `accepted`, `not-attempted` or `unknown`; neither a lost response nor session creation
+proves the message started. The owner must reconcile the same receipt and observed root turn,
+never create a replacement to hide an uncertain write. Generic session creation has no invented
+idempotency guarantee. Business history, exact-file inventory, operator input and successor
+lineage remain application-owned, with the old session/history retained.
 
 Observers are coalesced per binding, limited to 20 sessions and closed after 45 seconds without a
 snapshot request. Call `close()` on application teardown. Snapshot and history reads share one
@@ -251,7 +290,7 @@ workstation credential resolver. Optional local compute does not define the host
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.12.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.15.0`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.

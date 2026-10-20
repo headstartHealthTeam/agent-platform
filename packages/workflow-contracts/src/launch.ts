@@ -1,3 +1,4 @@
+import type { AgentWorkspaceFile, AgentWorkspaceFileReceipt } from './artifacts.js';
 import type { AgentCredentialProtection } from './credential-protection.js';
 import type { AgentLaunchDiagnostic } from './launch-diagnostic.js';
 import type { OperatorBinding } from './operator.js';
@@ -34,7 +35,9 @@ export interface AgentLaunchRequest {
   requestId: string;
   workflowRevision: string;
   definition: AgentLaunchDefinition;
-  input: string;
+  /** Explicit null creates a hosted workspace without starting inference. The owner must retain
+   * its receipt, restore inputs, and journal startPreparedSession before the first turn. */
+  input: string | null;
 }
 
 export interface AgentSessionReceipt {
@@ -51,6 +54,37 @@ export interface AgentLaunchIdentity {
   workflowRevision: string;
 }
 
+/** Application-owned authorization for inference-producing transport, not model instructions.
+ * The owner resolves these immutable identities against its durable records and current policy.
+ * Never pass a model/operator-supplied callback, credential, payload, or database entity here.
+ */
+export type AgentInferenceRequest =
+  | { operation: 'launch'; identity: AgentLaunchIdentity }
+  | { operation: 'input'; binding: OperatorBinding; commandId: string }
+  | {
+      operation: 'function-result';
+      binding: OperatorBinding;
+      turnId: string;
+      callId: string;
+      fingerprint: string;
+    }
+  | {
+      operation: 'public-browser';
+      binding: OperatorBinding;
+      turnId: string;
+      requestId: string;
+      fingerprint: string;
+    }
+  | { operation: 'environment'; receipt: AgentSessionReceipt }
+  | { operation: 'prepared-start'; receipt: AgentSessionReceipt };
+
+export interface AgentInferenceAuthorizer {
+  /** Only explicit true grants this attempt. Failure/unavailability denies it. Called again at
+   * dispatch; must be idempotent and must not create runs, replay commands or widen authority.
+   */
+  authorize(request: AgentInferenceRequest): Promise<boolean>;
+}
+
 export interface AgentSessionCandidate extends AgentSessionReceipt {
   /** Provider creation time in Unix seconds; never sufficient by itself to claim ownership. */
   createdAt: number;
@@ -59,6 +93,21 @@ export interface AgentSessionCandidate extends AgentSessionReceipt {
 export interface AgentLaunchPreflight {
   target: string;
 }
+
+export type AgentPreparedSessionStartResult =
+  { status: 'accepted' } | { status: 'not-attempted' } | { status: 'unknown' };
+
+/** Read-only provider observation. Disconnection is not proof that a workspace is lost.
+ * No error payload, installed files, credentials, reconnect action or replay authority is exposed.
+ */
+export type AgentEnvironmentSnapshot =
+  | { type: 'none' }
+  | {
+      type: 'openai_hosted' | 'self_hosted';
+      environmentId: string;
+      status:
+        'pending' | 'ready' | 'connected' | 'disconnected' | 'suspended' | 'expired' | 'failed';
+    };
 
 /** Ephemeral trusted deployment input. Real secret bytes are visible inside the hosted sandbox.
  * Never persist with launch intent, put in an output directory, or return in a launch receipt.
@@ -155,6 +204,24 @@ export interface AgentLaunchPort {
   ): Promise<AgentLaunchCandidatePage>;
   /** Recover the first root of the exact owned session; never creates or sends input. */
   inspectSession(receipt: AgentSessionReceipt): Promise<OperatorBinding | null>;
+  /** Optional for older artifacts. Missing support or an unreadable/unknown response is not
+   * evidence of expiry and never authorizes replacement. No session, input or keep-alive is sent.
+   */
+  inspectEnvironment?(receipt: AgentSessionReceipt): Promise<AgentEnvironmentSnapshot>;
+  /** Restore exact retained inputs into a connected, not-yet-started hosted session. This never
+   * starts inference. The owner journals each file dispatch and preserves uncertain outcomes. */
+  stagePreparedSessionFile?(
+    receipt: AgentSessionReceipt,
+    file: AgentWorkspaceFile,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentWorkspaceFileReceipt>;
+  /** One initial-input attempt after complete restoration. Uses the receipt's stable message
+   * identity; an uncertain result is reconciled, never replaced with another create/input. */
+  startPreparedSession?(
+    receipt: AgentSessionReceipt,
+    input: string,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentPreparedSessionStartResult>;
   /** Resolves only after metadata-verified provider quiescence (idle/failed), not event acceptance.
    * No polling: unconfirmed cleanup throws for durable reconciliation. Quiescence is neither
    * deletion nor a permanent session stop; the application must retain its own no-input intent.

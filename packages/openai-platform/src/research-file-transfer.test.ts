@@ -4,12 +4,17 @@ import type { AgentResearchFileTransfer } from '@headstart-health/workflow-contr
 import OpenAI from 'openai';
 import { describe, expect, it, vi, type Mock } from 'vitest';
 
-import { transferResearchFile, transferWorkspaceFile } from './research-file-transfer.js';
+import {
+  transferResearchFile,
+  transferWorkspaceFile,
+  transferPreparedSessionFile,
+} from './research-file-transfer.js';
 
 function fixture(
   size = 100,
   fail: boolean | Response = false,
-  operator = false
+  operator = false,
+  restoration = false
 ): {
   client: OpenAI;
   requests: Request[];
@@ -18,9 +23,11 @@ function fixture(
 } {
   const bytes = new Uint8Array(size).fill(42);
   const digest = `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
-  const path = operator
-    ? `/workspace/operator-files/10000000-0000-4000-8000-000000000001/10000000-0000-4000-8000-000000000002-${digest.slice(7)}`
-    : `/workspace/public-research/${'a'.repeat(64)}/0-${digest.slice(7)}`;
+  const path = restoration
+    ? `/workspace/restored-context/10000000-0000-4000-8000-000000000001/0-${digest.slice(7)}`
+    : operator
+      ? `/workspace/operator-files/10000000-0000-4000-8000-000000000001/10000000-0000-4000-8000-000000000002-${digest.slice(7)}`
+      : `/workspace/public-research/${'a'.repeat(64)}/0-${digest.slice(7)}`;
   const requests: Request[] = [];
   const before = vi.fn<() => Promise<void>>().mockResolvedValue();
   const client = new OpenAI({
@@ -53,6 +60,38 @@ function fixture(
   return { client, requests, before, file: { bytes, digest, path } };
 }
 describe('exact public originals through Agents API environment Files', () => {
+  it.each([100, 26_760_658])(
+    'restores a complete %i-byte original before initial inference',
+    async (size) => {
+      const f = fixture(size, false, false, true);
+      expect(
+        await transferPreparedSessionFile(f.client, 'env_synthetic', f.file, f.before)
+      ).toMatchObject({ path: f.file.path, digest: f.file.digest, size });
+      expect(f.requests).toHaveLength(size === 100 ? 1 : 2);
+      expect(f.requests.every((request) => !request.url.includes('/sessions/'))).toBe(true);
+    }
+  );
+  it('rejects a restored path claiming a different digest before dispatch', async () => {
+    const f = fixture(100, false, false, true);
+    const path = f.file.path.slice(0, -64) + '0'.repeat(64);
+    await expect(
+      transferPreparedSessionFile(f.client, 'env_synthetic', { ...f.file, path }, f.before)
+    ).rejects.toThrow('Restored file path is not bound to its digest');
+    expect(f.before).not.toHaveBeenCalled();
+    expect(f.requests).toHaveLength(0);
+  });
+  it('does not permit restored evidence to overwrite runtime files or escape its namespace', async () => {
+    const f = fixture(100, false, false, true);
+    for (const path of [
+      '/workspace/runtime/tool',
+      '/workspace/restored-context/../secret',
+      '/workspace/operator-files/file',
+    ])
+      await expect(
+        transferPreparedSessionFile(f.client, 'env_synthetic', { ...f.file, path }, f.before)
+      ).rejects.toThrow();
+    expect(f.requests).toHaveLength(0);
+  });
   it.each([100, 5 * 1024 * 1024 + 1])(
     'snapshots %i-byte caller input before awaiting dispatch',
     async (size) => {

@@ -70,9 +70,11 @@ export type {
   AgentSessionCredential,
   AgentSessionCredentialDescriptor,
   AgentSessionReceipt,
+  AgentEnvironmentSnapshot,
   AgentLaunchIdentity,
   AgentSessionCandidate,
   AgentLaunchPreflight,
+  AgentPreparedSessionStartResult,
   AgentHostedCredentialFile,
   AgentHostedCredentialFiles,
   AgentCredentialVault,
@@ -82,6 +84,7 @@ export type {
   AgentLaunchCandidatePage,
   AgentLaunchPort,
 } from './launch.js';
+export type { AgentInferenceRequest, AgentInferenceAuthorizer } from './launch.js';
 export { agentLaunchDiagnostic, type AgentLaunchDiagnostic } from './launch-diagnostic.js';
 
 export type {

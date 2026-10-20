@@ -36,7 +36,11 @@ import {
 } from './operations.js';
 import { OperatorItems } from './operator-items.js';
 import { pendingFunctionCalls } from './pending-functions.js';
-import { transferResearchFile, transferWorkspaceFile } from './research-file-transfer.js';
+import {
+  transferResearchFile,
+  transferWorkspaceFile,
+  transferPreparedSessionFile,
+} from './research-file-transfer.js';
 import { prepareRuntimeUpload } from './runtime-upload.js';
 
 export { fingerprint } from './fingerprint.js';
@@ -144,6 +148,15 @@ function pageData(page: { data: { id: string | null }[]; has_more: boolean }): u
 export class OpenAIPlatform {
   readonly #client: OpenAI;
   readonly #config: RuntimeConfig;
+
+  public async stagePreparedSessionFile(
+    environmentId: string,
+    file: AgentResearchFileTransfer,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentResearchFileReceipt> {
+    await this.preflight();
+    return transferPreparedSessionFile(this.#client, environmentId, file, beforeDispatch);
+  }
 
   public async stageWorkspaceFile(
     environmentId: string,
@@ -331,6 +344,8 @@ export class OpenAIPlatform {
         return pageData(await agents.sessions.list(request.query, options));
       case 'sessions.get':
         return agents.sessions.retrieve(request.id, options);
+      case 'environments.get':
+        return agents.environments.retrieve(request.id, options);
       case 'sessions.pending-functions':
         return {
           data: pendingFunctionCalls(await agents.sessions.retrieve(request.id, options), {
