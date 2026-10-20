@@ -33,7 +33,7 @@
     "@headstart-health/document-reading": "workspace:*",
     "@headstart-health/google-drive-data": "workspace:*",
     "@headstart-health/headstart-mcp-data": "workspace:*",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@headstart-health/workflow-runtime": "workspace:*",
