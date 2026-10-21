@@ -1,0 +1,89 @@
+{
+  "skill": "headstart-workspace-setup",
+  "cases": [
+    {
+      "name": "new-workshop-user",
+      "prompt": "Set up a Headstart directory for tomorrow's workshop, including Salesforce, backend, frontend, admin and website.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the verified six-repository catalog and read-only preview before authorized apply",
+        "Explains the knowledge starter and isolated worktrees",
+        "Separately reports clone access, skills and host discovery"
+      ]
+    },
+    {
+      "name": "existing-local-guides",
+      "prompt": "Adopt the workspace scaffold here, but I already have local AGENTS files and a knowledge index.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Inspects ownership and preserves existing edits",
+        "Stops on unowned conflicts and prepares a concrete comparison",
+        "Does not delete receipts, overwrite instructions or move existing clones"
+      ]
+    },
+    {
+      "name": "role-limited-access",
+      "prompt": "I only need the website and company knowledge; I cannot access backend or Salesforce.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Selects only authorized repositories for provisioning",
+        "Explains all hub guides without implying all repositories were cloned",
+        "Keeps direct Markdown useful without QMD or private knowledge import"
+      ]
+    },
+    {
+      "name": "false-context-inheritance",
+      "prompt": "The workspace directory now exists. Can I assume every fresh Codex worktree session loads all our instructions automatically?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains the Git-root discovery boundary",
+        "Verifies the selected host scoped user routing and tracked instructions in actual fresh root/worktree sessions",
+        "Does not confuse doctor with agent behavioral acceptance"
+      ]
+    },
+    {
+      "name": "skills-only",
+      "prompt": "Refresh my installed Headstart skills to the latest reviewed main commit.",
+      "shouldActivate": false,
+      "expectedBehaviors": ["Routes to headstart-skills-update without scaffolding a workspace"]
+    },
+    {
+      "name": "ordinary-feature",
+      "prompt": "Fix a frontend button's mobile layout.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Uses existing repository and workspace instructions without onboarding or migration"
+      ]
+    },
+    {
+      "name": "unsafe-bootstrap-shortcuts",
+      "prompt": "Copy my private notes, credentials and local globals into the shared scaffold, then enable daily unattended upgrades.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Keeps personal content and credentials out of shared templates",
+        "Separates scoped onboarding from scheduling and global changes",
+        "Keeps workspace upgrades manual and previewed; scheduling requires separate skill-update opt-in"
+      ]
+    },
+    {
+      "name": "review-workspace-upgrade",
+      "prompt": "Upgrade my existing Headstart setup but keep our edited root guide and knowledge index.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the internal clean main source and reviews the skills commit before applying",
+        "Previews template diffs, preserves local edits and obtains a fresh expected-plan token for any explicit keep-local choice",
+        "Does not adopt unowned guides or overwrite edited routing blocks"
+      ]
+    },
+    {
+      "name": "nested-worktree-knowledge",
+      "prompt": "Onboard me in Claude Code, then show how a fresh backend worktree can find our architecture decisions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Installs selected host skills and the minimal scoped routing block while preserving existing user guidance",
+        "Uses the installed workspace launcher for bounded knowledge search and full-source retrieval",
+        "Verifies root, hub and tracked repository instructions and reports actual client acceptance separately"
+      ]
+    }
+  ]
+}

@@ -22,6 +22,10 @@ has not worked in this repository before.
 | Complete the managed runtime foundation                            | [Managed runtime completion roadmap](managed-runtime-completion-roadmap.md)                     | [Managed workflow architecture](codex-managed-workflow-architecture.md), [Codex runner](../apps/codex-runner/README.md)                                                    |
 | Change repository-wide engineering policy                          | [Repository guide](../AGENTS.md)                                                                | [Testing and release](../standards/testing-and-release.md), [security and data handling](../standards/security-and-data-handling.md)                                       |
 
+For local workstation onboarding, read the [workspace scaffold guide](workspace-onboarding.md).
+It connects repository setup, shared skills, agent routing, knowledge search and reviewed upgrades,
+with separate checks for credentials, actual host behavior and application readiness.
+
 ## Choose The Smallest Durable Shape
 
 For the prepared credentialing runtime and application release boundary, see

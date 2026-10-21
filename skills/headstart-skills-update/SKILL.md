@@ -4,7 +4,7 @@ description: Safely install, preview, manually refresh, or configure opt-in dail
 compatibility: Requires Git, Node.js 22 or newer, pnpm 9.15, and read access to the Headstart Agent Platform repository at headstartHealthTeam/agent-platform. Scheduled refresh uses user cron on macOS/Linux or Task Scheduler on Windows.
 metadata:
   author: headstart-health
-  version: '0.1.2'
+  version: '0.1.3'
 ---
 
 # Headstart Skills Update
@@ -13,6 +13,13 @@ Install and refresh workstation skill copies from the canonical repository. Do n
 copies as editable sources.
 
 ## Resolve The Source Checkout
+
+For an onboarded Headstart workspace, use its `agent-platform/main` source. The installed
+`bin/headstart skills` command composes this same updater for the configured hosts and refreshes
+workspace-helper dependencies. Afterward preview `bin/headstart upgrade --diff` for template changes;
+skill refresh alone does not apply them. See the
+[workspace guide](https://github.com/headstartHealthTeam/agent-platform/blob/main/docs/workspace-onboarding.md).
+A skills-only request does not authorize creating or migrating a workspace.
 
 1. Use an existing clean `main` checkout whose `origin` resolves to
    `headstartHealthTeam/agent-platform`.
@@ -83,7 +90,7 @@ pnpm skills:update -- --agent <host> --apply --expected-commit <sha-from-preview
 
 The updater refuses to apply if remote `main` no longer matches the previewed commit. Preview again
 instead of accepting additional unreviewed commits. On a match, it validates that exact commit in a
-detached temporary checkout before fast-forwarding, reinstalls every current team skill with staged
+disposable file snapshot before fast-forwarding, reinstalls every current team skill with staged
 directory swaps, verifies copied bytes, removes only retired skills listed in its prior receipt, and
 records the installed commit. It never removes unrelated local skills.
 

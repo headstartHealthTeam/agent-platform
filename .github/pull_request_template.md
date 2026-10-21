@@ -20,6 +20,8 @@
 
 ## Evaluations And Testing
 
+<!-- Mark evidence accurately at creation. Before the final handoff, follow standards/testing-and-release.md#pr-completion and link the passing CI run for the current PR revision. Leave unexercised host/operator acceptance explicit. -->
+
 - [ ] `pnpm qa`
 - [ ] Skill activation and behavior evaluations updated when skill behavior changed
 - [ ] Workflow schemas, fixtures, and policy boundaries tested when managed behavior changed

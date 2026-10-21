@@ -4,6 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { canonicalPath } from './canonical-path.js';
+import { exportGitSnapshot } from './git-snapshot.js';
 import {
   createInstallPlan,
   installSkills,
@@ -227,11 +229,6 @@ export const runGitCommand: GitRunner = (repositoryRoot, arguments_) => {
   return result.stdout.trim();
 };
 
-const canonicalPath = (value: string): string => {
-  const normalized = path.normalize(fs.realpathSync.native(value));
-  return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
-};
-
 const parseDistance = (rawDistance: string): { ahead: number; behind: number } => {
   const [aheadValue, behindValue] = rawDistance.trim().split(/\s+/);
   const ahead = Number(aheadValue);
@@ -263,10 +260,8 @@ const validateCandidateCommit = (
 ): string[] => {
   const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'headstart-skills-candidate-'));
   const candidateRoot = path.join(temporaryRoot, 'checkout');
-  let worktreeAdded = false;
   try {
-    runGit(repositoryRoot, ['worktree', 'add', '--detach', '--quiet', candidateRoot, commit]);
-    worktreeAdded = true;
+    exportGitSnapshot(repositoryRoot, commit, candidateRoot, runGit);
     const validationIssues = validateRepository(candidateRoot);
     if (validationIssues.length > 0) {
       throw new Error(
@@ -281,13 +276,7 @@ const validateCandidateCommit = (
       .map((entry) => entry.name)
       .sort();
   } finally {
-    try {
-      if (worktreeAdded) {
-        runGit(repositoryRoot, ['worktree', 'remove', '--force', candidateRoot]);
-      }
-    } finally {
-      fs.rmSync(temporaryRoot, { recursive: true, force: true });
-    }
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }
 };
 
@@ -413,7 +402,14 @@ const readReceipt = (receiptFile: string, agent: AgentHost): UpdateReceipt | und
     throw new Error(`Refusing to replace an invalid update receipt: ${receiptFile}`);
   }
 
-  return parsed as unknown as UpdateReceipt;
+  return {
+    schemaVersion: 1,
+    repository: CANONICAL_REPOSITORY_IDENTITY,
+    agent,
+    commit: parsed['commit'],
+    skills: parsed['skills'].filter((skill): skill is string => typeof skill === 'string'),
+    installedAt: parsed['installedAt'],
+  };
 };
 
 const writeReceipt = (receiptFile: string, receipt: UpdateReceipt): void => {
@@ -468,28 +464,88 @@ export const applyUpdate = (
     throw new Error('The checkout did not reach the inspected remote commit.');
   }
 
+  return installReviewedSkills(plan.repositoryRoot, options.agent, plan.remoteCommit, dependencies);
+};
+
+export const inspectInstalledSkills = (
+  source: string,
+  agent: AgentHost,
+  homeDirectory?: string
+): { managed: boolean; unmanaged: string[]; commit: string | undefined } => {
+  const installRoot = resolveInstallRoot(agent, 'user', source, homeDirectory);
+  const receipt = readReceipt(path.join(installRoot, RECEIPT_FILE), agent);
+  const names = fs
+    .readdirSync(path.join(source, 'skills'), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+  return {
+    managed: receipt !== undefined,
+    commit: receipt?.commit,
+    unmanaged: receipt ? [] : names.filter((name) => fs.existsSync(path.join(installRoot, name))),
+  };
+};
+
+export const verifyManagedSkills = (
+  source: string,
+  agent: AgentHost,
+  commit: string,
+  homeDirectory?: string
+): void => {
+  const state = inspectInstalledSkills(source, agent, homeDirectory);
+  if (state.commit !== commit)
+    throw new Error('Skill receipt does not match the workspace source.');
+  verifyInstalledSkills(
+    createInstallPlan(
+      source,
+      {
+        agent,
+        scope: 'user',
+        projectDirectory: source,
+        skillNames: [],
+        all: true,
+        dryRun: true,
+        force: true,
+      },
+      homeDirectory
+    )
+  );
+};
+
+export const installReviewedSkills = (
+  source: string,
+  agent: AgentHost,
+  commit: string,
+  dependencies: UpdateDependencies = {}
+): UpdateReceipt => {
+  const runGit = dependencies.runGit ?? runGitCommand;
+  if (
+    runGit(source, ['rev-parse', 'HEAD']) !== commit ||
+    runGit(source, ['status', '--porcelain']) !== ''
+  )
+    throw new Error('Skill source changed since preview.');
+  if (
+    !isExpectedRemote(
+      runGit(source, ['remote', 'get-url', 'origin']),
+      dependencies.expectedRemoteIdentity
+    )
+  )
+    throw new Error('Unexpected skill source origin.');
+  const issues = validateRepository(source);
+  if (issues.length > 0)
+    throw new Error('Invalid skill source; run validate:skills before installation.');
   const installOptions: InstallOptions = {
-    agent: options.agent,
+    agent: agent,
     scope: 'user',
-    projectDirectory: plan.repositoryRoot,
+    projectDirectory: source,
     skillNames: [],
     all: true,
     dryRun: false,
     force: true,
   };
-  const operations = createInstallPlan(
-    plan.repositoryRoot,
-    installOptions,
-    dependencies.homeDirectory
-  );
-  const installRoot = resolveInstallRoot(
-    options.agent,
-    'user',
-    plan.repositoryRoot,
-    dependencies.homeDirectory
-  );
+  const operations = createInstallPlan(source, installOptions, dependencies.homeDirectory);
+  const installRoot = resolveInstallRoot(agent, 'user', source, dependencies.homeDirectory);
   const receiptFile = path.join(installRoot, RECEIPT_FILE);
-  const previousReceipt = readReceipt(receiptFile, options.agent);
+  const previousReceipt = readReceipt(receiptFile, agent);
 
   installSkills(operations, installOptions);
   verifyInstalledSkills(operations);
@@ -500,8 +556,8 @@ export const applyUpdate = (
   const receipt: UpdateReceipt = {
     schemaVersion: 1,
     repository: CANONICAL_REPOSITORY_IDENTITY,
-    agent: options.agent,
-    commit: plan.remoteCommit,
+    agent: agent,
+    commit: commit,
     skills: skillNames,
     installedAt: (dependencies.now ?? currentTime)().toISOString(),
   };
