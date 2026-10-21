@@ -20,3 +20,24 @@ approval scope separately. Authentication comes from `google-read-transport`.
 
 See the [documentation hub](../../docs/README.md) and
 [tool capability standard](../../standards/tool-capabilities.md).
+
+## Exact user-entered grid reads
+
+`GoogleSheetsGridReader` adds single-sample, bounded grid and metadata reads using the same shared
+read-only transport. It preserves typed user-entered strings, numbers, booleans and formulas,
+whitespace, sparse rows, formats, validation, filters and dimension metadata without running them
+through the header-table stringification helper. Its field masks match the approved Intake adapter.
+The reader checks the returned spreadsheet and requested sheet identity and sanitizes malformed
+response failures; it neither writes nor imposes a workflow retry, wait or second-read policy.
+
+Intake owns coordinate-level assertion capture, coalescing, reviewer preservation, concurrency,
+publication authorization and readback acceptance. This low-level snapshot is not itself an
+accepted publication readback or proof that a whole sheet was read. Existing Organic range reads
+retain their unchanged two-sample content-fingerprint contract.
+
+`GoogleSheetsCaptureReader` supplies the same bounded field masks for consumers that must retain
+raw partial responses. It verifies the spreadsheet target and preserves the original object,
+including absent, null and unused fields. Its result exposes unconsumed fields as `unknown`;
+the consumer narrows only what its exact assertion uses. It does not eagerly reject unused data
+or silently fabricate missing titles/arrays. The stricter `GoogleSheetsGridReader` contract above
+is unchanged. Both readers share quoted-title/bounded-A1 formatting and neither can write.

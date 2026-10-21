@@ -9,7 +9,7 @@ run from their own environment and the prior operator's schedule is paused.
 | Concern                                                          | Durable owner                                                         |
 | ---------------------------------------------------------------- | --------------------------------------------------------------------- |
 | Shared operator procedure and safety contract                    | `headstart-intake-sla-review` in `headstartHealthTeam/agent-platform` |
-| Deterministic engine and detailed runbook                        | `headstartHealthTeam/intake-sla-evidence-engine`                      |
+| Deterministic engine and detailed runbook                        | `packages/intake-sla-engine` in `headstartHealthTeam/agent-platform`  |
 | Queue state, reviewer values, Generation Ledger, and Run History | Approved Intake SLA Review Queue Google Sheet                         |
 | Structured Intake and automation evidence                        | Positively identified Salesforce Production org, read-only            |
 | Schedule, local credentials, and private run storage             | Current authorized operator's local Codex environment                 |
@@ -36,16 +36,17 @@ files, production rows, or private payloads in Git or the handoff message.
 
 1. Confirm repository access and install the complete reviewed skill set from a clean
    `headstartHealthTeam/agent-platform` `main` checkout using its documented updater.
-2. Provision the exact reviewed Intake SLA Evidence Engine revision using the active organization's
-   repository/worktree setup rules. Do not rely on the former operator's working folder or task
-   history, or treat a successful skill installation as runtime readiness.
+2. Provision the exact reviewed Agent Platform Intake runtime using its packaged `docs/local-setup.md`
+   and the active organization's repository/worktree setup rules. Do not depend on the old standalone
+   engine repository, former operator's folder, or task history. Skill installation is not runtime readiness.
 3. Read the engine's `docs/operator-handoff.md`, `docs/automation-runbook.md`, and
    `docs/scheduled-task-template.md` completely.
 4. Verify each required connector from the new operator's Codex using a known non-sensitive target.
    Authentication alone does not establish correct scope or write authority.
 5. Provision private runtime configuration and a private run directory through the approved secure
    path. Keep them outside Git.
-6. Run the engine's complete synthetic and distribution-safety checks from the reviewed checkout.
+6. Run `headstart-intake-sla review:validate` from the installed runtime for the complete compiled
+   synthetic suite and distribution-safety checks, independently of the source checkout.
    Confirm support for protected raw capture/resume, replay execution telemetry, plan-bound reviewer
    preservation proof, and prepared presentation readback before relying on those capabilities.
 7. Complete one supervised full-queue shadow run with a new private run ID. Prepare but do not apply

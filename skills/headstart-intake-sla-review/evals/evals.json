@@ -108,8 +108,8 @@
       "prompt": "Jimmy is going out. Set Mark up to own the recurring Intake SLA runs from Mark's Codex and transfer the schedule safely.",
       "shouldActivate": true,
       "expectedBehaviors": [
-        "Uses the shared skill and evidence-engine repositories as separate durable owners",
-        "Requires a reviewed checkout under the organization's setup rules, secure private inputs, connector checks, and a supervised shadow run",
+        "Uses Agent Platform's canonical skill and typed Intake runtime as the current owners, without depending on the former standalone engine repository",
+        "Requires the reviewed packaged runtime and its complete compiled validation, secure private inputs, connector checks, and a supervised shadow run",
         "Pauses the prior operator's task before activating the new operator's task",
         "Does not transfer credentials, PHI, or prior run artifacts through Git"
       ]
@@ -182,6 +182,16 @@
         "Does not require a workspace switch solely for non-PHI inspection",
         "Applies the active organization's gate immediately before actual unredacted source access and after an account or workspace change",
         "Does not infer PHI approval from an API credential or authenticated connector"
+      ]
+    },
+    {
+      "name": "skill-refresh-is-not-runtime-update",
+      "prompt": "The Intake skill was updated from Agent Platform. Can we assume the old standalone engine folder is now updated too and publish from it?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Locates the reviewed Agent Platform runtime and follows its canonical local setup guide, verifying the artifact receipt and skill/runtime compatibility separately",
+        "Does not treat a skills refresh as a runtime install, select an unreviewed artifact, activate a schedule or infer publication authority",
+        "Preserves source-bound agent judgment, additional scoped tool use and current-run Codex interpretation fallback"
       ]
     },
     {
