@@ -19,6 +19,11 @@ contains no business workflow behavior and performs no external operations.
   explicit Google exports, complete Google Docs structure JSON, and runtime-derived files with exact parent references. This typed
   handoff is not a storage receipt: the owning application verifies and retains the actual bytes,
   rechecks case authority, and only then accepts the artifact into a review package.
+- Define `AgentCredentialProtection` and the credential-material guard shared by runtime launch
+  and application persistence. Only exact credential-file hashes are durable; originals and
+  structured function inputs/outputs are rejected on exact secret matches or private-key markers,
+  without removing ordinary sensitive business evidence. This is defense in depth, not an
+  exhaustive detector for transformed secrets or a replacement for network/identity controls.
 
 ## Boundary
 

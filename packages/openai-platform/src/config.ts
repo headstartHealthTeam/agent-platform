@@ -45,10 +45,35 @@ export const configSchema = z
   })
   .strict();
 
-export interface ResolvedConfig {
+export interface RuntimeConfig {
   target: Target;
   binding: ProviderBinding;
+}
+
+export interface ResolvedConfig extends RuntimeConfig {
   credential: CredentialReference;
+}
+
+/** Services supply their API key without workstation credential metadata. Both compositions
+ * retain the same explicit capability binding and live organization/project verification.
+ */
+export function resolveRuntimeConfig(input: unknown): RuntimeConfig {
+  const config = configSchema.partial({ credentials: true }).safeParse(input);
+  if (!config.success) throw new Error('Invalid OpenAI runtime configuration.');
+  return resolveProfile(config.data.profile);
+}
+
+function resolveProfile(profile: z.infer<typeof executionProfileSchema>): RuntimeConfig {
+  const binding = resolveCapabilityBinding(profile, requirement);
+  const target = targetSchema.safeParse(binding.options);
+  if (
+    binding.providerId !== PROVIDER ||
+    binding.adapterVersion !== ADAPTER_VERSION ||
+    !target.success
+  ) {
+    throw new Error('Unsupported OpenAI binding or target.');
+  }
+  return { target: target.data, binding };
 }
 
 export function resolveConfig(input: unknown): ResolvedConfig {
@@ -56,18 +81,10 @@ export function resolveConfig(input: unknown): ResolvedConfig {
   if (!config.success) {
     throw new Error('Invalid local OpenAI configuration.');
   }
-  const binding = resolveCapabilityBinding(config.data.profile, requirement);
-  const target = targetSchema.safeParse(binding.options);
+  const runtime = resolveProfile(config.data.profile);
   const credential = Object.entries(config.data.credentials).find(
-    ([name]) => name === binding.credentialRef
+    ([name]) => name === runtime.binding.credentialRef
   )?.[1];
-  if (
-    binding.providerId !== PROVIDER ||
-    binding.adapterVersion !== ADAPTER_VERSION ||
-    !target.success ||
-    credential === undefined
-  ) {
-    throw new Error('Unsupported OpenAI binding, target, or credential reference.');
-  }
-  return { target: target.data, binding, credential };
+  if (credential === undefined) throw new Error('Unsupported OpenAI credential reference.');
+  return { ...runtime, credential };
 }

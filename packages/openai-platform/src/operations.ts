@@ -1,6 +1,10 @@
+import { isAbsolute } from 'node:path';
+
 import { AGENT_FUNCTION_PAYLOAD_LIMIT } from '@headstart-health/workflow-contracts';
 import type { AgentUpdateParams } from 'openai/resources/beta/agents/agents';
 import { z } from 'zod';
+
+import { hostedSetup, hostedSetupFields } from './hosted-setup.js';
 
 const reasoning = z
   .object({
@@ -14,7 +18,27 @@ const reasoning = z
   }));
 const tools = z.array(
   z.discriminatedUnion('type', [
-    z.object({ type: z.literal('web_search') }).strict(),
+    z
+      .object({
+        type: z.literal('web_search'),
+        mode: z.enum(['live', 'cached', 'disabled']).nullable().optional(),
+        allowed_domains: z.array(z.string().min(1)).max(100).nullable().optional(),
+        context_size: z.enum(['low', 'medium', 'high']).nullable().optional(),
+      })
+      .strict()
+      .transform(({ type, mode, allowed_domains, context_size }) => ({
+        type,
+        ...(mode === undefined ? {} : { mode }),
+        ...(allowed_domains === undefined ? {} : { allowed_domains }),
+        ...(context_size === undefined ? {} : { context_size }),
+      })),
+    z
+      .object({ type: z.literal('computer_use'), include_screenshots: z.boolean().optional() })
+      .strict()
+      .transform(({ type, include_screenshots }) => ({
+        type,
+        ...(include_screenshots === undefined ? {} : { include_screenshots }),
+      })),
     z.object({ type: z.literal('tool_search') }).strict(),
     z
       .object({
@@ -147,12 +171,14 @@ const inlineSkill = z
   .strict();
 const template = z
   .object({
+    ...hostedSetupFields,
     name: z.string().nullable().optional(),
     network: network.optional(),
     skills: z.array(inlineSkill).optional(),
   })
   .strict()
   .transform((value) => ({
+    ...hostedSetup(value),
     ...(value.name === undefined ? {} : { name: value.name }),
     ...(value.network === undefined ? {} : { network: value.network }),
     ...(value.skills === undefined ? {} : { skills: value.skills }),
@@ -181,12 +207,14 @@ const environment = z.union([
   z
     .object({
       type: z.literal('openai_hosted'),
+      ...hostedSetupFields,
       environment_template_id: id.optional(),
       network: network.optional(),
     })
     .strict()
     .transform((value) => ({
       type: value.type,
+      ...hostedSetup(value),
       ...(value.environment_template_id === undefined
         ? {}
         : { environment_template_id: value.environment_template_id }),
@@ -194,7 +222,8 @@ const environment = z.union([
     })),
 ]);
 // Keep the supervised surface explicit: use one saved agent OR one inline configuration.
-// Overrides, capability-directory mounts and environment credentials are not accepted here.
+// Agent overrides are not accepted here. Vault references contain no
+// secrets; managed launches separately provision/retain the run-specific credential vault.
 const sessionAgent = z
   .object({
     model,
@@ -211,6 +240,7 @@ const sessionAgent = z
   }));
 const sessionFields = {
   environment,
+  vault_ids: z.array(id).optional(),
   input: z.string().min(1).max(100_000).optional(),
   metadata: metadata.default({}),
 };
@@ -233,9 +263,10 @@ const sessionCreate = z
         )
       )
   )
-  .transform(({ input, ...value }) => ({
+  .transform(({ input, vault_ids, ...value }) => ({
     ...value,
     ...(input === undefined ? {} : { input }),
+    ...(vault_ids === undefined ? {} : { vault_ids }),
   }));
 const query = z
   .object({ limit: z.number().int().min(1).max(100).default(20), after: id.optional() })
@@ -278,14 +309,40 @@ export const readSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('agents.get'), id }).strict(),
   z.object({ operation: z.literal('sessions.list'), query: sessionQuery }).strict(),
   z.object({ operation: z.literal('sessions.get'), id }).strict(),
+  z.object({ operation: z.literal('environments.get'), id }).strict(),
   z.object({ operation: z.literal('sessions.pending-functions'), id, turnId: id }).strict(),
+  z.object({ operation: z.literal('sessions.pending-browser-approvals'), id, turnId: id }).strict(),
   z.object({ operation: z.literal('sessions.turns'), id, query: historyQuery }).strict(),
   z.object({ operation: z.literal('sessions.turn.get'), id, turnId: id }).strict(),
   z.object({ operation: z.literal('sessions.items'), id, query: historyQuery }).strict(),
+  z.object({ operation: z.literal('sessions.subagents'), id, query: historyQuery }).strict(),
+  z
+    .object({
+      operation: z.literal('sessions.subagent.turns'),
+      id,
+      subagentId: id,
+      query: historyQuery,
+    })
+    .strict(),
+  z
+    .object({
+      operation: z.literal('sessions.subagent.items'),
+      id,
+      subagentId: id,
+      query: historyQuery,
+    })
+    .strict(),
   z.object({ operation: z.literal('templates.list'), query }).strict(),
   z.object({ operation: z.literal('templates.get'), id }).strict(),
 ]);
 export const actionSchema = z.discriminatedUnion('operation', [
+  z
+    .object({
+      operation: z.literal('files.upload'),
+      path: z.string().refine(isAbsolute),
+      sha256: fingerprint,
+    })
+    .strict(),
   z.object({ operation: z.literal('agents.create'), body: agentCreate }).strict(),
   z
     .object({
@@ -313,6 +370,27 @@ export const actionSchema = z.discriminatedUnion('operation', [
     })
     .strict(),
   z.object({ operation: z.literal('sessions.cancel'), id }).strict(),
+  z
+    .object({
+      operation: z.literal('sessions.browser-approval'),
+      id,
+      turnId: id,
+      requestId: id,
+      expectedRequestFingerprint: fingerprint,
+      response: z.discriminatedUnion('type', [
+        z
+          .object({
+            type: z.literal('browser_origin_access'),
+            decision: z.enum(['approve', 'deny', 'cancel']),
+          })
+          .strict(),
+        // Public research does not collect credentials or submit sign-in forms.
+        z
+          .object({ type: z.literal('browser_authentication'), action: z.literal('cancel') })
+          .strict(),
+      ]),
+    })
+    .strict(),
   z
     .object({
       operation: z.literal('sessions.tool-result'),
@@ -361,6 +439,7 @@ export function isBillable(action: Action): boolean {
   return (
     action.operation === 'sessions.create' ||
     action.operation === 'sessions.send' ||
-    action.operation === 'sessions.tool-result'
+    action.operation === 'sessions.tool-result' ||
+    action.operation === 'sessions.browser-approval'
   );
 }

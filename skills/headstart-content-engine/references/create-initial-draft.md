@@ -33,6 +33,10 @@ bundle should be exported to a private review artifact. Capability alone is not 
    Supply one explicit visible H1 and a semantic H2/H3 outline whose levels
    reflect content relationships. Search terms support relevance but do not determine voice or
    force headings.
+   Use the packet's audience-language observations and prior-knowledge assumptions. Explain the
+   answer before assigning tasks, make necessary terms usable at their first decision point, and
+   choose concrete examples without importing anecdotes as facts. Evidence sources are not
+   automatically reader-facing links; a provider-directed source may belong only in the ledger.
 4. **Use evidence deliberately.** Support material claims from packet claim IDs. Omit or label gaps
    rather than inventing transitions that make them sound resolved. Public citations are included
    only when the content format calls for them; internal traceability is always retained.

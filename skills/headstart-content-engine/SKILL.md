@@ -4,7 +4,7 @@ description: Create or revise a review-ready Headstart public Resource from an a
 compatibility: Requires the three declared Headstart skills plus access to the approved opportunity and authorized read capabilities. Candidate-image creation and private review-artifact export also require explicit authority and suitable capabilities. A CMS write, preview, notification, approval, schedule, or publication requires a separately authorized application action.
 metadata:
   author: headstart-health
-  version: '0.3.1'
+  version: '0.4.0'
   headstart-requires: 'headstart-content-research, write-headstart-tone-and-voice, design-headstart-public-website'
 ---
 
@@ -66,6 +66,8 @@ idea, or an unapproved outline as an approved opportunity.
    [the quality rubric](references/quality-rubric.md).
 4. **Use bounded verification.** Evaluate the complete proposal against deterministic completeness
    checks and the evidence, usefulness, voice, search, visual, safety, and operational rubric.
+   For family content, perform the rubric's novice-reader comprehension check; factual support and
+   a completed checklist do not establish that a parent can understand or use the draft.
    Permit at most one repair pass for a new draft and one repair pass for a revision. A second
    substantive failure becomes a human-review item rather than another silent rewrite.
 5. **Return a traceable bundle.** Include artifact IDs, versions, source and claim references,

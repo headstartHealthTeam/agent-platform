@@ -1,0 +1,205 @@
+import { mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { describe, expect, it } from 'vitest';
+
+import { packageBackendIntegration } from '../package-backend-integration.js';
+import { packageCredentialingRuntime } from '../package-credentialing-runtime.js';
+import { prepareCredentialingRelease } from '../prepare-credentialing-release.js';
+import { runtimeFingerprint, type RuntimeCommand } from '../runtime-packaging.js';
+import { verifyCredentialingRuntime } from '../verify-credentialing-runtime.js';
+
+describe('credentialing release assembly', () => {
+  it('retains the complete canonical files in the runtime and only three integration files in the application', async () => {
+    const directory = await realpath(await mkdtemp(join(tmpdir(), 'credentialing-packaging-')));
+    try {
+      const source = join(directory, 'source');
+      const workflow = join(source, 'workflows/provider-credentialing/dist');
+      const operator = join(source, 'packages/openai-platform/dist/operator');
+      await mkdir(workflow, { recursive: true });
+      await mkdir(operator, { recursive: true });
+      await writeFile(join(source, 'pnpm-lock.yaml'), 'synthetic lock');
+      await writeFile(join(workflow, 'index.js'), '// workflow');
+      await writeFile(join(workflow, 'artifact-worker.cjs'), '// validator');
+      await writeFile(join(workflow, 'preparation-preflight-cli.cjs'), '// local validator');
+      await writeFile(join(operator, 'operator-module.cjs'), '// application adapter');
+      const definition = {
+        protocol: 'credentialing-preparation/v1',
+        definition: {
+          instructions: 'Read the complete skill',
+          tools: [],
+          capabilities: {
+            files: [
+              {
+                path: '/workspace/headstart-workflow/skills/headstart-provider-credentialing/SKILL.md',
+                data: Buffer.from('Full skill').toString('base64'),
+              },
+              {
+                path: '/workspace/headstart-workflow/workflows/provider-credentialing/prompts/connected.md',
+                data: Buffer.from('Full prompt').toString('base64'),
+              },
+            ],
+          },
+        },
+      };
+      await writeFile(join(workflow, 'preparation-definition.json'), JSON.stringify(definition));
+      const target = join(directory, 'runtime');
+      const command: RuntimeCommand = async (_command, args) => {
+        if (args.includes('--version')) return '9.15.0';
+        if (args.includes('rev-parse')) return 'a'.repeat(40);
+        if (args.includes('status')) return '';
+        if (args.includes('audit')) return 'No known vulnerabilities found';
+        expect(args).toContain('@headstart-health/workflow-provider-credentialing');
+        const destination = args.at(-1);
+        if (!destination) throw new Error('Missing package destination');
+        await mkdir(destination);
+        await mkdir(join(destination, 'dist'));
+        await writeFile(
+          join(destination, 'dist/preparation-preflight-cli.cjs'),
+          '// installed local validator'
+        );
+        await writeFile(
+          join(destination, 'package.json'),
+          JSON.stringify({
+            name: '@headstart-health/workflow-provider-credentialing',
+            version: '0.1.0',
+          })
+        );
+        for (const name of ['document-reading', 'google-drive-data', 'headstart-mcp-data']) {
+          const path = join(destination, `node_modules/@headstart-health/${name}/dist`);
+          await mkdir(path, { recursive: true });
+          await writeFile(join(path, 'cli.js'), '// installed production entry');
+        }
+        return '';
+      };
+      const receipt = await packageCredentialingRuntime(source, target, command);
+      expect(receipt).toMatchObject({
+        sourceDirty: false,
+        sourceRevision: 'a'.repeat(40),
+        artifactSha256: await runtimeFingerprint(target),
+      });
+      expect(
+        await readFile(join(target, 'skills/headstart-provider-credentialing/SKILL.md'), 'utf8')
+      ).toBe('Full skill');
+      expect(
+        await readFile(
+          join(target, 'workflows/provider-credentialing/prompts/connected.md'),
+          'utf8'
+        )
+      ).toBe('Full prompt');
+      expect(await readFile(join(target, 'RUNTIME.md'), 'utf8')).toContain(
+        'investigation outside a prescribed sequence'
+      );
+      const integration = join(directory, 'application');
+      const manifest = await packageBackendIntegration(source, integration, command);
+      expect(manifest).toMatchObject({
+        sourceRevision: 'a'.repeat(40),
+        runtimeRevision: receipt['runtimeRevision'],
+      });
+      expect((await readdir(integration)).sort()).toEqual([
+        'artifact-worker.cjs',
+        'manifest.json',
+        'operator-module.cjs',
+        'prepared-definition.json',
+      ]);
+      const release = join(directory, 'paired-release');
+      let verified = false;
+      await prepareCredentialingRelease(
+        source,
+        release,
+        'a'.repeat(40),
+        command,
+        async (runtime) => {
+          expect(await readFile(join(runtime, 'RUNTIME.md'), 'utf8')).toContain(
+            'Installed credentialing'
+          );
+          verified = true;
+        }
+      );
+      expect(verified).toBe(true);
+      const handoff: unknown = JSON.parse(await readFile(join(release, 'handoff.json'), 'utf8'));
+      expect(handoff).toMatchObject({
+        backendReleasePin: {
+          repository: 'headstartHealthTeam/agent-platform',
+          revision: 'a'.repeat(40),
+        },
+        runtime: { runtimeRevision: receipt['runtimeRevision'] },
+        integration: { runtimeRevision: receipt['runtimeRevision'] },
+        configurationRequired: true,
+      });
+      await expect(
+        prepareCredentialingRelease(source, join(source, 'inside'), 'a'.repeat(40), command)
+      ).rejects.toThrow('outside');
+      await expect(
+        prepareCredentialingRelease(source, release, 'a'.repeat(40), command)
+      ).rejects.toThrow();
+      const failed = join(directory, 'failed-release');
+      await expect(
+        prepareCredentialingRelease(source, failed, 'a'.repeat(40), command, () =>
+          Promise.reject(new Error('smoke failed'))
+        )
+      ).rejects.toThrow('smoke failed');
+      await expect(readFile(join(failed, 'handoff.json'))).rejects.toThrow();
+      await expect(packageBackendIntegration(source, 'relative', command)).rejects.toThrow(
+        'Absolute'
+      );
+      await expect(
+        packageBackendIntegration(source, join(directory, 'dirty'), async () => ' M changed')
+      ).rejects.toThrow('clean');
+      definition.definition.capabilities.files[0] = {
+        path: '/workspace/headstart-workflow/../escape',
+        data: '',
+      };
+      await writeFile(join(workflow, 'preparation-definition.json'), JSON.stringify(definition));
+      // An existing destination cannot be overwritten, even by a later packaging invocation.
+      await expect(packageCredentialingRuntime(source, target, command)).rejects.toThrow(
+        'already exists'
+      );
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+  it('checks the installed smoke harness success, corrupted receipts and missing Office output', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'credentialing-smoke-harness-'));
+    try {
+      // A fixture process tests the harness itself. CI separately exercises real deployed parsers.
+      const cli = join(root, 'node_modules/@headstart-health/document-reading/dist/cli.js');
+      await mkdir(join(root, 'node_modules/@headstart-health/document-reading/dist'), {
+        recursive: true,
+      });
+      const program = `const fs = require('node:fs'); const path = require('node:path'); const a = process.argv; const output = a[a.indexOf('--output')+1]; fs.mkdirSync(output); fs.writeFileSync(path.join(output, 'result.json'), JSON.stringify({ content: 'Invented complete work history', mimeType: 'image/png' }));`;
+      await writeFile(cli, program);
+      await mkdir(join(root, 'dist'));
+      await writeFile(
+        join(root, 'dist/preparation-preflight-cli.cjs'),
+        `const fs = require('node:fs'); const args = process.argv; const valid = fs.readFileSync(args[args.indexOf('--proposal') + 1], 'utf8') !== '{}'; process.stdout.write(JSON.stringify(valid ? { ok: true, readiness: 'needs-information' } : { ok: false })); process.exitCode = valid ? 0 : 1;`
+      );
+      for (const name of ['google-drive-data', 'headstart-mcp-data']) {
+        const path = join(root, `node_modules/@headstart-health/${name}/dist`);
+        await mkdir(path, { recursive: true });
+        await writeFile(join(path, 'cli.js'), '// inert import');
+      }
+      const receiptPath = join(root, 'runtime-receipt.json');
+      const pin = async (): Promise<void> =>
+        writeFile(receiptPath, JSON.stringify({ artifactSha256: await runtimeFingerprint(root) }));
+      await pin();
+      await verifyCredentialingRuntime(root);
+      await expect(verifyCredentialingRuntime('relative')).rejects.toThrow('Absolute');
+      for (const receipt of [null, 'invalid', {}, { artifactSha256: 'wrong' }]) {
+        await writeFile(receiptPath, JSON.stringify(receipt));
+        await expect(verifyCredentialingRuntime(root)).rejects.toThrow('Runtime bytes changed');
+      }
+      await writeFile(cli, program.replace('Invented complete work history', 'incomplete'));
+      await pin();
+      await expect(verifyCredentialingRuntime(root)).rejects.toThrow(
+        'Office worker output missing'
+      );
+      await writeFile(cli, program.replace('image/png', 'application/pdf'));
+      await pin();
+      await expect(verifyCredentialingRuntime(root)).rejects.toThrow('Native PDF output missing');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+});

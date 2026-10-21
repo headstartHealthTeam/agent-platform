@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { credentialingInputSchema, credentialingOutputSchema } from './contracts.js';
+import { opsQuestionSchema, opsReviewSchema } from './ops-review-contracts.js';
 
 const reference = z.string().min(1).max(200);
 const narrative = z.string().min(1).max(8000);
@@ -69,7 +70,18 @@ export const preparationInputSchema = credentialingInputSchema.extend({
         relatedPartyId: reference.nullable(),
         locationIds: z.array(reference),
         period: period.nullable(),
-        addressRole: z.enum(['service', 'pay-to', 'mail-to']).nullable(),
+        addressRole: z
+          .enum(['service', 'pay-to', 'mail-to'])
+          .nullable()
+          .describe(
+            'Established payer role only. Null when the source address has no established payer mapping; preserve sourceAddressType and any unresolved mapping in the handoff.'
+          ),
+        sourceAddressType: reference
+          .regex(/\S/u)
+          .optional()
+          .describe(
+            'Source context such as business or registered-agent, not payer eligibility. Required for an address whose payer role is unknown. Omit for non-address records.'
+          ),
       })
       .strict()
   ),
@@ -83,7 +95,11 @@ export const preparationInputSchema = credentialingInputSchema.extend({
   evidence: z.array(
     credentialingInputSchema.shape.evidence.element.extend({
       locationIds: z.array(reference),
-      recordId: reference.nullable(),
+      recordId: reference
+        .nullable()
+        .describe(
+          'Internal records[].id or null for subject-wide evidence; never the external source record ID.'
+        ),
       observedAt: z.string().regex(z.regexes.datetime({})),
       source: z.object({ system: reference, recordId: reference, version: reference }).strict(),
     })
@@ -153,6 +169,48 @@ export const productionReadInputSchema = preparationInputSchema.extend({
 
 export const preparationOutputSchema = credentialingOutputSchema.extend({
   schemaVersion: z.literal('0.3.0'),
+  deliverables: z
+    .array(
+      artifactReference
+        .extend({
+          title: z.string().trim().min(1).max(200),
+          filename: z
+            .string()
+            .min(1)
+            .max(200)
+            .regex(/^(?!\.{1,2}$)(?!\s)(?![\s\S]*\s$)[^\\/\p{Cc}]+$/u),
+          mediaType: reference,
+          purpose: z.enum(['review-checklist', 'preparation-package', 'supporting-report']),
+          sources: z.array(artifactReference).max(100),
+        })
+        .strict()
+    )
+    .max(20)
+    .optional()
+    .describe(
+      'Generated review aids, retained separately from source evidence and payer attachments. Exact files must be queued and retained before publication. Their existence does not establish readiness or verification.'
+    ),
+  opsReview: opsReviewSchema.optional(),
+  executionLimitations: z
+    .array(
+      z
+        .object({
+          id: reference,
+          kind: z.literal('public-research-incomplete'),
+          message: z.string().min(1).max(1000),
+        })
+        .strict()
+    )
+    .max(100)
+    .optional()
+    .describe(
+      'Copy the exact application-owned executionLimitations from current review context. Keep these technical failures visible in the review package, standalone reports and archive provenance; useful fallback work does not erase them.'
+    ),
+  questions: z.array(
+    credentialingOutputSchema.shape.questions.element.extend({
+      review: opsQuestionSchema.optional(),
+    })
+  ),
   answers: z.array(
     credentialingOutputSchema.shape.answers.element.extend({
       basis: z

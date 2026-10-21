@@ -107,3 +107,49 @@ accurate introduction and a relevant link instead of a second checklist. Preserv
 and material qualifications on the page where their omission would mislead. The owning content
 workflow resolves scope and validates links; this skill does not invent a destination or silently
 change the approved brief.
+
+## Explain The Answer Before Assigning Homework
+
+Premise: the supplied facts say the family must check its exact insurance plan's ABA coverage and
+requirements. No universal coverage or Headstart verification process is established.
+
+Before: `Establish the ABA benefit under this specific plan and obtain its written provisions.`
+
+After: `Does your plan cover ABA therapy for your child? Call the member services number on your
+insurance card and ask what requirements apply. Ask where you can find those requirements in
+writing.`
+
+The reader gets the question and its practical meaning, not an internal intake label. The point is
+not to replace every heading with a question or require a script in every section.
+
+## Make A Term Usable, Not Just Defined
+
+Premise: in this example, the provider has a contract with the family's exact plan. The family also
+needs to ask about openings. The premises do not establish any actual provider's network status or
+availability.
+
+Before: `Verify network participation and the practice's capacity for the proposed setting.`
+
+After: `Is this provider in network for your plan? That means it has a contract with your plan.
+Ask the practice to check your exact plan, then ask whether it has openings where your child would
+receive care or a waitlist.`
+
+The explanation separates two real questions. It does not imply that insurance approval means an
+appointment is available. Choose a concrete explanation, example, or follow-up question rather
+than appending a glossary and leaving the action abstract.
+
+## Simplify Without Losing Meaning
+
+Premise: for this hypothetical example only, the deductible has been met, the plan pays 80% of a
+$100 covered charge, and no other charge applies. No typical ABA price is established.
+
+Before: `Coinsurance is the percentage-based member liability after deductible satisfaction.`
+
+After: `Coinsurance is your share of a covered bill. For example, if your share is 20% of a $100
+covered charge, you would pay $20 and the plan would pay $80. This example assumes your deductible
+has already been met and no other charge applies. It is not an estimate of ABA costs.`
+
+Keep the assumptions and check the arithmetic. Plain language must not change who pays, imply that
+all cost-sharing terms apply together, or create a coverage promise. Necessary terms and names can
+raise a grade-level score even when they are explained well; judge understanding rather than
+optimizing a number.

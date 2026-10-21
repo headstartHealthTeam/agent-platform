@@ -36,8 +36,13 @@ Drive's `version` is a change counter, not a revision-download ID; this does not
 revision selection. Follow shortcut targets using their own IDs, versions and resource keys.
 
 For Google Docs, `mode: "text"` without an export returns a paginated view plus a complete JSON
-file resource from the same Docs structure bytes, including all tabs/child tabs and inline
-suggestions. The runtime writes `evidence-0.json` with the matching digest and byte length,
+file resource from the same Docs structure bytes, including all tabs/child tabs available to the
+configured identity. Requests use `DEFAULT_FOR_CURRENT_ACCESS`: Google returns inline suggestions
+when permitted, and a view without suggestions for a viewer. The receipt preserves the returned
+`suggestionsViewMode` and explicitly warns about visibility; a permitted document is not rejected
+merely because the identity cannot read suggestions. No fallback identity or additional access is
+used. Missing/hidden suggestions must not be reported as inspected. The runtime writes
+`evidence-0.json` with the matching digest and byte length,
 independently of the text offset. Retain that file rather than reconstructing JSON from text
 chunks. It is labeled `google-docs-structure`, not an original binary or Google export.
 Follow `nextOffset` until null when reading the text view; embedded
@@ -87,6 +92,31 @@ implicit ADC fallback, employee OAuth prompt per run or secret in workflow instr
 An explicitly selected `{"kind":"operator-adc"}` is supported for approved supervised desktop use,
 not a managed default. It follows the existing organization's ADC recovery procedure.
 
+For deployments that keep renewable Google credentials outside the agent environment, the same
+runtime also supports an optional token endpoint:
+
+```json
+{
+  "expectedIdentity": "agent@example.com",
+  "authentication": {
+    "kind": "token-endpoint",
+    "endpoint": "https://identity.example.com/google/token",
+    "authorizationEnvironmentVariable": "GOOGLE_TOKEN_AUTHORIZATION"
+  }
+}
+```
+
+That environment variable contains the complete authorization header or its runtime-vault
+placeholder, not a Google private key. The endpoint only supplies renewable Google access tokens;
+all Drive/Docs discovery, complete file retrieval and parsing still execute in this package and
+its Agent Platform dependencies. It need not be a Headstart backend endpoint. The
+[shared token-provider contract](../google-read-transport/README.md#renewable-token-endpoint-binding)
+defines response, expiry and failure behavior. Drive pins exactly the `drive.readonly` scope and
+continues to verify the expected Google identity. It does not add case/folder filters or replace
+full content with summaries. Endpoint failure never switches to the operator's local identity.
+The same reader can renew tokens between reads without starting a new workflow or session.
+Neither this optional mode nor hosted deployment changes the standalone ADC/credential-file paths.
+
 The agent writes a request file, then invokes the same CLI:
 
 ```sh
@@ -126,9 +156,11 @@ executor still needs this artifact installed/mounted, an approved Google profile
 availability in its runtime instructions. Neither an unrelated desktop connector nor adding names
 to Headstart's MCP tool list provides that binding.
 
-Headstart MCP's per-run grants govern MCP calls, not this direct Google credential. Managed
-composition must protect the Google secret and terminate runtime work when Stop ends the executor.
-Connected verification must establish that behavior; this package does not claim per-run Google
+Headstart MCP's per-run grants alone govern MCP calls, not direct Google credentials. An optional
+token issuer must separately authorize Google token issuance. Managed composition must protect its
+long-lived secrets and terminate runtime work when Stop ends the executor. Denying token renewal
+does not invalidate an already issued Google token before its actual expiry. Connected verification
+must establish the deployment behavior; this package does not claim immediate per-run Google
 credential revocation or retract already delivered evidence.
 
 Credentialing's named capture function remains Salesforce-specific. Drive originals/exports and

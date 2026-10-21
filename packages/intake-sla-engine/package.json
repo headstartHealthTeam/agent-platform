@@ -45,11 +45,11 @@
     "@headstart-health/slack-data": "workspace:*",
     "csv-parse": "7.0.2",
     "zod": "^4.6.5",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^22.20.4",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^10.11.0",
     "prettier": "^3.9.8",
     "rimraf": "^6.1.3",

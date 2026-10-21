@@ -100,6 +100,37 @@ this gate when it reads like a risk-managed summary rather than a thoughtful per
 reader. Clinical and coverage claims still pass through the evidence gate; confident voice does
 not establish their truth.
 
+## Family Comprehension Check
+
+For family content, evaluate the exact article as an adult reader with no prior clinical or
+insurance knowledge. Apply the tone skill's approximate fourth-grade accessibility aim without
+reducing this gate to a numerical threshold. Necessary terminology, connected prose, and material
+qualifications must survive. A low score can still accompany unusable guidance.
+
+Check the main answer, representative difficult explanations, and next action in their full
+paragraph or section context:
+
+- What can the reader now understand or decide? Explain that takeaway in ordinary language and
+  trace it to the text. If doing so requires knowledge absent from the article, identify the gap.
+- Are important terms explained before use and connected to a practical consequence, question,
+  or example? Do not pass a glossary that leaves the reader unable to interpret a bill or act.
+- Does a question name its subject and responsible actor without relying on a distant heading or
+  ambiguous words such as `amounts`, `capacity`, or `the answer`?
+- Does the article explain before assigning tasks, and does each useful link serve the family
+  rather than merely prove the writer researched the topic?
+- Do simplification and examples preserve evidence, payer scope, arithmetic, and role boundaries?
+
+Record exact passages and reader consequences for both strengths and defects. Use human-reviewed
+failure cases to calibrate judgment, not to require their wording or structure. Do not let an
+earlier verifier pass, confident prose, a reading score, or artifact completeness override a
+current comprehension failure. A material voice or usefulness defect requires `repair`, or
+`blocked` when new evidence is needed; it is not a harmless human-review item. Keep the existing
+one-repair boundary. Do not claim that model verification replaces the human editorial decision.
+
+If a readability tool is available, record its name/version, text scope, score, and limitations as
+diagnostic evidence. If none is used, say `not_checked`; do not estimate a grade or claim the
+fourth-grade aim was numerically achieved. The passage-level comprehension judgment still applies.
+
 ## Visual And Accessibility Guidance
 
 Apply `design-headstart-public-website` to the image brief, exact candidate when one exists, and

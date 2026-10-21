@@ -94,6 +94,11 @@ commits unreliable. Moderate-or-higher production and development findings are b
 are fixed, shown to be non-applicable, or intentionally accepted through the repository's review
 process.
 
+Follow the README's [fresh dependency-check procedure](../README.md#dependency-checks-for-agents-and-maintainers)
+before merging. The separate daily security watch detects advisory changes without code changes;
+it does not replace PR/main CI or permit an automatic merge. Network audits remain outside local
+deterministic QA and Git hooks.
+
 ## Pull Request Evidence
 
 A skill or workflow PR identifies changed behavior, affected hosts or runtimes, dependencies,

@@ -116,10 +116,37 @@ describe('complete read-only Google Drive evidence', () => {
     expect(JSON.parse(result.document.text ?? '')).toEqual(document);
     expect(get.mock.calls[1]).toEqual([
       `documents/${file.id}`,
-      { includeTabsContent: 'true', suggestionsViewMode: 'SUGGESTIONS_INLINE' },
+      { includeTabsContent: 'true', suggestionsViewMode: 'DEFAULT_FOR_CURRENT_ACCESS' },
       undefined,
     ]);
     expect(result.source.representation).toBe('google-docs-structure');
+    expect(result.document.warnings.join(' ')).toContain('Suggestions visibility was not reported');
+  });
+  it.each(['PREVIEW_WITHOUT_SUGGESTIONS', 'SUGGESTIONS_INLINE', 'PREVIEW_SUGGESTIONS_ACCEPTED'])(
+    'retains the complete permitted document and reports %s without widening access',
+    async (suggestionsViewMode) => {
+      const document = { documentId: file.id, suggestionsViewMode, tabs: [{ childTabs: [] }] };
+      get.mockImplementation(async (path, query) => {
+        if (!path.startsWith('documents/'))
+          return json({ ...file, mimeType: 'application/vnd.google-apps.document' });
+        if (query['suggestionsViewMode'] !== 'DEFAULT_FOR_CURRENT_ACCESS')
+          throw new Error('This viewer cannot request inline suggestions');
+        return json(document);
+      });
+      const result = await reader.read({ fileId: file.id, version: '10', mode: 'text' });
+      expect(JSON.parse(result.document.text ?? '')).toEqual(document);
+      expect(result.source).toMatchObject({ suggestionsViewMode });
+      expect(result.document.warnings.join(' ')).toContain(suggestionsViewMode);
+      expect(get).toHaveBeenCalledTimes(3);
+    }
+  );
+  it('does not convert a denied Docs read into an empty document or another identity', async () => {
+    get.mockResolvedValueOnce(json({ ...file, mimeType: 'application/vnd.google-apps.document' }));
+    get.mockRejectedValueOnce(new Error('google-http-403'));
+    await expect(reader.read({ fileId: file.id, version: '10', mode: 'text' })).rejects.toThrow(
+      '403'
+    );
+    expect(get).toHaveBeenCalledTimes(2);
   });
   it('uses the original workbook, including its hidden sheets and repeated rows', async () => {
     const workbook = new Workbook();

@@ -3,6 +3,10 @@
   "version": "0.3.0",
   "private": true,
   "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "description": "Draft credentialing workflow with payer-neutral synthetic contracts and investigative tools",
   "engines": {
     "node": ">=22"
@@ -16,7 +20,7 @@
   },
   "scripts": {
     "generate:schemas": "node --import tsx src/generate-schemas.build.ts",
-    "build": "tsup src/index.ts --format esm --dts --clean --target node22 && tsup --config src/artifact-worker.build.ts && node --experimental-strip-types src/preparation-definition.build.ts",
+    "build": "tsup src/index.ts --format esm --dts --clean --target node22 && tsup --config src/artifact-worker.build.ts && node --import tsx src/preparation-definition.build.ts",
     "check-types": "tsc --noEmit",
     "lint": "eslint --quiet --no-cache src vitest.config.ts",
     "test": "vitest run --silent",
@@ -26,17 +30,22 @@
     "clean": "rimraf dist .turbo coverage"
   },
   "dependencies": {
+    "@headstart-health/document-reading": "workspace:*",
+    "@headstart-health/google-drive-data": "workspace:*",
+    "@headstart-health/headstart-mcp-data": "workspace:*",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@headstart-health/workflow-runtime": "workspace:*",
     "@types/node": "^22.20.4",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^10.11.0",
-    "prettier": "^3.9.8",
+    "exceljs": "^4.4.0",
+    "prettier": "^3.9.9",
     "rimraf": "^6.1.3",
     "tsup": "^8.5.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   }
 }

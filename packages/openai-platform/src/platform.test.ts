@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { resolveConfig } from './config.js';
+import { resolveConfig, resolveRuntimeConfig } from './config.js';
 import { actionSchema } from './operations.js';
 import { createOperatorRuntimePort, protocol, adapterVersion } from './operator-module.js';
 import { pendingFunctionCalls } from './pending-functions.js';
@@ -39,10 +39,146 @@ export const localConfig = {
 };
 const config = resolveConfig(localConfig);
 
+describe('abortable Agents API reads', () => {
+  it.each(['preflight', 'read', 'opening'] as const)(
+    'passes cancellation through %s to the real SDK transport',
+    async (phase) => {
+      const controller = new AbortController();
+      let began: () => void = () => {
+        throw new Error('Transport not initialized');
+      };
+      const started = new Promise<void>((resolve) => {
+        began = resolve;
+      });
+      let aborted = false;
+      const transport: typeof fetch = async (input, init) => {
+        const request = new Request(input, init);
+        if (phase !== 'preflight' && new URL(request.url).pathname.endsWith('/agents'))
+          return Response.json(
+            { data: [], has_more: false },
+            { headers: { 'openai-project': config.target.projectId } }
+          );
+        return new Promise((_resolve, reject) => {
+          request.signal.addEventListener(
+            'abort',
+            () => {
+              aborted = true;
+              reject(new Error('PRIVATE REQUEST DETAIL'));
+            },
+            { once: true }
+          );
+          began();
+        });
+      };
+      const platform = new OpenAIPlatform(config, 'synthetic-key', transport);
+      const reading =
+        phase === 'opening'
+          ? platform.openOperatorObservation(
+              { sessionId: 'session_synthetic', turnId: 'turn_synthetic' },
+              controller.signal
+            )
+          : platform.read(
+              { operation: 'sessions.get', id: 'session_synthetic' },
+              controller.signal
+            );
+      const assertion = expect(reading).rejects.not.toThrow('PRIVATE REQUEST DETAIL');
+      await started;
+      controller.abort();
+      await assertion;
+      expect(aborted).toBe(true);
+    }
+  );
+
+  it('gives an opened observer its own lifetime after the opening budget ends', async () => {
+    const controller = new AbortController();
+    let transportAborted = false;
+    const transport: typeof fetch = async (input, init) => {
+      const request = new Request(input, init);
+      if (new URL(request.url).pathname.endsWith('/agents'))
+        return Response.json(
+          { data: [], has_more: false },
+          { headers: { 'openai-project': config.target.projectId } }
+        );
+      return new Response(
+        new ReadableStream<Uint8Array>({
+          start(stream): void {
+            request.signal.addEventListener(
+              'abort',
+              () => {
+                transportAborted = true;
+                stream.error(new DOMException('Aborted', 'AbortError'));
+              },
+              { once: true }
+            );
+          },
+        }),
+        { headers: { 'content-type': 'text/event-stream' } }
+      );
+    };
+    const platform = new OpenAIPlatform(config, 'synthetic-key', transport);
+    const observation = await platform.openOperatorObservation(
+      { sessionId: 'session_synthetic', turnId: 'turn_synthetic' },
+      controller.signal
+    );
+    const completion = expect(observation.completion).rejects.toThrow(
+      'Operator observation closed'
+    );
+    controller.abort();
+    expect(transportAborted).toBe(false);
+    observation.close();
+    await completion;
+    expect(transportAborted).toBe(true);
+  });
+});
+
 describe('standalone operator factory', () => {
+  const serviceConfig = {
+    profile: {
+      ...localConfig.profile,
+      bindings: localConfig.profile.bindings.map(
+        ({ credentialRef: _reference, ...binding }) => binding
+      ),
+    },
+  };
+  it('uses the same live target check with a service-supplied key and no workstation reference', async () => {
+    const requests: Request[] = [];
+    const transport: typeof fetch = async (input, init) => {
+      requests.push(new Request(input, init));
+      return Response.json(
+        { data: [], has_more: false },
+        {
+          headers: { 'openai-project': config.target.projectId },
+        }
+      );
+    };
+    const port = createOperatorRuntimePort({
+      config: serviceConfig,
+      apiKey: 'synthetic-service-key',
+      fetchImplementation: transport,
+    });
+    port.close();
+    expect(requests).toHaveLength(0);
+    await new OpenAIPlatform(
+      resolveRuntimeConfig(serviceConfig),
+      'synthetic-service-key',
+      transport
+    ).preflight();
+    expect(requests).toHaveLength(1);
+    expect(requests[0]?.headers.get('authorization')).toBe('Bearer synthetic-service-key');
+    expect(requests[0]?.headers.get('openai-organization')).toBe('org-synthetic');
+    expect(requests[0]?.headers.get('openai-project')).toBe('proj_synthetic');
+    expect(() => resolveConfig(serviceConfig)).toThrow('Invalid local');
+    expect(() => resolveRuntimeConfig({ ...serviceConfig, apiKey: 'not-config-data' })).toThrow(
+      'configuration'
+    );
+    const wrong = structuredClone(serviceConfig);
+    for (const binding of wrong.profile.bindings)
+      binding.options.projectId = 'missing-project-prefix';
+    expect(() => resolveRuntimeConfig(wrong)).toThrow('Unsupported');
+  });
   it('keeps transport construction credential-free until explicitly configured', () => {
     expect(protocol).toBe('headstart-openai-operator/v1');
-    expect(adapterVersion).toBe('0.8.0');
+    expect(adapterVersion).toBe('0.15.1');
     const fetchImplementation = vi.fn<typeof fetch>();
     for (const billableUntil of [undefined, '2026-09-17T12:00:00Z']) {
       const port = createOperatorRuntimePort({
@@ -54,6 +190,23 @@ describe('standalone operator factory', () => {
       port.close();
     }
     expect(fetchImplementation).not.toHaveBeenCalled();
+    const authorize = vi.fn().mockResolvedValue(true);
+    createOperatorRuntimePort({
+      config: serviceConfig,
+      apiKey: 'synthetic-invalid-key',
+      inferenceAuthorizer: { authorize },
+      fetchImplementation,
+    }).close();
+    expect(authorize).not.toHaveBeenCalled();
+    expect(fetchImplementation).not.toHaveBeenCalled();
+    expect(() =>
+      createOperatorRuntimePort({
+        config: serviceConfig,
+        apiKey: 'synthetic-invalid-key',
+        inferenceAuthorizer: { authorize },
+        billableUntil: '2026-09-17T12:00:00Z',
+      })
+    ).toThrow('either bounded or application-owned');
     expect(() =>
       createOperatorRuntimePort({
         config: localConfig,
@@ -725,6 +878,61 @@ describe('OpenAI access boundary', () => {
     await platform.apply(action, { apply: true, digest: plan.digest, allowBillable: true });
     expect(requests.at(-1)?.method).toBe('POST');
   });
+
+  it.each(['sessions.create', 'templates.create', 'templates.update'])(
+    'sends hosted setup unchanged through the SDK for %s',
+    async (operation) => {
+      const { platform, requests } = fixture();
+      const setup = {
+        packages: { npm: ['pnpm@9.15.0'], python: [], system: ['poppler-utils'] },
+        env: { HEADSTART_TOOLS_ROOT: '/workspace/tools' },
+        files: [
+          { type: 'file_id', path: '/workspace/tools.tar.gz', file_id: 'file_synthetic' },
+          { type: 'inline', path: '/workspace/config.json', data: 'e30=' },
+        ],
+        setup_commands: [
+          { command: 'tar -xzf tools.tar.gz' },
+          { command: 'node --version', cwd: '/workspace' },
+        ],
+      };
+      const body =
+        operation === 'sessions.create'
+          ? {
+              agent_id: 'agent_synthetic',
+              environment: { type: 'openai_hosted', ...setup },
+            }
+          : setup;
+      const action = {
+        operation,
+        body,
+        ...(operation === 'templates.update'
+          ? { id: 'template_synthetic', expectedFingerprint: fingerprint(current) }
+          : {}),
+      };
+      const plan = planAction(config.target, action);
+      const changed = {
+        ...setup,
+        setup_commands: [{ command: 'node --help' }],
+      };
+      const changedAction = {
+        ...action,
+        body:
+          operation === 'sessions.create'
+            ? { ...body, environment: { type: 'openai_hosted', ...changed } }
+            : changed,
+      };
+      await expect(
+        platform.apply(changedAction, { apply: true, digest: plan.digest, allowBillable: true })
+      ).rejects.toThrow('approval');
+      expect(requests).toHaveLength(0);
+      await platform.apply(action, { apply: true, digest: plan.digest, allowBillable: true });
+      const sent = requests.at(-1);
+      expect(sent?.method).toBe('POST');
+      expect(await sent?.json()).toEqual(
+        operation === 'sessions.create' ? { ...body, metadata: {}, stream: false } : body
+      );
+    }
+  );
 
   const actions = [
     {

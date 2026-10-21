@@ -1,16 +1,60 @@
 /** Trusted application artifact, not executable agent scratch or a credential sandbox. */
-import { resolveConfig } from './config.js';
+import type {
+  AgentHostedCredentialFiles,
+  AgentInferenceAuthorizer,
+} from '@headstart-health/workflow-contracts';
+
+import { resolveRuntimeConfig } from './config.js';
+import { fingerprint } from './fingerprint.js';
+import { exactCredentialHosts } from './hosted-credential-network.js';
+import { parseAction } from './operations.js';
 import { OperatorRuntimePort } from './operator-runtime.js';
 import { OpenAIPlatform } from './platform.js';
 import type { SessionExecutor } from './session-executor.js';
+import { launchSettings } from './session-launch.js';
 
 export const protocol = 'headstart-openai-operator/v1';
-export const adapterVersion = '0.8.0';
+export const adapterVersion = '0.15.1';
 export { OperatorRuntimePort } from './operator-runtime.js';
 export { createLocalOperatorRuntimePort } from './local-operator-runtime.js';
 export { OpenAIPlatform } from './platform.js';
-export { resolveConfig } from './config.js';
+export { resolveConfig, resolveRuntimeConfig } from './config.js';
 export { DockerSessionExecutor } from './docker-executor.js';
+
+/** Offline release/configuration check; no credentials, provider reads or session creation. */
+export function validatePreparedDeployment(
+  config: unknown,
+  launch: unknown,
+  runtimeRevision: string
+): string {
+  const runtime = resolveRuntimeConfig(config);
+  const settings = launchSettings.parse(launch);
+  const action = parseAction({
+    operation: 'sessions.create',
+    body: {
+      agent: { model: settings.model, reasoning: settings.reasoning, tools: settings.mcpServers },
+      environment: settings.environment,
+      input: 'Deployment configuration validation only',
+    },
+  });
+  if (action.operation !== 'sessions.create') throw new Error('Invalid launch configuration');
+  const environment = action.body.environment;
+  if (
+    settings.preparedRuntime?.revision !== runtimeRevision ||
+    environment.type !== 'openai_hosted' ||
+    !environment.environment_template_id ||
+    environment.files !== undefined ||
+    environment.setup_commands !== undefined ||
+    environment.packages !== undefined ||
+    environment.capability_directories !== undefined ||
+    settings.credentialFiles?.length ||
+    environment.env === undefined ||
+    environment.network?.access !== 'restricted'
+  )
+    throw new Error('Invalid prepared deployment selection');
+  exactCredentialHosts(environment.network);
+  return fingerprint(runtime.target);
+}
 
 /** An owning service may provision its credential independently of the workstation resolver.
  * Transport injection supports deterministic SDK-boundary tests; never expose it to operators.
@@ -19,20 +63,25 @@ export function createOperatorRuntimePort(options: {
   config: unknown;
   apiKey: string;
   billableUntil?: string;
+  inferenceAuthorizer?: AgentInferenceAuthorizer;
   applicationFunctions?: string[];
   launchSettings?: unknown;
   executor?: SessionExecutor;
   fetchImplementation?: typeof fetch;
+  credentialFiles?: AgentHostedCredentialFiles;
 }): OperatorRuntimePort {
-  const config = resolveConfig(options.config);
+  const config = resolveRuntimeConfig(options.config);
+  if (options.inferenceAuthorizer && options.billableUntil !== undefined)
+    throw new Error('Select either bounded or application-owned inference authorization');
   const expiry = options.billableUntil === undefined ? 0 : Date.parse(options.billableUntil);
   if (!Number.isFinite(expiry)) throw new Error('Invalid inference authorization expiry');
   return new OperatorRuntimePort(
     new OpenAIPlatform(config, options.apiKey, options.fetchImplementation),
     config.target,
-    expiry,
+    options.inferenceAuthorizer ?? expiry,
     options.applicationFunctions,
     options.launchSettings,
-    options.executor
+    options.executor,
+    options.credentialFiles
   );
 }
