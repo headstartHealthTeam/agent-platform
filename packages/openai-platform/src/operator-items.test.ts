@@ -24,6 +24,155 @@ const event = (
 });
 
 describe('operator-safe activity projection', () => {
+  it('labels a wrapped command and keeps a failed call distinct from a later corrected attempt', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    items.recover([
+      {
+        id: 'wrapped',
+        turn_id: 'turn_a',
+        type: 'command_execution',
+        status: 'completed',
+        command: "/bin/bash -lc 'headstart-mcp-document private-request.json'",
+        output: 'private bytes',
+      },
+      {
+        id: 'search_failed',
+        turn_id: 'turn_a',
+        type: 'mcp_call',
+        name: 'search',
+        status: 'failed',
+        arguments: 'private request',
+        error: 'private error',
+      },
+      {
+        id: 'search_corrected',
+        turn_id: 'turn_a',
+        type: 'mcp_call',
+        name: 'search',
+        status: 'completed',
+      },
+    ]);
+    expect(items.values()[0]?.activity?.label).toBe('Retrieve an authorized source document');
+    expect(items.values()[1]?.text).toContain(
+      'This call did not succeed; later activity may show a corrected attempt'
+    );
+    expect(items.values()[1]?.activity?.status).toBe('failed');
+    expect(items.values()[2]?.activity?.status).toBe('completed');
+    expect(JSON.stringify(items.values())).not.toContain('private');
+  });
+  it('uses supported duration and executable categories without exposing command content', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    items.recover([
+      {
+        id: 'command_safe',
+        turn_id: 'turn_a',
+        type: 'command_execution',
+        status: 'completed',
+        command: 'python3 /private/source.py secret',
+        duration_ms: 1234,
+        exit_code: 0,
+        cwd: '/private',
+        output: 'private records',
+      },
+    ]);
+    expect(items.values()[0]?.activity).toEqual({
+      tool: 'workspace-command',
+      label: 'Run a Python workspace script',
+      status: 'completed',
+      turnId: 'turn_a',
+      durationMs: 1234,
+      exitCode: 0,
+    });
+    expect(JSON.stringify(items.values())).not.toMatch(/private|secret|records/);
+  });
+  it.each(['constructor', 'toString', '__proto__', '/private/script', 'TOKEN=secret python3'])(
+    'never derives labels from unknown or inherited executables: %s',
+    (command) => {
+      const items = new OperatorItems('session_a', 'turn_a');
+      items.recover([
+        {
+          id: 'command_safe',
+          turn_id: 'turn_a',
+          type: 'command_execution',
+          status: 'completed',
+          command,
+          duration_ms: null,
+          exit_code: null,
+        },
+      ]);
+      expect(items.values()[0]?.activity).toEqual({
+        tool: 'workspace-command',
+        label: 'Workspace command',
+        status: 'completed',
+        turnId: 'turn_a',
+      });
+    }
+  );
+  it('preserves supported null-phase assistant updates as commentary, not final answers', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    items.recover([{ ...message('A real saved update', 'completed'), phase: null }]);
+    expect(items.values()).toEqual([
+      { id: 'item_a', kind: 'commentary', text: 'A real saved update', final: true },
+    ]);
+  });
+  it.each([
+    ['in_progress', 'Workspace command · In progress'],
+    ['completed', 'Workspace command · Completed'],
+    ['incomplete', 'Workspace command · Interrupted'],
+    [
+      'failed',
+      'Workspace command · Failed (exit 1). This step did not succeed; the agent may try another approach. This alone does not mean preparation stopped.',
+    ],
+  ])(
+    'identifies command execution and its %s outcome without exposing arguments or output',
+    (status, text) => {
+      const items = new OperatorItems('session_a', 'turn_a');
+      const call = {
+        id: 'command_a',
+        turn_id: 'turn_a',
+        type: 'command_execution',
+        status,
+        exit_code: 1,
+        command: 'private-command',
+        output: 'private-output',
+      };
+      items.recover([call]);
+      expect(items.values()).toEqual([
+        {
+          id: 'command_a',
+          kind: 'tool',
+          text,
+          final: status !== 'in_progress',
+          activity: {
+            tool: 'workspace-command',
+            label: 'Workspace command',
+            status,
+            turnId: 'turn_a',
+            exitCode: 1,
+          },
+        },
+      ]);
+      expect(JSON.stringify(items.values())).not.toMatch(/private/);
+    }
+  );
+  it.each([undefined, null, 'private', {}, -1, 256, 0.5])(
+    'does not display an untrusted command exit value: %s',
+    (exit_code) => {
+      const items = new OperatorItems('session_a', 'turn_a');
+      items.recover([
+        {
+          id: 'command_a',
+          turn_id: 'turn_a',
+          type: 'command_execution',
+          status: 'failed',
+          exit_code,
+        },
+      ]);
+      expect(items.values()[0]?.text).toBe(
+        'Workspace command · Failed. This step did not succeed; the agent may try another approach. This alone does not mean preparation stopped.'
+      );
+    }
+  );
   it.each([
     ['constructor', 'Constructor'],
     ['toString', 'ToString'],
@@ -34,7 +183,18 @@ describe('operator-safe activity projection', () => {
       const items = new OperatorItems('session_a', 'turn_a');
       const call = { id: 'tool_a', turn_id: 'turn_a', type, name, status: 'completed' };
       const label = readableName ?? (type === 'mcp_call' ? 'Source tool' : 'Agent tool');
-      const expected = { id: 'tool_a', kind: 'tool', text: `${label} · Completed`, final: true };
+      const expected = {
+        id: 'tool_a',
+        kind: 'tool',
+        text: `${label} · Completed`,
+        final: true,
+        activity: {
+          tool: type === 'mcp_call' ? 'mcp' : 'function',
+          label,
+          status: 'completed',
+          turnId: 'turn_a',
+        },
+      };
       items.recover([call]);
       expect(items.values()).toEqual([expected]);
       expect(items.finalized(call)).toEqual(expected);
@@ -59,12 +219,13 @@ describe('operator-safe activity projection', () => {
       call,
       { ...call, id: 'output_b', type: 'function_call_output', output: 'private output' },
     ]);
-    expect(items.values()).toEqual([
+    expect(items.values()[0]?.id).toMatch(/^question_failure_[a-f0-9]{64}$/);
+    expect(items.values()).toMatchObject([
       {
-        id: 'call_b',
         kind: 'tool',
-        text: 'The agent could not complete a question request. Check the agent’s update before continuing.',
+        text: 'Ask operator · Failed. This notice does not confirm answer delivery or reopen an earlier question.',
         final: true,
+        activity: { tool: 'function', label: 'Ask operator', status: 'failed', turnId: 'turn_b' },
       },
     ]);
     const recovered = new OperatorItems('session_a', 'turn_b');
@@ -282,11 +443,13 @@ describe('operator-safe activity projection', () => {
       type: 'agent.session.turn.reasoning_summary.delta',
       delta: 'private reasoning',
     });
-    expect(items.values()).toMatchObject([{ kind: 'tool', text: 'Agent is using a tool.' }]);
+    expect(items.values()).toMatchObject([
+      { kind: 'tool', text: 'Workspace command · In progress' },
+    ]);
     items.recover([
       { id: 'tool_a', turn_id: 'turn_a', type: 'command_execution', status: 'completed' },
     ]);
-    expect(JSON.stringify(items.values())).not.toMatch(/private|command/);
+    expect(JSON.stringify(items.values())).not.toMatch(/private|"command":|"output":/);
     expect(items.values()[0]?.final).toBe(true);
   });
   it('redacts obvious secrets and keeps subsequent fragments withheld', () => {

@@ -133,6 +133,7 @@ describe('deployable Drive runtime CLI', () => {
     async (offset) => {
       const structure = {
         documentId: metadata.id,
+        suggestionsViewMode: 'SUGGESTIONS_INLINE',
         tabs: [
           {
             documentTab: {
@@ -159,7 +160,7 @@ describe('deployable Drive runtime CLI', () => {
           return json({ user: { emailAddress: 'agent@example.com' } });
         if (url.pathname.endsWith(`/documents/${metadata.id}`)) {
           expect(url.searchParams.get('includeTabsContent')).toBe('true');
-          expect(url.searchParams.get('suggestionsViewMode')).toBe('SUGGESTIONS_INLINE');
+          expect(url.searchParams.get('suggestionsViewMode')).toBe('DEFAULT_FOR_CURRENT_ACCESS');
           return json(structure);
         }
         expect(url.pathname.endsWith(`/files/${metadata.id}`)).toBe(true);

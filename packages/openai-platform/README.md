@@ -55,6 +55,59 @@ Automatic capability-file installation is hosted-only; it does not claim that an
 self-hosted environment already contains those files. Desktop use reads the same canonical source
 directly. Neither configuration tests nor source packaging establish live agent discovery.
 
+### Native public research capabilities
+
+Definition-owned `research: "live-web-search"` adds the Agents API's service-side live search tool
+with no payer/domain filter. It preserves the existing MCP tool selection, source credentials and
+restricted sandbox network. A prompt alone never enables search. Credentialing release packaging
+retains this field and binds it into the workflow/runtime revisions.
+
+`research: "public-browser"` adds native live search and `computer_use`. Its launch requires a fresh
+OpenAI-hosted environment with `desktop.enabled: true` and network access enabled. It rejects
+inherited templates, environment files/variables/setup, capabilities, runtime credentials, MCPs and
+application functions. Do not widen the source-reading sandbox's network or copy its private files
+and credentials to enable browsing. The application API key stays outside both environments.
+
+The owning application handles public origins automatically under the case's standing research
+authority. `pendingPublicBrowserRequests` reads only current required actions from an exactly bound
+public-research session. `answerPublicBrowserRequest` derives the decision from freshly read state:
+approve ordinary public HTTP(S) origins without a payer allowlist, deny non-public destinations and
+cancel sign-in. DNS failures leave the request pending; they are not questions for Ops. Before the
+one SDK response attempt, the required callback must journal the exact decision and recheck the
+owner's current Stop/authority state. Expiry is checked again afterward. Reads never send a response;
+uncertain dispatch is not automatically retried or replaced. Website reason text is untrusted.
+
+Origin handling is **not** a per-action write guard or provider-network firewall. The browser and
+code share the hosted network, and this application's DNS observation cannot guarantee the
+provider's later DNS resolution. A credential-free browser prevents borrowing private source
+credentials; it does not prove every public site interaction is read-only. The public research
+instructions must exclude login, payer/source writes and consequential actions. Full originals,
+source citations and any concrete retrieval limitation must return to the primary investigator;
+a second model's summary is not a substitute. The application owns durable research-task lifecycle,
+file transfer/retention and visibility. Adapter tests alone do not establish that integration or
+hosted acceptance.
+
+`publicResearchLaunch` supplies the canonical public-only helper definition. The normal operator
+port derives its fresh hosted settings from the primary model/reasoning only; it never resolves
+the primary credential-file callback. The backend consumer journals one child per pending
+`research_public_sources` call, rechecks the parent's authority/Stop, handles public origins, and
+returns complete originals before completing that function. This is independent of private
+Salesforce MCP/Drive investigation, which remains available to the primary agent.
+
+`stageResearchFile` uses the native [environment Files API](https://developers.openai.com/api/docs/guides/agents-api/environments/files)
+to transfer exact public-original bytes into a call/digest-bound primary workspace path. Files up
+to 5 MiB use inline transfer; larger supported originals use the SDK's Files upload/staging path.
+The research ceiling is 50 MiB per original (the documented environment file-reference limit),
+with 256 MiB of originals per handoff. Operator-supplied files retain their separate 10 MiB ceiling.
+Report a truthful capacity limitation,
+not silent truncation. Successful receipts retain any uploaded Files API ID. Unknown dispatches
+retain known IDs without automatic replay, overwrite, deletion or new helper creation. A path/size
+listing is not byte verification; the primary must verify the delivered digest before using it.
+
+These are [Agents API browser](https://developers.openai.com/api/docs/guides/agents-api/tools/computer-use)
+and [web-search](https://developers.openai.com/api/docs/guides/agents-api/tools/web-search) contracts,
+not Agents SDK, Responses API or desktop-browser settings.
+
 ## Optional Self-Hosted Development Boundary
 
 The supervised session-creation contract also accepts `self_hosted` with an explicit normalized
@@ -116,6 +169,13 @@ for cross-repository ownership and the interim generated-contract distribution b
 assistant commentary/final text and generic tool-activity notices. They omit private reasoning,
 shell arguments, raw results and routing content. Failed question requests and other failed tools
 produce explicit, sanitized notices; they never invent a pending question or imply business failure.
+Adapter `0.15.1` gives failed `ask_operator` activity its own deterministic identity, distinct from
+the call identity of an already-finalized question. Live observation, reconnect and paginated
+history use the same failure identity. Applications retain the original question/answer unchanged;
+the notice neither proves answer delivery nor grants reply authority. Older failure notices already
+retained under the raw item ID remain historical and may coexist with the new notice after upgrade;
+do not rewrite them or relax immutable-event checks. A cold history read of a failed call recovers
+only its sanitized failure, not an invented previously pending question.
 New messages can stream incrementally; saved
 final items win during recovery. When reconnect misses a message's opening event, show an explicit
 writing placeholder until its complete text arrives rather than guessing overlapping delta offsets.
@@ -145,16 +205,61 @@ Subscribe/reconcile before input. An exact HTTP 400/409 `active_turn_not_steerab
 returned as `rejected/not_steerable`; preserve that result and allow the pending exact answer rather
 than automatically retrying or interrupting the agent. Other failures remain uncertain. Delivery
 does not prove the agent acknowledged or used a correction. Messages and function replies require
-a bounded caller-authorized inference window;
-observation and cancellation do not create one. A successful send means API acceptance, not a
+current inference authority; observation and cancellation do not create it. A successful send means API acceptance, not a
 completed action. Initial start uses the separate launch boundary below. Local compute uses the
 retained provisioner below. It is not safe to call its write
 methods directly from an untrusted agent. The owner serializes
 actual provider I/O per run, including Stop, and must not release that serialization on a local
 timeout while a detached send can still run. SDK requests have bounded timeouts and no automatic retries.
 
+Adapter `0.15.0` accepts either a finite `billableUntil` for supervised trials or a trusted
+`AgentInferenceAuthorizer` supplied by the owning application. These modes are mutually exclusive.
+The callback receives identity-only launch, binding, command or pending-call correlation and must
+return explicit `true` from current durable application policy. It is checked again immediately
+before inference dispatch, is never cached, and fails closed with a sanitized error. The owner
+must retain its dispatch serialization and original-actor, Stop, revocation and FIFO checks;
+this callback neither grants source access nor replaces those controls. Do not call remote source
+systems or acquire a competing application dispatch lease from the callback. Self-hosted local
+executors retain their finite deadline; application-owned authority is supported only for hosted
+execution. Stop and read-only recovery remain available after authority expires or is revoked.
+This authorization contract does not itself renew credentials or restore a lost hosted workspace.
+
+`inspectEnvironment(receipt)` verifies the exact session target and launch metadata, then uses the
+installed SDK's read-only environment retrieval to return only its ID, hosting type and observed
+status. It remains usable without inference authority. `disconnected` and `suspended` are distinct
+from `expired`; unknown responses, missing resources and transport failures remain unconfirmed.
+The owner must not interpret those failures as permission to replace the session or replay input.
+This observation neither sends a keep-alive nor claims to restore files or renew credentials.
+
+### Prepared successor workspaces
+
+The launch port accepts explicit `input: null` only for hosted execution. It creates a session
+without an initial message, using the SDK's documented omitted-input contract. The application
+must retain the original receipt, confirm expiry separately from disconnection, and authorize any
+successor. This is not an API reset of the old session or a resumable sandbox snapshot.
+
+`stagePreparedSessionFile` restores complete original bytes (up to 50 MiB each) into an exact
+request/ordinal/digest-bound `/workspace/restored-context/` path. It checks the receipt's ownership,
+the deferred-input marker, an empty turn history and a connected hosted environment, then invokes
+the application's durable dispatch callback immediately before transfer. Receipts retain exact
+path, digest, size and any Files API upload identity; uncertain transfers must not be replayed.
+
+`startPreparedSession` sends the first message only after the owner confirms every required file
+and rechecks current authority/Stop. It uses the stable `initial-<requestId>` message identity.
+It returns `accepted`, `not-attempted` or `unknown`; neither a lost response nor session creation
+proves the message started. The owner must reconcile the same receipt and observed root turn,
+never create a replacement to hide an uncertain write. Generic session creation has no invented
+idempotency guarantee. Business history, exact-file inventory, operator input and successor
+lineage remain application-owned, with the old session/history retained.
+
 Observers are coalesced per binding, limited to 20 sessions and closed after 45 seconds without a
-snapshot request. Call `close()` on application teardown. Initial turn verification follows every
+snapshot request. Call `close()` on application teardown. Snapshot and history reads share one
+45-second budget per operation, including project checks, stream opening and parallel
+reads. Snapshot and history deadlines abort the actual SDK requests and await their settlement;
+callers must keep observation/retirement leases until that promise settles, not race a shorter
+unowned timer. A timeout carries only `operator-observation-timeout`, never provider payloads.
+This read cancellation neither stops the agent nor resends an input. An opened persistent observer
+retains its separate idle lifetime. Initial turn verification follows every
 page, then caches immutable ended roots and re-reads only the mutable/new tail. A process restart
 revalidates the chain. Live activity reads the newest 100 saved items alongside its stream; this is
 not the durable history lane or a session lifetime limit. The observer keeps a rolling window of 180
@@ -192,7 +297,7 @@ workstation credential resolver. Optional local compute does not define the host
 
 The build also produces `dist/operator/operator-module.cjs`, a standalone CommonJS artifact with
 all non-Node dependencies bundled, including the pinned OpenAI SDK. It exposes the versioned
-`headstart-openai-operator/v1` boundary and adapter version `0.12.0`. An owning service can use
+`headstart-openai-operator/v1` boundary and adapter version `0.15.1`. An owning service can use
 `createOperatorRuntimePort` with its trusted configuration and independently provisioned credential;
 `createLocalOperatorRuntimePort` retains the workstation resolver. Neither factory provisions an
 executor or creates a session merely by initialization. Credential lookup is never an import-time side effect.
@@ -412,6 +517,17 @@ owning application can explicitly retire/reissue credentials using its transacti
 A crash after `creating` is uncertain. Never infer safe recreation from a timeout, generic SDK
 failure or zero search matches, and never reset an issued credential merely because creation is
 uncertain. Retain separate Stop/revocation authority.
+
+For a failed session-create dispatch, the adapter retains the provider request ID and a
+`diagnostic` containing only the operation, HTTP/connection/timeout/unclassified category,
+numeric HTTP status and allowlisted error code/type/parameter. Array positions in recognized
+parameter paths are removed. Unrecognized strings become `unrecognized`; absent fields stay
+absent. Messages, bodies, headers, causes, tool arguments and credentials are never retained.
+The canonical workflow-contracts sanitizer also lets the application revalidate before storage.
+These fields explain a future failure; they do not change `unknown` into `not-attempted`, prove
+no session exists, or permit a retry. Errors discarded by an older adapter cannot be reconstructed
+by upgrading it: use the original request ID for provider-side investigation. Any controlled
+reproduction requires a separate explicit decision, not resetting the original launch journal.
 
 The result is `created` with a receipt, `not-attempted` with a sanitized local-validation,
 provider-preflight or pre-dispatch reason, or `unknown` after crossing the dispatch boundary or

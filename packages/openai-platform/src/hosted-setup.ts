@@ -76,6 +76,7 @@ export const capabilityDirectories = z
   .refine((value) => new Set(value).size === value.length);
 
 export const hostedSetupFields = {
+  desktop: z.object({ enabled: z.boolean() }).strict().nullable().optional(),
   packages: packages.nullable().optional(),
   files: files.nullable().optional(),
   env: z.record(z.string(), z.string()).nullable().optional(),
@@ -86,6 +87,7 @@ type Setup = { [Key in keyof typeof hostedSetupFields]?: z.infer<(typeof hostedS
 
 /** Preserve omitted fields (template inheritance) and explicit null/empty overrides. */
 export function hostedSetup(value: Setup): {
+  desktop?: { enabled: boolean } | null;
   packages?: z.infer<typeof packages> | null;
   files?: z.infer<typeof files> | null;
   env?: Record<string, string> | null;
@@ -93,6 +95,7 @@ export function hostedSetup(value: Setup): {
   capability_directories?: string[] | null;
 } {
   return {
+    ...(value.desktop === undefined ? {} : { desktop: value.desktop }),
     ...(value.packages === undefined ? {} : { packages: value.packages }),
     ...(value.files === undefined ? {} : { files: value.files }),
     ...(value.env === undefined ? {} : { env: value.env }),

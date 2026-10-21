@@ -2,6 +2,7 @@ import type {
   AgentLaunchPort,
   AgentLaunchRequest,
   AgentSessionReceipt,
+  AgentEnvironmentSnapshot,
   AgentSessionCredential,
   AgentSessionCredentialDescriptor,
   AgentSessionCreateOptions,
@@ -18,9 +19,11 @@ import { z } from 'zod';
 
 import { bindCapabilityFiles } from './capability-files.js';
 import type { Target } from './config.js';
+import { observeEnvironment } from './environment-observation.js';
 import { bindHostedCredentialFiles, credentialFilePaths } from './hosted-credential-files.js';
 import { exactCredentialHosts } from './hosted-credential-network.js';
 import { runtimeCredentialBindings } from './hosted-credentials.js';
+import { requireInferenceAuthority, type InferenceAuthority } from './inference-authority.js';
 import { actionSchema, type Action } from './operations.js';
 import {
   fingerprint,
@@ -29,6 +32,7 @@ import {
   type OpenAIPlatform,
 } from './platform.js';
 import { preparedRuntimeBinding, verifyPreparedRuntime } from './prepared-runtime.js';
+import { researchTools, validateResearchLaunch } from './research-launch.js';
 import { selfHostedExecutorConnection } from './self-hosted.js';
 import type { SessionExecutor } from './session-executor.js';
 import { visitSessionHistory } from './session-history.js';
@@ -48,6 +52,18 @@ export const launchSettings = z
 
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,200}$/);
 const notAttempted = 'not-attempted';
+function uncertainCreate(error: unknown): AgentSessionCreateResult {
+  return {
+    status: 'unknown',
+    reason: 'provider-outcome',
+    ...(error instanceof MutationOutcomeUnknownError && error.providerRequestId
+      ? { providerRequestId: error.providerRequestId }
+      : {}),
+    ...(error instanceof MutationOutcomeUnknownError && error.launchDiagnostic
+      ? { diagnostic: error.launchDiagnostic }
+      : {}),
+  };
+}
 async function retainCredentialProtection(
   action: Extract<Action, { operation: 'sessions.create' }>,
   paths: string[] | undefined,
@@ -125,11 +141,25 @@ export class SessionLaunchPort implements AgentLaunchPort {
       Partial<Pick<OpenAIPlatform, 'provisionHostedCredentials'>>,
     private readonly target: Target,
     private readonly settings: unknown,
-    private readonly billableUntil: number,
+    private readonly inferenceAuthority: InferenceAuthority,
     private readonly appFunctions: readonly string[],
     private readonly executor?: SessionExecutor,
     private readonly credentialFiles?: AgentHostedCredentialFiles
-  ) {}
+  ) {
+    if (executor && typeof inferenceAuthority !== 'number')
+      throw new Error('Self-hosted execution requires bounded inference authorization');
+  }
+
+  private authorizeLaunch(request: AgentLaunchRequest): Promise<void> {
+    return requireInferenceAuthority(this.inferenceAuthority, {
+      operation: 'launch',
+      identity: {
+        target: fingerprint(this.target),
+        requestId: request.requestId,
+        workflowRevision: request.workflowRevision,
+      },
+    });
+  }
 
   async preflightLaunch(
     request: AgentLaunchRequest,
@@ -138,7 +168,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
     try {
       await this.prepare(request, descriptors, false);
       await this.platform.preflight();
-      if (Date.now() >= this.billableUntil) throw new Error('Expired');
+      await this.authorizeLaunch(request);
       return { target: fingerprint(this.target) };
     } catch {
       throw new Error(
@@ -217,9 +247,9 @@ export class SessionLaunchPort implements AgentLaunchPort {
         {
           beforeDispatch: async () => {
             dispatch.reason = 'before-dispatch';
-            if (Date.now() >= this.billableUntil) throw new Error('Expired');
+            await this.authorizeLaunch(request);
             await options.beforeDispatch?.();
-            if (Date.now() >= this.billableUntil) throw new Error('Expired');
+            await this.authorizeLaunch(request);
             dispatch.crossed = true;
           },
         }
@@ -227,13 +257,7 @@ export class SessionLaunchPort implements AgentLaunchPort {
       data = result.data;
     } catch (error) {
       if (!dispatch.crossed) return { status: notAttempted, reason: dispatch.reason };
-      return {
-        status: 'unknown',
-        reason: 'provider-outcome',
-        ...(error instanceof MutationOutcomeUnknownError && error.providerRequestId
-          ? { providerRequestId: error.providerRequestId }
-          : {}),
-      };
+      return uncertainCreate(error);
     }
     return creationResult(data, request, options.expectedTarget);
   }
@@ -256,11 +280,22 @@ export class SessionLaunchPort implements AgentLaunchPort {
     bindings: AgentSessionCredentialDescriptor[] | undefined,
     includeAuthorization: boolean
   ): Promise<Extract<Action, { operation: 'sessions.create' }>> {
-    if (Date.now() >= this.billableUntil) throw new Error('Inference authorization expired');
+    await this.authorizeLaunch(request);
     z.uuid().parse(request.requestId);
     id.parse(request.workflowRevision);
     const settings = launchSettings.parse(this.settings);
+    if (
+      request.input === null &&
+      z.object({ type: z.string() }).parse(settings.environment).type !== 'openai_hosted'
+    )
+      throw new Error('Deferred initial input requires hosted execution');
+    if (
+      typeof this.inferenceAuthority !== 'number' &&
+      z.object({ type: z.string() }).parse(settings.environment).type !== 'openai_hosted'
+    )
+      throw new Error('Application-owned inference requires hosted execution');
     const functions = request.definition.tools;
+    const nativeResearch = researchTools(request.definition.research);
     if (
       functions.some(
         (tool) => tool.name !== 'ask_operator' && !this.appFunctions.includes(tool.name)
@@ -278,23 +313,39 @@ export class SessionLaunchPort implements AgentLaunchPort {
           instructions: request.definition.instructions,
           tools: [
             ...functions,
+            ...nativeResearch,
             ...this.bindCredentials(settings.mcpServers, bindings, includeAuthorization),
           ],
         },
         environment: settings.environment,
-        input: request.input,
+        ...(request.input === null ? {} : { input: request.input }),
         metadata: {
           workflow_revision: request.workflowRevision,
           launch_request: request.requestId,
+          ...(request.input === null ? { deferred_input: request.requestId } : {}),
+          ...(request.definition.research === 'public-browser'
+            ? { research_mode: 'public-browser' }
+            : {}),
         },
       },
     });
     if (
       action.operation !== 'sessions.create' ||
       !('agent' in action.body) ||
-      action.body.agent.tools?.slice(functions.length).some((tool) => tool.type !== 'mcp')
+      action.body.agent.tools
+        ?.slice(functions.length + nativeResearch.length)
+        .some((tool) => tool.type !== 'mcp')
     )
       throw new Error('Only native MCP source bindings are permitted');
+    validateResearchLaunch(
+      request.definition,
+      action,
+      bindings !== undefined ||
+        settings.runtimeCredentials !== undefined ||
+        settings.credentialFiles !== undefined ||
+        settings.preparedRuntime !== undefined ||
+        this.credentialFiles !== undefined
+    );
     if (action.body.environment.type === 'self_hosted' && !this.executor)
       throw new Error('Self-hosted executor is not configured');
     if (request.definition.runtimeRevision && settings.credentialFiles?.length)
@@ -460,6 +511,9 @@ export class SessionLaunchPort implements AgentLaunchPort {
         }
       : null;
   }
+  async inspectEnvironment(receipt: AgentSessionReceipt): Promise<AgentEnvironmentSnapshot> {
+    return observeEnvironment(this.platform, await this.session(receipt));
+  }
   private async session(value: AgentSessionReceipt): Promise<unknown> {
     const receipt = receiptSchema.parse(value);
     if (receipt.target !== fingerprint(this.target)) throw new Error('Wrong launch target');
@@ -504,10 +558,18 @@ export class SessionLaunchPort implements AgentLaunchPort {
     // Stop can operate on the exact locally owned compute even if the provider is unavailable.
     const parsed = receiptSchema.parse(receipt);
     if (parsed.target !== fingerprint(this.target)) throw new Error('Wrong launch target');
-    if (action === 'stop' || Date.now() >= this.billableUntil) {
+    if (action === 'stop') {
       await this.executor?.stop(parsed.sessionId);
-      if (action !== 'stop') throw new Error('Executor authority expired');
       return;
+    }
+    try {
+      await requireInferenceAuthority(this.inferenceAuthority, {
+        operation: 'environment',
+        receipt: parsed,
+      });
+    } catch {
+      await this.executor?.stop(parsed.sessionId);
+      throw new Error('Executor authority expired or revoked');
     }
     const raw = await this.session(parsed);
     const session = z
@@ -522,14 +584,15 @@ export class SessionLaunchPort implements AgentLaunchPort {
       return;
     }
     if (session.environment.type !== 'self_hosted') return;
-    if (!this.executor) throw new Error('Self-hosted executor is not configured');
+    if (!this.executor || typeof this.inferenceAuthority !== 'number')
+      throw new Error('Self-hosted executor is not configured');
     if (
       action === 'start' ||
       session.required_actions.some((item) => item.type === 'environment_connection')
     ) {
       await this.executor.ensure(
         selfHostedExecutorConnection(raw, parsed.sessionId),
-        this.billableUntil
+        this.inferenceAuthority
       );
     }
   }

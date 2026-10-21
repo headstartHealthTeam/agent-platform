@@ -8,7 +8,6 @@ import {
   validateWorkflowOutput,
 } from '@headstart-health/workflow-runtime';
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
 
 import {
   credentialingInputSchema,
@@ -16,6 +15,7 @@ import {
   type CredentialingInput,
   type CredentialingOutput,
 } from './contracts.js';
+import { credentialingJsonSchema } from './json-schema.js';
 import {
   credentialingArtifactOutputSchema,
   syntheticArtifactInputSchema,
@@ -51,11 +51,13 @@ describe('credentialing preparation contracts', () => {
   });
 
   it('keeps JSON Schemas synchronized with the canonical typed contracts', () => {
-    expect(workflow.inputSchema).toEqual(z.toJSONSchema(syntheticArtifactInputSchema));
+    expect(workflow.inputSchema).toEqual(credentialingJsonSchema(syntheticArtifactInputSchema));
     expect(readJson('schemas/production-read-input.schema.json')).toEqual(
-      z.toJSONSchema(productionReadInputSchema)
+      credentialingJsonSchema(productionReadInputSchema)
     );
-    expect(workflow.outputSchema).toEqual(z.toJSONSchema(credentialingArtifactOutputSchema));
+    expect(workflow.outputSchema).toEqual(
+      credentialingJsonSchema(credentialingArtifactOutputSchema)
+    );
     expect(validateWorkflowOutput(workflow, referenceOutput()).valid).toBe(true);
     expect(readJson('fixtures/input.valid.json')).toEqual(loadScenario('ga-initial'));
   });

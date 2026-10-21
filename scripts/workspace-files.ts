@@ -5,6 +5,7 @@ import path from 'node:path';
 
 import { z } from 'zod';
 
+import { canonicalPath } from './canonical-path.js';
 import { TEMPLATE_VERSION, workspaceTemplates } from './workspace-templates.js';
 
 const RECEIPT = '.headstart/receipt.json';
@@ -51,7 +52,11 @@ export const assertSafePath = (target: string): void => {
 export const workspaceRoot = (root: string): string => {
   const resolved = path.resolve(root);
   assertSafePath(resolved);
-  if (resolved === path.parse(resolved).root || resolved === os.homedir())
+  const home = path.resolve(os.homedir());
+  const isHome =
+    resolved === home ||
+    (fs.existsSync(resolved) && canonicalPath(resolved) === canonicalPath(home));
+  if (resolved === path.parse(resolved).root || isHome)
     throw new Error('Choose a dedicated workspace directory, not a home or filesystem root.');
   if (fs.lstatSync(path.join(resolved, '.git'), { throwIfNoEntry: false }))
     throw new Error('Workspace root must not be a Git checkout.');

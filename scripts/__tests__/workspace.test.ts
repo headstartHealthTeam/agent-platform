@@ -136,6 +136,28 @@ describe('workspace scaffold', () => {
     expect(() => workspaceRoot(root)).toThrow('Git checkout');
   });
 
+  it('compares existing home identities before allowing a scaffold', () => {
+    const directory = fixtureRoot();
+    const home = path.join(directory, 'ProfileHome');
+    const alternate = path.join(directory, 'PROFILEHOME');
+    fs.mkdirSync(home);
+    vi.spyOn(os, 'homedir').mockReturnValue(home);
+
+    if (fs.existsSync(alternate)) {
+      expect(() => workspaceRoot(alternate)).toThrow('dedicated');
+      expect(() => applyFiles(alternate, revision)).toThrow('dedicated');
+      expect(fs.readdirSync(home)).toEqual([]);
+    } else {
+      // Case-sensitive filesystems can legitimately have two distinct directories.
+      fs.mkdirSync(alternate);
+      expect(workspaceRoot(alternate)).toBe(alternate);
+      expect(fs.readdirSync(home)).toEqual([]);
+    }
+    const child = path.join(home, 'workspace');
+    expect(workspaceRoot(child)).toBe(child);
+    expect(fs.existsSync(child)).toBe(false);
+  });
+
   it('rejects symlinks and non-directory ancestors without touching their target', () => {
     const directory = fixtureRoot();
     const target = path.join(directory, 'target');

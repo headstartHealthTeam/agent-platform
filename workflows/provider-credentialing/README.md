@@ -21,7 +21,7 @@ complete real-source correction loop remain unverified; this decision changes no
 
 The build also emits `dist/preparation-definition.json`: the canonical skill, the
 [connected entry prompt](prompts/connected.md), both public input schemas, proposal schema and
-five function declarations. The instructions are a short mandatory entry, not an inlined manual.
+six function declarations, including autonomous public-source research. The instructions are a short mandatory entry, not an inlined manual.
 Its `capabilities` field carries exact canonical skill/supporting files at repository-relative
 locations under `/workspace/headstart-workflow`, with `/workspace/headstart-workflow/skills`
 registered for discovery. Schemas and connected instructions remain readable files. Declared skill
@@ -99,6 +99,24 @@ The intended MVP prepares and, after exact human review, populates the first aut
 Medicaid route, reads back the result and hands protected actions to a human. Texas existing-provider
 group-add is an early design contrast, not a second implemented portal. The core carries payer,
 product, jurisdiction, request, location and prior-affiliation scope without Georgia branches.
+
+## Public Research Handoff And Technical Limitations
+
+The shared `workflow-contracts` public-research manifest owns exact metadata bounds. The public
+research child receives a Python standard-library preflight generated from those same bounds and
+must validate metadata, complete original bytes and digests before ending its turn. Repair metadata
+without truncating source originals or inventing provenance. A successful producer preflight is not
+proof that the application's subsequent file transfer completed.
+
+`get_credentialing_review_context` may include application-owned `executionLimitations`. Copy those
+exact mechanical delivery facts into the proposal and disclose them in standalone generated review
+aids. A ZIP includes `execution-limitations.json` at its root. The paired backend checks these facts
+before queueing and publication; they are not new Ops questions, payer judgments, or permission to
+replay a failed attempt. Existing packages without the optional field remain readable.
+
+The prepared definition minifies embedded JSON schemas without changing their parsed constraints;
+tracked schema sources remain formatted. Non-JSON instruction assets retain their exact bytes.
+The installed definition digest covers the actual installed bytes.
 
 ## Reuse And Ownership
 
@@ -261,7 +279,12 @@ exports remain unchanged; artifact consumers use the explicit union exports.
 
 - `records` group fields by stable record ID for education, employment, address, ownership,
   management, license and coverage. Separate rows retain their own subjects, related parties,
-  locations and periods. Address roles distinguish service, pay-to and mail-to. Unknown period
+  locations and periods. Internal IDs are distinct from external `source.recordId` values. Address
+  roles distinguish service, pay-to and mail-to; `addressRole: null` with `sourceAddressType` preserves
+  a source business/registered-agent context when its payer mapping is unknown. That context and
+  its documented facts remain in the source inventory; they cannot support a destination answer
+  scoped to that address until its payer role is established. Affected answers stay unresolved
+  with H-02, while unrelated mapped answers remain usable. Unknown period
   boundaries remain null; do not turn a proxy date into a record's verified date range.
 - `relatedParties` declare scoped people/organizations and cited relationship evidence. Their
   presence is not a tool authorization or proof of ownership/signing authority. Scope remains
@@ -277,6 +300,9 @@ exports remain unchanged; artifact consumers use the explicit union exports.
   A converted artifact retains exact source references and the transformation ID/revision.
   Validation rejects missing/stale references and cycles and checks the whole proposed lineage.
   There is one declared revision per artifact ID in a snapshot; prior snapshots stay immutable.
+  Conversion lineage stays within one subject/scope. Optional generated cross-subject analysis
+  belongs in session outputs and structured findings, not the source/conversion inventory.
+  Historical/expired/unknown originals are retained without claiming current attachment validity.
 - Field and attachment requirements name their destination system/section/field. Protected-action
   requirements name action, designated actor/role, related documents and any fields/documents
   blocked by a mid-form human action. Each gets a `human-required` or `unresolved` disposition.
@@ -302,6 +328,15 @@ H-02; mixed conditions require both stops. Any outstanding question prevents pre
 Do not silently coerce old proposals or overwrite historical evaluation results. Schema/stop checks cannot prove
 that a question's classification is semantically correct; source review remains necessary.
 
+Before connected publication, use the installed read-only semantic preflight:
+`node dist/preparation-preflight-cli.cjs --input <snapshot.json> --proposal <proposal.json>` from the
+runtime root. It exits nonzero with canonical issues or reports readiness, without echoing source
+bodies, reading business systems or queueing a package. The backend checks semantics before queue
+acknowledgement and independently revalidates retained bytes, case revision and authority at final
+publication. Preflight success is not a retention receipt or review approval. The synthetic
+`historical-preparation` fixture preserves genuine conflicts, unresolved payer roles, historical
+comparisons and complete original inventory; a truthful incomplete package is a valid handoff.
+
 Malformed or inconsistent snapshots, stale references and invalid proposals fail validation.
 An evidence read failure is explicit, never an empty success. Stop and unknown-effect scenarios
 cannot be labeled ready. The fingerprint changes with sources, scope, route or proposed values;
@@ -326,6 +361,34 @@ secrets and must not be silently stripped. Read-only MCP source capability is di
 backend's normal writes of packages, reviews, messages and audit. The added
 `full-evidence-not-summary-only` evaluation defines the expected behavior; it is not a recorded
 passing model trial. These requirements supersede earlier metadata-only or summary-only assumptions.
+
+## Instruction revision 0.4.0 — investigation and actionable Ops handoff
+
+New preparations read the canonical [investigation reference](../../skills/headstart-provider-credentialing/references/evidence-investigation.md)
+before escalating missing information. Follow authorized SOP links through complete workbooks,
+folders and originals; distinguish historical leads, partial evidence and concrete access limits.
+Read returned documents before revising the package. Do not substitute a collection promise or
+a similar-name record. Applicability remains payer-neutral agent judgment, not a backend rule.
+
+The additive `opsReview` and per-question `review` fields provide short cited findings, a next
+step, known context and residual requests. Canonical validation binds their evidence revisions
+and unresolved requirements; it does not prove thorough investigation or factual correctness.
+Older artifacts remain valid and retain their full handoff. Application labels/test/archive
+metadata never becomes credentialing evidence or changes the immutable work scope.
+
+`evidence-investigation.test.ts` exercises real document readers with an invented linked SOP,
+multi-sheet workbook, paginated folder and returned original. These deterministic tests and the
+skill's added evaluation definitions are **not recorded passing model trials**. Repeated hosted
+behavior evaluation and the real-reference benchmark remain separate activation/acceptance gates.
+
+### Instruction revision 0.4.1 — request-stage and residual-gap accuracy
+
+The same canonical investigation reference now separates an enrollment's intended outcome from
+requirements for preparing it. Known group identifiers remain cited draft answers; unresolved
+group/location coverage is a narrower question, not a request to obtain the new applicant's approval
+before applying. An explicit current-route prerequisite still governs renewal or other requests.
+Overbroad saved questions must be corrected in a new package, not only explained in chat. The new
+initial-enrollment and renewal-control evaluation definitions are not passing hosted-model evidence.
 
 See the [documentation hub](../../docs/README.md),
 [authoring guide](../../docs/workflow-authoring-guide.md) and

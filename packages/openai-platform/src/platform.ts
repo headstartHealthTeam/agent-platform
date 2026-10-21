@@ -1,7 +1,15 @@
 import { verifyCapabilityPreflight } from '@headstart-health/capability-runtime';
-import type { AgentArtifact, AgentArtifactRequest } from '@headstart-health/workflow-contracts';
+import {
+  agentLaunchDiagnostic,
+  type AgentLaunchDiagnostic,
+  type AgentArtifact,
+  type AgentArtifactRequest,
+  type AgentResearchFileTransfer,
+  type AgentResearchFileReceipt,
+} from '@headstart-health/workflow-contracts';
 import OpenAI from 'openai';
 
+import { pendingBrowserApprovals } from './browser-approvals.js';
 import {
   ADAPTER_VERSION,
   CAPABILITY,
@@ -28,9 +36,15 @@ import {
 } from './operations.js';
 import { OperatorItems } from './operator-items.js';
 import { pendingFunctionCalls } from './pending-functions.js';
+import {
+  transferResearchFile,
+  transferWorkspaceFile,
+  transferPreparedSessionFile,
+} from './research-file-transfer.js';
 import { prepareRuntimeUpload } from './runtime-upload.js';
 
 export { fingerprint } from './fingerprint.js';
+const sessionCreate = 'sessions.create';
 export interface ActionPlan {
   operation: Action['operation'];
   target: Target;
@@ -66,9 +80,29 @@ export class OpenAIResourceMissingError extends Error {
     super('OpenAI read failed; the requested resource was not found.');
   }
 }
+function mutationFailureKind(error: unknown): AgentLaunchDiagnostic['kind'] {
+  if (error instanceof OpenAI.APIConnectionTimeoutError) return 'timeout';
+  if (error instanceof OpenAI.APIConnectionError) return 'connection';
+  if (error instanceof OpenAI.APIError && error.status !== undefined) return 'http';
+  return 'unclassified';
+}
+function launchFailure(error: unknown): AgentLaunchDiagnostic {
+  const diagnostic: AgentLaunchDiagnostic = {
+    operation: sessionCreate,
+    kind: mutationFailureKind(error),
+  };
+  if (!(error instanceof OpenAI.APIError)) return diagnostic;
+  // The SDK types some response fields as any. Preserve them as unknown until allowlisting.
+  const code: unknown = error.code;
+  const type: unknown = error.type;
+  const parameter: unknown = error.param;
+  const status: unknown = error.status;
+  return agentLaunchDiagnostic({ ...diagnostic, status, code, type, parameter }) ?? diagnostic;
+}
 export class MutationOutcomeUnknownError extends Error {
   readonly providerRequestId?: string;
-  constructor(error: unknown) {
+  readonly launchDiagnostic?: AgentLaunchDiagnostic;
+  constructor(error: unknown, operation?: Action['operation']) {
     super(
       'Mutation failed or outcome is unknown. Reconcile the resource before retrying; no automatic retry was attempted.'
     );
@@ -78,6 +112,7 @@ export class MutationOutcomeUnknownError extends Error {
       /^[A-Za-z0-9_-]{1,200}$/.test(error.requestID)
     )
       this.providerRequestId = error.requestID;
+    if (operation === sessionCreate) this.launchDiagnostic = launchFailure(error);
   }
 }
 function sanitizedReadError(error: unknown): Error {
@@ -101,7 +136,7 @@ function sanitizedMutationError(action: Action, error: unknown): Error {
   )
     return new InputNotSteerableError();
   // Never retain SDK errors as causes: they may carry request, response or credential content.
-  return new MutationOutcomeUnknownError(error);
+  return new MutationOutcomeUnknownError(error, action.operation);
 }
 
 // Never return or serialize an SDK Page: it contains transport state, not just API data.
@@ -113,6 +148,33 @@ function pageData(page: { data: { id: string | null }[]; has_more: boolean }): u
 export class OpenAIPlatform {
   readonly #client: OpenAI;
   readonly #config: RuntimeConfig;
+
+  public async stagePreparedSessionFile(
+    environmentId: string,
+    file: AgentResearchFileTransfer,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentResearchFileReceipt> {
+    await this.preflight();
+    return transferPreparedSessionFile(this.#client, environmentId, file, beforeDispatch);
+  }
+
+  public async stageWorkspaceFile(
+    environmentId: string,
+    file: AgentResearchFileTransfer,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentResearchFileReceipt> {
+    await this.preflight();
+    return transferWorkspaceFile(this.#client, environmentId, file, beforeDispatch);
+  }
+
+  public async stageResearchFile(
+    environmentId: string,
+    file: AgentResearchFileTransfer,
+    beforeDispatch: () => Promise<void>
+  ): Promise<AgentResearchFileReceipt> {
+    await this.preflight();
+    return transferResearchFile(this.#client, environmentId, file, beforeDispatch);
+  }
 
   public async readHostedArtifact(
     sessionId: string,
@@ -208,14 +270,14 @@ export class OpenAIPlatform {
     }
   }
 
-  public async read(input: unknown): Promise<PlatformResult> {
+  public async read(input: unknown, signal?: AbortSignal): Promise<PlatformResult> {
     const parsed = readSchema.safeParse(input);
     if (!parsed.success) {
       throw new Error('Invalid or unsupported OpenAI read.');
     }
-    await this.preflight();
+    await this.preflight(signal);
     try {
-      const data = await this.query(parsed.data);
+      const data = await this.query(parsed.data, signal);
       return { data, fingerprint: fingerprint(data) };
     } catch (error) {
       throw sanitizedReadError(error);
@@ -223,16 +285,31 @@ export class OpenAIPlatform {
   }
 
   /** One root-turn content observation. Completion/closure never acknowledges executor shutdown. */
-  public async openOperatorObservation(binding: {
-    sessionId: string;
-    turnId: string;
-  }): Promise<{ items: OperatorItems; close: () => void; completion: Promise<void> }> {
+  public async openOperatorObservation(
+    binding: {
+      sessionId: string;
+      turnId: string;
+    },
+    signal?: AbortSignal
+  ): Promise<{ items: OperatorItems; close: () => void; completion: Promise<void> }> {
     const sessionId = observationRequestSchema.parse({ sessionId: binding.sessionId }).sessionId;
     observationRequestSchema.parse({ sessionId: binding.turnId });
-    await this.preflight();
-    const stream = await this.#client.beta.agents.sessions.events.stream(sessionId).catch(() => {
-      throw new Error('Unable to open operator observation; no provider payload was emitted.');
-    });
+    await this.preflight(signal);
+    const controller = new AbortController();
+    const abort = (): void => {
+      controller.abort();
+    };
+    signal?.throwIfAborted();
+    signal?.addEventListener('abort', abort, { once: true });
+    const stream = await this.#client.beta.agents.sessions.events
+      .stream(sessionId, { signal: controller.signal })
+      .catch(() => {
+        throw new Error('Unable to open operator observation; no provider payload was emitted.');
+      })
+      .finally(() => {
+        // The opening read has settled; the retained observer now owns its independent lifetime.
+        signal?.removeEventListener('abort', abort);
+      });
     const items = new OperatorItems(sessionId, binding.turnId);
     const completion = (async (): Promise<void> => {
       try {
@@ -253,52 +330,70 @@ export class OpenAIPlatform {
     };
   }
 
-  private async query(request: ReadOperation): Promise<unknown> {
+  private async query(request: ReadOperation, signal?: AbortSignal): Promise<unknown> {
     const agents = this.#client.beta.agents;
+    const options = signal === undefined ? {} : { signal };
     switch (request.operation) {
       case 'models.list':
-        return (await this.#client.models.list()).data;
+        return (await this.#client.models.list(options)).data;
       case 'agents.list':
-        return pageData(await agents.list(request.query));
+        return pageData(await agents.list(request.query, options));
       case 'agents.get':
-        return agents.retrieve(request.id);
+        return agents.retrieve(request.id, options);
       case 'sessions.list':
-        return pageData(await agents.sessions.list(request.query));
+        return pageData(await agents.sessions.list(request.query, options));
       case 'sessions.get':
-        return agents.sessions.retrieve(request.id);
+        return agents.sessions.retrieve(request.id, options);
+      case 'environments.get':
+        return agents.environments.retrieve(request.id, options);
       case 'sessions.pending-functions':
         return {
-          data: pendingFunctionCalls(await agents.sessions.retrieve(request.id), {
+          data: pendingFunctionCalls(await agents.sessions.retrieve(request.id, options), {
+            sessionId: request.id,
+            turnId: request.turnId,
+          }),
+        };
+      case 'sessions.pending-browser-approvals':
+        return {
+          data: pendingBrowserApprovals(await agents.sessions.retrieve(request.id, options), {
             sessionId: request.id,
             turnId: request.turnId,
           }),
         };
       case 'sessions.turns':
-        return pageData(await agents.sessions.turns.list(request.id, request.query));
+        return pageData(await agents.sessions.turns.list(request.id, request.query, options));
       case 'sessions.turn.get':
-        return agents.sessions.turns.retrieve(request.turnId, { session_id: request.id });
+        return agents.sessions.turns.retrieve(request.turnId, { session_id: request.id }, options);
       case 'sessions.items':
-        return pageData(await agents.sessions.items.list(request.id, request.query));
+        return pageData(await agents.sessions.items.list(request.id, request.query, options));
       case 'sessions.subagents':
-        return pageData(await agents.sessions.subagents.list(request.id, request.query));
+        return pageData(await agents.sessions.subagents.list(request.id, request.query, options));
       case 'sessions.subagent.turns':
         return pageData(
-          await agents.sessions.subagents.turns.list(request.subagentId, {
-            session_id: request.id,
-            ...request.query,
-          })
+          await agents.sessions.subagents.turns.list(
+            request.subagentId,
+            {
+              session_id: request.id,
+              ...request.query,
+            },
+            options
+          )
         );
       case 'sessions.subagent.items':
         return pageData(
-          await agents.sessions.subagents.items.list(request.subagentId, {
-            session_id: request.id,
-            ...request.query,
-          })
+          await agents.sessions.subagents.items.list(
+            request.subagentId,
+            {
+              session_id: request.id,
+              ...request.query,
+            },
+            options
+          )
         );
       case 'templates.list':
-        return pageData(await agents.environments.templates.list(request.query));
+        return pageData(await agents.environments.templates.list(request.query, options));
       case 'templates.get':
-        return agents.environments.templates.retrieve(request.id);
+        return agents.environments.templates.retrieve(request.id, options);
     }
   }
 
@@ -323,6 +418,7 @@ export class OpenAIPlatform {
     await this.preflight();
     await this.checkCurrentAgent(action);
     await this.checkPendingFunction(action);
+    await this.checkPendingBrowserApproval(action);
     // No further read/preflight may be inserted after this journal boundary. SDK errors after
     // it remain uncertain; accepting a generic header does not establish create idempotency.
     await options?.beforeDispatch?.();
@@ -370,6 +466,26 @@ export class OpenAIPlatform {
     }
   }
 
+  private async checkPendingBrowserApproval(action: Action): Promise<void> {
+    if (action.operation !== 'sessions.browser-approval') return;
+    try {
+      const session = await this.#client.beta.agents.sessions.retrieve(action.id);
+      const pending = pendingBrowserApprovals(session, {
+        sessionId: action.id,
+        turnId: action.turnId,
+      }).find((request) => request.requestId === action.requestId);
+      if (
+        pending?.request.type !== action.response.type ||
+        pending.fingerprint !== action.expectedRequestFingerprint
+      )
+        throw new Error('Pending browser approval changed');
+    } catch {
+      throw new Error(
+        'Pending browser approval missing, changed or unverifiable; no response submitted.'
+      );
+    }
+  }
+
   private async mutate(
     action: Action,
     upload?: Awaited<ReturnType<typeof prepareRuntimeUpload>>
@@ -400,6 +516,16 @@ export class OpenAIPlatform {
       case 'sessions.cancel':
         return agents.sessions.events.create(action.id, {
           events: [{ type: 'agent.session.input.cancel' }],
+        });
+      case 'sessions.browser-approval':
+        return agents.sessions.events.create(action.id, {
+          events: [
+            {
+              type: 'agent.session.input.computer_use_approval_request_result',
+              request_id: action.requestId,
+              response: action.response,
+            },
+          ],
         });
       case 'sessions.tool-result':
         return agents.sessions.events.create(action.id, {

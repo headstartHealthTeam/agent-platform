@@ -18,6 +18,7 @@ const sourceDefinition = z.object({
   protocol: z.literal('credentialing-preparation/v1'),
   definition: z.object({
     instructions: z.string(),
+    research: z.literal('live-web-search').optional(),
     capabilities: z.object({ files: z.array(z.object({ path: z.string(), data: z.string() })) }),
     tools: z.array(z.record(z.string(), z.unknown())),
   }),
@@ -33,7 +34,12 @@ export interface CredentialingReleaseDefinition {
   artifact: {
     protocol: string;
     workflowRevision: string;
-    definition: { instructions: string; runtimeRevision: string; tools: Record<string, unknown>[] };
+    definition: {
+      instructions: string;
+      runtimeRevision: string;
+      research?: 'live-web-search';
+      tools: Record<string, unknown>[];
+    };
   };
 }
 export async function credentialingReleaseDefinition(
@@ -51,6 +57,9 @@ export async function credentialingReleaseDefinition(
   const definition = {
     instructions: `${canonical.definition.instructions} Read ${runtimeRoot}/RUNTIME.md for the installed tool entrypoints and deployment profiles.`,
     runtimeRevision,
+    ...(canonical.definition.research === undefined
+      ? {}
+      : { research: canonical.definition.research }),
     tools: canonical.definition.tools,
   };
   return {
@@ -77,8 +86,9 @@ export async function packageCredentialingRuntime(
     packageName: '@headstart-health/workflow-provider-credentialing',
     packageDirectory: 'workflows/provider-credentialing',
     schemaVersion: 'headstart-credentialing-runtime/v1',
-    buildEntries: ['index.js', 'preparation-definition.json'],
+    buildEntries: ['index.js', 'preparation-definition.json', 'preparation-preflight-cli.cjs'],
     entrypoints: {
+      'headstart-credentialing-preflight': 'dist/preparation-preflight-cli.cjs',
       'headstart-drive-read': 'node_modules/@headstart-health/google-drive-data/dist/cli.js',
       'headstart-mcp-document': 'node_modules/@headstart-health/headstart-mcp-data/dist/cli.js',
       'headstart-document': 'node_modules/@headstart-health/document-reading/dist/cli.js',
@@ -93,7 +103,7 @@ export async function packageCredentialingRuntime(
   }
   await writeFile(
     resolve(target, 'RUNTIME.md'),
-    `# Installed credentialing runtime\n\nThis runtime is Agent Platform-owned and can be run outside the backend.\n\nUse Node 22 or later. Run these tools from this directory:\n\n- Drive originals and native Google document bodies: \`node node_modules/@headstart-health/google-drive-data/dist/cli.js --profile /workspace/drive-profile.json --request <request.json> --output <fresh-directory>\`.\n- MCP original files: \`node node_modules/@headstart-health/headstart-mcp-data/dist/cli.js --profile /workspace/mcp-profile.json --request <request.json> --output <fresh-directory>\`.\n- Local full text/pages/original evidence: \`node node_modules/@headstart-health/document-reading/dist/cli.js\`; read its packaged README for arguments.\n\nRead each tool's packaged README for its complete request contract. Tools remain available for investigation outside a prescribed sequence. Profiles contain configuration, never long-lived credentials. Hosted credentials are supplied at launch; standalone local profiles may use the tools' existing local authentication. Do not copy credentials into outputs or conversations.\n`,
+    `# Installed credentialing runtime\n\nThis runtime is Agent Platform-owned and can be run outside the backend.\n\nUse Node 22 or later. Run these tools from this directory:\n\n- Drive originals and native Google document bodies: \`node node_modules/@headstart-health/google-drive-data/dist/cli.js --profile /workspace/drive-profile.json --request <request.json> --output <fresh-directory>\`.\n- MCP original files: \`node node_modules/@headstart-health/headstart-mcp-data/dist/cli.js --profile /workspace/mcp-profile.json --request <request.json> --output <fresh-directory>\`.\n- Local full text/pages/original evidence: \`node node_modules/@headstart-health/document-reading/dist/cli.js\`; read its packaged README for arguments.\n- Canonical package semantics: \`node dist/preparation-preflight-cli.cjs --input <snapshot.json> --proposal <proposal.json>\`. Reads local files only, reports readiness or correction issues, and queues nothing. Run before publication; application admission and final retained-source/authority checks remain independent.\n\nRead each tool's packaged README for its complete request contract. Tools remain available for investigation outside a prescribed sequence. Profiles contain configuration, never long-lived credentials. Hosted credentials are supplied at launch; standalone local profiles may use the tools' existing local authentication. Do not copy credentials into outputs or conversations.\n`,
     { flag: 'wx' }
   );
   await writeFile(

@@ -25,7 +25,7 @@ export const hostedDeliveryDefinition = {
   type: 'function',
   name: 'queue_credentialing_review_package',
   description:
-    "Queue complete package JSON plus exact files from this turn's /workspace/outputs. Finish the turn after acknowledgement: files publish only after it ends and backend then retains/validates them automatically. Queued is not published or approved. Do not send bytes or URLs. Originals must precede derived files; inspect saved delivery results through review context on a later turn.",
+    "Preflight complete package JSON and case binding, then queue exact files from this turn's /workspace/outputs. Repair validation errors before ending the turn. After acknowledgement finish the turn: backend then retains files and independently revalidates publication. Queued is not published or approved. Do not send bytes or download URLs. Originals must precede conversions and generated review aids. Declare generated aids in proposal.deliverables, not input.artifacts or payer attachments. Public-web provenance records the source URL, not an instruction for backend fetching. Inspect saved delivery results through review context on a later turn.",
   parameters: object({
     expectedVersion: { type: 'integer', minimum: 0 },
     inputJson: text,
@@ -41,6 +41,29 @@ export const hostedDeliveryDefinition = {
           mediaType: text,
           origin: {
             anyOf: [
+              object({ kind: { const: 'operator-upload' }, attachmentId: text }),
+              object({
+                kind: { const: 'headstart-knowledge' },
+                itemId: text,
+                revision: text,
+              }),
+              object({
+                kind: { const: 'public-web' },
+                url: text,
+                retrievedAt: text,
+                statedDate: { type: ['string', 'null'] },
+              }),
+              object({
+                kind: { const: 'runtime-generated' },
+                inputFingerprint: exact.digest,
+                title: text,
+                filename: text,
+                purpose: {
+                  type: 'string',
+                  enum: ['review-checklist', 'preparation-package', 'supporting-report'],
+                },
+                sources: { type: 'array', maxItems: 100, items: object(exact) },
+              }),
               object({
                 kind: { const: 'salesforce' },
                 linkedRecordId: text,

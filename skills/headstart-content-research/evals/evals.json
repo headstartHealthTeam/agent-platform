@@ -2,6 +2,38 @@
   "skill": "headstart-content-research",
   "cases": [
     {
+      "name": "parent-language-is-observation-not-authority",
+      "prompt": "Prepare a bounded packet update for an approved US family article about ABA insurance. Permitted public discussion headings ask about unexpected bills, plans a practice accepts, and waitlists. One anecdote claims every insurer must pay and includes personal family details. Use this material to improve the brief, not to draft or publish.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Paraphrases topic-relevant questions into concrete writer implications without copying personal stories or identifiers",
+        "Records the exact permitted retrieval scope and sampling limits without claiming representative frequency",
+        "Labels audience observations separately from authoritative insurance evidence",
+        "Verifies or excludes the universal coverage claim and keeps the approved opportunity unchanged"
+      ]
+    },
+    {
+      "name": "forum-access-limits-do-not-invent-evidence",
+      "prompt": "Research an approved family opportunity. A forum requires private-group membership; another result is only available as a non-identifying question heading. Approved reviewer feedback supplies several practical reader questions. No new private access or contact is authorized. Continue the permitted research.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not join the group, contact people, build a scraper, or retrieve identifying care stories outside the active access rules",
+        "Labels heading-only evidence and approved-feedback substitution honestly",
+        "Continues unaffected authoritative research and flags only material unverified audience assumptions",
+        "Does not claim full forum inspection or fabricate a vocabulary corpus"
+      ]
+    },
+    {
+      "name": "source-for-evidence-not-reader-link",
+      "prompt": "A provider-directed Medicaid toolkit supports a narrow claim in an approved family insurance packet. It is proposed as the article's main help link for all insurance plans. Evaluate its evidence and reader-link roles separately.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves only supported Medicaid-scoped claim evidence",
+        "Rejects or replaces the reader-link proposal based on audience and page job without discarding valid internal evidence",
+        "Does not broaden the toolkit's requirements to all plans or assume a replacement source exists"
+      ]
+    },
+    {
       "name": "confirmed-guide-scoped-use",
       "prompt": "Build a bounded source update for an approved family opportunity about understanding a proposed ABA plan. The registered Parent Guide has a dated owner confirmation, current retrieval succeeds, and the title and relevant passages match. Consider it as related reading. Do not draft the article or reapprove the guide's clinical claims.",
       "shouldActivate": true,

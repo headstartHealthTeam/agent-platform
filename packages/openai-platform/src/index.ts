@@ -7,6 +7,7 @@ export {
 export { readCredential, type SecretCommand } from './credential.js';
 export { selfHostedExecutorConnection, type ExecutorConnection } from './self-hosted.js';
 export { pendingFunctionCalls, type PendingFunctionCall } from './pending-functions.js';
+export { pendingBrowserApprovals, type PendingBrowserApproval } from './browser-approvals.js';
 export { OperatorItems, type OperatorItem } from './operator-items.js';
 export {
   OperatorRuntimePort,

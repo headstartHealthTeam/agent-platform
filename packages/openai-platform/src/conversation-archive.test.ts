@@ -107,10 +107,12 @@ function fixture(): {
         source = childItems;
         break;
       case 'models.list':
+      case 'environments.get':
       case 'agents.list':
       case 'agents.get':
       case 'sessions.list':
       case 'sessions.pending-functions':
+      case 'sessions.pending-browser-approvals':
       case 'sessions.turn.get':
       case 'templates.list':
       case 'templates.get':

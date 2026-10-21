@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 
-import { z } from 'zod';
-
+import { credentialingJsonSchema } from './json-schema.js';
 import {
   syntheticArtifactInputSchema,
   productionReadInputSchema,
@@ -15,6 +14,8 @@ for (const [name, schema] of [
 ] as const) {
   fs.writeFileSync(
     new URL(`../schemas/${name}.schema.json`, import.meta.url),
-    `${JSON.stringify(z.toJSONSchema(schema), null, 2)}\n`
+    // Shared definitions preserve the canonical constraints without repeating every citation
+    // and scope in the installed files; keep the existing hosted-definition size bound.
+    `${JSON.stringify(credentialingJsonSchema(schema), null, 2)}\n`
   );
 }

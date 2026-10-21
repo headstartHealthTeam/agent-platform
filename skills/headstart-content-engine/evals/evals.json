@@ -2,6 +2,50 @@
   "skill": "headstart-content-engine",
   "cases": [
     {
+      "name": "novice-reader-verification-regression",
+      "prompt": "Verify this exact family passage. The complete packet supports its facts and all artifact fields pass. Text: 'Start with your child's health plan. Establish the ABA benefit under this specific plan and request written provisions. Check the exact provider and setting. Verify network participation and capacity. Find out what your family might pay. Coinsurance is your percentage of covered costs. Ask both parties to explain the estimate. If the answer is no, identify the reason.' The packet distinguishes the insurer's coverage explanation from the practice's proposed-service estimate; neither term is otherwise explained in the article. Return gate decisions and evidence without rewriting or browsing.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Returns repair for material comprehension or usefulness defects despite factual and artifact checks passing",
+        "Identifies exact passages that assume knowledge, leave cost implications abstract, or obscure the actor and subject",
+        "Preserves the insurer-versus-practice distinction rather than using clearer wording to change responsibilities",
+        "Does not use an earlier pass, a checklist, or a grade-level score as proof of comprehension"
+      ]
+    },
+    {
+      "name": "clear-family-explanation-with-required-terms",
+      "prompt": "Verify this exact family passage in its article context against a complete supporting packet. The preceding paragraphs introduce applied behavior analysis (ABA) as the therapy under discussion and explain a deductible as the amount the family pays for covered care before the plan begins paying for care subject to it, noting that some services are covered sooner. Passage: 'Does your plan cover ABA therapy for your child? Call the member services number on your insurance card. Ask what requirements apply and where to find them in writing. Is the provider in network for your plan? That means it has a contract with your plan. Ask the practice to check your exact plan and whether it has openings or a waitlist. Coinsurance is your share of a covered bill. In this made-up example, your deductible is already met, your share is 20% of a $100 covered charge, and no other charge applies. You pay $20 and the plan pays $80. This is not an estimate of ABA costs.' All other required fields and safety checks pass. A readability tool reports grade 5.2 because of necessary terms. Return evidence-backed decisions without rewriting.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Judges the actual explanations and usable questions rather than automatically failing a score above four",
+        "Checks the arithmetic and preserved hypothetical assumptions",
+        "Records strengths with passages and reader consequences",
+        "Does not demand identical headings, banned words, mandatory empathy, or another rewrite merely to lower the score"
+      ]
+    },
+    {
+      "name": "simple-words-still-need-a-clear-action",
+      "prompt": "Verify this family passage against its complete packet: 'Check the plan. Ask them about it. If it is not right, find out why. Do this before you start.' A readability tool reports grade three. The surrounding article does not identify which plan, who they are, what it means, or what needs checking. Return the appropriate gate and evidence.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Fails usefulness or comprehension despite short familiar words and a low reading score",
+        "Identifies ambiguous subjects and missing actor or next-action context",
+        "Requests a supported concrete explanation within the bounded repair allowance",
+        "Does not invent missing process details to make the passage pass"
+      ]
+    },
+    {
+      "name": "new-topic-language-generalization",
+      "prompt": "Revise only the first-assessment opening and explanation in exact family draft revision 2, using complete frozen synthetic packet v1 and feedback asking for novice-reader clarity. All remaining bundle fields are supplied and unchanged. Premises: a clinician asks the caregiver about routines and observes the child; the caregiver may ask what the visit involves and share priorities; goals are individualized; no fixed duration, location, hours, or outcome is supported. Assume no prior ABA knowledge. Give an understandable answer and practical questions, then return revision 3 with its change ledger and exact text for verification without publishing.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Transfers novice-reader and practical-explanation guidance to a different topic rather than reproducing the insurance article's structure",
+        "Explains assessment before assigning preparation tasks and preserves clinical and caregiver roles",
+        "Adds no unsupported visit logistics or clinical outcome",
+        "Returns the exact proposal and no publication or notification"
+      ]
+    },
+    {
       "name": "minor-opening-revision-preserves-review-history",
       "prompt": "Revise exact draft revision 2 from its complete frozen packet. The reviewer likes the article but says the opening is cold; only that paragraph needs changing. I authorize exporting revision 3 into the same Google Doc, preserving the two existing tabs, human edits, and comment anchors. Do not send messages, resolve comments, approve, or publish.",
       "shouldActivate": true,

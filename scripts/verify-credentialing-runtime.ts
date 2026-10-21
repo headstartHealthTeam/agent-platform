@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
@@ -9,6 +9,58 @@ import { PDFDocument } from '@cantoo/pdf-lib';
 import JSZip from 'jszip';
 
 import { runtimeFingerprint } from './runtime-packaging.js';
+
+async function verifyInstalledPreflight(root: string, scratch: string): Promise<void> {
+  // Reference answers stay in the checkout's verification harness, never in the runtime.
+  const input = join(scratch, 'snapshot.json');
+  const proposal = join(scratch, 'proposal.json');
+  for (const [target, suffix] of [
+    [input, 'input'],
+    [proposal, 'output'],
+  ] as const) {
+    await writeFile(
+      target,
+      await readFile(
+        new URL(
+          `../workflows/provider-credentialing/fixtures/preparation/historical-preparation.${suffix}.json`,
+          import.meta.url
+        )
+      )
+    );
+  }
+  const preflightArgs = [
+    join(root, 'dist/preparation-preflight-cli.cjs'),
+    '--input',
+    input,
+    '--proposal',
+    proposal,
+  ];
+  const preflight = execFileSync(process.execPath, preflightArgs, {
+    cwd: scratch,
+    timeout: 30000,
+    encoding: 'utf8',
+  });
+  if (
+    JSON.stringify(JSON.parse(preflight)) !==
+    JSON.stringify({ ok: true, readiness: 'needs-information' })
+  )
+    throw new Error('Installed canonical preflight did not preserve the incomplete handoff');
+  await writeFile(proposal, '{}');
+  const invalid = spawnSync(process.execPath, preflightArgs, {
+    cwd: scratch,
+    timeout: 30000,
+    encoding: 'utf8',
+  });
+  const rejection: unknown = JSON.parse(invalid.stdout);
+  if (
+    invalid.status !== 1 ||
+    rejection === null ||
+    typeof rejection !== 'object' ||
+    !('ok' in rejection) ||
+    rejection.ok !== false
+  )
+    throw new Error('Installed canonical preflight accepted an invalid proposal');
+}
 
 /** Exercise the deployed dependency closure outside the checkout without any source connection. */
 export async function verifyCredentialingRuntime(runtime: string): Promise<void> {
@@ -99,8 +151,9 @@ export async function verifyCredentialingRuntime(runtime: string): Promise<void>
         { cwd: scratch, timeout: 30000, stdio: 'pipe' }
       );
     }
+    await verifyInstalledPreflight(root, scratch);
     process.stdout.write(
-      'Installed PDF/Office readers, tool entrypoints and exact runtime bytes verified; no source reads or model run.\n'
+      'Installed PDF/Office readers, tool entrypoints, canonical package preflight and exact runtime bytes verified; no source reads or model run.\n'
     );
   } finally {
     await rm(scratch, { recursive: true, force: true });

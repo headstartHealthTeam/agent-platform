@@ -29,15 +29,22 @@ From the repository root:
 ```sh
 pnpm install --frozen-lockfile
 pnpm build
-pnpm credentialing:package --target /absolute/new-runtime-directory
-node --import tsx scripts/verify-credentialing-runtime.ts --runtime /absolute/new-runtime-directory
-node --import tsx scripts/package-backend-integration.ts --target /absolute/new-application-artifacts
+pnpm credentialing:release --expected-source <40-character-reviewed-SHA> --target /absolute/new-release-directory
 ```
+
+This reuses the existing packagers and installed-reader verifier to create `runtime/`,
+`backend-integration/` and, only after successful verification, `handoff.json`. The handoff records
+the fresh dependency audit, exact backend source-pin JSON, runtime receipt and integration digests.
+The output must be new and outside the checkout. A failed preparation may leave partial outputs;
+without a handoff they are not a completed release. No cloud resources or backend files are changed.
+The handoff is local/CI evidence, not a signed security attestation or permission to deploy. Recheck
+the audit before merge if its 15-minute freshness window has elapsed.
 
 The normal CI's **Hosted Linux runtime artifact** job runs the installed PDF page renderer and Office
 worker outside the checkout, checks the whole dependency tree, and produces a Linux x64 tarball plus
 receipt named `credentialing-linux-runtime-<exact-source-SHA>`. It enforces the hosted 50 MiB input
-limit. Mac/Windows build output is for that local platform, not a hosted release. The backend release
+limit and also retains the matching application artifacts and handoff. Mac/Windows build output is
+for that local platform, not a hosted release. The backend release
 build independently produces its small integration artifacts from the same exact source SHA.
 
 `runtimeRevision` binds source SHA, lockfile and canonical definition bytes. The runtime archive has
@@ -63,8 +70,9 @@ and project. Upload the CI-produced archive with this action:
 ```
 
 The adapter verifies and captures approved bytes before upload, uses Files API `user_data`, and
-does not automatically replay an uncertain mutation. Record the returned file ID privately. Build
-the template action from a protected selection JSON containing `fileId`, `archiveSha256`,
+does not automatically replay an uncertain mutation. Record the returned file ID privately and
+preserve it exactly (current `file_` and legacy `file-` forms are accepted; never rewrite its prefix).
+Build the template action from a protected selection JSON containing `fileId`, `archiveSha256`,
 `runtimeRevision`, exact `mcpUrl`, `googleTokenUrl`, `googleAccountEmail` and `allowedDomains`:
 
 ```sh
@@ -76,7 +84,18 @@ HTTPS host/port. Include the exact backend and Google API hosts required by the 
 hosts. These are credential destinations, not case-folder or field restrictions. Additional approved
 investigation hosts remain a deployment selection. The template contains no access token or key.
 
-Plan/apply the generated `templates.create` action. Setup checks Linux x64/Node 22+, archive bytes,
+The generated hosted environment enables Node's `NODE_USE_ENV_PROXY=1` before tool processes start.
+This makes the installed readers and renewable-token fetch use the provider's existing HTTP(S)
+proxy, `NO_PROXY` rules and trusted CA configuration. It does not introduce another proxy, weaken
+TLS, change credentials or expand network access. Standalone local consumers retain their own
+network configuration. A supported Node environment-proxy implementation (Node 22.21+ on the
+22.x line) is required and checked during setup; merely having proxy variables is not sufficient.
+The final session profile must also retain `environment.env.NODE_USE_ENV_PROXY: "1"` when it
+explicitly supplies env: session env replaces template env. Backend profile validation and runtime
+setup enforce this requirement; do not use an empty object to mean inheritance. Template readback
+omits environment values, so the template fingerprint check alone cannot validate this setting.
+
+Plan/apply the generated `templates.create` action. Setup checks Linux x64/Node compatibility, archive bytes,
 clean provenance and installed entries before the agent starts. Read `templates.get` afterward and
 record the returned `fingerprint` together with its template ID and runtime revision. Configure the
 application's launch `preparedRuntime: { revision, templateFingerprint }`. Each new launch checks

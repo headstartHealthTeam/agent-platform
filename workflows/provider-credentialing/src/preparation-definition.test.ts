@@ -25,6 +25,7 @@ describe('connected preparation tool definition', () => {
       .object({
         workflowRevision: z.string(),
         definition: z.object({
+          research: z.literal('live-web-search'),
           instructions: z.string(),
           capabilities: z.object({
             directories: z.array(z.string()),
@@ -49,6 +50,10 @@ describe('connected preparation tool definition', () => {
       'contentDocumentId',
       'contentVersionId',
     ]);
+    expect(
+      generated.definition.tools.find((tool) => tool.name === 'lookup_credentialing_npi')
+        ?.parameters.required
+    ).toEqual(['number', 'enumerationType', 'subject']);
     const raw: unknown = JSON.parse(content);
     const parsed = z.object({ definition: z.record(z.string(), z.unknown()) }).parse(raw);
     expect(generated.workflowRevision).toBe(
@@ -58,12 +63,25 @@ describe('connected preparation tool definition', () => {
     expect(generated.definition.capabilities.directories).toEqual([
       '/workspace/headstart-workflow/skills',
     ]);
-    expect(generated.definition.capabilities.files).toHaveLength(5);
+    expect(generated.definition.capabilities.files).toHaveLength(7);
+    expect(generated.definition.capabilities.files.map((file) => file.path)).toContain(
+      '/workspace/headstart-workflow/skills/headstart-provider-credentialing/references/evidence-investigation.md'
+    );
+    expect(generated.definition.capabilities.files.map((file) => file.path)).toContain(
+      '/workspace/headstart-workflow/skills/headstart-provider-credentialing/references/headstart-entity-addresses.md'
+    );
     for (const file of generated.definition.capabilities.files) {
       const source = file.path.replace('/workspace/headstart-workflow/', '../../../');
-      expect(Buffer.from(file.data, 'base64')).toEqual(
-        await readFile(new URL(source, import.meta.url))
-      );
+      const original = await readFile(new URL(source, import.meta.url));
+      const installed = Buffer.from(file.data, 'base64');
+      if (source.endsWith('.schema.json')) {
+        expect(installed.toString('utf8')).toBe(
+          JSON.stringify(JSON.parse(original.toString('utf8')))
+        );
+        expect(JSON.parse(installed.toString('utf8'))).toEqual(
+          JSON.parse(original.toString('utf8'))
+        );
+      } else expect(installed).toEqual(original);
       expect(file.path).not.toMatch(/evals|fixtures|oracle/);
     }
     expect(Buffer.byteLength(content)).toBeLessThan(150_000);

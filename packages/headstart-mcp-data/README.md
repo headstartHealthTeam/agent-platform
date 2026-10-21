@@ -1,7 +1,7 @@
 # Headstart MCP document access
 
 An agent-runtime client for the existing Headstart MCP original-file tool. It downloads an exact
-Salesforce file into the agent's filesystem; it is not a second Salesforce connector, parser,
+Salesforce file or granted internal reference into the agent's filesystem; it is not a second Salesforce connector, parser,
 backend service or workflow engine. See the [documentation map](../../docs/README.md) and
 [data capability boundaries](../../docs/reusable-data-capabilities.md).
 
@@ -41,6 +41,14 @@ guessed case selectors. Then invoke the provisioned entrypoint:
 ```text
 node <runtime>/packages/headstart-mcp-data/dist/cli.js --profile <private-profile.json> --request <selection.json> --output <fresh-evidence-directory>
 ```
+
+For an internal reference discovered through the service-scoped `search` tool, use
+`{"source":"headstart-knowledge","id":"<discovered-uuid>","revision":"<exact-discovered-revision>"}`.
+The client invokes `fetch` with that exact selection and verifies the returned reference identity,
+revision, byte length and digest before materializing it. Notes preserve complete stored UTF-8
+text; files preserve original binary bytes. Discovery snippets, vector extracts and missing
+originals never become successful original-file receipts. Retain these originals with
+`headstart-knowledge` provenance through the workflow's normal application handoff.
 
 Use absolute paths for profile, request and output. The CLI prints one JSON object,
 `{"resultFile":"<absolute-receipt-path>"}`. Parse `resultFile`, then open that receipt and the

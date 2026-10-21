@@ -1,3 +1,4 @@
+import type { AgentInferenceAuthorizer } from '@headstart-health/workflow-contracts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { readSchema } from './operations.js';
@@ -10,6 +11,7 @@ import {
 import { fingerprint, type OpenAIPlatform, InputNotSteerableError } from './platform.js';
 
 const target = { organizationId: 'org-synthetic', projectId: 'proj_synthetic' };
+const dispatchGuard: unknown = expect.any(Function);
 const binding: OperatorBinding = {
   sessionId: 'session_a',
   turnId: 'turn_a',
@@ -38,6 +40,7 @@ function fixture(
     turns?: unknown[];
     history?: unknown;
     expiry?: number;
+    authority?: AgentInferenceAuthorizer;
     applicationFunctions?: string[];
   } = {}
 ): {
@@ -103,7 +106,7 @@ function fixture(
   const port = new OperatorRuntimePort(
     platform,
     target,
-    options.expiry,
+    options.authority ?? options.expiry,
     options.applicationFunctions
   );
   return {
@@ -118,6 +121,98 @@ function fixture(
 afterEach(() => vi.useRealTimers());
 
 describe('operator runtime adapter', () => {
+  it('reauthorizes ordinary input at dispatch and preserves Stop after revocation', async () => {
+    const authorize = vi.fn<AgentInferenceAuthorizer['authorize']>().mockResolvedValue(true);
+    const f = fixture({ authority: { authorize } });
+    const dispatched: unknown[] = [];
+    f.platform.apply.mockImplementation(async (action, _approval, options) => {
+      authorize.mockResolvedValue(false);
+      await options?.beforeDispatch?.();
+      dispatched.push(action);
+      return { data: {}, fingerprint: 'synthetic' };
+    });
+    try {
+      await expect(
+        f.port.send(binding, {
+          ...reply,
+          kind: 'guidance',
+          questionId: null,
+          callFingerprint: null,
+        })
+      ).rejects.toThrow('No current inference authorization');
+      expect(dispatched).toEqual([]);
+      expect(authorize).toHaveBeenCalledTimes(2);
+      expect(authorize).toHaveBeenLastCalledWith({
+        operation: 'input',
+        binding,
+        commandId: reply.id,
+      });
+      await f.port.send(binding, { ...reply, kind: 'stop' });
+      expect(dispatched).toEqual([{ operation: 'sessions.cancel', id: binding.sessionId }]);
+      expect(authorize).toHaveBeenCalledTimes(2);
+    } finally {
+      f.port.close();
+    }
+  });
+
+  it('permits current application-authorized input without a calendar deadline', async () => {
+    const authorize = vi.fn<AgentInferenceAuthorizer['authorize']>().mockResolvedValue(true);
+    const f = fixture({ authority: { authorize } });
+    f.platform.apply.mockImplementation(async (_action, _approval, options) => {
+      await options?.beforeDispatch?.();
+      return { data: {}, fingerprint: 'synthetic' };
+    });
+    try {
+      await f.port.send(binding, {
+        ...reply,
+        kind: 'guidance',
+        questionId: null,
+        callFingerprint: null,
+      });
+      expect(authorize).toHaveBeenCalledTimes(2);
+      expect(f.platform.apply).toHaveBeenCalledOnce();
+    } finally {
+      f.port.close();
+    }
+  });
+
+  it('stages an operator original in the exact hosted workspace without sending a turn', async () => {
+    const f = fixture({
+      session: {
+        id: binding.sessionId,
+        metadata: { workflow_revision: binding.workflowRevision },
+        environment: { type: 'openai_hosted', id: 'env_synthetic' },
+      },
+    });
+    const before = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const stageWorkspaceFile = vi.fn<OpenAIPlatform['stageWorkspaceFile']>(
+      async (environmentId, file, journal) => {
+        await journal();
+        return { environmentId, path: file.path, size: file.bytes.length, digest: file.digest };
+      }
+    );
+    const port = new OperatorRuntimePort({ ...f.platform, stageWorkspaceFile }, target);
+    const file = {
+      path: '/workspace/operator-files/synthetic',
+      bytes: new Uint8Array([1]),
+      digest: `sha256:${'a'.repeat(64)}`,
+    };
+    try {
+      expect(await port.stageWorkspaceFile(binding, file, before)).toMatchObject({
+        environmentId: 'env_synthetic',
+        size: 1,
+      });
+      expect(before).toHaveBeenCalledOnce();
+      expect(f.platform.apply).not.toHaveBeenCalled();
+      await expect(
+        port.stageWorkspaceFile({ ...binding, target: 'wrong' }, file, before)
+      ).rejects.toThrow();
+      expect(stageWorkspaceFile).toHaveBeenCalledOnce();
+    } finally {
+      port.close();
+      f.port.close();
+    }
+  });
   it.each(['failed', 'cancelled', 'completed'])(
     'explicitly continues the exact %s root in the same session',
     async (status) => {
@@ -144,7 +239,10 @@ describe('operator runtime adapter', () => {
           status: 'in_progress',
         });
         await f.port.recover(binding, command);
-        expect(f.platform.apply.mock.calls[1]).toEqual(f.platform.apply.mock.calls[0]);
+        expect(f.platform.apply.mock.calls[1]?.slice(0, 2)).toEqual(
+          f.platform.apply.mock.calls[0]?.slice(0, 2)
+        );
+        expect(f.platform.apply.mock.calls[1]?.[2]?.beforeDispatch).toBeTypeOf('function');
         expect(f.platform.apply.mock.calls[1]?.[0]).toMatchObject({
           operation: 'sessions.send',
           id: binding.sessionId,
@@ -187,7 +285,10 @@ describe('operator runtime adapter', () => {
       f.platform.apply.mockRejectedValueOnce(new Error('Lost response'));
       await expect(f.port.send(binding, command)).rejects.toThrow('Lost response');
       await f.port.recover(binding, command);
-      expect(f.platform.apply.mock.calls[1]).toEqual(f.platform.apply.mock.calls[0]);
+      expect(f.platform.apply.mock.calls[1]?.slice(0, 2)).toEqual(
+        f.platform.apply.mock.calls[0]?.slice(0, 2)
+      );
+      expect(f.platform.apply.mock.calls[1]?.[2]?.beforeDispatch).toBeTypeOf('function');
       expect(f.platform.apply.mock.calls[1]?.[0]).toMatchObject({
         idempotencyKey: command.id,
         input: command.text,
@@ -291,7 +392,8 @@ describe('operator runtime adapter', () => {
         expectedCallFingerprint: call.fingerprint,
         result: { success: true, output: 'invented result' },
       }),
-      expect.objectContaining({ allowBillable: true })
+      expect.objectContaining({ allowBillable: true }),
+      expect.objectContaining({ beforeDispatch: dispatchGuard })
     );
     await expect(
       f.port.completeFunction(
@@ -301,6 +403,46 @@ describe('operator runtime adapter', () => {
       )
     ).rejects.toThrow('no longer pending');
     f.port.close();
+  });
+  it('rechecks application authority before dispatching an exact saved function result', async () => {
+    const authorize = vi.fn<AgentInferenceAuthorizer['authorize']>().mockResolvedValue(true);
+    const f = fixture({
+      authority: { authorize },
+      applicationFunctions: ['read_case'],
+      session: {
+        id: binding.sessionId,
+        metadata: { workflow_revision: binding.workflowRevision },
+        required_actions: [{ ...question, name: 'read_case', arguments: {} }],
+      },
+    });
+    const dispatched: unknown[] = [];
+    f.platform.apply.mockImplementation(async (action, _approval, options) => {
+      authorize.mockResolvedValue(false);
+      await options?.beforeDispatch?.();
+      dispatched.push(action);
+      return { data: {}, fingerprint: 'synthetic' };
+    });
+    try {
+      const [call] = await f.port.pendingFunctions(binding);
+      if (!call) throw new Error('Missing test call');
+      await expect(
+        f.port.completeFunction(binding, call, {
+          success: true,
+          output: 'invented result',
+        })
+      ).rejects.toThrow('No current inference authorization');
+      expect(dispatched).toEqual([]);
+      expect(authorize).toHaveBeenCalledTimes(2);
+      expect(authorize).toHaveBeenLastCalledWith({
+        operation: 'function-result',
+        binding,
+        turnId: call.turnId,
+        callId: call.callId,
+        fingerprint: call.fingerprint,
+      });
+    } finally {
+      f.port.close();
+    }
   });
   it('never executes application tools or implicitly authorizes inference', async () => {
     const f = fixture();
@@ -380,9 +522,8 @@ describe('operator runtime adapter', () => {
         pendingQuestionIds: [],
         items: [
           {
-            id: 'call_b',
             kind: 'tool',
-            text: 'The agent could not complete a question request. Check the agent’s update before continuing.',
+            text: 'Ask operator · Failed. This notice does not confirm answer delivery or reopen an earlier question.',
             final: true,
           },
         ],
@@ -392,6 +533,69 @@ describe('operator runtime adapter', () => {
       f.port.close();
     }
   });
+  it.each(['call_a', 'item_a'])(
+    'keeps a failed question activity separate from its previously finalized question (%s)',
+    async (itemId) => {
+      const turn = {
+        id: binding.turnId,
+        session_id: binding.sessionId,
+        subagent_id: null,
+        status: 'in_progress',
+      };
+      const options = {
+        expiry: Date.now() + 60_000,
+        session: {
+          id: binding.sessionId,
+          metadata: { workflow_revision: binding.workflowRevision },
+          required_actions: [question],
+        },
+        turns: [turn],
+        history: { data: [{ ...question, id: itemId, status: 'in_progress' }], has_more: false },
+      };
+      const f = fixture(options);
+      try {
+        const waiting = await f.port.snapshot(binding);
+        const retainedQuestion = waiting.items[0];
+        expect(retainedQuestion).toMatchObject({ id: 'call_a', kind: 'question', final: true });
+        expect(waiting.pendingQuestionIds).toEqual(['call_a']);
+
+        options.session.required_actions = [];
+        turn.status = 'completed';
+        options.history.data[0] = { ...question, id: itemId, status: 'failed' };
+        const ended = await f.port.snapshot(binding);
+        expect(ended).toMatchObject({ status: 'idle', pendingQuestionIds: [] });
+        expect(ended.items).toHaveLength(1);
+        const failure = ended.items[0];
+        expect(failure).toMatchObject({
+          kind: 'tool',
+          final: true,
+          activity: { status: 'failed' },
+        });
+        expect(failure?.id).not.toBe(retainedQuestion?.id);
+        expect(failure?.id).not.toBe(itemId);
+        expect(failure?.callFingerprint).toBeUndefined();
+
+        // A reconnect and independent durable-history read must select the same new identity.
+        f.fail();
+        await Promise.resolve();
+        expect((await f.port.snapshot(binding)).items).toEqual(ended.items);
+        expect((await f.port.history(binding, null)).items).toEqual([{ ...failure, position: 0 }]);
+        const cold = fixture(options);
+        try {
+          expect((await cold.port.snapshot(binding)).items).toEqual(ended.items);
+        } finally {
+          cold.port.close();
+        }
+        expect(await f.port.recover(binding, reply)).toMatchObject({
+          status: 'superseded',
+          reason: 'question_closed',
+        });
+        expect(f.platform.apply).not.toHaveBeenCalled();
+      } finally {
+        f.port.close();
+      }
+    }
+  );
   it('returns a definitive refusal but never retries an uncertain write or answers the pending tool instead', async () => {
     const f = fixture({ expiry: Date.now() + 60_000 });
     const command: OperatorCommand = {
@@ -447,7 +651,8 @@ describe('operator runtime adapter', () => {
           input: guidance.text,
           idempotencyKey: guidance.id,
         },
-        expect.objectContaining({ allowBillable: true })
+        expect.objectContaining({ allowBillable: true }),
+        expect.objectContaining({ beforeDispatch: dispatchGuard })
       );
       expect((await f.port.snapshot(binding)).pendingQuestionIds).toEqual(['call_a']);
       await expect(f.port.send(binding, { ...guidance, questionId: 'call_a' })).rejects.toThrow(
@@ -484,7 +689,8 @@ describe('operator runtime adapter', () => {
           turnId: 'turn_b',
           callId: 'call_b',
         }),
-        expect.anything()
+        expect.anything(),
+        expect.objectContaining({ beforeDispatch: dispatchGuard })
       );
       Object.assign(roots[1] ?? {}, { status: 'cancelled' });
       await expect(f.port.send(binding, guidance)).rejects.toThrow('separate continuation');
@@ -618,7 +824,8 @@ describe('operator runtime adapter', () => {
     await f.port.send(binding, { ...reply, kind: 'stop' });
     expect(f.platform.apply).toHaveBeenLastCalledWith(
       { operation: 'sessions.cancel', id: 'session_a' },
-      expect.objectContaining({ allowBillable: false })
+      expect.objectContaining({ allowBillable: false }),
+      expect.objectContaining({ beforeDispatch: dispatchGuard })
     );
     const allowed = fixture({ expiry: Date.now() + 1000 });
     await allowed.port.send(binding, reply);
@@ -629,7 +836,8 @@ describe('operator runtime adapter', () => {
         callId: 'call_a',
         expectedCallFingerprint: reply.callFingerprint,
       }),
-      expect.objectContaining({ allowBillable: true })
+      expect.objectContaining({ allowBillable: true }),
+      expect.objectContaining({ beforeDispatch: dispatchGuard })
     );
     await expect(allowed.port.send(binding, { ...reply, questionId: null })).rejects.toThrow(
       'authorization'
