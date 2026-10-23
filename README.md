@@ -126,6 +126,7 @@ installing these skills does not install credentials, runtime packages or a host
 | [`headstart-release-pr-review`](skills/headstart-release-pr-review/SKILL.md)                         | Production promotion review gate with critical-risk triage                                            |
 | [`headstart-stacked-delivery`](skills/headstart-stacked-delivery/SKILL.md)                           | Continue independent or dependent delivery work safely while earlier PRs await review                 |
 | [`headstart-skill-authoring`](skills/headstart-skill-authoring/SKILL.md)                             | Authoring and evaluation rules for shared Headstart skills                                            |
+| [`headstart-slack-triage`](skills/headstart-slack-triage/SKILL.md)                                   | Research dev-channel reports, route Linear work, and complete the Slack tracking handoff              |
 | [`headstart-initiative-shaping`](skills/headstart-initiative-shaping/SKILL.md)                       | Evidence-backed scope, decisions, risks, and stakeholder questions                                    |
 | [`headstart-workflow-walkthrough-analysis`](skills/headstart-workflow-walkthrough-analysis/SKILL.md) | Cited current-state analysis from process demonstrations                                              |
 | [`headstart-document-review`](skills/headstart-document-review/SKILL.md)                             | Report-first substantive review of shared plans and procedures                                        |
