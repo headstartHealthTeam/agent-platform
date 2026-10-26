@@ -28,8 +28,10 @@ no workflow-specific code, background runner, or other installed skill.
   linked issues or evidence records; follow links at most one level beyond those direct sources.
   Repeated pages and retries consume the same budget. Do not launch a read known to exceed the
   remaining allowance. At a limit, record the unread source, cursor/link and continuation point;
-  do not claim the complete thread or attachments were reviewed. Return an evidence blocker when
-  the missing material could change disposition, ownership, or the final handoff. Do not silently
+  do not claim the complete thread or attachments were reviewed. If missing material could change
+  disposition, ownership, or the final handoff, withhold every dependent Linear write, reaction,
+  and reply; return proposals and an evidence blocker instead. Continue an independent authorized
+  action only when its correctness does not depend on that missing material. Do not silently
   expand the budget; continue only within an explicitly authorized extension.
 - **Authority:** distinguish permission to read Slack, sensitive records, update Linear, react, and
   send a thread reply. Resolve and state the run mode from the user's requested actions. Default
