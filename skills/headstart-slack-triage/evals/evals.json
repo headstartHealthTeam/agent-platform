@@ -268,6 +268,38 @@
         "Does not mark reports resolved solely from merge evidence",
         "Completes otherwise authorized triage within its scope"
       ]
+    },
+    {
+      "name": "two-threads-one-issue",
+      "prompt": "Triage two separate Slack threads reporting the same verified defect. Neither has a final handoff. Capture both using the existing owning Linear issue and reply in both threads.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Retains both exact report permalinks and distinct thread roots while reusing one owning issue",
+        "Verifies both source links on the owning issue before tracking writes",
+        "Checks reactions on each exact report and posts one final handoff in each source thread within authorized collision-safe write scope",
+        "Records each thread reply outcome separately without creating duplicate issues"
+      ]
+    },
+    {
+      "name": "two-threads-one-existing-handoff",
+      "prompt": "Two source threads share one Linear issue. The first already has an equivalent final handoff and nothing changed; the second has no reply. Finish authorized triage, then rerun with no new evidence.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reuses the owning issue and retains both source identities",
+        "Skips the equivalent reply only in the first thread and completes the missing handoff in the second",
+        "Does not treat a reply in the first thread as completion of the second thread",
+        "On the unchanged rerun creates no duplicate issue, reaction, evidence comment or reply in either thread"
+      ]
+    },
+    {
+      "name": "shared-root-multiple-reports",
+      "prompt": "Two report replies in one Slack thread share an owning issue. Finish the authorized tracking handoff for both reports.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Retains each exact report-reply permalink and timestamp for evidence and reactions",
+        "Consolidates the shared root into one final reply that identifies both report mappings",
+        "Reuses one owning issue and does not send one reply per report when their source root is the same"
+      ]
     }
   ]
 }

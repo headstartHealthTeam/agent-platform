@@ -66,13 +66,18 @@ Keep only the details needed by the reporter. Avoid copying the full Linear inve
 > refreshed view still needs confirmation. Next step is to verify that the client appears and the
 > workflow can continue.
 
+When multiple source threads share one owning issue, retain every source root and complete its
+reply separately. Reuse an equivalent reply only within that same thread; a reply in another
+thread does not complete this handoff. Consolidate reports sharing a root into one final reply.
+
 No response is needed when the thread already contains an equivalent final handoff and nothing
 material changed. If evidence identifies a missing attachment, source event, permission, or
 reproduction path, name that exact gap instead of writing only "needs investigation."
 
 ## User Receipt
 
-For a batch, use a compact table with one row per distinct concern:
+For a batch, use a compact table with one row per distinct concern and source thread. Repeat the
+owning issue for reports sharing it, and record each thread's reply outcome separately:
 
 | Source report     | Owning issue and action                       | Finding/status                     | Team/project/labels                         | Next action                        | Slack handoff                                                      |
 | ----------------- | --------------------------------------------- | ---------------------------------- | ------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
@@ -81,7 +86,8 @@ For a batch, use a compact table with one row per distinct concern:
 Also report:
 
 - Channel identity, time range/timezone, candidate count and pagination completeness.
-- Source-to-issue mappings for all split concerns, with canonical duplicate ownership.
+- Source-to-issue mappings for all split concerns, with canonical duplicate ownership and every
+  distinct source thread root retained for its own handoff.
 - State, priority, assignee and missing surface/repository labels; include these per issue or
   compactly below the table. For a single report, plain paragraphs or a short list are sufficient.
 - Changes actually made versus proposals, skipped writes, unknown outcomes, and next continuation

@@ -4,7 +4,7 @@ description: Triage Headstart Slack reports from a linked message or a bounded s
 compatibility: Requires authenticated Slack and Linear reads; authorized write mode also needs Linear writes, Slack reactions, and thread replies. Relevant repository, log, or business-record reads improve diagnosis when permitted.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.1.1'
 ---
 
 # Headstart Slack Triage
@@ -28,7 +28,7 @@ no workflow-specific code, background runner, or other installed skill.
   Merely reading this skill, asking how it works, summarizing dev, or authoring it grants no writes.
   Honor standing authorization without asking again. Read-only, dry-run, and draft-only override it.
 - **Side effects in authorized write mode:** create or update scoped Linear issues; add applicable
-  existing tracking reactions; post one final reply per canonical report thread when needed.
+  existing tracking reactions; post one final reply per distinct source thread when needed.
   Exclude implementation, pushes, merges, deployment, business-record corrections, permission
   changes, email sends, DMs, provider outreach, separate announcements, and project-overview edits.
 - **Outputs:** source-to-issue mapping, verified findings, unresolved evidence, verified metadata,
@@ -63,9 +63,10 @@ only with claims it can support. If writes are unavailable, return prepared chan
 2. Read the parent and all replies, including pagination, then inspect relevant attachments. If a
    video, image, or file cannot be read, record exactly which evidence is missing and why. Do not
    infer attachment contents from filenames or adjacent comments.
-3. Split distinct concerns into report items. Group repeated reports of the same concern under one
-   canonical issue and thread; retain backlinks. Multiple clients do not automatically mean multiple
-   defects. Do not infer a shared cause merely from similar symptoms.
+3. Split distinct concerns into report items. Reuse one owning issue for repeated reports of the
+   same concern, while retaining every exact report permalink and distinct source thread root.
+   Deduplicate issue ownership, not source-thread handoffs. Multiple clients do not automatically
+   mean multiple defects. Do not infer a shared cause merely from similar symptoms.
 4. Inspect existing reactions and prior triage replies. Include marked reports when evidence,
    ownership, or the final handoff is missing. An existing emoji is not proof of an owning issue.
 
@@ -149,11 +150,14 @@ its thread root. Use only confirmed existing emoji names and reuse existing reac
 - Both reactions can appear on a captured bug. Do not add unrelated acknowledgement or resolution
   emoji by inference. An existing eyes reaction has no ticket or resolution semantics here.
 
-Post one short, plain-English final reply linking the owning issue(s), what was investigated,
-the verified current status, and the concrete next action or evidence blocker. Keep technical
-detail on Linear. No running Slack progress updates. Reuse an equivalent existing reply; add a
-follow-up only for material new findings or to complete a missing handoff. For a shared root with
-multiple report replies, consolidate the final response and identify each issue mapping.
+In each distinct source thread, post one short, plain-English final reply linking the owning
+issue(s), what was investigated, the verified current status, and the concrete next action or
+evidence blocker. Keep technical detail on Linear. No running Slack progress updates. Reuse an
+equivalent existing reply; add a follow-up only for material new findings or to complete a missing
+handoff in that same thread.
+A handoff in another thread never satisfies this source thread, even when both share an issue.
+For a shared root with multiple report replies, consolidate the final response and identify each
+issue mapping.
 
 If the exact message, emoji, reaction, or reply capability is missing, report the incomplete step.
 Do not substitute emoji or claim success. Never send email or unrequested messages as a workaround.
@@ -161,8 +165,10 @@ Do not substitute emoji or claim success. Never send email or unrequested messag
 ## Repeated Runs, Failures, And Completion
 
 Use workspace + channel + exact report timestamp as source identity, with a separate concern key
-for split reports. Reuse source links, issue ownership, reactions, and substantively equivalent
-replies on a rerun. Prefer focused comments/field updates over overwriting other work.
+for split reports. Track reply completion separately by workspace + channel + thread-root
+timestamp. Reuse source links, issue ownership, reactions, and substantively equivalent replies
+in the same source thread on a rerun. Prefer focused comments/field updates over overwriting other
+work.
 
 Pre-write reads are advisory, not locks. Before writes, establish an enforced single-writer or
 idempotency/version-check boundary in the owning system or permission-aware tool when collisions
