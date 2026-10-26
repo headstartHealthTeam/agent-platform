@@ -35,7 +35,7 @@
     },
     {
       "name": "marked-but-incomplete",
-      "prompt": "This report already has linear-check, but no ticket link or triage answer. Finish the triage.",
+      "prompt": "This report already has linear-check, but no ticket link or triage answer. Update the owning Linear issue with the researched findings and finish its tracking handoff.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Does not treat emoji as proof of issue ownership",
@@ -87,7 +87,7 @@
     },
     {
       "name": "latest-thread-correction",
-      "prompt": "While triaging, a staff reply says the old hold checkbox was cleared. The ticket still says unresolved. Finish the handoff.",
+      "prompt": "While triaging, a staff reply says the old hold checkbox was cleared. The ticket still says unresolved. Update the owning Linear issue with the researched findings and finish the authorized handoff.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Re-reads thread before writes and reconciles the newer reported correction",
@@ -108,7 +108,7 @@
     },
     {
       "name": "salesforce-and-portal",
-      "prompt": "The dev report affects family portal scheduling because a backend call depends on Salesforce availability records. Triage it.",
+      "prompt": "The dev report affects family portal scheduling because a backend call depends on Salesforce availability records. Capture it in Linear and complete its tracking handoff.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Applies Salesforce for the dependency even when application delivery remains HEA",
