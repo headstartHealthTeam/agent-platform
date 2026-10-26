@@ -76,8 +76,10 @@ reproduction path, name that exact gap instead of writing only "needs investigat
 
 ## User Receipt
 
-For a batch, use a compact table with one row per distinct concern and source thread. Repeat the
-owning issue for reports sharing it, and record each thread's reply outcome separately:
+For a batch, use a compact table with one row per exact report permalink and distinct concern.
+Repeat the owning issue for reports sharing it, and record each source thread's reply outcome.
+For multiple reports sharing a root, retain every report row and reuse the same consolidated
+reply permalink; receipt rows do not authorize extra replies:
 
 | Source report     | Owning issue and action                       | Finding/status                     | Team/project/labels                         | Next action                        | Slack handoff                                                      |
 | ----------------- | --------------------------------------------- | ---------------------------------- | ------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
@@ -86,6 +88,8 @@ owning issue for reports sharing it, and record each thread's reply outcome sepa
 Also report:
 
 - Channel identity, time range/timezone, candidate count and pagination completeness.
+- Read budget consumed, unread sources, and source-specific continuation cursors or links when
+  pagination, attachment, linked-record, read-call, or time limits were reached.
 - Source-to-issue mappings for all split concerns, with canonical duplicate ownership and every
   distinct source thread root retained for its own handoff.
 - State, priority, assignee and missing surface/repository labels; include these per issue or

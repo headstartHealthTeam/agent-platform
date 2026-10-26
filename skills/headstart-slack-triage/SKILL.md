@@ -4,7 +4,7 @@ description: Triage Headstart Slack reports from a linked message or a bounded s
 compatibility: Requires authenticated Slack and Linear reads; authorized write mode also needs Linear writes, Slack reactions, and thread replies. Relevant repository, log, or business-record reads improve diagnosis when permitted.
 metadata:
   author: headstart-health
-  version: '0.1.1'
+  version: '0.1.2'
 ---
 
 # Headstart Slack Triage
@@ -22,9 +22,22 @@ no workflow-specific code, background runner, or other installed skill.
   metadata. For an otherwise unbounded request to scan dev, use the preceding 24 hours in the
   user's timezone, at most 20 candidate report messages, and state that boundary before reading.
   Follow a supplied window instead. Paginate within it; report truncation and a continuation point.
+- **Read budgets:** state the retrieval budget before reading. Unless the user supplies tighter
+  limits, stop at 100 source-read calls or 20 minutes per pass, whichever comes first. Per concern,
+  read at most 100 thread messages, five attachments totaling 5 MiB of retrieved content, and ten
+  linked issues or evidence records; follow links at most one level beyond those direct sources.
+  Repeated pages and retries consume the same budget. Do not launch a read known to exceed the
+  remaining allowance. At a limit, record the unread source, cursor/link and continuation point;
+  do not claim the complete thread or attachments were reviewed. Return an evidence blocker when
+  the missing material could change disposition, ownership, or the final handoff. Do not silently
+  expand the budget; continue only within an explicitly authorized extension.
 - **Authority:** distinguish permission to read Slack, sensitive records, update Linear, react, and
-  send a thread reply. A request to run this skill and capture/triage Slack reports in Linear is
-  explicit intent for scoped issue writes and the tracking handoff below, subject to active rules.
+  send a thread reply. Resolve and state the run mode from the user's requested actions. Default
+  to read-only when no writes are requested, the requested mode is invalid, or intent is ambiguous.
+  A bare request to triage grants no writes. An explicit request to capture reports in Linear or
+  create/update their owning issues selects write mode for that scoped capture and tracking handoff,
+  subject to active rules for each capability. A literal `write` keyword is not required when the
+  user clearly requested those actions. Applicable standing authorization can supply that intent.
   Merely reading this skill, asking how it works, summarizing dev, or authoring it grants no writes.
   Honor standing authorization without asking again. Read-only, dry-run, and draft-only override it.
 - **Side effects in authorized write mode:** create or update scoped Linear issues; add applicable
@@ -60,8 +73,9 @@ only with claims it can support. If writes are unavailable, return prepared chan
    URL. A report can be a reply: retain its permalink and timestamp rather than substituting the
    parent. For a scan, identify bugs, feature requests, improvements, and unresolved operational
    questions; skip chatter and ordinary status posts.
-2. Read the parent and all replies, including pagination, then inspect relevant attachments. If a
-   video, image, or file cannot be read, record exactly which evidence is missing and why. Do not
+2. Read the parent and all replies within the read budget, including pagination, then inspect
+   relevant attachments. If a video, image, or file cannot be read, record exactly which evidence
+   is missing and why. Do not
    infer attachment contents from filenames or adjacent comments.
 3. Split distinct concerns into report items. Reuse one owning issue for repeated reports of the
    same concern, while retaining every exact report permalink and distinct source thread root.

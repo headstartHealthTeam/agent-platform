@@ -297,8 +297,40 @@
       "shouldActivate": true,
       "expectedBehaviors": [
         "Retains each exact report-reply permalink and timestamp for evidence and reactions",
+        "Keeps one receipt row per exact report permalink and concern, reusing the shared reply permalink without losing either report identity",
         "Consolidates the shared root into one final reply that identifies both report mappings",
         "Reuses one owning issue and does not send one reply per report when their source root is the same"
+      ]
+    },
+    {
+      "name": "triage-without-write-intent",
+      "prompt": "Use headstart-slack-triage to investigate this report. No create, update, capture, reaction or reply action is requested and no standing authorization covers writes.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "States read-only mode because a bare triage request supplies no write authority",
+        "Returns researched findings and proposed issue changes and handoff",
+        "Makes zero external writes; applies the same default to an invalid or ambiguous requested mode"
+      ]
+    },
+    {
+      "name": "natural-language-capture-authority",
+      "prompt": "Capture this report in Linear and complete its tracking handoff. I have explicitly authorized those actions, but have not used a literal mode parameter.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Resolves and states write mode from the explicit requested actions without requiring a magic keyword",
+        "Checks active rules, capability scope and enforced collision protection before any write",
+        "Honors applicable standing authorization without asking again; a read-only or draft-only constraint still overrides it"
+      ]
+    },
+    {
+      "name": "source-budget-exhausted",
+      "prompt": "Capture this report after researching it. Its thread contains more than 100 messages, five attachments already total 5 MiB, and linked issues lead to more discussions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "States and enforces the per-pass time/read-call and per-concern message, attachment, byte, linked-record and depth budgets",
+        "Counts retries and repeated pages toward the same budget and does not silently extend it",
+        "Records unread sources, pagination cursors or continuation links without claiming complete evidence review",
+        "Returns an evidence blocker and withholds disposition-dependent writes when unread material could change ownership or the final handoff"
       ]
     }
   ]
