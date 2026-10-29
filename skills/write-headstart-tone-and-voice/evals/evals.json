@@ -300,7 +300,7 @@
     },
     {
       "name": "supported-answer-before-referral",
-      "prompt": "Write a short Headstart family opening answering how long learning a new routine may take. Supplied hypothetical facts: a routine may involve several component skills; prior learning changes what remains to learn; the team can discuss early changes and the larger goal. No comparison of difficulty or learning time between single-skill and multi-skill goals, numerical timeline, or outcome is supported. Use these premises only.",
+      "prompt": "Write a short Headstart family opening answering how long learning a new routine may take. Supplied hypothetical facts: a routine may involve several component skills; prior learning changes what remains to learn; time needed can vary with what remains to be learned; the team can discuss early changes and the larger goal. No claim that a larger skill count alone makes a goal harder or slower, numerical timeline, or outcome is supported. Use these premises only.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Explains concrete reasons timing varies before or alongside the useful clinical conversation",

@@ -157,15 +157,15 @@ optimizing a number.
 ## Answer With Supported Reasons For Variation
 
 Premise: a hypothetical learning goal can involve one skill or several related skills. Prior
-learning affects the work remaining. The family can ask a clinician about smaller changes and the
-larger goal. The evidence supports no results deadline or comparison of difficulty or learning time
-between single-skill and multi-skill goals.
+learning affects the work remaining, and the time needed can vary with what remains to be learned.
+The family can ask a clinician about smaller changes and the larger goal. The evidence supports no
+results deadline or claim that a larger skill count alone makes a goal harder or slower.
 
 Before: `Every child is different. Ask your clinician when you can expect results.`
 
 After: `A goal can involve one skill or several related skills. What your child already knows
-affects which parts remain to be learned. Ask your clinician which smaller changes to look for as
-those skills come together.`
+affects which parts remain to be learned, and that remaining learning can affect the time needed.
+Ask your clinician which smaller changes to look for as those skills come together.`
 
 The explanation gives the conversation a purpose without promising timing. A referral cannot do
 the work of answering the question. Use only relationships supported by the task's evidence; a
