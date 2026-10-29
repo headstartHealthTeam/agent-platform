@@ -310,13 +310,14 @@
     },
     {
       "name": "connected-explanation-and-relevant-terms",
-      "prompt": "Revise this family explanation using only its supplied meaning: An assessment informs goals. The treatment plan describes goals and recommended services. Sessions put the plan into practice. Intake means the steps to get started; that label is not used again. The page explains this sequence, not the whole care team. Return natural connected prose.",
+      "prompt": "Revise this family explanation using only its supplied meaning: An assessment informs goals. The treatment plan describes goals and recommended services. Sessions put the plan into practice. Intake here means administrative steps before the assessment; that label is not used again. The premises do not say the assessment determines recommended services. The page explains this sequence, not the whole care team. Return natural connected prose.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Explains how the assessment, plan and sessions relate instead of defining every noun separately",
         "Uses the plain meaning of intake rather than introducing a disposable technical label",
         "Adds no unrelated team glossary, visit logistics, or treatment claims",
-        "Uses sentence structure for comprehension without a fixed length or fragment pattern"
+        "Uses sentence structure for comprehension without a fixed length or fragment pattern",
+        "Does not infer that the assessment determines recommended services or that administrative intake includes the assessment"
       ]
     },
     {

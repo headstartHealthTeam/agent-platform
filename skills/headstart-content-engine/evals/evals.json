@@ -236,7 +236,7 @@
     },
     {
       "name": "polished-indirect-answer-verification",
-      "prompt": "Verification only, using a complete synthetic packet and exact article excerpt. All artifact and downstream gates outside this excerpt pass. Entry question: How long may learning a new routine take? Packet C1 says a routine may involve several component skills; C2 says prior learning affects what remains; C3 supports discussing observations with the clinician; no timeline is supported. Article: There is no universal timeline. A conversation helps you understand the next steps. Ask the clinician which goal matters, what progress looks like, and when to meet again. Bring an observation to the review. The conclusion repeats those preparation tasks. Return the qualitative gate, exact passage evidence and reader consequence without rewriting or browsing.",
+      "prompt": "Verification only, using a complete synthetic packet and exact article excerpt. All artifact and downstream gates outside this excerpt pass. Entry question: How long may learning a new routine take? Packet C1 says a routine may involve several component skills; C2 says prior learning affects what remains; C3 supports discussing observations with the clinician; no timeline is supported. Article excerpt:\nThere is no universal timeline. A conversation helps you understand the next steps. Ask the clinician which goal matters, what progress looks like, and when to meet again. Bring an observation to the review.\nConclusion:\nBring an observation to the review. Ask the clinician which goal matters, what progress looks like, and when to meet again. Return the qualitative gate, exact passage evidence and reader consequence without rewriting or browsing.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Returns repair because the article omits supported reasons for timing variation despite fluent, accurate prose",
@@ -258,7 +258,7 @@
     },
     {
       "name": "feedback-surface-coverage",
-      "prompt": "Revision intake only for exact draft 4 and packet 2; no writing is authorized. The comments read returns zero, but the source metadata and reviewer message identify tracked replacements with explanatory replies on draft 4. A read-only native review view is available. Explain the next action, evidence to collect and what changes are authorized. Also state what to report if that view is unavailable.",
+      "prompt": "Revision intake only for exact draft 4 and packet 2; no writing is authorized. The comments read returns zero, but the source metadata and reviewer message identify tracked replacements with explanatory replies on draft 4. A native review view is available, and I authorize read-only inspection of that view for exact draft 4 and packet 2. No editing, accepting or rejecting suggestions, or comment resolution is authorized. Explain the next action, evidence to collect and what changes are authorized. Also state what to report if that view is unavailable.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Uses the available authorized read-only surface to inspect suggestions and replies rather than concluding no review exists",

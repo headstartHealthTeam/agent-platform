@@ -195,8 +195,8 @@ not the full team structure.
 Before: `An assessment helps with planning. Goals are things to work on. The plan describes goals.
 Services are care. Sessions are visits for that care.`
 
-After: `The assessment helps the clinician recommend goals and services in a treatment plan.
-Sessions put that plan into practice.`
+After: `The assessment helps inform the goals described in your child's treatment plan. The plan
+also describes the recommended services, and sessions put it into practice.`
 
 The second version preserves the sequence without defining every noun separately. Split an
 overloaded sentence when that helps; combine repetitive definitions when the relationship needs
