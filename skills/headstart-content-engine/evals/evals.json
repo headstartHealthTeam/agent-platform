@@ -233,6 +233,72 @@
       "expectedBehaviors": [
         "Routes to managed workflow architecture and application authorization work rather than treating V1 as a deployed runtime"
       ]
+    },
+    {
+      "name": "polished-indirect-answer-verification",
+      "prompt": "Verification only, using a complete synthetic packet and exact article excerpt. All artifact and downstream gates outside this excerpt pass. Entry question: How long may learning a new routine take? Packet C1 says a routine may involve several component skills; C2 says prior learning affects what remains; C3 supports discussing observations with the clinician; no timeline is supported. Article: There is no universal timeline. A conversation helps you understand the next steps. Ask the clinician which goal matters, what progress looks like, and when to meet again. Bring an observation to the review. The conclusion repeats those preparation tasks. Return the qualitative gate, exact passage evidence and reader consequence without rewriting or browsing.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Returns repair because the article omits supported reasons for timing variation despite fluent, accurate prose",
+        "Identifies the referral or meeting substitution and repeated conclusion with exact text and reader consequences",
+        "Does not demand a numerical deadline, new factual claim, fixed heading format or extra example",
+        "Preserves the bounded repair and frozen-packet rules"
+      ]
+    },
+    {
+      "name": "qualitative-answer-without-role-glossary",
+      "prompt": "Verification only. All other bundle gates pass. Approved family page asks why one learning goal may take longer than another. The complete synthetic packet supports exactly: a routine may involve several skills; prior learning affects the work remaining; a BCBA is the clinician overseeing the plan. Article: A goal involving several skills can take more learning than a single new skill. What your child already knows also affects the work ahead. Your BCBA, the clinician overseeing the plan, can explain which smaller changes to look for as those skills come together. The supplied sources support no numerical deadline, and this is not a team-role guide. Return the gate and passage evidence.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Accepts the useful qualitative answer without inventing a number or treating the missing deadline as failure",
+        "Does not require a therapist-versus-BCBA glossary, emotional hook, checklist, numerical illustration or booking CTA",
+        "Preserves relevant role accuracy and source limits",
+        "Explains why the passage serves the question rather than merely reporting field completeness"
+      ]
+    },
+    {
+      "name": "feedback-surface-coverage",
+      "prompt": "Revision intake only for exact draft 4 and packet 2; no writing is authorized. The comments read returns zero, but the source metadata and reviewer message identify tracked replacements with explanatory replies on draft 4. A read-only native review view is available. Explain the next action, evidence to collect and what changes are authorized. Also state what to report if that view is unavailable.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the available authorized read-only surface to inspect suggestions and replies rather than concluding no review exists",
+        "Records source revision, author/time/location where available, current versus historical state and retrieval coverage",
+        "Separates replacement text, rationale and original/proposed views without accepting suggestions or editing the source",
+        "If the fallback fails, reports the precise coverage gap and does not claim complete reconciliation"
+      ]
+    },
+    {
+      "name": "later-feedback-refines-one-example",
+      "prompt": "Prepare a feedback ledger for exact draft 2 and packet 1 without editing. Same authorized reviewer first requests a made-up weekly-hours calculation, then explicitly withdraws that example because it distracts from why hours were recommended. A separate paragraph has an approved hypothetical cost calculation with retained assumptions. The reviewer also withdraws an edit that accidentally merged a heading with its body paragraph. Do not change shared skills or resolve comments.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Marks the earlier schedule example and heading-break edit superseded or withdrawn and preserves their provenance",
+        "Carries current direction without restoring rejected wording or converting it into a universal ban on calculations",
+        "Keeps the cost example context distinct and preserves meaningful assumptions and heading/body semantics",
+        "Does not infer article, image or publication approval from feedback chronology"
+      ]
+    },
+    {
+      "name": "reviewer-clinical-detail-is-not-style-rule",
+      "prompt": "Classify feedback on exact draft 3 and its frozen packet. A clinician requests a warmer explanation, adds a quantitative care range absent from the packet, and asks for a new treatment mechanism. They provide one source citation but no retrieved passage. The user authorized a revision proposal, not shared-skill edits or publication. Return the disposition and next steps.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Separates fact-preserving voice changes from new range and mechanism claims",
+        "Checks packet support and routes missing evidence to bounded research and a successor version before using it",
+        "Preserves source type, population, exceptions and disagreement rather than converting a cited claim into a universal default",
+        "Does not update shared skills, approve or publish under revision-only authority"
+      ]
+    },
+    {
+      "name": "same-role-rule-different-page-jobs",
+      "prompt": "Review two proposed family outlines against complete synthetic packets, without drafting. A explains who delivers sessions and who oversees care; the supplied facts distinguish the therapist, BCBA and family. B explains reducing a service and only needs the BCBA role to identify the review contact; no therapist explanation affects that decision. Both preserve accurate responsibilities. Assess role coverage and identify any needed change.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Requires the relevant role distinctions in A",
+        "Accepts narrower role coverage in B without importing a mandatory full team glossary",
+        "Bases depth on the page job rather than identical section templates",
+        "Adds no clinical facts or unrelated background"
+      ]
     }
   ]
 }

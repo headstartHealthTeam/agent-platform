@@ -153,3 +153,66 @@ Keep the assumptions and check the arithmetic. Plain language must not change wh
 all cost-sharing terms apply together, or create a coverage promise. Necessary terms and names can
 raise a grade-level score even when they are explained well; judge understanding rather than
 optimizing a number.
+
+## Answer With Supported Reasons For Variation
+
+Premise: a hypothetical learning goal can involve one skill or several related skills. Prior
+learning affects the work remaining. The supplied evidence supports no results deadline.
+
+Before: `Every child is different. Ask the BCBA when you can expect results.`
+
+After: `A goal involving several skills can take more learning than a single new skill. What your
+child already knows also affects the work ahead. Your BCBA can explain which smaller changes to
+look for as those skills come together.`
+
+The explanation gives the conversation a purpose without promising timing. A referral cannot do
+the work of answering the question. Use only relationships supported by the task's evidence; a
+plausible mechanism is still a factual claim.
+
+## Explain What Collaboration Contributes
+
+Premise: in this hypothetical plan review, the clinician uses session records and family
+observations to consider changes. The family reports that the proposed time conflicts with meals.
+No alternative schedule or clinical outcome is established.
+
+Before: `Your BCBA should review the data. An easier schedule does not mean your child needs less
+care. Ask which options are clinically sufficient.`
+
+After: `The session records and what you notice at home give you and the BCBA different parts of
+the picture. Share where the proposed time conflicts with meals so you can discuss the options and
+what each change could mean for care.`
+
+This explains the reason for the discussion without assuming misconduct or minimizing family
+needs. Direct advice is still appropriate; do not soften a supported warning about unsafe care or
+tell families to wait for a routine review before raising a concern.
+
+## Keep The Explanation Connected And Relevant
+
+Premise: in this example, an assessment informs goals, a treatment plan describes them and the
+recommended services, and sessions put the plan into practice. The article concerns this sequence,
+not the full team structure.
+
+Before: `An assessment helps with planning. Goals are things to work on. The plan describes goals.
+Services are care. Sessions are visits for that care.`
+
+After: `The assessment helps the clinician recommend goals and services in a treatment plan.
+Sessions put that plan into practice.`
+
+The second version preserves the sequence without defining every noun separately. Split an
+overloaded sentence when that helps; combine repetitive definitions when the relationship needs
+connected prose. Explain only the roles the question needs. If a service term appears only once
+and adds no useful distinction, use its plain meaning instead.
+
+## Make An Example Earn Its Space
+
+The coinsurance example above makes a percentage's effect on a bill visible. By contrast, a
+hypothetical weekly schedule calculation can distract when the reader is asking why hours were
+recommended, especially if it introduces a total that could be mistaken for a suggested dose.
+Explain the connection between the recommendation and the actual schedule instead. A question
+specifically about adding session lengths may warrant arithmetic with supported premises.
+
+Do not require numbers, invented parent dialogue, or a separate example section to prove that copy
+is practical. One integrated example may carry an explanation better than several restatements.
+Keep material assumptions where they matter, without appending the same disclaimer to every
+illustration or related link. End with a useful understanding or next action rather than assigning
+the same preparation task again.

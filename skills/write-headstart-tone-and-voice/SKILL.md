@@ -4,7 +4,7 @@ description: Write or revise Headstart Health audience-facing content for famili
 compatibility: Works with agents that can receive a content brief, draft, or factual source material.
 metadata:
   author: headstart-health
-  version: '1.3.0'
+  version: '1.4.0'
 ---
 
 # Write Headstart Tone And Voice
@@ -142,6 +142,9 @@ step clearer without making the family feel managed or talked down to.
   forum slang or copy personal stories. Explain the answer before giving tasks. Do not make the
   parent translate professional labels such as `capacity`, `benefit`, or `authorization` into what
   happens next; name the practical meaning in context rather than banning those words.
+- When the answer varies, explain the supported factors and how they affect the answer. A vague
+  `it depends`, a referral, or a description of what the guide will cover cannot replace that
+  explanation. Do not invent a number or causal explanation to make the answer feel complete.
 - Open educational content with the question or decision bringing the family to the page. Briefly
   recognize the significance of that moment when the topic supports it, explain why the information
   matters, and move into useful guidance. Grounded reassurance can help before procedural detail;
@@ -153,19 +156,24 @@ step clearer without making the family feel managed or talked down to.
   supports it; do not announce the family's emotions or substitute generic praise. Separate stacked explanations into natural
   sentences without a rigid length limit or losing a meaningful qualification.
 - Put context before clinical or insurance detail.
-- Explain an unfamiliar term in the sentence where it first appears. Introduce a treatment plan or
-  other clinical concept before referring to it as `the plan` or assuming the family knows how it
-  is used.
+- Keep a technical term when the reader needs it; otherwise use its plain meaning directly.
+  Explain necessary unfamiliar terms at first use through their purpose, relationships, or
+  practical consequences. Introduce a clinical concept before relying on shorthand such as
+  `the plan`; a definition that merely renames it is not enough.
 - Translate abstract clinical factors into the practical question, routine, skill, or decision they
   affect. Prefer examples a family can picture over lists of professional concepts.
-- Separate the people involved in care by role. Make it clear who delivers day-to-day sessions, who
-  provides clinical oversight and adjusts the plan, and how parents or caregivers participate.
+- Keep care roles accurate wherever they affect the question. Explain day-to-day delivery,
+  clinical oversight, and family participation when relevant; do not add a full team glossary to
+  every article. Connect a role to what that person helps the family understand or decide.
 - Help the reader understand options, expectations, and next steps without implying that one path
   fits every child or family.
 - Describe what clear, collaborative care looks like in positive terms. Avoid strings of `should`,
   warnings, or obligations that make educational copy sound like a lecture. Offer concrete actions
   and questions directly, explain their purpose, and leave clinical and personal decisions with the
   people who own them. Direct guidance is not limited to safety, legal, or required actions.
+- Show what ordinary collaboration accomplishes: what the family and clinician learn, decide, or
+  revisit together. Do not imply provider failure without evidence or frame meals, rest, school,
+  work, or other family constraints as mere convenience. Keep supported safety guidance direct.
 - Organize provider questions and decision aids around the stage when a family can use them, such
   as choosing a provider, discussing a recommendation, or preparing for care. Do not mix unrelated
   phases into one undifferentiated checklist.
@@ -173,6 +181,9 @@ step clearer without making the family feel managed or talked down to.
   present, why it matters, and how the family participates. When useful, give an example question
   or explain how to raise a concern. Select the details needed for this decision rather than making
   every step follow an identical checklist; never invent logistics to fill the pattern.
+- Choose examples that resolve a real comprehension gap. Integrate or remove examples, scripts,
+  and repeated questions that restate an explanation or distract from the article's decision.
+  An illustrative number can create a misleading anchor even when its arithmetic is correct.
 - Present the child as a whole person with strengths, needs, relationships, routines, and a life
   beyond therapy.
 - Preserve the family's role in asking questions, sharing priorities, and making decisions.
