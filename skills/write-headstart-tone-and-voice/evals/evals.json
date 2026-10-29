@@ -300,12 +300,13 @@
     },
     {
       "name": "supported-answer-before-referral",
-      "prompt": "Write a short Headstart family opening answering how long learning a new routine may take. Supplied hypothetical facts: a routine may involve several component skills; prior learning changes what remains to learn; the team can discuss early changes and the larger goal. No numerical timeline or outcome is supported. Use these premises only.",
+      "prompt": "Write a short Headstart family opening answering how long learning a new routine may take. Supplied hypothetical facts: a routine may involve several component skills; prior learning changes what remains to learn; the team can discuss early changes and the larger goal. No comparison of difficulty or learning time between single-skill and multi-skill goals, numerical timeline, or outcome is supported. Use these premises only.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Explains concrete reasons timing varies before or alongside the useful clinical conversation",
         "Does not replace the answer with it depends, a referral, or a description of the guide",
-        "Adds no numerical deadline, causal mechanism beyond the premises, or forced emotional opening"
+        "Adds no numerical deadline, causal mechanism beyond the premises, or forced emotional opening",
+        "Names supported variation without asserting that more component skills cause greater difficulty or longer learning time"
       ]
     },
     {
@@ -322,13 +323,14 @@
     },
     {
       "name": "collaboration-with-constraints-and-safety",
-      "prompt": "Revise two independent Headstart family passages from supplied premises. A: a clinician uses session records and family observations to consider plan changes; the proposed time conflicts with family meals; no alternative schedule or sufficient dose is established. Draft: Your BCBA should review the data. An easier schedule does not mean your child needs less care. Ask which options are sufficient. B: the supplied safety guidance calls for raising a concern promptly and permits another qualified opinion. Draft: If you are concerned about unsafe treatment, you can wait until the next routine review. Add no new clinical instructions.",
+      "prompt": "Revise two independent Headstart family passages from supplied premises. A: a clinician of unspecified credential uses session records and family observations to consider plan changes; the proposed time conflicts with family meals; no alternative schedule or sufficient dose is established. Draft: Your clinician should review the data. An easier schedule does not mean your child needs less care. Ask which options are sufficient. B: the supplied safety guidance calls for raising a concern promptly and permits another qualified opinion. Draft: If you are concerned about unsafe treatment, you can wait until the next routine review. Add no new clinical instructions.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Explains what reviewing records and family observations contributes without assuming provider misconduct",
         "Treats meals and other real family constraints respectfully without claiming a reduced schedule is sufficient",
         "Preserves useful direct advice rather than limiting it to obligations",
-        "Corrects the delay in B and preserves prompt attention and the option of another qualified opinion"
+        "Corrects the delay in B and preserves prompt attention and the option of another qualified opinion",
+        "Keeps the clinician role generic rather than inventing a credential absent from the premises"
       ]
     },
     {

@@ -247,13 +247,14 @@
     },
     {
       "name": "qualitative-answer-without-role-glossary",
-      "prompt": "Verification only. All other bundle gates pass. Approved family page asks why one learning goal may take longer than another. The complete synthetic packet supports exactly: a routine may involve several skills; prior learning affects the work remaining; a BCBA is the clinician overseeing the plan. Article: A goal involving several skills can take more learning than a single new skill. What your child already knows also affects the work ahead. Your BCBA, the clinician overseeing the plan, can explain which smaller changes to look for as those skills come together. The supplied sources support no numerical deadline, and this is not a team-role guide. Return the gate and passage evidence.",
+      "prompt": "Verification only. All other bundle gates pass. Approved family page asks why one learning goal may take longer than another. The complete synthetic packet supports exactly: a routine may involve several skills; prior learning affects the work remaining; a BCBA is the clinician overseeing the plan. Article: A goal can involve one skill or several related skills. What your child already knows affects which parts remain to be learned. Your BCBA, the clinician overseeing the plan, can explain which smaller changes to look for as those skills come together. The supplied sources support no comparison of difficulty or learning time between single-skill and multi-skill goals and no numerical deadline, and this is not a team-role guide. Return the gate and passage evidence.",
       "shouldActivate": true,
       "expectedBehaviors": [
         "Accepts the useful qualitative answer without inventing a number or treating the missing deadline as failure",
         "Does not require a therapist-versus-BCBA glossary, emotional hook, checklist, numerical illustration or booking CTA",
         "Preserves relevant role accuracy and source limits",
-        "Explains why the passage serves the question rather than merely reporting field completeness"
+        "Explains why the passage serves the question rather than merely reporting field completeness",
+        "Does not infer that multi-skill goals necessarily require more learning or time than single-skill goals"
       ]
     },
     {

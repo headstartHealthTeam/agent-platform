@@ -157,13 +157,15 @@ optimizing a number.
 ## Answer With Supported Reasons For Variation
 
 Premise: a hypothetical learning goal can involve one skill or several related skills. Prior
-learning affects the work remaining. The supplied evidence supports no results deadline.
+learning affects the work remaining. The family can ask a clinician about smaller changes and the
+larger goal. The evidence supports no results deadline or comparison of difficulty or learning time
+between single-skill and multi-skill goals.
 
-Before: `Every child is different. Ask the BCBA when you can expect results.`
+Before: `Every child is different. Ask your clinician when you can expect results.`
 
-After: `A goal involving several skills can take more learning than a single new skill. What your
-child already knows also affects the work ahead. Your BCBA can explain which smaller changes to
-look for as those skills come together.`
+After: `A goal can involve one skill or several related skills. What your child already knows
+affects which parts remain to be learned. Ask your clinician which smaller changes to look for as
+those skills come together.`
 
 The explanation gives the conversation a purpose without promising timing. A referral cannot do
 the work of answering the question. Use only relationships supported by the task's evidence; a
@@ -175,10 +177,10 @@ Premise: in this hypothetical plan review, the clinician uses session records an
 observations to consider changes. The family reports that the proposed time conflicts with meals.
 No alternative schedule or clinical outcome is established.
 
-Before: `Your BCBA should review the data. An easier schedule does not mean your child needs less
+Before: `Your clinician should review the data. An easier schedule does not mean your child needs less
 care. Ask which options are clinically sufficient.`
 
-After: `The session records and what you notice at home give you and the BCBA different parts of
+After: `The session records and what you notice at home give you and the clinician different parts of
 the picture. Share where the proposed time conflicts with meals so you can discuss the options and
 what each change could mean for care.`
 
