@@ -163,6 +163,39 @@
       "expectedBehaviors": [
         "Uses the content-engine workflow and Headstart writing skill rather than rerunning research"
       ]
+    },
+    {
+      "name": "answer-direction-preserves-entry-question",
+      "prompt": "Prepare only the writer-brief portion of a complete approved synthetic family opportunity and frozen source ledger. Entry question: How long until a child can use a new routine? C1: the routine may involve multiple component skills. C2: prior learning affects the work remaining. C3: clinical and family observations inform review. C4: no universal timeline is supported. Existing brief direction: Explain how to prepare questions for the clinician. Preserve audience and opportunity; do not draft the article.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "States a useful supported qualitative answer direction about variation, linked to C1-C4, before recommending an outline",
+        "Identifies the mismatch between a timing question and an exclusively conversation-focused brief",
+        "Provides the relationships the writer needs to explain while leaving wording and structure to judgment",
+        "Adds no deadline, outcome promise or unapproved strategy"
+      ]
+    },
+    {
+      "name": "relationship-needs-evidence",
+      "prompt": "Update a complete synthetic family research packet for an approved review-interval article. The ledger defines assessment and review but supports no interval or causal explanation. A reviewer proposes six-month reviews based on a single payer policy and says this should become a default across future articles. Another proposed source is professional guidance, while a supplied study addresses a different population. Return a bounded research disposition, not article copy.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not infer a supported mechanism from separate definitions or a universal interval from one payer",
+        "Records the proposed sources, their type, population or payer scope, exceptions and unresolved evidence needs",
+        "Creates a successor packet when evidence is added and preserves source disagreements for qualified review",
+        "Keeps the interval and clinical claims out of reusable tone rules and adds no universal schedule"
+      ]
+    },
+    {
+      "name": "brief-scope-and-closing-action",
+      "prompt": "Prepare a brief for an approved synthetic family article about changing a care arrangement. The page job is to explain the change and planning for continued support. Approved conversion role is educational: a validated questions checklist helps the next conversation, not a care-search campaign. Supplied sources support only the overseeing clinician role needed for this decision. Choose relevant background, examples and the closing action without drafting the article.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Includes role context needed for the decision without requiring a full care-team glossary",
+        "Selects examples for genuine comprehension gaps rather than an example quota",
+        "Keeps the closing tied to the educational decision without repeating preparation homework or adding a booking pitch",
+        "Would escalate a genuine approved-conversion conflict rather than silently rewriting strategy"
+      ]
     }
   ]
 }

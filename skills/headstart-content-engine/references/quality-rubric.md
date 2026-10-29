@@ -82,8 +82,8 @@ internal API language, preserve agency, and avoid hype or guarantees. Confirm th
 qualifiers remain intact without recurring as defensive filler, responsible actors are named
 without legalistic repetition, contractions sound natural for the audience, and adjacent
 paragraphs do not repeat one uniform setup-qualification-takeaway cadence. For family content,
-confirm that care delivery, clinical oversight, and caregiver participation are distinct and that
-positive explanation replaces lecture-like obligations. Direct, concrete actions can empower a
+confirm that relevant care roles remain distinct without requiring a team glossary on every topic,
+and that positive explanation replaces lecture-like obligations. Direct, concrete actions can empower a
 family; do not penalize `ask` or `compare` simply because the action is optional. Check whether
 `you can` preserves a real choice or makes useful guidance evasive. The opening should orient the
 family to the topic without assumed distress, formulaic reassurance, or procedural slogans.
@@ -112,13 +112,27 @@ paragraph or section context:
 
 - What can the reader now understand or decide? Explain that takeaway in ordinary language and
   trace it to the text. If doing so requires knowledge absent from the article, identify the gap.
+- Does the article answer the approved entry question, including supported reasons for variation,
+  rather than replacing it with advice to arrange a conversation? When numerical certainty is
+  unavailable, judge the usefulness of the qualitative answer without demanding invented numbers.
 - Are important terms explained before use and connected to a practical consequence, question,
   or example? Do not pass a glossary that leaves the reader unable to interpret a bill or act.
+- Does a review, document, or conversation have an explained purpose and outcome? Are ordinary
+  collaboration and real family constraints described without assumed misconduct or compliance
+  framing, while safety concerns still receive direct attention?
 - Does a question name its subject and responsible actor without relying on a distant heading or
   ambiguous words such as `amounts`, `capacity`, or `the answer`?
 - Does the article explain before assigning tasks, and does each useful link serve the family
   rather than merely prove the writer researched the topic?
 - Do simplification and examples preserve evidence, payer scope, arithmetic, and role boundaries?
+
+Read across sections for repetition: does each add a distinct part of the answer, and does the
+closing serve the reader's current decision and approved conversion role? Correct arithmetic,
+short sentences, an extra example, or another question list do not by themselves add understanding.
+Keep an example that resolves a real gap; reject an arbitrary numerical anchor or a repeated
+illustration when it distracts. Do not impose example quotas, a required heading form, or a
+sentence-length rule. Connected prose may require splitting an overloaded sentence or combining
+several repetitive definitions.
 
 Record exact passages and reader consequences for both strengths and defects. Use human-reviewed
 failure cases to calibrate judgment, not to require their wording or structure. Do not let an

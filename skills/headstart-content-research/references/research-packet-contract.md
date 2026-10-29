@@ -83,6 +83,9 @@ Provide:
 - working title and page job;
 - audience, likely entry question, and emotional or practical need supported by the opportunity or
   evidence rather than inferred as fact;
+- the most useful supported answer direction, its claim IDs, what varies and why, and material
+  uncertainty or missing evidence; preserve the approved question rather than substituting a
+  generic conversation guide;
 - prior-knowledge assumptions, audience-language observations, and explanations needed before
   tasks; apply the tone skill's family accessibility direction rather than making provider
   terminology the default;
@@ -92,7 +95,8 @@ Provide:
 - a reasoned distinction between essential on-page guidance, concise supporting context, and topics
   better handled by an existing linked resource or a proposed separate article; keep any
   qualification needed to prevent a misleading claim on the page itself;
-- clinical or industry terms that must be introduced before shorthand is used;
+- necessary clinical or industry terms and roles, with the supported relationships or practical
+  consequences that make them useful; omit background that does not serve the page job;
 - practical examples, questions, or preparation details mapped to the stage where they are useful;
 - claims to include, qualify, exclude, or escalate;
 - natural keyword and terminology guidance;
@@ -112,6 +116,19 @@ adjacent search question or research note as required coverage. Identify real al
 where they matter without requiring a parallel checklist or an unexplained extra step. Record
 unresolved scope decisions before handing the packet to the writer. A separate-resource proposal
 is not an approved assignment, and an unavailable resource is not a live link.
+
+Evidence must support the relationships the brief asks the writer to explain, not just definitions
+of their component terms. For a proposed range, interval, care pathway, or numerical example,
+record the source type, applicable population or payer scope, exceptions, and prohibited
+interpretations in the existing claim ledger. Preserve disagreement between research findings and
+professional guidance for qualified review. Do not turn either into a universal dose, deadline,
+coverage promise, or permanent writing rule. A concrete answer may remain qualitative when the
+evidence does not support a number.
+
+Choose examples and the closing action for the reader's decision and approved conversion role.
+Do not repeat a completed preparation task as the conclusion or force a care-search pitch into an
+article about ongoing or ending care. Return a real conflict with the approved brief for resolution
+rather than silently changing its conversion role.
 
 ### 8. Open Questions And Limitations
 

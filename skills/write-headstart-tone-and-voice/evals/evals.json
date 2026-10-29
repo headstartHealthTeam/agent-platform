@@ -297,6 +297,52 @@
       "expectedBehaviors": [
         "Uses repository engineering guidance rather than the audience-facing voice skill"
       ]
+    },
+    {
+      "name": "supported-answer-before-referral",
+      "prompt": "Write a short Headstart family opening answering how long learning a new routine may take. Supplied hypothetical facts: a routine may involve several component skills; prior learning changes what remains to learn; time needed can vary with what remains to be learned; the team can discuss early changes and the larger goal. No claim that a larger skill count alone makes a goal harder or slower, numerical timeline, or outcome is supported. Use these premises only.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains concrete reasons timing varies before or alongside the useful clinical conversation",
+        "Does not replace the answer with it depends, a referral, or a description of the guide",
+        "Adds no numerical deadline, causal mechanism beyond the premises, or forced emotional opening",
+        "Names supported variation without asserting that more component skills cause greater difficulty or longer learning time"
+      ]
+    },
+    {
+      "name": "connected-explanation-and-relevant-terms",
+      "prompt": "Revise this family explanation using only its supplied meaning: An assessment informs goals. The treatment plan describes goals and recommended services. Sessions put the plan into practice. Intake here means administrative steps before the assessment; that label is not used again. The premises do not say the assessment determines recommended services. The page explains this sequence, not the whole care team. Return natural connected prose.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains how the assessment, plan and sessions relate instead of defining every noun separately",
+        "Uses the plain meaning of intake rather than introducing a disposable technical label",
+        "Adds no unrelated team glossary, visit logistics, or treatment claims",
+        "Uses sentence structure for comprehension without a fixed length or fragment pattern",
+        "Does not infer that the assessment determines recommended services or that administrative intake includes the assessment"
+      ]
+    },
+    {
+      "name": "collaboration-with-constraints-and-safety",
+      "prompt": "Revise two independent Headstart family passages from supplied premises. A: a clinician of unspecified credential uses session records and family observations to consider plan changes; the proposed time conflicts with family meals; no alternative schedule or sufficient dose is established. Draft: Your clinician should review the data. An easier schedule does not mean your child needs less care. Ask which options are sufficient. B: the supplied safety guidance calls for raising a concern promptly and permits another qualified opinion. Draft: If you are concerned about unsafe treatment, you can wait until the next routine review. Add no new clinical instructions.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains what reviewing records and family observations contributes without assuming provider misconduct",
+        "Treats meals and other real family constraints respectfully without claiming a reduced schedule is sufficient",
+        "Preserves useful direct advice rather than limiting it to obligations",
+        "Corrects the delay in B and preserves prompt attention and the option of another qualified opinion",
+        "Keeps the clinician role generic rather than inventing a credential absent from the premises"
+      ]
+    },
+    {
+      "name": "numerical-examples-serve-the-question",
+      "prompt": "Evaluate two optional additions to Headstart family explanations. A explains coinsurance using supplied hypothetical premises: deductible met, $100 covered charge, family share 20%, no other charges. B answers why hours were recommended and adds an unrelated made-up schedule of four two-hour visits. No dose recommendation or actual schedule is supplied. Decide what each example contributes and provide a brief editing recommendation.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Recognizes that the $20 example can clarify cost-sharing while preserving its assumptions and non-typical-price scope",
+        "Identifies the arbitrary eight-hour total as a potential distraction or dose anchor for B",
+        "Does not ban arithmetic for all scheduling questions or require a numerical example in every article",
+        "Preserves substantive qualifications without repeated defensive disclaimers"
+      ]
     }
   ]
 }

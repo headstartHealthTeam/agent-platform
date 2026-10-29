@@ -12,6 +12,21 @@ Require:
 
 Do not revise an inferred latest draft. If revision identity or feedback target is ambiguous, stop.
 
+## Feedback Coverage
+
+Inspect ordinary comments, tracked suggestions and their replies, relevant direct edits, and
+enough history to distinguish current direction from accepted, rejected, withdrawn, or superseded
+items. Record the source revision, author, time, location, review state, and retrieval coverage
+where available. An empty comments response is not proof that no feedback exists: a capability may
+omit suggestion replies or another review surface. Use an authorized read-only fallback or report
+the precise gap; unresolved coverage blocks claims of complete reconciliation.
+
+Keep replacement text separate from its rationale. An inline export may concatenate deleted and
+inserted text; compare the original and proposed views without accepting or rejecting suggestions.
+Later explicit direction may supersede an earlier edit to the same passage. Rejection of a phrase
+does not establish approval or rejection of every principle in its comment. Preserve provenance
+instead of resurrecting withdrawn wording or converting one removed example into a universal ban.
+
 ## Feedback Classification
 
 Classify every item before editing:
@@ -98,5 +113,7 @@ When feedback conflicts:
 
 - preserve the later application-owned decision when chronology and authority are explicit;
 - preserve evidence and safety constraints over stylistic preference;
+- distinguish a contextual refinement from a global contradiction; useful direct advice remains
+  appropriate outside safety obligations, and an example removed in one context may help another;
 - do not choose between two authorized stakeholder directions without a named resolution; and
 - return one focused decision request that states the affected content and downstream impact.
