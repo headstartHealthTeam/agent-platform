@@ -355,6 +355,19 @@ QA. Do not disable audits, raise thresholds, add blanket exceptions or run an un
 For detailed failures, run `pnpm audit --prod --audit-level moderate` and
 `pnpm audit --audit-level moderate` directly; a network failure is not a clean security result.
 
+The ExcelJS ZIP dependency corrections are deliberately parent-scoped. Retain its existing
+archiver streaming contract while updating unzipper, the glob used by archiver-utils and the
+Minimatch class used by readdir-glob. Do not replace legacy glob's internal matcher with modern
+minimatch or upgrade archiver blindly: both can break ExcelJS streams. The archive compatibility
+regression exercises streaming workbook write/read and filtered ZIP traversal; normal document
+tests and installed-runtime verification cover the production reader. Unused legacy
+archiver-utils `file.expand` quirks (`nonull` and unnormalized `..` paths) are not preserved by
+modern glob and must not become application dependencies.
+
+The pinned `eslint-plugin-import-x` patch replaces its removed `makeRe` import with the supported
+`Minimatch.match` API. Keep the internal-import rule enabled; the compatibility test checks both
+allowed and forbidden patterns. Remove this patch once an upstream release supports minimatch 11.
+
 The daily **Dependency security watch** detects new advisories between code changes. Dependabot
 security updates must be enabled in GitHub; the checked-in group batches compatible patch/minor
 security updates, separately from weekly version updates. Neither mechanism auto-merges changes.
