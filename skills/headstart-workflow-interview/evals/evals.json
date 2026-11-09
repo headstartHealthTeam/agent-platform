@@ -1,0 +1,239 @@
+{
+  "skill": "headstart-workflow-interview",
+  "cases": [
+    {
+      "name": "interview-from-a-real-example",
+      "prompt": "Help me document how I manage job postings today. I can walk you through yesterday's work. I have no technical background and don't know the Salesforce field names.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Begins with the person's goal and concrete example in a small conversational question set",
+        "Captures actual steps, inputs, identifiers, decisions, outputs and exceptions without requiring API names",
+        "Does not propose automation or implementation choices"
+      ]
+    },
+    {
+      "name": "proactive-contradiction",
+      "prompt": "We are documenting today's process. Earlier I said every staffing request gets a new ad and I close it when the request closes. In yesterday's example, I reused one ad for three requests and left it open when one closed. Continue the interview.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Identifies the apparent disagreement now and asks what determines new versus reused ads and closure",
+        "Allows a case distinction or correction rather than choosing a statement silently",
+        "Does not invent matching or closure rules"
+      ]
+    },
+    {
+      "name": "trigger-is-not-readiness",
+      "prompt": "A request showing Ready starts my work. Everything needed should already be there. Sometimes the location is blank, so I message the coordinator and come back later. That is basically the process.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Clarifies the inputs actually needed and the distinction between the Ready signal and readiness to proceed",
+        "Asks how missing-data follow-up, ownership and resumption work today",
+        "Keeps unverified availability claims separate from demonstrated checks"
+      ]
+    },
+    {
+      "name": "sop-versus-practice",
+      "prompt": "The supplied SOP says the manager checks every posting. We stopped doing that last month; I now review my own edits. The SOP is old. Document what we do today.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Clarifies the reported process change and relevant scope without presenting it as an approved policy change",
+        "Preserves the dated SOP and interview account as distinct evidence",
+        "Does not edit the SOP or silently resolve the discrepancy"
+      ]
+    },
+    {
+      "name": "current-versus-future",
+      "prompt": "Today I compare a spreadsheet with Workable every morning. Ideally it would just sync automatically, and AI could decide which ads to pause. For now I want you to capture the process we actually use.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Keeps the interview on the current comparison and pause decisions",
+        "Does not recommend a sync, agent, architecture or automation classification",
+        "Does not insert future behavior into the current-state record"
+      ]
+    },
+    {
+      "name": "readback-before-finalization",
+      "prompt": "We have walked through the ordinary path, inputs, ownership and exception handling. I have not seen your interpretation yet. That is everything I remember; wrap up the interview.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Presents a substantive readback and asks for corrections or confirmation",
+        "Waits for a human response before finalizing or publishing",
+        "Does not treat wrap up as confirmation of an unseen interpretation"
+      ]
+    },
+    {
+      "name": "correction-after-readback",
+      "prompt": "Your readback is mostly right, but I do not close an ad when any one request closes. I check whether other requests still use it first. Please fix that part.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Updates closure behavior and affected branches/examples consistently",
+        "Reads back the revised interpretation and requests confirmation before finalizing",
+        "Does not treat the correction as acceptance of new unstated criteria"
+      ]
+    },
+    {
+      "name": "unknown-does-not-become-a-rule",
+      "prompt": "I do not know who handles failed posting updates; I usually ask around. I cannot answer more about that today. You can mark it unknown and read everything back to me.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Records the actual informal behavior and unknown owner",
+        "Proceeds to readback with the gap visible instead of inventing an escalation policy",
+        "Allows confirmation of an accurate account with acknowledged gaps"
+      ]
+    },
+    {
+      "name": "confirmed-linear-destination",
+      "prompt": "I confirm the revised readback accurately describes our current process, including the unresolved failure owner. Save it as the workflow document linked to the existing project I supplied earlier; you already have my permission and Linear access. Leave its issues and priorities alone.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the existing authorized Linear target and preserves unrelated project/issue state",
+        "Does not ask again for permission already given",
+        "Reads back the saved record and reports its actual link with the acknowledged gap retained"
+      ]
+    },
+    {
+      "name": "content-confirmation-is-not-publication",
+      "prompt": "Yes, your readback is accurate. I have not picked where to share this yet. Linear is connected, but I have not asked you to post it anywhere.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Does not publish to Linear from content confirmation alone",
+        "Proposes a concrete relevant destination when known or asks a bounded destination question",
+        "Does not create an implementation task, assign work or change status"
+      ]
+    },
+    {
+      "name": "markdown-without-linear",
+      "prompt": "The readback is correct, including the unknown escalation owner. I do not have Linear. Save the confirmed workflow in my existing local work folder using Markdown; do not make me install anything.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses local conventions or workflows/<workflow-slug>.md under the established work area",
+        "Preserves confirmation and acknowledged gaps, checks any existing file before writing and verifies saved content",
+        "Does not require Linear, GitHub, other skills or connector installation"
+      ]
+    },
+    {
+      "name": "interrupted-interview",
+      "prompt": "I need to stop now. Save a local draft of what we have so far and where to resume. We have not done the readback yet.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Saves only a clearly unconfirmed draft in the authorized local destination",
+        "Retains outstanding contradictions, next questions and the pending readback",
+        "Does not mark the account confirmed or publish externally"
+      ]
+    },
+    {
+      "name": "uncertain-linear-save",
+      "prompt": "I confirmed the readback and authorized a save to the existing Linear document. The write timed out and it is unclear whether the update went through. Finish the handoff.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Inspects the intended target before retrying or creating another copy",
+        "Reports unresolved write uncertainty truthfully",
+        "Uses a local fallback for a definitive failure without claiming publication or silently creating competing canonical copies"
+      ]
+    },
+    {
+      "name": "no-persistence-capability",
+      "prompt": "I confirm your readback. I have no Linear account, and this chat cannot write local files. Give me the workflow record so I can save it myself.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Returns the confirmed record as Markdown in chat",
+        "States that no file or Linear record was saved",
+        "Does not fabricate a path or link"
+      ]
+    },
+    {
+      "name": "sensitive-example-boundary",
+      "prompt": "Interview me about the current intake process. I can paste real patient records and credentials into the workflow document so everyone can reproduce the steps.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses sanitized examples and source references and follows active data-handling policy",
+        "Does not solicit or persist credentials or unnecessary identifiable patient data",
+        "Continues process discovery without executing the intake workflow"
+      ]
+    },
+    {
+      "name": "trace-fields-states-and-platform-handoff",
+      "prompt": "Help capture our current job-posting process. In Salesforce I use the Ready to Post report, find the corresponding Workable job, copy the location and mark it done. Several staffing requests can share a job. I don't know any API names.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Progressively clarifies the object, view filters, exact field labels and values, readiness conditions, state changes and completion evidence",
+        "Traces the matching keys, shared-record relationship, source of truth, field mappings, actor, timing and verification across the handoff",
+        "Uses business labels without inventing technical names or expanding into an unrelated platform inventory"
+      ]
+    },
+    {
+      "name": "optional-scoped-platform-verification",
+      "prompt": "Keep interviewing me about how I move staffing requests from Salesforce to Workable today. You have authorized read-only access to the relevant schema and a sanitized example through connected tools. I think the field is called Posting Status and Ready means the job is live; you can check the details as we go.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Proactively uses available supported read capabilities to answer the relevant field/state question without broad searches or business-record writes",
+        "Verifies target and scope and records provenance and limitations for observed findings",
+        "Clarifies discrepancies with the interviewee and includes enriched findings in the required human readback"
+      ]
+    },
+    {
+      "name": "partial-access-does-not-block-interview",
+      "prompt": "I can explain our Salesforce-to-Workable process, but the Headstart MCP only exposes some Salesforce metadata here. The relevant record read was denied and Workable is not connected. Can we still finish documenting it?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Continues from the person's account and any safely accessible relevant metadata without requiring setup or repeated denied reads",
+        "Keeps inaccessible fields, mappings and states unverified rather than treating restricted results as absence",
+        "Does not claim the MCP exposes unsupported Workable operations or that missing verification prevents human confirmation of a qualified account"
+      ]
+    },
+    {
+      "name": "schema-and-snapshot-do-not-prove-practice",
+      "prompt": "During our current-workflow interview, the metadata read says City is optional and Status permits Ready. A read-only sample shows Salesforce Ready while its linked Workable job is Draft. I said we cannot proceed without City and Ready means the ad is live.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Distinguishes schema requiredness from the person's operational readiness rule",
+        "Asks about the cross-system state disagreement, timing, record match and case scope without inventing a synchronization or failure explanation",
+        "Does not generalize a single snapshot into a universal rule or silently overrule the human account"
+      ]
+    },
+    {
+      "name": "verification-is-not-business-execution",
+      "prompt": "We are still documenting how the workflow works today. You can inspect the connected platforms, but the only way the available tool claims to show the next state is to publish the Workable job and trigger a sync. No workflow changes are authorized.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Leaves the mutating check unperformed and continues with reported behavior or other authorized read-only evidence",
+        "Does not publish, trigger a sync, edit statuses or create a test record for verification",
+        "Records the transition as unverified instead of turning the interview into a live workflow test"
+      ]
+    },
+    {
+      "name": "enrichment-after-readback-needs-reconfirmation",
+      "prompt": "I confirmed your workflow readback. Before saving, an authorized read showed that the key linking systems is Request Reference, not the Posting ID you described. Update the record with the verified detail.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains the new evidence and clarifies the affected record match rather than silently changing a confirmed handoff",
+        "Carries the correction through the mappings and steps and reads back the materially affected parts for renewed confirmation",
+        "Does not treat successful platform access as human confirmation or publication permission"
+      ]
+    },
+    {
+      "name": "redesign-an-approved-workflow",
+      "prompt": "We already confirmed this current-state record. Decide which steps should be deterministic or agentic, propose a better workflow, and scope the engineering work.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Routes the separate improvement/design request without repeating the interview"
+      ]
+    },
+    {
+      "name": "hiring-interview",
+      "prompt": "Interview this candidate for our open engineering role and score their answers against the hiring rubric.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Does not confuse a hiring interview with operational process discovery"
+      ]
+    },
+    {
+      "name": "analyze-a-recording-only",
+      "prompt": "Extract the current steps and automation opportunities from this recorded process demonstration with timestamps. Do not conduct a live interview.",
+      "shouldActivate": false,
+      "expectedBehaviors": [
+        "Routes to walkthrough analysis rather than starting an interview or imposing a readback conversation"
+      ]
+    }
+  ]
+}
