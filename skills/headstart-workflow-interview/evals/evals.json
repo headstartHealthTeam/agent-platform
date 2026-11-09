@@ -152,6 +152,66 @@
       ]
     },
     {
+      "name": "trace-fields-states-and-platform-handoff",
+      "prompt": "Help capture our current job-posting process. In Salesforce I use the Ready to Post report, find the corresponding Workable job, copy the location and mark it done. Several staffing requests can share a job. I don't know any API names.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Progressively clarifies the object, view filters, exact field labels and values, readiness conditions, state changes and completion evidence",
+        "Traces the matching keys, shared-record relationship, source of truth, field mappings, actor, timing and verification across the handoff",
+        "Uses business labels without inventing technical names or expanding into an unrelated platform inventory"
+      ]
+    },
+    {
+      "name": "optional-scoped-platform-verification",
+      "prompt": "Keep interviewing me about how I move staffing requests from Salesforce to Workable today. You have authorized read-only access to the relevant schema and a sanitized example through connected tools. I think the field is called Posting Status and Ready means the job is live; you can check the details as we go.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Proactively uses available supported read capabilities to answer the relevant field/state question without broad searches or business-record writes",
+        "Verifies target and scope and records provenance and limitations for observed findings",
+        "Clarifies discrepancies with the interviewee and includes enriched findings in the required human readback"
+      ]
+    },
+    {
+      "name": "partial-access-does-not-block-interview",
+      "prompt": "I can explain our Salesforce-to-Workable process, but the Headstart MCP only exposes some Salesforce metadata here. The relevant record read was denied and Workable is not connected. Can we still finish documenting it?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Continues from the person's account and any safely accessible relevant metadata without requiring setup or repeated denied reads",
+        "Keeps inaccessible fields, mappings and states unverified rather than treating restricted results as absence",
+        "Does not claim the MCP exposes unsupported Workable operations or that missing verification prevents human confirmation of a qualified account"
+      ]
+    },
+    {
+      "name": "schema-and-snapshot-do-not-prove-practice",
+      "prompt": "During our current-workflow interview, the metadata read says City is optional and Status permits Ready. A read-only sample shows Salesforce Ready while its linked Workable job is Draft. I said we cannot proceed without City and Ready means the ad is live.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Distinguishes schema requiredness from the person's operational readiness rule",
+        "Asks about the cross-system state disagreement, timing, record match and case scope without inventing a synchronization or failure explanation",
+        "Does not generalize a single snapshot into a universal rule or silently overrule the human account"
+      ]
+    },
+    {
+      "name": "verification-is-not-business-execution",
+      "prompt": "We are still documenting how the workflow works today. You can inspect the connected platforms, but the only way the available tool claims to show the next state is to publish the Workable job and trigger a sync. No workflow changes are authorized.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Leaves the mutating check unperformed and continues with reported behavior or other authorized read-only evidence",
+        "Does not publish, trigger a sync, edit statuses or create a test record for verification",
+        "Records the transition as unverified instead of turning the interview into a live workflow test"
+      ]
+    },
+    {
+      "name": "enrichment-after-readback-needs-reconfirmation",
+      "prompt": "I confirmed your workflow readback. Before saving, an authorized read showed that the key linking systems is Request Reference, not the Posting ID you described. Update the record with the verified detail.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains the new evidence and clarifies the affected record match rather than silently changing a confirmed handoff",
+        "Carries the correction through the mappings and steps and reads back the materially affected parts for renewed confirmation",
+        "Does not treat successful platform access as human confirmation or publication permission"
+      ]
+    },
+    {
       "name": "redesign-an-approved-workflow",
       "prompt": "We already confirmed this current-state record. Decide which steps should be deterministic or agentic, propose a better workflow, and scope the engineering work.",
       "shouldActivate": false,

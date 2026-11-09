@@ -53,10 +53,20 @@ is required; Linear access is optional, with local Markdown as the fallback.
 - For each step, establish the actor, system, input and its origin, action, output/destination,
   decision or check, and what causes the next step. Include manual copying, waiting, handoffs,
   informal workarounds, and work that happens outside the main application.
-- Make inputs concrete: record/document type, exact field or visible label when known, identifiers
-  joining systems, required versus optional values, format/units, source owner, timing/freshness,
-  and how correctness is checked. Do not require the person to know API names. Verify technical
-  names through scoped authorized reads when useful; otherwise mark them unverified.
+- Make fields concrete: platform, object/record type, screen/report/view and filters, exact visible
+  labels, values or combinations used, required versus optional inputs, format/units, source owner,
+  freshness and validation. Distinguish blank, unknown, default and explicitly negative values when
+  they lead to different actions. Do not require API names; label reported technical names unverified
+  until checked.
+- Trace states and transitions: which field or visible indicator means ready, blocked, in progress
+  or complete; its actual value; additional conditions; who or what changes it; and the before/after
+  evidence. Similar labels in different systems need not mean the same thing. Distinguish the
+  person's operational readiness check from a field's configured requiredness or allowed values.
+- At each cross-platform handoff, trace source and destination records, matching identifiers or
+  lookup rules, one-to-one versus shared/multiple matches, field/value mappings and any copying or
+  transformation. Establish the owning system for each fact, who or what transfers it, the actual
+  trigger/order, expected delay, destination verification and current handling of mismatches or
+  partial completion. Follow only the fields, states and relationships this workflow actually uses.
 - Distinguish the business event from actual readiness to act. Probe statements such as "always
   available," "the system handles it," "the usual fields," and "done": what supports that claim,
   where is it visible, and what happens when it is not true?
@@ -79,13 +89,42 @@ is required; Linear access is optional, with local Markdown as the fallback.
   known. Do not invent rules or interrogate indefinitely. A partially understood process can be
   accurately recorded with acknowledged gaps.
 
+## Enrich With Optional Read-Only Checks
+
+During the interview, proactively use available authorized reads when they can resolve a specific
+question or substantiate an important detail. These checks enrich the account; platform access is
+not a prerequisite for interviewing or completing a record with acknowledged gaps.
+
+- Use the Headstart MCP when it exposes the needed read; otherwise use an appropriate available
+  plugin, connector, browser or other read capability. Discover what is actually supported rather
+  than assuming a connection exposes every platform, field or record.
+- Verify the relevant account/environment and permitted scope before relying on a result. Prefer
+  narrow schema/field metadata, a relevant view or an authorized example over broad record searches
+  or exports. Inherit the active data-handling rules; retain minimal sanitized evidence and links.
+- Keep inspection read-only. Do not edit a field, change a status, run the business workflow, send a
+  message, trigger a synchronization or create a test record to prove how something works. If an
+  operation's side effects or target are unclear, leave that check unperformed.
+- If access is missing, denied, unauthenticated, partial or not useful, briefly name the limitation
+  and continue from the person's account or supplied material. Do not require installation or
+  authentication, repeatedly retry a blocked read, or infer that a field/record is absent from a
+  missing capability or restricted result.
+- For material findings, record what was checked, platform/environment, source link or identifier,
+  when checked, relevant filters/scope and limitations. Separate configured metadata, observed
+  record state and the person's reported practice. One snapshot does not prove a general rule,
+  transition history, synchronization behavior or the person's permissions.
+- Bring discrepancies back to the person as focused clarification questions. Preserve differing
+  dates, environments, roles or case types when they explain the difference. Include enriched
+  findings and remaining uncertainty in the human readback; a successful read never replaces it.
+  If later inspection materially changes a confirmed account, read back the affected parts again.
+
 ## Required Human Readback
 
 Before finalizing or saving a confirmed record:
 
 1. Present an understandable readback in the conversation: "From our conversation, here is what I
    understand happens today..." Cover the goal, trigger/readiness, ordered steps and branches,
-   important inputs, decision rules, handoffs, outputs, completion checks, exceptions, and unknowns.
+   material fields/values, states and transitions, cross-platform mappings and handoffs, decision
+   rules, outputs, completion checks, exceptions, verification findings and unknowns.
    Use a simple diagram only if it helps explain branching; the written steps remain sufficient.
 2. Ask explicitly whether this account is right and what needs correcting or adding. For a long
    workflow, review coherent sections and then confirm the assembled account. Do not make the
@@ -138,7 +177,8 @@ The person's explicit destination preference takes precedence over these default
 ## Completion Standard
 
 The record describes the process today at enough detail to follow its normal and exception paths,
-with traceable inputs and outputs, human decisions, source limits, and visible unknowns. It has an
-explicit human readback/confirmation state and a verified destination, or a clear unsaved/draft
+with traceable fields, states, cross-platform handoffs, inputs and outputs, human decisions, optional
+read-only verification evidence, source limits, and visible unknowns. It has an explicit human
+readback/confirmation state and a verified destination, or a clear unsaved/draft
 status. Stop after this handoff. Improvement, automation classification, engineering scoping, and
 skill/workflow implementation remain separate work.

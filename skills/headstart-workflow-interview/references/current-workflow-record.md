@@ -24,16 +24,41 @@ design, automation recommendations, build prompt, or implementation backlog.
 
 ## Actors, Systems And Inputs
 
-Describe each person's responsibility, each system's role, and which system owns each record.
-For each material input capture:
+Describe each person's responsibility, each system's role, and which system owns each record or
+fact. Identify the platform, object/record type and screen/report/view used, including filters that
+determine which records the person sees. For each material input capture:
 
 | Input | Source and owner | Field/label or artifact | Linking identifier | Format and requiredness | Availability and validation |
 | ----- | ---------------- | ----------------------- | ------------------ | ----------------------- | --------------------------- |
 
 Explain what happens today when the input is missing, delayed, stale, inconsistent or inaccessible.
-Distinguish a human's visible screen label from a verified technical field. Include spreadsheets,
-messages, attachments and personal knowledge where they actually affect the work. Link supporting
-sources without embedding sensitive examples.
+Retain exact relevant values/combinations, formats/units and distinctions such as blank versus an
+explicit negative value. Distinguish a human's visible label from a verified technical field name;
+do not invent API names or require the person to supply them. Include spreadsheets, messages,
+attachments and personal knowledge where they affect the work. Link supporting sources without
+embedding sensitive examples.
+
+## States And Readiness
+
+| Platform and object | State field/indicator and exact value | Meaning and additional conditions | Actor/trigger and prior state | Resulting state and verification |
+| ------------------- | ------------------------------------- | --------------------------------- | ----------------------------- | -------------------------------- |
+
+Describe the states and transitions actually used, including readiness, waiting/blocked conditions
+and completion. Capture the person's checks and exceptions to them. Distinguish configured allowed
+values or required fields from the operational rule used today; identically named states across
+systems may have different meanings. Record unknown transitions rather than filling them in.
+
+## Cross-Platform Handoffs
+
+| Source → destination records | Match/key and relationship | Fields/values copied or transformed | Current actor/mechanism and trigger | Timing and destination verification |
+| ---------------------------- | -------------------------- | ----------------------------------- | ----------------------------------- | ----------------------------------- |
+
+Trace the identifiers or lookup rules that connect records, including shared/multiple matches;
+field/value mappings, transformations or manual copying; the authoritative system for each fact;
+and actual ordering/dependencies. Capture how the person detects and handles missing/ambiguous
+matches, conflicting values, synchronization delays, duplicate updates and partial completion today.
+Cross-reference the relevant steps and exception paths. Leave unknown mappings or mechanisms
+explicitly unverified. Cover only relationships needed to understand this workflow.
 
 ## Step-By-Step Current Process
 
@@ -74,6 +99,12 @@ not acceptance criteria for a future build. Do not invent examples and present t
   from the policy source itself.
 - List source title/link or identifier, date/version when known, relevant section/timestamp, and
   retrieval limitation. Use normal Markdown links; local file links should be relative where useful.
+- For optional read-only checks, record the question checked, platform/account or environment
+  (without secrets), source reference, check time, relevant filters/scope, finding and limitations.
+  Distinguish schema metadata from observed record state and reported operating rules. A current
+  snapshot alone does not establish transition history, general behavior or synchronization timing.
+  Summarize missing/partial access and unperformed checks without treating them as evidence of
+  absence. The interview and confirmation can proceed with those gaps; no platform setup is required.
 - Record material source disagreements and their disposition. If practice differs from an SOP,
   describe both and who clarified the difference; do not silently rewrite the SOP or certify policy.
 - Keep remaining questions specific: unknown detail, why it matters to understanding the current
@@ -84,8 +115,9 @@ not acceptance criteria for a future build. Do not invent examples and present t
 ## Readback Coverage
 
 The human should have seen the material contents above before confirmation. A shorter readback is
-useful only when it retains the consequential rules, branches, inputs, completion conditions and
-unknowns; provide the detailed draft when needed. Carry corrections through the full record and
-reconfirm affected content. Keep proposed future ideas separate and unassessed only if the person
+useful only when it retains the consequential fields/values, states, cross-platform mappings,
+rules, branches, completion conditions, verification findings and unknowns; provide the detailed
+draft when needed. Carry corrections through the full record and reconfirm affected content.
+Keep proposed future ideas separate and unassessed only if the person
 explicitly wants them retained. Do not infer approval to redesign, implement or publish from approval
 of this account.
