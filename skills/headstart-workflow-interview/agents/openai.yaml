@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Headstart Workflow Interview'
+  short_description: 'Capture current work through a guided interview'
+  default_prompt: 'Use $headstart-workflow-interview to understand how I do this work today, clarify gaps, and read it back to me before saving the record.'
