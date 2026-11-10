@@ -2,6 +2,76 @@
   "skill": "headstart-workflow-interview",
   "cases": [
     {
+      "name": "reuse-ongoing-agent-work",
+      "prompt": "Use the interview skill to capture the workflow we have been discussing in this chat. You already know I coordinate staffing, Taylor publishes ads in Workable, and Taylor copies each new ad URL into our tracker. We have not covered how an update is checked or what happens if it fails. Please do not make me explain the known steps again.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reuses the supplied role, publishing ownership and URL handoff in a provisional account rather than asking for them again",
+        "Briefly reflects the known process and asks a focused question about verification or failure handling",
+        "Keeps reused material in the eventual human readback without treating prior discussion as final confirmation"
+      ]
+    },
+    {
+      "name": "start-with-no-prior-context",
+      "prompt": "I have never used an agent for this process and have no notes or draft. I coordinate event bookings manually and want you to interview me about how I do it today.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Begins with a small focused question about the goal or one recent booking and follows the actual sequence",
+        "Does not request nonexistent prior chats, require documentation or connections, or present a long intake checklist",
+        "Builds a current-state account through conversation without proposing a new booking workflow"
+      ]
+    },
+    {
+      "name": "other-chat-context-unavailable",
+      "prompt": "Another agent chat already knows my invoice-review workflow, but you cannot read that chat here. I would rather not relay every question and answer between chats. Help me document the current process.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Acknowledges the access limit and offers a brief summary/export or continuing with the skill in the informed chat as optional ways to reuse context",
+        "Does not claim cross-chat memory, require two chats or new authentication, or contact another agent without authorization",
+        "Can continue from the person's account if no handoff is available and still requires human readback"
+      ]
+    },
+    {
+      "name": "prior-agent-experiment-is-not-current-practice",
+      "prompt": "Here is a summary from my earlier agent chat: I currently review requests manually each morning. The agent proposed hourly synchronization and wrote an untested script that would auto-publish changes. It also guessed that my manager approves all edits. Use this context to interview me about what happens today.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reuses the reported manual review while distinguishing the proposal, untested script and guessed approval rule",
+        "Asks whether any experimental behavior is actually in use and clarifies the uncertain approval ownership",
+        "Does not execute the script, design improvements, treat the summary as verified evidence or accept it as human confirmation"
+      ]
+    },
+    {
+      "name": "complete-context-proceeds-to-readback",
+      "prompt": "The supplied current notes already contain my role, goal, trigger, full ordered steps, fields, mappings, checks, exceptions, ownership and acknowledged gaps. I have reviewed those facts while working with this agent, but I have not seen or confirmed an assembled workflow account. Use the interview skill to finish documenting it.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the supplied material and moves to a substantive assembled readback if coverage is complete",
+        "Does not invent missing facts or ask a new round of already-answered questions to satisfy a checklist",
+        "Waits for human confirmation of the readback before finalizing or saving a confirmed account"
+      ]
+    },
+    {
+      "name": "reuse-context-with-targeted-freshness-check",
+      "prompt": "Use our previous workflow draft for the interview. It says my manager approved every refund as of six months ago. The draft has the systems, fields and steps. I now handle most approvals myself, but a few still go to the manager.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reuses the documented systems, fields and steps without restarting discovery",
+        "Names the dated approval difference and asks which cases still require the manager and when that changed",
+        "Preserves provenance, updates dependent branches and includes the changed rule in the human readback"
+      ]
+    },
+    {
+      "name": "new-artifact-retires-pending-questions",
+      "prompt": "During our interview you asked where the request ID goes and who checks publication. This newly supplied current SOP answers both: the ID is copied to Request Reference, and Taylor checks the published URL. I have not explained what happens when that check fails. Continue from here.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the newly supplied answers to retire the pending field and ownership questions",
+        "Attributes the SOP, invites correction of any mismatch with practice, and focuses the next question on failed checks",
+        "Does not imply the documented publication check was independently observed or execute it"
+      ]
+    },
+    {
       "name": "interview-from-a-real-example",
       "prompt": "Help me document how I manage job postings today. I can walk you through yesterday's work. I have no technical background and don't know the Salesforce field names.",
       "shouldActivate": true,

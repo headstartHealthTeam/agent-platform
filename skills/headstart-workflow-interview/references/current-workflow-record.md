@@ -5,6 +5,10 @@ to the process: combine short sections, expand meaningful branches, and mark a m
 instead of inventing a value. Describe today's practice in plain language. Do not add a future-state
 design, automation recommendations, build prompt, or implementation backlog.
 
+Seed the draft from relevant existing conversation and artifacts when available. Use the sections
+below to spot gaps, not to make the person repeat covered facts. With no prior context, fill them
+progressively from a concrete example. Reused material remains part of the final human readback.
+
 ## Record And Confirmation
 
 - Workflow name and boundary; date or period the account describes.
@@ -99,6 +103,10 @@ not acceptance criteria for a future build. Do not invent examples and present t
   from the policy source itself.
 - List source title/link or identifier, date/version when known, relevant section/timestamp, and
   retrieval limitation. Use normal Markdown links; local file links should be relative where useful.
+- Identify reused conversation, earlier workflow work or handoff summaries and their scope. Preserve
+  original source attribution where available; distinguish prior human statements, agent-generated
+  interpretations and current confirmation. Do not imply an inaccessible chat or original source
+  was read. Keep proposed or experimental behavior separate from what is used today.
 - For optional read-only checks, record the question checked, platform/account or environment
   (without secrets), source reference, check time, relevant filters/scope, finding and limitations.
   Distinguish schema metadata from observed record state and reported operating rules. A current

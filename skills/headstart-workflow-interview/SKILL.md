@@ -1,9 +1,9 @@
 ---
 name: headstart-workflow-interview
-description: Interview a Headstart teammate about how they perform a workflow today, proactively clarify gaps and contradictions, and read the process back for human confirmation before saving a detailed current-state record. Use for interactive process discovery or documenting someone's operational work; workflow redesign and implementation planning are separate tasks.
+description: Interview a Headstart teammate about how they perform a workflow today, building on existing context or starting from scratch. Clarify gaps and contradictions, then read the process back for human confirmation before saving a detailed current-state record. Use for interactive process discovery or documenting someone's operational work; workflow redesign and implementation planning are separate tasks.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.2.0'
 ---
 
 # Headstart Workflow Interview
@@ -33,23 +33,47 @@ is required; Linear access is optional, with local Markdown as the fallback.
   that process, changing business records, messaging others, or publishing to an external system.
   Preserve explicit destination/write authorization already given; do not ask for it again.
 
-## Prepare Without Making Setup A Prerequisite
+## Start From What Is Already Known
 
-1. Establish the person's role in this process, the workflow boundary, and the outcome they achieve.
-   Reuse known context and ask only for what is missing.
-2. Read relevant existing notes, SOPs, recordings or experiments when accessible. Record what was
-   actually inspected and its date/version. A summary is not proof that a recording was watched;
-   a documented SOP is not proof that it matches current practice.
-3. Briefly state what the sources already suggest, then invite a concrete recent example. Ask what
-   caused the person to start and how they knew the work was finished. Do not require connector
-   installation, repository access, or technical terminology to begin the interview.
-4. Read [the record guide](references/current-workflow-record.md) for coverage and output structure.
-   Use it as an internal guide, not a questionnaire to dump on the person.
+1. **Use the context already available before asking questions.** Review the relevant conversation,
+   local workflow notes and supplied or authorized source material. Reuse the person's known role,
+   goal, steps, examples, decisions and corrections. Read [the record guide](references/current-workflow-record.md)
+   to identify coverage and gaps; do not turn it into a questionnaire the person must answer again.
+2. **Accommodate work already started with an agent.** Use existing workflow drafts, prior answers,
+   SOPs, recordings, experiment notes or relevant implementation artifacts when available. If the
+   person mentions prior work whose context is missing, ask for its location or a brief handoff.
+   Do not assume another chat's contents are visible or automatically shared. Read that chat only
+   through an available authorized capability; otherwise offer an optional pasted summary/export
+   or continuation in the already-informed chat. Do not require two chats, repeated relaying of
+   questions, or new access setup. Continue from available context if the person cannot supply more.
+3. **Separate evidence from assumptions.** Retain source identity, date/version and what was actually
+   inspected. An earlier agent answer or handoff summary is derived context, not a fresh human
+   confirmation or independent verification. Distinguish the person's statements and observed
+   results from agent proposals, hypothetical examples and untested code. When someone has been
+   building or testing a workflow, establish which parts are actually used today and which remain
+   experiments or desired changes; do not execute or redesign them as part of the interview.
+4. **Build a provisional account, then ask about the gaps.** Briefly say what you already understand,
+   invite corrections, and ask the next focused question about a missing, ambiguous, contradictory
+   or potentially outdated detail. Do not re-ask facts clearly covered by current context just to
+   fill a template. When freshness or scope is uncertain, state the known detail and ask what has
+   changed rather than restarting discovery. If the available account is already complete, move
+   directly to the substantive human readback instead of inventing extra interview questions.
+5. **Start simply when there is no prior context.** Establish the goal, the person's role and one
+   concrete recent example, asking only what is missing. Follow what triggered the work, what they
+   did and how they knew it was finished. No prior agent work, documentation, connector installation,
+   repository access or technical terminology is required. Build the account gradually through
+   conversation; missing context is a supported starting point, not a setup failure.
+
+For example, if the conversation already establishes who publishes an ad and where its link goes,
+summarize those facts and ask how the person checks the update succeeded. If an old summary says a
+manager approves every edit but the person now describes self-review, clarify that specific change.
+Both starting points still require the final human readback below, including the reused material.
 
 ## Conduct A Real Back-And-Forth
 
 - Ask one focused question or a small related group, then wait for the answer. Follow the person's
-  example through its actual sequence before pursuing unrelated checklist items.
+  example through its actual sequence before pursuing unrelated checklist items. Keep track of
+  what is already covered as new answers or artifacts arrive; use them to retire redundant questions.
 - For each step, establish the actor, system, input and its origin, action, output/destination,
   decision or check, and what causes the next step. Include manual copying, waiting, handoffs,
   informal workarounds, and work that happens outside the main application.
