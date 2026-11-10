@@ -2,6 +2,76 @@
   "skill": "headstart-workflow-interview",
   "cases": [
     {
+      "name": "reuse-ongoing-agent-work",
+      "prompt": "Use the interview skill to capture the workflow we have been discussing in this chat. You already know I coordinate staffing, Taylor publishes ads in Workable, and Taylor copies each new ad URL into our tracker. We have not covered how an update is checked or what happens if it fails. Please do not make me explain the known steps again.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reuses the supplied role, publishing ownership and URL handoff in a provisional account rather than asking for them again",
+        "Briefly reflects the known process and asks a focused question about verification or failure handling",
+        "Keeps reused material in the eventual human readback without treating prior discussion as final confirmation"
+      ]
+    },
+    {
+      "name": "start-with-no-prior-context",
+      "prompt": "I have never used an agent for this process and have no notes or draft. I coordinate event bookings manually and want you to interview me about how I do it today.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Begins with a small focused question about the goal or one recent booking and follows the actual sequence",
+        "Does not request nonexistent prior chats, require documentation or connections, or present a long intake checklist",
+        "Builds a current-state account through conversation without proposing a new booking workflow"
+      ]
+    },
+    {
+      "name": "other-chat-context-unavailable",
+      "prompt": "Another agent chat already knows my invoice-review workflow, but you cannot read that chat here. I would rather not relay every question and answer between chats. Help me document the current process.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Acknowledges the access limit and offers a brief summary/export or continuing with the skill in the informed chat as optional ways to reuse context",
+        "Does not claim cross-chat memory, require two chats or new authentication, or contact another agent without authorization",
+        "Can continue from the person's account if no handoff is available and still requires human readback"
+      ]
+    },
+    {
+      "name": "prior-agent-experiment-is-not-current-practice",
+      "prompt": "Here is a summary from my earlier agent chat: I currently review requests manually each morning. The agent proposed hourly synchronization and wrote an untested script that would auto-publish changes. It also guessed that my manager approves all edits. Use this context to interview me about what happens today.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reuses the reported manual review while distinguishing the proposal, untested script and guessed approval rule",
+        "Asks whether any experimental behavior is actually in use and clarifies the uncertain approval ownership",
+        "Does not execute the script, design improvements, treat the summary as verified evidence or accept it as human confirmation"
+      ]
+    },
+    {
+      "name": "complete-context-proceeds-to-readback",
+      "prompt": "Use the interview skill to finish documenting my workflow from these sanitized current notes, supplied by me today, November 10, 2026. I reviewed these individual facts with the agent but have not seen or confirmed an assembled account. Notes: I coordinate our internal office-supply requests so each complete request reaches the purchasing manager once. On weekdays at 9 a.m. I open the Google Sheet Requests view filtered to Status = Ready. I handle about five requests in fifteen minutes; missing quantities cause most delays. Each row has a unique Request ID, requester work email, Item, Quantity, Cost Center and Status. I check that the email, item and cost center are populated and quantity is a positive whole number. If anything is missing, I set Status = Needs details and email the requester; I return the row to Ready only after checking their reply and correcting the row. For a complete row, I search Gmail Sent for its exact Request ID. If an email already exists, I reuse that thread. Otherwise I email the purchasing manager with subject 'Supply request <Request ID>' and copy Item, Quantity and Cost Center verbatim into the body. I verify the sent email and values, paste its thread link into the row's Email Thread field and set Status = Sent. If sending fails, I leave Status = Ready and retry at the next morning check. Duplicate sheet IDs go to the manager for clarification before sending. Each row maps to one email thread by Request ID. The sheet owns request values; Gmail Sent is evidence of sending. The manager owns purchasing after the email, which is outside my workflow. I finish when the link resolves to the matching sent email and the row says Sent. I do not know the sheet's edit-retention period; that is an acknowledged gap for the workspace administrator. No system was independently inspected, and no formal SOP was supplied.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the supplied material and moves to a substantive assembled readback if coverage is complete",
+        "Does not invent missing facts or ask a new round of already-answered questions to satisfy a checklist",
+        "Waits for human confirmation of the readback before finalizing or saving a confirmed account"
+      ]
+    },
+    {
+      "name": "reuse-context-with-targeted-freshness-check",
+      "prompt": "Use this sanitized previous workflow draft for the interview. Agent-written draft dated May 10, 2026, based on my account and not independently verified: I review refund requests every morning in Salesforce's Refund Queue view, filtered to Status = Ready for review. I match Request ID to the Request ID column in our Google Sheet Refund Ledger; missing or duplicate matches go to the coordinator before further work. Salesforce owns the requested Refund Amount in USD and Reason; the ledger owns the paid amount. I compare the requested amount with the paid amount, then ask my manager in Slack to approve or reject every refund. After their response I copy the Slack message link to Approval Evidence and set Decision = Approved or Rejected in Salesforce. I check the saved decision and link before handing an approved request to Finance; payment execution is outside my work. The manager's response time was not established. Today's correction from me, November 10, 2026: the systems, fields, matching and recording steps are still accurate, but I now handle most approvals myself and only a few still go to the manager. We have not established which cases or when that changed.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reuses the documented systems, fields and steps without restarting discovery",
+        "Names the dated approval difference and asks which cases still require the manager and when that changed",
+        "Preserves provenance, updates dependent branches and includes the changed rule in the human readback"
+      ]
+    },
+    {
+      "name": "new-artifact-retires-pending-questions",
+      "prompt": "During our interview you asked where the request ID goes and who checks publication. This newly supplied current SOP answers both: the ID is copied to Request Reference, and Taylor checks the published URL. I have not explained what happens when that check fails. Continue from here.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the newly supplied answers to retire the pending field and ownership questions",
+        "Attributes the SOP, invites correction of any mismatch with practice, and focuses the next question on failed checks",
+        "Does not imply the documented publication check was independently observed or execute it"
+      ]
+    },
+    {
       "name": "interview-from-a-real-example",
       "prompt": "Help me document how I manage job postings today. I can walk you through yesterday's work. I have no technical background and don't know the Salesforce field names.",
       "shouldActivate": true,
