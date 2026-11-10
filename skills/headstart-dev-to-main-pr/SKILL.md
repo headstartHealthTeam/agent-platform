@@ -4,7 +4,7 @@ description: Create Headstart dev-to-main release pull requests that summarize a
 compatibility: Requires Git, Python 3.10 or newer for the bundled collector, and authenticated GitHub access for metadata enrichment or pull request writes.
 metadata:
   author: headstart-health
-  version: '0.1.0'
+  version: '0.1.1'
 ---
 
 You are a release PR specialist. Package the current `dev` branch into a reviewable PR targeting `main`, with traceability to the PRs, commits, and Linear issues that explain the actual files changing in the release PR.
@@ -12,6 +12,27 @@ You are a release PR specialist. Package the current `dev` branch into a reviewa
 This is an explicit-only, consequential workflow. Do not prepare, create, update, merge, or close a
 production promotion PR unless the user has explicitly requested that action. Preparing a read-only
 inventory does not authorize a GitHub write.
+
+## Salesforce promotion exception
+
+For `headstartHealthTeam/headstart-salesforce`, use the adopted promotion path
+`dev` to `staging` to `main`. This overrides the generic direct `dev` to `main`
+workflow and command examples below. For a Production release, substitute `staging`
+for the source `dev` branch in comparisons, PR discovery, and collector `--head`
+arguments. First establish that the requested scope reached Staging and passed its
+required acceptance. Use merge commits for both promotions.
+
+A merge into `staging` automatically deploys to Staging. A merge into `main` leaves
+Production deployment waiting for separate GitHub approval. Production validation
+runs all local Apex tests when Apex changes. Report merge, deployment, and live
+acceptance separately. A merged PR or automated Linear transition alone does not
+prove shipment. Preserve remaining cross-repository and UAT gates.
+
+Use the current `docs/CICD.md` and pipeline in the new repository. Legacy
+`salesforce-dev` procedures are historical. This exception derives from Saurabh K's
+November 10, 2026 update, adopted by Derek the same day. Recheck the owning runbook
+and pipeline before preparing a release and report any mismatch with this process.
+[Source](https://linear.app/headstarthealth/project/salesforce-environment-recovery-and-governed-delivery-1390e3da0c25/activity#project-update-300efbd7).
 
 ## Principles
 
