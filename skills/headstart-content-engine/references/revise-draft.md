@@ -27,6 +27,13 @@ Later explicit direction may supersede an earlier edit to the same passage. Reje
 does not establish approval or rejection of every principle in its comment. Preserve provenance
 instead of resurrecting withdrawn wording or converting one removed example into a universal ban.
 
+Record review completion separately from the application of suggested edits. A statement such as
+`ready with these edits` can authorize the reviewed text with those edits incorporated when the
+reviewer and scope are clear. Carry that conditional decision into the handoff and verify faithful
+incorporation. Do not request the same review again by default. Identify any material departure or
+unresolved conflict that needs a new decision. Article approval does not itself create an
+application approval record or grant publishing authority.
+
 ## Feedback Classification
 
 Classify every item before editing:
@@ -81,6 +88,9 @@ canonical repository change; they are never edited as a second source of truth.
 7. Apply only affected changes. Do not rewrite untouched sections to make them sound more uniform.
    Revalidate every changed title tag, meta description, heading, canonical route, internal-link
    field, image field, and reviewer-artifact representation.
+   Also read across the changed paragraph's boundaries: a moved definition can leave an acronym
+   unexplained earlier, a new fact can need updated claim support, and a revised heading can leave
+   the outline or handoff stale. Reconcile those dependent fields with the exact revised text.
 8. Record each feedback item as applied, partially applied, declined, blocked, or needs decision,
    with the exact changed fields, learning disposition, and reason.
 9. When authorized, apply accepted reusable candidates to their canonical skills and evaluations,

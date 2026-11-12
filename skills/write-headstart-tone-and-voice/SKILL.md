@@ -4,7 +4,7 @@ description: Write or revise Headstart Health audience-facing content for famili
 compatibility: Works with agents that can receive a content brief, draft, or factual source material.
 metadata:
   author: headstart-health
-  version: '1.4.0'
+  version: '1.5.0'
 ---
 
 # Write Headstart Tone And Voice
@@ -78,6 +78,11 @@ Write with people, not at them. Families bring priorities and observations. Clin
 expertise and judgment. RBTs evaluate whether a role fits their needs. Avoid language that frames
 the organization as the hero and the audience as passive.
 
+When the evidence supports shared planning, show how the child's preferences and the family's
+knowledge shape goals, teaching, and review. Name the decision they help make instead of mentioning
+their input only after describing a finished clinical plan. Preserve the clinician's professional
+responsibilities and the actual decision-making relationship in the source.
+
 Give clear, usable guidance without taking over the reader's decisions. Direct verbs such as
 `ask`, `compare`, and `tell` can support agency. Preserve choice where an action is optional; do not
 soften every useful suggestion into `you can`. Avoid coercion, blame, and assumed agreement, not
@@ -89,6 +94,10 @@ Use the actor named in the source material. Do not casually blur Headstart, an i
 practice, a clinician, an RBT, a family, or an employer into one collective `we`. When the
 distinction matters, name who provides care, makes a decision, employs someone, or supports a
 process.
+
+Explain a role through its work and how it connects with other people. Include a restriction when
+it resolves a relevant misunderstanding, alongside the supported responsibility or handoff. A list
+of prohibitions alone rarely helps the reader picture care.
 
 ### Be Optimistic Without Overpromising
 
@@ -162,6 +171,10 @@ step clearer without making the family feel managed or talked down to.
   `the plan`; a definition that merely renames it is not enough.
 - Translate abstract clinical factors into the practical question, routine, skill, or decision they
   affect. Prefer examples a family can picture over lists of professional concepts.
+- For a how-it-works question, preserve the supported explanation of what people observe, do, and
+  change in response. Explain the relationship that makes the example meaningful. Broad phrases
+  such as `track progress` need enough detail for this reader to understand what is tracked and how
+  it informs care. Select the relevant details without imposing one process template on every topic.
 - Keep care roles accurate wherever they affect the question. Explain day-to-day delivery,
   clinical oversight, and family participation when relevant; do not add a full team glossary to
   every article. Connect a role to what that person helps the family understand or decide.
@@ -184,6 +197,8 @@ step clearer without making the family feel managed or talked down to.
 - Choose examples that resolve a real comprehension gap. Integrate or remove examples, scripts,
   and repeated questions that restate an explanation or distract from the article's decision.
   An illustrative number can create a misleading anchor even when its arithmetic is correct.
+  Signal an illustration naturally and state material assumptions where they affect understanding.
+  Repeated reminders that an example is hypothetical can interrupt an otherwise clear explanation.
 - Present the child as a whole person with strengths, needs, relationships, routines, and a life
   beyond therapy.
 - Preserve the family's role in asking questions, sharing priorities, and making decisions.

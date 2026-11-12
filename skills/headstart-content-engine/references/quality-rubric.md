@@ -51,6 +51,9 @@ Evaluate whether the Resource:
   guidance and supporting topics have appropriate depth without losing required coverage;
 - translates unfamiliar or clinical concepts into concrete reader questions, routines, or examples
   and defines terms before relying on shorthand;
+- explains the supported relationships needed for the page's main answer. For a process article,
+  check whether the reader can follow what happens and how observations inform the next action.
+  A fluent list of activities can leave that explanation missing;
 - delivers the packet's information-gain thesis;
 - avoids generic summary sections that could be relabeled for any ABA company; and
 - earns its proposed existence rather than duplicating current Headstart coverage.
@@ -124,6 +127,11 @@ paragraph or section context:
   ambiguous words such as `amounts`, `capacity`, or `the answer`?
 - Does the article explain before assigning tasks, and does each useful link serve the family
   rather than merely prove the writer researched the topic?
+- Where shared planning is supported, can the reader see how the child's preferences and family
+  knowledge affect a goal or adjustment, with professional responsibilities accurately retained?
+- Can the reader explain the relevant mechanism from the passage itself? Check the detail that
+  carries the answer, such as what is observed and what changes in response. Require only what the
+  question and evidence support, rather than a fixed set of clinical terms or stages;
 - Do simplification and examples preserve evidence, payer scope, arithmetic, and role boundaries?
 
 Read across sections for repetition: does each add a distinct part of the answer, and does the
@@ -140,6 +148,11 @@ earlier verifier pass, confident prose, a reading score, or artifact completenes
 current comprehension failure. A material voice or usefulness defect requires `repair`, or
 `blocked` when new evidence is needed; it is not a harmless human-review item. Keep the existing
 one-repair boundary. Do not claim that model verification replaces the human editorial decision.
+
+When human review substantially improves a passage that previously passed, revisit the original
+judgment and record what it missed. Add a focused evaluation of that failure when a reusable
+guidance update is authorized. Preserve acceptable counterexamples so calibration does not become
+a demand for longer explanations, fewer questions, or one preferred writing style.
 
 If a readability tool is available, record its name/version, text scope, score, and limitations as
 diagnostic evidence. If none is used, say `not_checked`; do not estimate a grade or claim the

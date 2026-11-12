@@ -300,6 +300,46 @@
         "Bases depth on the page job rather than identical section templates",
         "Adds no clinical facts or unrelated background"
       ]
+    },
+    {
+      "name": "fluent-process-summary-needs-repair",
+      "prompt": "Verification only. Every artifact field and factual claim is supported. The approved article must explain how a fictional care team uses observations to adjust teaching. Its complete answer is The team practices skills, collects data, and adjusts the plan to help your child. The packet also supplies the missing explanation: records distinguish independent responses from responses needing help, and the clinician uses that distinction to choose which support to adjust. Evaluate the answer and state the appropriate gate without writing a new article.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Returns repair for the missing explanation even though the summary is fluent and factually correct",
+        "Identifies the observation-to-adjustment relationship and its consequence for reader understanding",
+        "Uses the supplied packet and does not demand extra terms, a fixed length, or an external research task"
+      ]
+    },
+    {
+      "name": "concise-process-answer-can-pass",
+      "prompt": "Verification only. All artifact, safety, source and image checks pass for this complete short FAQ answer. Question: How does the team decide which help to adjust in this fictional teaching model? Answer: The team records which responses your child completes independently and which need help. The clinician uses those records to choose the support to adjust. Those are the exact relationships established by the supplied packet. Give the usefulness gate and reason.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Accepts the supported concise explanation as useful without demanding a longer example or extra clinical detail",
+        "Traces its judgment to the observation-to-adjustment relationship",
+        "Does not fail the answer merely because it lacks a question list, glossary, or named technique"
+      ]
+    },
+    {
+      "name": "conditional-review-approval-preserves-scope",
+      "prompt": "Prepare a revision handoff only. A qualified reviewer says all four named article revisions are ready with her tracked edits. Each source revision and proposed change is available, the evidence supports every change, and the user authorizes clean successor revisions only. Explain the editorial decision and next checks. No publication authority or application approval event is supplied.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Records editorial signoff conditional on faithful incorporation of the identified edits",
+        "Preserves source revisions and verifies clean successors without requesting identical editorial approval again by default",
+        "Does not publish, manufacture an application approval, or infer permission for additional substantive rewrites"
+      ]
+    },
+    {
+      "name": "revision-rechecks-dependent-context",
+      "prompt": "Revise only the specified opening of exact fictional draft revision 2 from its complete packet. The reviewer moves a paragraph containing the acronym LST above the later expansion Learning Support Team. The packet establishes that expansion. Another approved change renames a heading also listed in the review-package outline. The user authorizes revision 3 in a new tab, preserving existing tabs and comments. Return a brief change ledger and any remaining checks.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Expands LST at its first use in the revised reading order without a broad rewrite",
+        "Reconciles the review-package outline with the revised heading and verifies adjacent context",
+        "Preserves prior revisions and comment anchors, and does not manufacture approval or publication"
+      ]
     }
   ]
 }

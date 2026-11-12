@@ -218,3 +218,51 @@ is practical. One integrated example may carry an explanation better than severa
 Keep material assumptions where they matter, without appending the same disclaimer to every
 illustration or related link. End with a useful understanding or next action rather than assigning
 the same preparation task again.
+
+## Preserve The Explanation Of How Something Works
+
+Premise: in this fictional teaching example, asking for help is an agreed goal. An adult helps the
+child ask to open a toy box using the child's communication method. The adult opens it after the
+request. The clinician tracks requests and the help needed, then uses those observations to adjust
+teaching. The outcome counts as reinforcement only if requests become more likely in similar
+situations.
+
+Before: `The team practices useful skills, provides support, and monitors progress.`
+
+After: `The adult helps your child ask to open the toy box in the way they communicate. After the
+request, the box opens and play continues. The clinician looks at how often your child asks and how
+much help they need, then uses that information to adjust teaching. If getting the box opened makes
+the request more likely next time, that outcome is reinforcing the request.`
+
+The specific relationship explains the mechanism. Shorter words alone cannot supply it. Select the
+parts needed for the reader's question, and use only the supplied evidence. A brief answer about
+where to send a form needs no teaching example or clinical vocabulary.
+
+## Show How The Family Helps Shape A Decision
+
+Premise: in this fictional care model, the family and clinician choose goals together using the
+child's interests, family priorities, and assessment findings. The clinician owns the clinical
+assessment and teaching plan. The family later shares what happens during daily routines.
+
+Before: `The clinician sets the goals. Families can provide input and report progress.`
+
+After: `You and the clinician use the assessment findings, your child's interests, and your family's
+priorities to choose goals together. The clinician develops the teaching plan. What you notice
+during daily routines helps you review those goals and the support your child needs.`
+
+The family participates where the decision is made, and the clinician's responsibilities stay
+clear. Use the actual relationship in the evidence rather than assigning every decision jointly.
+
+## Offer Help With The Reader's Actual Task
+
+Premise: a fictional estimate lists services and the family's expected share. The practice's
+billing team and the health plan can explain the figures. No particular price or coverage outcome
+is established.
+
+Before: `Use these answers to trace every figure and determine which rule explains a discrepancy.`
+
+After: `If a figure is unclear, ask the billing team or your health plan to walk through the
+estimate with you, using the services listed and your plan's rules.`
+
+Useful guidance can be an explanation, a question, or a direct action. Choose what helps at that
+point in the article instead of turning each paragraph into another task for the reader.

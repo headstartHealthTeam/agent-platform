@@ -343,6 +343,46 @@
         "Does not ban arithmetic for all scheduling questions or require a numerical example in every article",
         "Preserves substantive qualifications without repeated defensive disclaimers"
       ]
+    },
+    {
+      "name": "explain-supported-learning-mechanism",
+      "prompt": "Write a short family explanation using these fictional premises only. A child is learning to ask for help opening a toy box with their chosen communication method. The adult opens it after the request. The clinician records requests and the help needed, uses those observations to adjust teaching, and calls an outcome reinforcing only when the request becomes more likely in similar situations. Explain how the process works in accessible connected prose.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains the request, response, and observations that inform teaching rather than only saying practice and track progress",
+        "Preserves the conditional meaning of reinforcement and adds no promised result or unsupported technique",
+        "Keeps the explanation readable without requiring a glossary, fixed stage count, or repeated illustration disclaimers"
+      ]
+    },
+    {
+      "name": "family-partnership-at-the-decision",
+      "prompt": "Revise this fictional family guide using only the premises. Draft: The clinician sets the goals. Families can provide input and report progress. Premises: the family and clinician choose goals together from assessment findings, child interests, and family priorities; the clinician performs the assessment and develops the clinical teaching plan; family observations inform later goal review.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Makes family and child priorities part of choosing and reviewing goals",
+        "Preserves the clinician responsibility for assessment and the clinical teaching plan",
+        "Does not transfer clinical responsibility to the family or merely add a generic partnership sentence"
+      ]
+    },
+    {
+      "name": "positive-role-description-with-safety-boundary",
+      "prompt": "Explain a fictional therapy-assistant role to a family. Supplied facts: the assistant carries out the supervising clinician's plan, records observations, and brings proposed changes to the clinician. The assistant cannot independently change the clinical plan. A sudden safety concern needs prompt attention through the practice's safety procedure. Keep this brief.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Explains the assistant work and handoff in positive concrete terms",
+        "Preserves the independent-plan-change restriction and direct safety guidance",
+        "Does not replace accuracy with optimism or turn the role into a long prohibition list"
+      ]
+    },
+    {
+      "name": "retain-a-useful-direct-question",
+      "prompt": "Edit only if needed: Ask the practice whether your written estimate covers the assessment, ongoing sessions, or both. Supplied facts support that exact question and establish no other cost details. The reviewer has asked us to avoid making every paragraph a task. Return the most useful short wording for this standalone estimate checklist.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Retains a direct practical question or equivalent clear action because it serves the checklist",
+        "Does not interpret a preference for more explanation as a ban on direct questions",
+        "Adds no invented estimate contents, costs, or provider process"
+      ]
     }
   ]
 }
