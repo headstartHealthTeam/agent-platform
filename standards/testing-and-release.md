@@ -76,8 +76,9 @@ external boundaries, rather than reconstructing its decisions in a fixture.
   payload and the distinction between undispatched, confirmed and uncertain outcomes. Reconcile
   uncertain effects through the owning contract; do not silently replay them or switch adapters.
 - **Final authority and freshness:** pause the last relevant asynchronous dependency, revoke or
-  change the governing permission/revision, then resume. Prove that inference, writes and artifact
-  delivery cannot rely on an earlier check or a read-only grant. Include a permitted companion case.
+  change the governing permission/revision, then resume. Prove each inference, write or artifact
+  delivery has the current authority its contract requires; permission to read state must not
+  implicitly authorize a distinct execution or write. Include a permitted companion case.
 - **Enforced credential/data boundaries:** exercise every supported delivery path and the actual
   SDK/CLI options and defaults that can read files, retain content or transmit data. A prompt
   prohibition, valid artifact name or one validated input shape is not enforcement of those effects.
