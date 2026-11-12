@@ -26,6 +26,7 @@ const namedTool = itemBase.extend({
   status: z.enum(['in_progress', 'completed', 'failed', 'incomplete']),
   name: z.string(),
 });
+const eventHeader = z.object({ type: z.string() });
 const event = z.object({ event_id: id, session_id: id, turn_id: id.nullable(), type: z.string() });
 const textEvent = event.extend({
   item_id: id,
@@ -122,7 +123,7 @@ export class OperatorItems {
     return projected?.final ? projected : null;
   }
   consume(raw: unknown): void {
-    const header = z.object({ type: z.string() }).parse(raw);
+    const header = eventHeader.parse(raw);
     if (
       ![
         'agent.session.turn.item.added',
