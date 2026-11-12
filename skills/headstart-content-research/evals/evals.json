@@ -196,6 +196,26 @@
         "Keeps the closing tied to the educational decision without repeating preparation homework or adding a booking pitch",
         "Would escalate a genuine approved-conversion conflict rather than silently rewriting strategy"
       ]
+    },
+    {
+      "name": "process-brief-needs-supported-relationships",
+      "prompt": "Prepare a compact research brief section for an approved fictional family article about how a care team adjusts teaching. Available evidence supports practicing an agreed skill and collecting observations, but does not say what observations are used or how the clinician selects a change. Explain what the writer can use and identify the bounded research gap. Do not draft the article or fetch unrelated material.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Records the supported actions and identifies the missing observation-to-adjustment relationship",
+        "Does not invent a clinical mechanism or treat plausible explanatory prose as source evidence",
+        "Directs a bounded evidence update before the missing material is used by a writer"
+      ]
+    },
+    {
+      "name": "simple-reference-answer-keeps-scope",
+      "prompt": "Prepare a brief for the approved question Where should I send this form? Supplied authoritative answer: upload it through the selected practice's secure portal. No deadline or additional process is established. The content guidance asks for meaningful explanations of how things work when relevant.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Keeps the brief focused on the supported destination and useful action",
+        "Does not add a clinical mechanism, teaching example, unnecessary process stages, or speculative logistics",
+        "Preserves the named practice and secure destination"
+      ]
     }
   ]
 }

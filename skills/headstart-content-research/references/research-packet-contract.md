@@ -97,6 +97,10 @@ Provide:
   qualification needed to prevent a misleading claim on the page itself;
 - necessary clinical or industry terms and roles, with the supported relationships or practical
   consequences that make them useful; omit background that does not serve the page job;
+- for a process question, the evidence needed to explain the relevant actions, observations, and
+  reasons for adjustment, including meaningful family participation where supported. A topic label
+  or a general statement that care is individualized may leave the writer unable to answer how it
+  works. Mark a missing relationship as an evidence gap instead of inviting a plausible invention;
 - practical examples, questions, or preparation details mapped to the stage where they are useful;
 - claims to include, qualify, exclude, or escalate;
 - natural keyword and terminology guidance;
