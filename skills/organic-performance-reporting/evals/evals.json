@@ -278,6 +278,71 @@
         "Checks prior trajectory before calling a single monthly change seasonality or a sustained decline",
         "Can conclude no immediate website change is warranted"
       ]
+    },
+    {
+      "name": "paid-campaign-consolidation",
+      "prompt": "Two equal-length months show brand-query mobile organic clicks falling 100 to 65 at position 1. The dedicated brand campaign rises from 40 to 80 paid clicks, but other campaigns carried 30 clicks for the same search term in the first month and none in the second. Explain the shift.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses actual search terms across campaigns and compares paid clicks 70 to 80, not 40 to 80",
+        "Identifies campaign consolidation as a misleading subset comparison and verifies filters and historical visibility",
+        "Describes the paid increase as consistent with redistribution, not proof of 35 displaced organic clicks or identified users switching",
+        "Keeps impressions, CTR denominators and GA4 sessions separate; asks for missing evidence only when useful"
+      ]
+    },
+    {
+      "name": "paid-organic-scope-mismatch",
+      "prompt": "GSC shows US mobile Google web CTR falling. The only Ads report is worldwide, all devices, includes search partners and excludes removed campaigns. Its paid clicks doubled. Can we attribute the organic decline to ads?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Rejects a direct matched comparison and records geography, device, network and historical visibility mismatches",
+        "Attempts available authorized comparable slices without changing advertising settings",
+        "Can report limited directional evidence or unresolved causality when matching data is unavailable",
+        "Does not remove the public-host KPI filter or sum paid and organic impressions to force reconciliation"
+      ]
+    },
+    {
+      "name": "paid-contrary-evidence",
+      "prompt": "For the same query, device, market and dates, organic CTR drops while organic position stays first. Complete comparable paid evidence shows both paid impressions and clicks falling, with paid CTR unchanged. The owner thinks ads took the clicks.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Tests rather than confirms the owner hypothesis and explains that paid evidence does not support increased paid click capture",
+        "Considers material alternative evidence such as secondary organic results, intent, snippets or SERP changes",
+        "Does not claim that unchanged topmost rank proves unchanged visual prominence",
+        "Can leave cause unresolved and recommend no immediate campaign or website change"
+      ]
+    },
+    {
+      "name": "paid-missing-access-read-only",
+      "prompt": "Explain a material branded mobile CTR decline. GSC and GA4 work, but no authorized advertising reporting capability is available. Do not alter any accounts.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Completes supported organic analysis and explicitly marks the paid explanation unverified",
+        "Does not invent paid values, provision access, require a new UI login or install a provider to finish the established workflow",
+        "May identify the specific comparable report the paid owner could supply",
+        "Keeps missing or privacy-omitted rows distinct from observed zero"
+      ]
+    },
+    {
+      "name": "paid-secondary-results-and-causality",
+      "prompt": "Organic property CTR drops from 40% to 25%, topmost position stays 1, and paid CTR rises. The homepage stays first while secondary pages move from positions 2 to 5. We only have a current SERP screenshot. Write the organic report conclusion.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Separates observed paid CTR and secondary-page movement from inferred explanations",
+        "Does not add page-level counts to property totals or label secondary pages sitelinks without presentation evidence",
+        "Does not treat the current screenshot as proof of a historical layout, ad-copy change, or causal displacement",
+        "Keeps a concise qualified summary and a scoped evidence table in the existing report rather than turning it into a paid-media audit"
+      ]
+    },
+    {
+      "name": "paid-diagnostic-proportionate",
+      "prompt": "The monthly organic report is stable, branded counts are very low, and no material CTR change or paid-search question affects the decision. Should we do a full campaign and creative audit anyway?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses judgment to omit an immaterial paid deep dive while still completing the normal branded-demand diagnostic",
+        "Does not manufacture a paid explanation, fixed threshold, mandatory recommendation or new reporting dependency",
+        "Keeps the report focused on organic acquisition and states any relevant limitation concisely"
+      ]
     }
   ]
 }

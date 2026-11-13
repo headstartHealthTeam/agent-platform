@@ -77,7 +77,15 @@ authorized keyword-planning evidence may help when available; low volume or unav
 leave the market-demand conclusion unresolved. Do not introduce UI login or install a provider as a
 silent prerequisite for the established MCP workflow.
 
-## 4. Report a useful conclusion
+## 4. Investigate paid-versus-organic context when useful
+
+For material branded CTR or click changes, especially at stable top organic position, assess whether
+paid search could change the interpretation. Use the [paid-versus-organic procedure](paid-organic-context.md)
+when authorized evidence is available. This is an agent-selected diagnostic, not a paid-media audit
+or a prerequisite to finish every report. Record missing evidence and test alternatives instead of
+assuming ads caused the change. Stable organic position alone does not establish stable visual prominence.
+
+## 5. Report a useful conclusion
 
 In the existing executive/scorecard narrative and Performance Highlights, distinguish:
 
