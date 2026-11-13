@@ -11,7 +11,7 @@ overrides:
   body-parser@>=2.0.0 <2.4.0: 2.4.0
   exceljs@4.4.0>unzipper: 0.12.5
   fast-uri@<3.1.9: 3.1.9
-  hono@>=4.0.0 <4.13.16: 4.13.16
+  hono@>=4 <4.13.16: 4.13.16
   ip-address@<10.7.4: 10.7.4
   mammoth@1.13.0>argparse: 2.0.1
   minimatch@>=9 <11.0.1: 11.0.4
