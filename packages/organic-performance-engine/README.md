@@ -45,7 +45,10 @@ the collector's `workbook-evidence.json`, and agent-authored narrative. `--proje
 deterministic fact projection and narrative binding handoff first; optional `--selection` keys let
 the agent choose material diagnostic rows without changing arithmetic or raw evidence. It never
 applies external writes.
-The package includes `templates/headstart-report.v1.json`; follow the skill's
+New reports use `templates/headstart-report.v2.json` and a required `--context` input for editorial
+classification, AI-source coverage, selected highlights and outcome diagnostics. The v1 template
+remains for historical replays. The agent selects and interprets evidence; the engine validates
+and calculates the detail views. Follow the skill's
 `references/approved-template.md` for composition, authorization, and numeric/visual acceptance.
 
 The collector verifies every selected provider, reads each reporting period independently,
@@ -73,3 +76,9 @@ test agent investigation and contract selection separately from deterministic un
 
 See the [documentation hub](../../docs/README.md) and
 [workflow authoring guide](../../docs/workflow-authoring-guide.md).
+
+GSC historical coverage can be independently incomplete even when pagination succeeds. After
+investigating daily coverage, declare `gsc.unavailableComparisons` in the collection plan with a
+reason keyed by `previous` or `year_ago`. Raw source rows remain auditable; GSC headline and cohort
+comparisons are withheld, while valid GA4 comparisons remain available. This is an explicit
+reviewed coverage decision, not automatic zero-filling of missing dates.

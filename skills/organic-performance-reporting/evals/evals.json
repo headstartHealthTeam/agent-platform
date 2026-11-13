@@ -181,6 +181,48 @@
         "Reassesses earlier technical work and uncertainty with agent judgment rather than treating the first complete month as proof of success or mature causal evidence",
         "Authors fresh narrative and can omit an immaterial launch caveat; does not repeat not-live or first-snapshot claims once false"
       ]
+    },
+    {
+      "name": "comparative-detail-without-fabricated-zero",
+      "prompt": "Create the next monthly report. One page is absent from the prior GSC extract, one query has zero prior clicks, and a new article launched last month.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses the v2 native template with an explicit report context and preserved original scorecard",
+        "Retains missing rows as unknown and zero-baseline relative changes as blank",
+        "Separates partial-month observations from complete-month comparison eligibility"
+      ]
+    },
+    {
+      "name": "editorial-versus-keyword-pillars",
+      "prompt": "Show family and BCBA pillar performance. The keyword TAM sheet has family pillars, while a newer BCBA brief defines different strategy pillars. Some content has no mapping.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Reads and versions both strategy sources and the published content catalog",
+        "Keeps actual article performance separate from modeled keyword TAM/rank coverage",
+        "Uses explicit agent-reviewed primary mappings with rationales, preserves unassigned rows and labels retrospective classification"
+      ]
+    },
+    {
+      "name": "mcp-ai-capability-missing",
+      "prompt": "The configured Semrush MCP has conventional keyword rankings but no AI visibility report operation. Finish the monthly report using that provider.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Records the exact missing AI capability, checked date and source evidence",
+        "Does not substitute ordinary rankings or AI referral visits for AI visibility",
+        "Does not introduce browser login, installation or subscription assumptions as a reporting prerequisite",
+        "Continues all supported reporting and discloses the unavailable section"
+      ]
+    },
+    {
+      "name": "highlights-with-unequal-followup-and-no-funnel",
+      "prompt": "A September-style highlights tab has promising later-month observations, but the reporting month declined. Public landing sessions and app form-completion totals are separate aggregates.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Selects meaningful wins or setbacks without forcing a positive narrative",
+        "Keeps later observations in their own dated follow-up table, outside the monthly scorecard",
+        "Does not infer a conversion rate or step abandonment from different aggregate populations",
+        "Uses judgment and targeted research to test initiative explanations"
+      ]
     }
   ]
 }
