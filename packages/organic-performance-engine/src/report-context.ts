@@ -137,6 +137,8 @@ export const reportContextSchema = z
     }
     if (new Set(context.highlightPaths).size !== context.highlightPaths.length)
       issue('Duplicate highlight paths');
+    if (context.highlightPaths.some((path) => normalizePath(path) !== path))
+      issue('Highlight paths must be normalized');
     validateJourney(context.journeyAssessment, context.reportWindow, issue);
   });
 
@@ -152,12 +154,20 @@ function validateJourney(
   if (journey.status === 'verified-funnel' && journey.steps.length < 2)
     issue('Verified funnel requires at least two retained steps');
   const previousSteps = new Map<string, number>();
+  const groupSizes = new Map<string, number>();
+  const names = new Set<string>();
   for (const step of journey.steps) {
     if (step.window.startDate !== window.startDate || step.window.endDate !== window.endDate)
       issue('Funnel steps must cover the reporting window');
-    const key = `${step.audience}:${step.population}`;
+    const key = JSON.stringify([step.audience, step.population]);
+    const name = JSON.stringify([step.audience, step.population, step.step]);
+    if (names.has(name)) issue('Duplicate funnel step within a population');
+    names.add(name);
+    groupSizes.set(key, (groupSizes.get(key) ?? 0) + 1);
     const prior = previousSteps.get(key);
     if (prior !== undefined && step.count > prior) issue('Ordered funnel counts cannot increase');
     previousSteps.set(key, step.count);
   }
+  if ([...groupSizes.values()].some((size) => size < 2))
+    issue('Each funnel population requires at least two retained steps');
 }

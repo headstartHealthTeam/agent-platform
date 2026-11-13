@@ -147,6 +147,7 @@ describe('expanded reporting evidence', () => {
     ]);
     expect(result.get('detail.ai')?.[0]?.[1]).toBe('Unavailable');
     expect(result.get('detail.funnel')).toEqual([]);
+    expect(result.get('detail.provenance')?.[0]?.[0]).toContain(source.url);
     expect(
       result.get('detail.pillars')?.some((row) => row[0] === 'bcbas' && row[1] === 'Business')
     ).toBe(true);
@@ -273,5 +274,14 @@ describe('expanded reporting evidence', () => {
     expect(() => reportContextSchema.parse(input)).toThrow('cannot increase');
     required(input.journeyAssessment.steps[1], 'step').count = 2;
     expect(reportContextSchema.parse(input).journeyAssessment.status).toBe('verified-funnel');
+    required(input.journeyAssessment.steps[1], 'step').population = 'different users';
+    expect(() => reportContextSchema.parse(input)).toThrow('Each funnel population');
+    required(input.journeyAssessment.steps[1], 'step').population = 'same users';
+    required(input.journeyAssessment.steps[1], 'step').step = 'Started';
+    expect(() => reportContextSchema.parse(input)).toThrow('Duplicate funnel step');
+    input.journeyAssessment.steps = [];
+    input.journeyAssessment.status = 'aggregate-only';
+    input.highlightPaths = ['/bcba/'];
+    expect(() => reportContextSchema.parse(input)).toThrow('Highlight paths must be normalized');
   });
 });

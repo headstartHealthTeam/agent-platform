@@ -330,7 +330,14 @@ export function buildDetailedFacts(evidence: WorkbookEvidence, input: unknown): 
   highlights(blocks, evidence, context);
   outcomes(blocks, evidence, context);
   blocks.set('detail.provenance', [
-    [`Editorial catalog ${context.editorial.version}; context SHA-256 ${sha256Json(context)}`],
+    [
+      [
+        `Editorial catalog ${context.editorial.version}; context SHA-256 ${sha256Json(context)}`,
+        ...context.editorial.sources.map(
+          (source) => `${source.url} (revision ${source.revision}; retrieved ${source.retrievedAt})`
+        ),
+      ].join('\n'),
+    ],
   ]);
   return blocks;
 }

@@ -380,7 +380,22 @@ export function buildWorkbookPlan(input: {
                 : []
             )
           );
-          return [...growth, update, ...notes];
+          const sizing =
+            binding.autoResizeRows && rows.length > 0
+              ? [
+                  {
+                    autoResizeDimensions: {
+                      dimensions: {
+                        sheetId: actual.properties.sheetId,
+                        dimension: 'ROWS',
+                        startIndex: binding.range.row,
+                        endIndex: binding.range.row + rows.length,
+                      },
+                    },
+                  },
+                ]
+              : [];
+          return [...growth, update, ...notes, ...sizing];
         })
         .concat(
           sheet.chartSpecs.map((spec, chartIndex) => {

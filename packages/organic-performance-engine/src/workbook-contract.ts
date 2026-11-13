@@ -44,6 +44,7 @@ export const workbookTemplateSchema = z
                   range: rectangleSchema,
                   maxCharacters: z.number().int().positive().default(700),
                   preserveAlignment: z.boolean().default(false),
+                  autoResizeRows: z.boolean().default(false),
                   overflowNoteColumns: z.array(coordinate).default([]),
                   resetNumberFormat: z.boolean().default(false),
                   expandRows: z.number().int().positive().optional(),

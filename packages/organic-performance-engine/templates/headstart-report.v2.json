@@ -382,7 +382,9 @@
           },
           "numericColumns": [],
           "percentColumns": [],
-          "decimalColumns": []
+          "decimalColumns": [],
+          "overflowNoteColumns": [0],
+          "maxCharacters": 150
         }
       ],
       "styleSha256": "7cb23b90404cc6ce68e56eb9e453e33bec5fca22cb614584e8b692493c1d0c98",
@@ -1736,7 +1738,7 @@
           "decimalColumns": []
         }
       ],
-      "styleSha256": "c7da4e44910bc8da85b94cde9f6b6e76e82e8e84e0494840162b7ba732de91de",
+      "styleSha256": "b8d198742d817f00e79bc4442c5edc8947f5fa8c7bf0b8b1dd5c31cda834447f",
       "chartSpecs": []
     },
     {
@@ -2103,12 +2105,12 @@
         {
           "row": 5,
           "column": 4,
-          "text": "Clicks \u0394"
+          "text": "Clicks Δ"
         },
         {
           "row": 5,
           "column": 5,
-          "text": "Clicks \u0394 %"
+          "text": "Clicks Δ %"
         },
         {
           "row": 5,
@@ -2123,12 +2125,12 @@
         {
           "row": 5,
           "column": 8,
-          "text": "Impressions \u0394"
+          "text": "Impressions Δ"
         },
         {
           "row": 5,
           "column": 9,
-          "text": "Impressions \u0394 %"
+          "text": "Impressions Δ %"
         },
         {
           "row": 5,
@@ -2143,7 +2145,7 @@
         {
           "row": 5,
           "column": 12,
-          "text": "CTR \u0394 pp"
+          "text": "CTR Δ pp"
         },
         {
           "row": 5,
@@ -2158,7 +2160,7 @@
         {
           "row": 5,
           "column": 15,
-          "text": "Position \u0394"
+          "text": "Position Δ"
         },
         {
           "row": 5,
@@ -2205,10 +2207,11 @@
           "numericColumns": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
           "percentColumns": [5, 9, 10, 11],
           "decimalColumns": [12, 13, 14, 15],
-          "expandRows": 100000
+          "expandRows": 100000,
+          "autoResizeRows": true
         }
       ],
-      "styleSha256": "2a04d61e2b100453a5bbc850dfea13d72aa2d3c7972eeb24767db59eab2c7975",
+      "styleSha256": "064b485b5c18c3c7f67dcd134727430a677e4d360fc6ef8bc2d6013dc2c87e36",
       "chartSpecs": []
     },
     {
@@ -2639,7 +2642,7 @@
         {
           "row": 21,
           "column": 0,
-          "text": "Verified sequential funnel only \u2014 otherwise intentionally blank"
+          "text": "Verified sequential funnel only — otherwise intentionally blank"
         },
         {
           "row": 23,
@@ -2724,10 +2727,11 @@
           },
           "numericColumns": [3, 4],
           "percentColumns": [],
-          "decimalColumns": []
+          "decimalColumns": [],
+          "autoResizeRows": true
         }
       ],
-      "styleSha256": "a31f2dc9040ffb6bdd9ab1a06c0bfb264bfbf36fefb7872f6c5becc5248fa3a7",
+      "styleSha256": "74a6914d7e90c763090bb3e181791332c3c615f8153ee1353e1971ffee527fff",
       "chartSpecs": []
     },
     {
@@ -2993,7 +2997,7 @@
         {
           "row": 5,
           "column": 8,
-          "text": "Clicks \u0394 %"
+          "text": "Clicks Δ %"
         },
         {
           "row": 5,
@@ -3061,10 +3065,11 @@
           "numericColumns": [4, 5, 6, 7, 8, 9, 10, 11, 12],
           "percentColumns": [8, 11],
           "decimalColumns": [],
-          "expandRows": 2000
+          "expandRows": 2000,
+          "autoResizeRows": true
         }
       ],
-      "styleSha256": "e663e3046ea8068ce37653973877aa806ccbb9575a918cb315fd0b643d9dbd3f",
+      "styleSha256": "1bb58bf3f62ba15e137337a8d0315e30c9a1ae5c689f90507581353fd6adfe55",
       "chartSpecs": []
     },
     {
@@ -3159,10 +3164,11 @@
           "numericColumns": [3, 4, 5, 6, 7, 8, 9],
           "percentColumns": [8],
           "decimalColumns": [],
-          "expandRows": 500
+          "expandRows": 500,
+          "autoResizeRows": true
         }
       ],
-      "styleSha256": "09c9f92099045716c23217b6cb09c53cec994d2cf9997324409ee44eca69479c",
+      "styleSha256": "1e675252c8868aae4f1c1a71996f7b662cac80dfa9ffbe45fbadb95efc5b189e",
       "chartSpecs": []
     },
     {
@@ -3668,7 +3674,8 @@
           "numericColumns": [3, 5, 6],
           "percentColumns": [],
           "decimalColumns": [],
-          "expandRows": 500
+          "expandRows": 500,
+          "autoResizeRows": true
         }
       ],
       "styleSha256": "9308a6e7f2003a678455f80ab9c39da318f4a2493300acfec62241c18865a1f4",

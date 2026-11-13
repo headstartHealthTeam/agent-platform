@@ -134,6 +134,23 @@ function setup(): Parameters<typeof buildWorkbookPlan>[0] {
 }
 
 describe('native approved-template population plan', () => {
+  it('sizes only populated rows for opted-in detail tables', () => {
+    const input = setup();
+    const template = workbookTemplateSchema.parse(input.template);
+    const binding = template.sheets[0]?.bindings[2];
+    if (!binding) throw new Error('Missing synthetic binding');
+    binding.autoResizeRows = true;
+    const plan = buildWorkbookPlan({ ...input, template });
+    expect(
+      plan.batches[0]?.requests.filter((request) => 'autoResizeDimensions' in request)
+    ).toEqual([
+      {
+        autoResizeDimensions: {
+          dimensions: { sheetId: 1, dimension: 'ROWS', startIndex: 3, endIndex: 4 },
+        },
+      },
+    ]);
+  });
   it('preserves long factual route lists in native notes without weakening narrative bounds', () => {
     const input = setup();
     const template = workbookTemplateSchema.parse(input.template);
