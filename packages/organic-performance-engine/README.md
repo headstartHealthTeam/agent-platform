@@ -45,6 +45,9 @@ the collector's `workbook-evidence.json`, and agent-authored narrative. `--proje
 deterministic fact projection and narrative binding handoff first; optional `--selection` keys let
 the agent choose material diagnostic rows without changing arithmetic or raw evidence. It never
 applies external writes.
+Template-declared optional sections emit bounded row-visibility updates: empty sections are hidden,
+and populated sections are explicitly shown. The plan records both template version and presentation
+revision. Required diagnostic and unavailable-data rows remain visible; zero is not empty.
 New reports use `templates/headstart-report.v2.json` and a required `--context` input for editorial
 classification, AI-source coverage, selected highlights and outcome diagnostics. The v1 template
 remains for historical replays. The agent selects and interprets evidence; the engine validates

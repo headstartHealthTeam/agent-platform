@@ -10,6 +10,7 @@ import {
   type WorkbookSnapshot,
   type WorkbookTemplate,
 } from './workbook-contract.js';
+import { optionalSectionVisibility, validateOptionalSections } from './workbook-visibility.js';
 
 type SnapshotSheet = WorkbookSnapshot['sheets'][number];
 type SnapshotCell = SnapshotSheet['data'][number]['rowData'][number]['values'][number];
@@ -21,6 +22,7 @@ export interface WorkbookPlan {
   readonly schemaVersion: 'organic-workbook-plan/v1';
   readonly spreadsheetId: string;
   readonly templateVersion: string;
+  readonly templateRevision: number;
   readonly templateSha256: string;
   readonly sourcesVersion: string;
   readonly sourcesSha256: string;
@@ -117,6 +119,7 @@ function validateCleanSheet(
 export function validateTemplateSnapshot(input: unknown, templateInput: unknown): WorkbookSnapshot {
   const snapshot = workbookSnapshotSchema.parse(input);
   const template = workbookTemplateSchema.parse(templateInput);
+  template.sheets.forEach(validateOptionalSections);
   if (
     canonicalJson(snapshot.sheets.map((sheet) => sheet.properties.title)) !==
     canonicalJson(template.sheets.map((sheet) => sheet.title))
@@ -395,7 +398,13 @@ export function buildWorkbookPlan(input: {
                   },
                 ]
               : [];
-          return [...growth, update, ...notes, ...sizing];
+          return [
+            ...growth,
+            update,
+            ...notes,
+            ...sizing,
+            ...optionalSectionVisibility(actual.properties.sheetId, binding, rows),
+          ];
         })
         .concat(
           sheet.chartSpecs.map((spec, chartIndex) => {
@@ -412,6 +421,7 @@ export function buildWorkbookPlan(input: {
     schemaVersion: 'organic-workbook-plan/v1',
     spreadsheetId: target.spreadsheetId,
     templateVersion: template.version,
+    templateRevision: template.revision,
     templateSha256: sha256Json(template),
     sourcesVersion: sources.version,
     sourcesSha256: sha256Json(sources),

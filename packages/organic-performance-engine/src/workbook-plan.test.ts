@@ -134,6 +134,93 @@ function setup(): Parameters<typeof buildWorkbookPlan>[0] {
 }
 
 describe('native approved-template population plan', () => {
+  it.each([{ rows: [] }, { rows: [[null, '  ']] }])(
+    'hides only the declared empty optional section: %j',
+    ({ rows }) => {
+      const input = setup();
+      const template = workbookTemplateSchema.parse(input.template);
+      const binding = template.sheets[0]?.bindings[0];
+      if (!binding) throw new Error('Missing synthetic binding');
+      binding.optionalSection = { startRow: 0, endRow: 2 };
+      const facts = new Map(input.facts);
+      facts.set('metric', rows);
+      const plan = buildWorkbookPlan({ ...input, template, facts });
+      expect(plan.batches[0]?.requests.filter((r) => 'updateDimensionProperties' in r)).toEqual([
+        {
+          updateDimensionProperties: {
+            range: { sheetId: 1, dimension: 'ROWS', startIndex: 0, endIndex: 2 },
+            properties: { hiddenByUser: true },
+            fields: 'hiddenByUser',
+          },
+        },
+      ]);
+      expect(plan).toEqual(buildWorkbookPlan({ ...input, template, facts }));
+      expect(plan.batches[0]?.requests).toContainEqual(
+        buildWorkbookPlan(input).batches[0]?.requests[1]
+      );
+    }
+  );
+
+  it.each([0, false, 'Observation'])('shows populated optional sections even for %j', (value) => {
+    const input = setup();
+    const target = workbookSnapshotSchema.parse(input.target);
+    const template = workbookTemplateSchema.parse(input.template);
+    const actual = target.sheets[0];
+    const sheet = template.sheets[0];
+    const binding = sheet?.bindings[0];
+    if (!actual || !sheet || !binding || !actual.data[0]) throw new Error('Missing fixture');
+    binding.optionalSection = { startRow: 0, endRow: 2 };
+    actual.data[0].rowMetadata = [{ hiddenByUser: true }, { hiddenByUser: true }];
+    sheet.styleSha256 = sheetStyleFingerprint(actual, sheet.rows, sheet.columns);
+    const facts = new Map(input.facts);
+    facts.set('metric', [[value]]);
+    const plan = buildWorkbookPlan({ ...input, template, target, facts });
+    expect(plan.batches[0]?.requests.filter((r) => 'updateDimensionProperties' in r)).toEqual([
+      {
+        updateDimensionProperties: {
+          range: { sheetId: 1, dimension: 'ROWS', startIndex: 0, endIndex: 2 },
+          properties: { hiddenByUser: false },
+          fields: 'hiddenByUser',
+        },
+      },
+    ]);
+    expect(plan.batches[0]?.requests[0]).toHaveProperty(
+      'updateCells.rows.0.values.0.userEnteredValue'
+    );
+    facts.delete('metric');
+    expect(() => buildWorkbookPlan({ ...input, template, target, facts })).toThrow(
+      'Missing report binding'
+    );
+  });
+
+  it.each([
+    { startRow: 2, endRow: 3 },
+    { startRow: 0, endRow: 1 },
+    { startRow: 0, endRow: 7 },
+    { startRow: 0, endRow: 3 },
+  ])('rejects invalid or overlapping optional section bounds %j', (section) => {
+    const input = setup();
+    const template = workbookTemplateSchema.parse(input.template);
+    const binding = template.sheets[0]?.bindings[0];
+    if (!binding) throw new Error('Missing synthetic binding');
+    binding.optionalSection = section;
+    expect(() => buildWorkbookPlan({ ...input, template })).toThrow('Optional section');
+  });
+
+  it('rejects expanding optional sections and overlapping optional headers', () => {
+    const input = setup();
+    const template = workbookTemplateSchema.parse(input.template);
+    const metric = template.sheets[0]?.bindings[0];
+    const judgment = template.sheets[0]?.bindings[1];
+    if (!metric || !judgment) throw new Error('Missing fixture');
+    metric.optionalSection = { startRow: 0, endRow: 2 };
+    metric.expandRows = 2;
+    expect(() => buildWorkbookPlan({ ...input, template })).toThrow('bounded binding');
+    delete metric.expandRows;
+    judgment.optionalSection = { startRow: 1, endRow: 3 };
+    expect(() => buildWorkbookPlan({ ...input, template })).toThrow('overlaps another binding');
+  });
+
   it('sizes only populated rows for opted-in detail tables', () => {
     const input = setup();
     const template = workbookTemplateSchema.parse(input.template);

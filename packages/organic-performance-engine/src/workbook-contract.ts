@@ -16,6 +16,7 @@ export const workbookTemplateSchema = z
   .object({
     schemaVersion: z.literal('organic-workbook-template/v1'),
     version: z.string().min(1),
+    revision: z.number().int().positive().default(1),
     sourceId: z.string().min(1),
     cleanTemplateId: z.string().min(1),
     sheets: z
@@ -48,6 +49,10 @@ export const workbookTemplateSchema = z
                   overflowNoteColumns: z.array(coordinate).default([]),
                   resetNumberFormat: z.boolean().default(false),
                   expandRows: z.number().int().positive().optional(),
+                  optionalSection: z
+                    .object({ startRow: coordinate, endRow: coordinate })
+                    .strict()
+                    .optional(),
                   numericColumns: z.array(coordinate).default([]),
                   percentColumns: z.array(coordinate).default([]),
                   decimalColumns: z.array(coordinate).default([]),

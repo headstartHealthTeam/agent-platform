@@ -356,7 +356,11 @@
           },
           "numericColumns": [2, 4, 5],
           "percentColumns": [],
-          "decimalColumns": []
+          "decimalColumns": [],
+          "optionalSection": {
+            "startRow": 26,
+            "endRow": 42
+          }
         },
         {
           "id": "detail.highlightBoundary",
@@ -387,7 +391,7 @@
           "maxCharacters": 150
         }
       ],
-      "styleSha256": "7cb23b90404cc6ce68e56eb9e453e33bec5fca22cb614584e8b692493c1d0c98",
+      "styleSha256": "0964332e8dc525271e09ee861070228f1a0038e312eadd3b7cdbf4cac552be89",
       "chartSpecs": []
     },
     {
@@ -4194,5 +4198,6 @@
       "styleSha256": "1dde866d54b6381fd42bebc54aae64ab19ef95983362378bad83a0f91a61cf26",
       "chartSpecs": []
     }
-  ]
+  ],
+  "revision": 2
 }
