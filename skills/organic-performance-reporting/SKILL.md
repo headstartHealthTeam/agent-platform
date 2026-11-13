@@ -4,7 +4,7 @@ description: Build decision-ready SEO and organic acquisition reports using Goog
 compatibility: Requires Node.js 22+, the headstart-organic-analyze TypeScript CLI, and authenticated read-only Search Console and GA4 capabilities; the full headstart-organic-collect profile also requires Google Cloud ADC, Google Sheets, and a separately provisioned Semrush provider.
 metadata:
   author: headstart-health
-  version: '0.8.0'
+  version: '0.9.0'
   deterministic_engine: '@headstart-health/organic-performance-engine@0.1.0'
 ---
 
@@ -329,6 +329,14 @@ Use [references/interpretation.md](references/interpretation.md) for the agent-l
 choose material hypotheses, request targeted evidence, research uncertain mechanisms or timing when
 useful, and revise or reject explanations. The baseline collection is a starting point, not a
 ceiling on investigation. There is no requirement to find a positive impact or recommend a change.
+
+Before writing each monthly summary, complete the
+[branded-demand diagnostic](references/branded-demand.md). Separate observed brand/non-brand
+click movement, changes in demand, ranking/visibility, and click-through. A total-click decline or
+GA4 session trend alone cannot establish a slowdown in non-brand SEO. Use comparable query cohorts,
+appropriate aggregation, daily exposure, and device/market checks; retain conflicting evidence and
+explicitly identify conclusions the available data cannot support. The existing read capabilities
+support these targeted slices; the core collector's completion marker does not complete this analysis.
 
 Analyze at least:
 
