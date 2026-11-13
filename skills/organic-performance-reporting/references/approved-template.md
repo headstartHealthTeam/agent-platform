@@ -13,6 +13,13 @@ Read [comparative detail and judgment](report-detail-and-judgment.md) before aut
 facts from agent-authored narrative. The manifest fixes sheet names/order, labels, native style
 fingerprints, bounded regions, and ownership. Monthly conclusions are not template constants.
 
+Presentation revision 2 of the v2 manifest declares optional row sections. The planner hides an
+empty declared section, including its header and reserved whitespace, and explicitly shows it when
+populated. Zero and false remain observations; missing required diagnostics are not hidden. The
+template's `revision` and content hash identify this presentation change without changing the
+source-configuration version or restamping collected evidence. Earlier pinned manifests remain
+usable with their matching native snapshots.
+
 ## Supervised population
 
 1. Obtain the current complete analysis and immutable extracts. Verify the selected source and
@@ -38,6 +45,9 @@ fingerprints, bounded regions, and ownership. Monthly conclusions are not templa
    month-specific content. Inspect every populated tab at normal zoom in a real browser, including
    charts, notes, wrapping, alignment, and representative formulas if added by an approved revision.
    A successful API response or matching file hash is not visual acceptance.
+   Verify optional-section visibility too: empty follow-ups should have no visible header or blank
+   table, and a populated section must be visible even when its values are zero. Keep any required
+   unavailable-data explanation visible; do not hide it to make a report appear complete.
 
 ```sh
 headstart-organic-workbook-plan --project-only \

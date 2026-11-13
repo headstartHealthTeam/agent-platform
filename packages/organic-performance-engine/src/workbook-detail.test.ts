@@ -91,6 +91,14 @@ describe('expanded reporting evidence', () => {
       expect(rows.every((row) => row.length <= binding.range.columns)).toBe(true);
     }
     expect(result.facts.evidence.some((row) => row.source === 'report-context')).toBe(true);
+    expect(result.facts.blocks['detail.highlightBoundary']).toEqual([
+      ['Primary evidence: 2026-08-01 to 2026-08-31.'],
+    ]);
+    expect(template.revision).toBe(2);
+    expect(
+      template.sheets.flatMap((sheet) => sheet.bindings).find((b) => b.id === 'detail.followUps')
+        ?.optionalSection
+    ).toEqual({ startRow: 26, endRow: 42 });
   });
   it('withholds reviewed partial GSC comparisons while retaining GA4 YoY and raw search evidence', async () => {
     const evidence = await workbookFixture();
@@ -363,6 +371,9 @@ describe('expanded reporting evidence', () => {
     const result = buildDetailedFacts(evidence, input);
     expect(result.get('detail.ai')?.[0]?.[3]).toBe(0);
     expect(result.get('detail.followUps')?.[0]?.[4]).toBe('2026-09-01 to 2026-09-08');
+    expect(result.get('detail.highlightBoundary')?.[0]?.[0]).toContain(
+      'Follow-up observations above are separately dated'
+    );
     input.highlightPaths = ['/no-evidence'];
     expect(() => buildDetailedFacts(evidence, input)).toThrow('no retained page evidence');
   });

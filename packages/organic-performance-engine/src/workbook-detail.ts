@@ -260,7 +260,10 @@ function highlights(blocks: Blocks, evidence: WorkbookEvidence, context: ReportC
   );
   blocks.set('detail.highlightBoundary', [
     [
-      `Primary evidence: ${context.reportWindow.startDate} to ${context.reportWindow.endDate}. Any later observations below are separately dated follow-ups, not monthly scorecard results or matched-window growth.`,
+      `Primary evidence: ${context.reportWindow.startDate} to ${context.reportWindow.endDate}.` +
+        (context.followUps.length > 0
+          ? ' Follow-up observations above are separately dated, not monthly scorecard results or matched-window growth.'
+          : ''),
     ],
   ]);
 }

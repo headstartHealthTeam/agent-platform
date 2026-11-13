@@ -4,7 +4,7 @@ description: Build decision-ready SEO and organic acquisition reports using Goog
 compatibility: Requires Node.js 22+, the headstart-organic-analyze TypeScript CLI, and authenticated read-only Search Console and GA4 capabilities; the full headstart-organic-collect profile also requires Google Cloud ADC, Google Sheets, and a separately provisioned Semrush provider.
 metadata:
   author: headstart-health
-  version: '0.10.0'
+  version: '0.10.1'
   deterministic_engine: '@headstart-health/organic-performance-engine@0.1.0'
 ---
 
