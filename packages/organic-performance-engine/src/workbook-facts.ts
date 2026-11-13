@@ -328,7 +328,12 @@ function segmentEventRate(
     selected.reduce((sum, row) => sum + row.sessions, 0)
   );
 }
-function search(blocks: Blocks, evidence: WorkbookEvidence, selection: Selection): void {
+function search(
+  blocks: Blocks,
+  evidence: WorkbookEvidence,
+  selection: Selection,
+  missingPageClicks: 0 | null
+): void {
   for (const [binding, nonbrand] of [
     ['search.totals', false],
     ['search.nonbrand', true],
@@ -364,12 +369,16 @@ function search(blocks: Blocks, evidence: WorkbookEvidence, selection: Selection
       r.position,
       delta(
         r.clicks,
-        gscPeriodAvailable(evidence.bundle, 'previous') ? (previous.get(r.key)?.clicks ?? 0) : null,
+        gscPeriodAvailable(evidence.bundle, 'previous')
+          ? (previous.get(r.key)?.clicks ?? missingPageClicks)
+          : null,
         'absolute'
       ),
       delta(
         r.clicks,
-        gscPeriodAvailable(evidence.bundle, 'year_ago') ? (yearAgo.get(r.key)?.clicks ?? 0) : null,
+        gscPeriodAvailable(evidence.bundle, 'year_ago')
+          ? (yearAgo.get(r.key)?.clicks ?? missingPageClicks)
+          : null,
         'absolute'
       ),
     ])
@@ -479,7 +488,12 @@ function acquisition(blocks: Blocks, evidence: WorkbookEvidence, selection: Sele
     ],
   ]);
 }
-function content(blocks: Blocks, evidence: WorkbookEvidence, selection: Selection): void {
+function content(
+  blocks: Blocks,
+  evidence: WorkbookEvidence,
+  selection: Selection,
+  missingPageClicks: 0 | null
+): void {
   const pages = publicPages(evidence, 'current');
   const landing = landingPages(evidence, 'current');
   const ga = new Map(landing.map((r) => [r.path, r]));
@@ -505,14 +519,14 @@ function content(blocks: Blocks, evidence: WorkbookEvidence, selection: Selectio
         delta(
           r.clicks,
           gscPeriodAvailable(evidence.bundle, 'previous')
-            ? (previous.get(r.key)?.clicks ?? 0)
+            ? (previous.get(r.key)?.clicks ?? missingPageClicks)
             : null,
           'absolute'
         ),
         delta(
           r.clicks,
           gscPeriodAvailable(evidence.bundle, 'year_ago')
-            ? (yearAgo.get(r.key)?.clicks ?? 0)
+            ? (yearAgo.get(r.key)?.clicks ?? missingPageClicks)
             : null,
           'absolute'
         ),
@@ -667,6 +681,10 @@ export function buildWorkbookFacts(input: {
     sources.template.version !== template.version
   )
     throw new Error('Workbook template differs from collected source configuration');
+  const expected = template.sheets.flatMap((s) => s.bindings.filter((b) => b.owner === 'facts'));
+  const detailed = expected.some((binding) => binding.id.startsWith('detail.'));
+  // Preserve historical v1 replay; v2 never infers a zero from an absent page row.
+  const missingPageClicks = detailed ? null : 0;
   const selection = workbookSelectionSchema.parse(input.selection);
   const analysis = analyzeBundle(evidence.bundle);
   const typed = workbookAnalysisSchema.parse(analysis);
@@ -677,14 +695,13 @@ export function buildWorkbookFacts(input: {
   cards(blocks, typed);
   scorecard(blocks, evidence, typed);
   segments(blocks, evidence, typed);
-  search(blocks, evidence, selection);
+  search(blocks, evidence, selection, missingPageClicks);
   acquisition(blocks, evidence, selection);
-  content(blocks, evidence, selection);
+  content(blocks, evidence, selection, missingPageClicks);
   pillars(blocks, evidence, typed);
   const remaining = supplementalFacts(evidence, sources);
   for (const [key, rows] of remaining) blocks.set(key, rows);
-  const expected = template.sheets.flatMap((s) => s.bindings.filter((b) => b.owner === 'facts'));
-  if (expected.some((binding) => binding.id.startsWith('detail.'))) {
+  if (detailed) {
     for (const [key, rows] of buildDetailedFacts(evidence, input.context)) blocks.set(key, rows);
   } else if (input.context !== undefined) {
     throw new Error('This template does not consume report context; select the updated template');

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { sha256Json } from './analysis.js';
 import { reportContextSchema, type ReportContext } from './report-context.js';
+import { reportingSourcesSchema } from './source-config.js';
 import { workbookTemplateSchema } from './workbook-contract.js';
 import { buildDetailedFacts } from './workbook-detail.js';
 import { view } from './workbook-evidence.js';
@@ -171,6 +172,91 @@ describe('expanded reporting evidence', () => {
     expect(missing?.slice(2, 6)).toEqual([null, 0, null, null]);
     expect(missing?.[16]).toContain('not inferred zero');
   });
+  it.each([null, 0])(
+    'keeps page drilldowns consistent for a %s baseline while preserving v1 replay',
+    async (baseline) => {
+      const evidence = await workbookFixture();
+      for (const id of ['previous', 'year_ago'] as const) {
+        const window = required(
+          evidence.bundle.report.periods.find((row) => row.id === id),
+          id
+        );
+        evidence.bundle.sources.gsc.pageRows = evidence.bundle.sources.gsc.pageRows.flatMap(
+          (row) => {
+            if (row.period !== id || row.url !== 'https://headstart.health/bcba') return [row];
+            return baseline === null ? [] : [{ ...row, clicks: baseline }];
+          }
+        );
+        const rows = evidence.bundle.sources.gsc.pageRows
+          .filter((row) => row.period === id)
+          .map((row) => ({
+            keys: [row.url],
+            clicks: row.clicks,
+            impressions: row.impressions,
+            ctr: row.impressions ? row.clicks / row.impressions : 0,
+            position: 12,
+          }));
+        view(evidence, `gsc-${id}-pages`).data = {
+          request: {
+            startDate: window.startDate,
+            endDate: window.endDate,
+            dimensions: ['page'],
+            dimensionFilterGroups: [{ filters: evidence.bundle.sources.gsc.metadata.filters }],
+          },
+          rows,
+          rowCount: rows.length,
+          pagination: { truncatedAtMaxRows: false },
+        };
+      }
+      for (const version of ['v1', 'v2']) {
+        const template: unknown = JSON.parse(
+          await readFile(
+            new URL(`../templates/headstart-report.${version}.json`, import.meta.url),
+            'utf8'
+          )
+        );
+        const sources: unknown = JSON.parse(
+          await readFile(
+            new URL(
+              `../../../skills/organic-performance-reporting/references/headstart-sources${version === 'v1' ? '' : '.v2'}.json`,
+              import.meta.url
+            ),
+            'utf8'
+          )
+        );
+        evidence.bundle.report.sourceConfiguration = {
+          version: reportingSourcesSchema.parse(sources).version,
+          sha256: sha256Json(sources),
+        };
+        const result = buildWorkbookFacts({
+          evidence,
+          sources,
+          template,
+          ...(version === 'v2' ? { context: context() } : {}),
+        }).facts.blocks;
+        const expected = version === 'v2' && baseline === null ? null : 87;
+        const search = required(
+          result['search.pages']?.find((row) => row[0] === '/bcba'),
+          'search'
+        );
+        const content = required(
+          result['content.pages']?.find((row) => row[0] === '/bcba'),
+          'content'
+        );
+        expect(search.slice(5, 7)).toEqual([expected, expected]);
+        expect(content.slice(6, 8)).toEqual([expected, expected]);
+        if (version === 'v2') {
+          const comparison = required(
+            result['detail.search']?.find((row) => row[0] === 'Page' && row[1] === '/bcba'),
+            'comparison'
+          );
+          expect(comparison.slice(2, 6)).toEqual([87, baseline, expected, null]);
+          expect(content[6]).toBe(comparison[4]);
+          expect(search[5]).toBe(comparison[4]);
+        }
+      }
+    }
+  );
   it('keeps undated articles visible without asserting historical publication counts', async () => {
     const input = context();
     required(input.editorial.articles[0], 'article').publishedOn = null;
