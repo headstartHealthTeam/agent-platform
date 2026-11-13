@@ -129,6 +129,7 @@ installing these skills does not install credentials, runtime packages or a host
 | [`headstart-slack-triage`](skills/headstart-slack-triage/SKILL.md)                                   | Research dev-channel reports, route Linear work, and complete the Slack tracking handoff               |
 | [`headstart-initiative-shaping`](skills/headstart-initiative-shaping/SKILL.md)                       | Evidence-backed scope, decisions, risks, and stakeholder questions                                     |
 | [`headstart-workflow-walkthrough-analysis`](skills/headstart-workflow-walkthrough-analysis/SKILL.md) | Cited current-state analysis from process demonstrations                                               |
+| [`headstart-rbt-ad-recordkeeping`](skills/headstart-rbt-ad-recordkeeping/SKILL.md)                   | Supervised Salesforce RBT request-to-ad bookkeeping through guarded Headstart MCP operations           |
 | [`headstart-workflow-interview`](skills/headstart-workflow-interview/SKILL.md)                       | Interactive current-workflow capture with clarification, human readback, and Linear or Markdown output |
 | [`headstart-document-review`](skills/headstart-document-review/SKILL.md)                             | Report-first substantive review of shared plans and procedures                                         |
 | [`headstart-knowledge-capture`](skills/headstart-knowledge-capture/SKILL.md)                         | Canonical placement for verified learnings and recurring agent corrections                             |
