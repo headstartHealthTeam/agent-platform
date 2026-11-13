@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { canonicalJson, normalizeKeyword, normalizePath, sha256Json } from './analysis.js';
 import { compareCanonicalText } from './canonical-order.js';
+import { gscPeriodAvailable } from './report-contract.js';
 import {
   organicPerformanceBundleSchema,
   periodIdSchema,
@@ -98,9 +99,14 @@ export function numeric(row: Readonly<Record<string, string>>, key: string): num
 export function ratio(numerator: number, denominator: number): number | null {
   return denominator === 0 ? null : numerator / denominator;
 }
-export function gscView(evidence: WorkbookEvidence, id: PeriodId, name: string): SearchRow[] {
+export function gscView(
+  evidence: WorkbookEvidence,
+  id: PeriodId,
+  name: string,
+  includeExcluded = false
+): SearchRow[] {
   const window = period(evidence, id);
-  if (!window) return [];
+  if (!window || (!includeExcluded && !gscPeriodAvailable(evidence.bundle, id))) return [];
   const data = searchSchema.parse(view(evidence, `gsc-${id}-${name}`).data);
   const expected = evidence.bundle.sources.gsc.metadata.filters;
   const expectedDimensions = name.endsWith('totals')
@@ -187,9 +193,13 @@ export function gaView(
     ...row.metrics,
   }));
 }
-export function publicPages(evidence: WorkbookEvidence, id: PeriodId): SearchRow[] {
+export function publicPages(
+  evidence: WorkbookEvidence,
+  id: PeriodId,
+  includeExcluded = false
+): SearchRow[] {
   const rows = new Map<string, SearchRow>();
-  for (const row of gscView(evidence, id, 'pages')) {
+  for (const row of gscView(evidence, id, 'pages', includeExcluded)) {
     const key = normalizePath(row.key, evidence.bundle.config.publicHostname);
     const old = rows.get(key);
     const clicks = row.clicks + (old?.clicks ?? 0);
@@ -253,7 +263,7 @@ export function validateWorkbookEvidence(evidence: WorkbookEvidence): void {
   if (new Set(evidence.views.map((row) => row.name)).size !== evidence.views.length)
     throw new Error('Duplicate retained evidence view');
   for (const window of evidence.bundle.report.periods) {
-    const pages = publicPages(evidence, window.id);
+    const pages = publicPages(evidence, window.id, true);
     const sourcePages = new Map<string, { clicks: number; impressions: number }>();
     for (const row of evidence.bundle.sources.gsc.pageRows.filter((r) => r.period === window.id)) {
       const key = normalizePath(row.url, evidence.bundle.config.publicHostname);
@@ -273,7 +283,7 @@ export function validateWorkbookEvidence(evidence: WorkbookEvidence): void {
     )
       throw new Error('Retained GSC pages differ from analysis bundle');
     reconcileRows(
-      gscView(evidence, window.id, 'queries').map((row) => ({
+      gscView(evidence, window.id, 'queries', true).map((row) => ({
         key: normalizeKeyword(row.key),
         values: [row.clicks, row.impressions],
       })),

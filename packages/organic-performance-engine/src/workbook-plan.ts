@@ -135,7 +135,23 @@ function rawNumberFormat(value: ReportValue): { type: string; pattern: string } 
     pattern: typeof value === 'number' && Number.isInteger(value) ? '#,##0' : '0.########',
   };
 }
+function displayValue(value: ReportValue, binding: WorkbookBinding, column: number): ReportValue {
+  const overflow =
+    typeof value === 'string' &&
+    value.length > binding.maxCharacters &&
+    binding.overflowNoteColumns.includes(column);
+  return overflow
+    ? value.slice(0, Math.max(0, binding.maxCharacters - 22)) + '… See full cell note.'
+    : value;
+}
+function literalCell(value: ReportValue): Pick<SnapshotCell, 'userEnteredValue'> {
+  if (value === null) return {};
+  if (typeof value === 'number') return { userEnteredValue: { numberValue: value } };
+  if (typeof value === 'boolean') return { userEnteredValue: { boolValue: value } };
+  return { userEnteredValue: { stringValue: value } };
+}
 function valueCell(value: ReportValue, binding: WorkbookBinding, column: number): SnapshotCell {
+  const displayed = displayValue(value, binding, column);
   const numeric = typeof value === 'number' || binding.numericColumns.includes(column);
   const format = {
     horizontalAlignment: numeric ? 'RIGHT' : 'LEFT',
@@ -148,16 +164,7 @@ function valueCell(value: ReportValue, binding: WorkbookBinding, column: number)
           : {}),
   };
   return {
-    ...(value === null
-      ? {}
-      : {
-          userEnteredValue:
-            typeof value === 'number'
-              ? { numberValue: value }
-              : typeof value === 'boolean'
-                ? { boolValue: value }
-                : { stringValue: value },
-        }),
+    ...literalCell(displayed),
     userEnteredFormat: binding.resetNumberFormat
       ? {
           ...format,
@@ -181,7 +188,12 @@ function updateBlock(
     );
   if (
     rows.some((row) =>
-      row.some((cell) => typeof cell === 'string' && cell.length > binding.maxCharacters)
+      row.some(
+        (cell, column) =>
+          typeof cell === 'string' &&
+          cell.length > binding.maxCharacters &&
+          !binding.overflowNoteColumns.includes(column)
+      )
     )
   )
     throw new Error(
@@ -347,7 +359,43 @@ export function buildWorkbookPlan(input: {
                 pasteType: 'PASTE_FORMAT',
               },
             });
-          return [...growth, update];
+          const notes = rows.flatMap((row, rowIndex) =>
+            row.flatMap((value, column) =>
+              typeof value === 'string' &&
+              value.length > binding.maxCharacters &&
+              binding.overflowNoteColumns.includes(column)
+                ? [
+                    {
+                      updateCells: {
+                        start: {
+                          sheetId: actual.properties.sheetId,
+                          rowIndex: binding.range.row + rowIndex,
+                          columnIndex: binding.range.column + column,
+                        },
+                        rows: [{ values: [{ note: value }] }],
+                        fields: 'note',
+                      },
+                    },
+                  ]
+                : []
+            )
+          );
+          const sizing =
+            binding.autoResizeRows && rows.length > 0
+              ? [
+                  {
+                    autoResizeDimensions: {
+                      dimensions: {
+                        sheetId: actual.properties.sheetId,
+                        dimension: 'ROWS',
+                        startIndex: binding.range.row,
+                        endIndex: binding.range.row + rows.length,
+                      },
+                    },
+                  },
+                ]
+              : [];
+          return [...growth, update, ...notes, ...sizing];
         })
         .concat(
           sheet.chartSpecs.map((spec, chartIndex) => {

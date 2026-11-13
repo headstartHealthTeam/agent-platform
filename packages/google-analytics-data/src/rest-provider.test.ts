@@ -41,6 +41,33 @@ describe('GA4 REST and pagination', () => {
     );
     await expect(client.getProperty('properties/../bad')).rejects.toThrow();
   });
+  it('normalizes only a verified empty REST report with an omitted ProtoJSON row count', async () => {
+    const empty = { ...page, rows: [], rowCount: undefined, kind: 'analyticsData#runReport' };
+    const client = new GoogleAnalyticsRestProvider({
+      request: async (): Promise<unknown> => empty,
+    });
+    const result = await collectGa4Report(client, request);
+    expect(result.rowCount).toBe(0);
+    expect(result['rowCountDefaultedFromProtoJson']).toBe(true);
+    const omittedHeaders = new GoogleAnalyticsRestProvider({
+      request: async (): Promise<unknown> => ({
+        metadata: { timeZone: 'America/Chicago' },
+        kind: 'analyticsData#runReport',
+      }),
+    });
+    expect((await collectGa4Report(omittedHeaders, request)).rowCount).toBe(0);
+    for (const invalid of [
+      { ...empty, rows: [row] },
+      { ...empty, kind: 'other' },
+      { ...empty, metricHeaders: [] },
+      { ...empty, dimensionHeaders: [] },
+    ]) {
+      const bad = new GoogleAnalyticsRestProvider({
+        request: async (): Promise<unknown> => invalid,
+      });
+      await expect(collectGa4Report(bad, request)).rejects.toThrow(/rowCount/);
+    }
+  });
   it('collects every page and retains source metadata', async () => {
     const next = { ...row, dimensionValues: [{ value: '/next' }] };
     const result = await collectGa4Report(provider([page, { ...page, rows: [next] }]), request, 3);

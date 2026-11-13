@@ -21,6 +21,7 @@ async function main(): Promise<void> {
       sources: { type: 'string' },
       evidence: { type: 'string' },
       selection: { type: 'string' },
+      context: { type: 'string' },
       'project-only': { type: 'boolean', default: false },
       narrative: { type: 'string' },
       output: { type: 'string' },
@@ -32,7 +33,14 @@ async function main(): Promise<void> {
     [values.template, values.sources, values.evidence].map(load)
   );
   const selection = values.selection ? await load(values.selection) : undefined;
-  const { analysis, facts } = buildWorkbookFacts({ template, sources, evidence, selection });
+  const context = values.context ? await load(values.context) : undefined;
+  const { analysis, facts } = buildWorkbookFacts({
+    template,
+    sources,
+    evidence,
+    selection,
+    context,
+  });
   if (values['project-only']) {
     if (values.target || values.narrative)
       throw new Error('Projection-only mode does not take target or narrative inputs');

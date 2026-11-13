@@ -1,4 +1,4 @@
-import type { OrganicPerformanceBundle } from './schemas.js';
+import type { OrganicPerformanceBundle, PeriodId } from './schemas.js';
 
 type Report = OrganicPerformanceBundle['report'];
 const EQUAL_LENGTH = 'equal-length';
@@ -97,9 +97,17 @@ export function evidenceCoverage(
   );
   for (const [id, reason] of Object.entries(unavailable))
     periods.set(id, { status: 'unavailable', reason });
+  const searchExclusions = bundle.sources.gsc.metadata.unavailableComparisons ?? {};
+  for (const id of Object.keys(searchExclusions))
+    if (!bundle.report.periods.some((period) => period.id === id))
+      throw new Error('GSC exclusion references an undeclared period');
   return {
+    gscUnavailableComparisons: searchExclusions,
     status:
-      Object.keys(omitted).length + Object.keys(unavailable).length > 0 || hasQualityIssues
+      Object.keys(omitted).length +
+        Object.keys(unavailable).length +
+        Object.keys(searchExclusions).length >
+        0 || hasQualityIssues
         ? 'complete_with_limitations'
         : 'complete',
     completionScope: 'declared evidence plan only; not interpretation or publication',
@@ -115,4 +123,12 @@ export function evidenceCoverage(
     },
     ga4QualityIssues: quality ?? [],
   };
+}
+
+/** A returned partial search period may remain raw evidence without becoming a monthly KPI. */
+export function gscPeriodAvailable(bundle: OrganicPerformanceBundle, id: PeriodId): boolean {
+  return (
+    bundle.report.periods.some((period) => period.id === id) &&
+    !Object.hasOwn(bundle.sources.gsc.metadata.unavailableComparisons ?? {}, id)
+  );
 }

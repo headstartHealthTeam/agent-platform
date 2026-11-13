@@ -134,6 +134,45 @@ function setup(): Parameters<typeof buildWorkbookPlan>[0] {
 }
 
 describe('native approved-template population plan', () => {
+  it('sizes only populated rows for opted-in detail tables', () => {
+    const input = setup();
+    const template = workbookTemplateSchema.parse(input.template);
+    const binding = template.sheets[0]?.bindings[2];
+    if (!binding) throw new Error('Missing synthetic binding');
+    binding.autoResizeRows = true;
+    const plan = buildWorkbookPlan({ ...input, template });
+    expect(
+      plan.batches[0]?.requests.filter((request) => 'autoResizeDimensions' in request)
+    ).toEqual([
+      {
+        autoResizeDimensions: {
+          dimensions: { sheetId: 1, dimension: 'ROWS', startIndex: 3, endIndex: 4 },
+        },
+      },
+    ]);
+  });
+  it('preserves long factual route lists in native notes without weakening narrative bounds', () => {
+    const input = setup();
+    const template = workbookTemplateSchema.parse(input.template);
+    const binding = template.sheets[0]?.bindings[0];
+    if (!binding) throw new Error('Missing synthetic binding');
+    binding.maxCharacters = 40;
+    binding.overflowNoteColumns = [1];
+    const longRoutes = '/resources/' + 'source-route-'.repeat(10);
+    const facts = new Map(input.facts);
+    facts.set('metric', [[42, longRoutes]]);
+    const plan = buildWorkbookPlan({ ...input, template, facts });
+    expect(plan.batches[0]?.requests[0]).toHaveProperty(
+      'updateCells.rows.0.values.1.userEnteredValue.stringValue',
+      longRoutes.slice(0, 18) + '… See full cell note.'
+    );
+    expect(plan.batches[0]?.requests[1]).toHaveProperty(
+      'updateCells.rows.0.values.0.note',
+      longRoutes
+    );
+    binding.overflowNoteColumns = [];
+    expect(() => buildWorkbookPlan({ ...input, template, facts })).toThrow('text overflow');
+  });
   it.each([
     ['pre_launch', 'This section was not live; the legacy audience history remains useful.'],
     ['partial_launch_month', 'Keep the early observations, without a full-month growth claim.'],

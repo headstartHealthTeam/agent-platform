@@ -209,6 +209,27 @@ async function setup(): Promise<{
   return { plan, providers, saved, sink, bundle };
 }
 describe('complete organic collector', () => {
+  it('carries reviewed partial search comparisons without discarding independent analytics', async () => {
+    const x = await setup();
+    x.plan.gsc.unavailableComparisons = { year_ago: 'Only four historical days are available.' };
+    const result = await collectOrganicEvidence(
+      x.plan,
+      x.providers,
+      x.sink,
+      '2026-09-01T12:00:00Z'
+    );
+    expect(result.bundle.sources.gsc.metadata.unavailableComparisons).toEqual(
+      x.plan.gsc.unavailableComparisons
+    );
+    expect(result.bundle.sources.ga4.periodTotals).toHaveLength(3);
+    expect(result.bundle.sources.gsc.periodTotals).toHaveLength(3);
+    expect(() =>
+      collectionPlanSchema.parse({
+        ...x.plan,
+        gsc: { ...x.plan.gsc, unavailableComparisons: { current: 'Incomplete' } },
+      })
+    ).toThrow();
+  });
   it.each(['empty', 'zero-row'])(
     'preserves measured-zero counts and unavailable rates for %s GSC totals',
     async (response) => {

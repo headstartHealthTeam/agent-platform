@@ -20,6 +20,8 @@ export {
 export { buildHistoricalContext, type HistoricalContext } from './historical-context.js';
 export { buildLifecycle } from './lifecycle.js';
 export { buildWorkbookFacts, workbookSelectionSchema } from './workbook-facts.js';
+export { buildDetailedFacts } from './workbook-detail.js';
+export { reportContextSchema, type ReportContext } from './report-context.js';
 export {
   workbookEvidenceSchema,
   validateWorkbookEvidence,

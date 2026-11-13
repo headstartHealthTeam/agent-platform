@@ -3,10 +3,13 @@
 Use [Headstart sources](headstart-sources.md) to resolve the approved reference, clean native
 template, strategy document, TAM workbook, and historical comparison. These are distinct roles.
 The clean template remains a derivative of the approved July workbook, not a new report design.
-It is currently private to its creating owner; another operator must have authorized access.
+Verify authorized access to the selected template before copying it.
 Never silently switch templates or broaden sharing to bypass that boundary.
 
-The engine ships `templates/headstart-report.v1.json` (contract revision `headstart-report/v1.1`). Its semantic bindings distinguish calculated
+New reports use `templates/headstart-report.v2.json` (contract revision `headstart-report/v2`)
+and `headstart-sources.v2.json`. The original v1 files remain for exact historical replays.
+Read [comparative detail and judgment](report-detail-and-judgment.md) before authoring the required
+`--context report-context.json` input. Its semantic bindings distinguish calculated
 facts from agent-authored narrative. The manifest fixes sheet names/order, labels, native style
 fingerprints, bounded regions, and ownership. Monthly conclusions are not template constants.
 
@@ -18,7 +21,7 @@ fingerprints, bounded regions, and ownership. Monthly conclusions are not templa
 2. Copy the clean native template to a new report through the connected Google capability. Confirm
    the new ID differs from the template and every historical report. Preserve sharing settings.
    Never populate the approved July/August files or the clean template itself.
-3. Read all 14 sheets, including grid properties, merges, charts, dimensions, cell values, notes,
+3. Read all 20 sheets, including grid properties, merges, charts, dimensions, cell values, notes,
    and user-entered formatting. Persist the native spreadsheet snapshot. The current clean template
    records each sheet's row/column bounds in the versioned manifest; read those complete bounds,
    using the exact quoted sheet name. Do not use a
@@ -38,12 +41,12 @@ fingerprints, bounded regions, and ownership. Monthly conclusions are not templa
 
 ```sh
 headstart-organic-workbook-plan --project-only \
-  --template templates/headstart-report.v1.json --sources headstart-sources.json \
-  --evidence snapshots/new-run/workbook-evidence.json --output projection.json
+  --template templates/headstart-report.v2.json --sources headstart-sources.v2.json \
+  --evidence snapshots/new-run/workbook-evidence.json --context report-context.json --output projection.json
 
 headstart-organic-workbook-plan --target new-copy-snapshot.json \
-  --template templates/headstart-report.v1.json --sources headstart-sources.json \
-  --evidence snapshots/new-run/workbook-evidence.json \
+  --template templates/headstart-report.v2.json --sources headstart-sources.v2.json \
+  --evidence snapshots/new-run/workbook-evidence.json --context report-context.json \
   --narrative workbook-narrative.json --output new-population-plan.json
 ```
 
@@ -91,7 +94,8 @@ cause Sheets to remove empty numeric series. Chart source ranges include their h
 legends retain metric names. Raw tables reset mixed number formats to counts or neutral decimal
 fractions while retaining the clean template's typography, widths, colors, and wrapping.
 
-The clean derivative keeps the 14-tab presentation and section structure. Bounded repairs support
+The v2 clean derivative keeps the approved scorecard and original sections, with six explicit
+drilldowns added. The historical v1 derivative kept the 14-tab presentation and section structure. Bounded repairs support
 the full cohort inventory, consistent body formatting, and complete 14-column raw evidence; the raw
 tabs use readable source-specific widths and merged title/scope rows. Pillar impression changes are
 signed absolute counts, not relative percentages. When Semrush is omitted, the report does not
@@ -126,3 +130,7 @@ that the reviewed composition can be replayed without silently changing either d
 The reporting workflow owner maintains this contract. Review it when the approved presentation,
 source roles, metric definitions, taxonomy, or publishing capabilities change. Do not edit installed
 copies when this repository is the canonical implementation under review.
+
+In v2, an explicitly opted-in factual route-list column may place its full text in a native cell
+note while displaying a bounded preview. Narrative overflow still fails. This avoids losing long
+editorial mappings or requiring a private post-processing workaround.
