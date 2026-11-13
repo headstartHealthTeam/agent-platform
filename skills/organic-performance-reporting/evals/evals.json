@@ -223,6 +223,61 @@
         "Does not infer a conversion rate or step abandonment from different aggregate populations",
         "Uses judgment and targeted research to test initiative explanations"
       ]
+    },
+    {
+      "name": "branded-demand-before-monthly-summary",
+      "prompt": "Draft the monthly report: total search clicks fell 2%, non-brand impressions rose 40%, non-brand clicks rose from 8 to 11, and GA4 organic sessions rose 4%. Explain whether SEO slowed. No branded-demand analysis has been collected yet.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Completes a source-backed branded-demand diagnostic before interpreting the total movement; does not relabel total minus nonbrand as branded",
+        "Keeps non-brand discovery, overall click capture and GA4 sessions distinct",
+        "Uses a stable, explained cohort and comparable market, aggregation and periods, or explicitly limits an unavailable conclusion",
+        "Uses existing read capabilities and retains reproducible calculations rather than treating collector completion as interpretation completion"
+      ]
+    },
+    {
+      "name": "stable-top-rank-and-device-divergence",
+      "prompt": "Two 30-day months show the same brand query at position 1. Mobile impressions fell from 300 to 240 and clicks from 120 to 60; desktop impressions rose from 200 to 260 and clicks from 80 to 104. Explain the result.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Calculates stable total impressions of 500, mobile CTR falling from 40% to 25%, stable desktop CTR of 40%, and total clicks falling from 200 to 164",
+        "Identifies both reduced mobile exposure and lower within-mobile click-through, with desktop growth masking demand mix",
+        "Treats near-top impressions as a directional demand proxy and does not assert ranking loss, ads, or AI caused the decline",
+        "Does not infer brand versus nonbrand GA4 sessions from these click shares"
+      ]
+    },
+    {
+      "name": "page-multiplicity-and-domain-boundary",
+      "prompt": "Our public-host page-filtered GSC brand impressions rose from 2000 to 3000, while property-aggregated impressions were 500 in both months. Only a domain property containing an app subdomain is accessible. Did brand demand grow 50%?",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Rejects the 50% demand claim because multiple page or sitelink impressions may account for it",
+        "Keeps the public-host KPI filter intact and uses a separately labeled domain-level demand diagnostic including subdomains",
+        "Does not combine a page filter with byProperty or mistake an average across page results for top-result rank",
+        "Examines matched-query rankings, markets and device composition before interpreting the stable property aggregate"
+      ]
+    },
+    {
+      "name": "unequal-months-and-conflicting-demand-sources",
+      "prompt": "A fixed brand cohort has 900 impressions in a 30-day month and 930 in the next 31-day month with stable top rankings. Semrush returns a low-volume 12-month average and an undated six-value normalized trend; its apparent latest point declines sharply.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Preserves the observed 3.33% full-month increase and calculates unchanged 30 daily impressions",
+        "Does not align an undated short trend to the calendar or convert average volume times normalized index into exact monthly searches",
+        "Discloses source disagreement and coverage rather than choosing a favorable narrative",
+        "Preserves missing prior rows as unknown and zero-denominator relative changes as undefined"
+      ]
+    },
+    {
+      "name": "brand-demand-genuine-decline-with-no-required-win",
+      "prompt": "A stable set of branded queries loses 25% of daily impressions with unchanged near-top ranks and stable within-device CTR. The same-market dated demand source declines too. Non-brand performance is unchanged. Write the conclusion.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Identifies convergent evidence consistent with reduced branded demand while distinguishing a proxy from a complete market census",
+        "Does not manufacture a non-brand SEO improvement or default to a technical explanation",
+        "Checks prior trajectory before calling a single monthly change seasonality or a sustained decline",
+        "Can conclude no immediate website change is warranted"
+      ]
     }
   ]
 }

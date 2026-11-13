@@ -151,6 +151,10 @@ initiative outcomes.
 
 ### Executive scorecard
 
+Before explaining sitewide movement, complete the [branded-demand diagnostic](branded-demand.md).
+Report whether brand demand, ranking/visibility, click-through, or a combination changed, with the
+evidence limits. Keep this explanation separate from non-brand discovery and GA4 session outcomes.
+
 Keep three to seven primary KPIs tied to business outcomes:
 
 | Question                                            | Preferred source | Metric                                                                          |

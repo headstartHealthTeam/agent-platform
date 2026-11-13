@@ -112,6 +112,11 @@ that the reviewed composition can be replayed without silently changing either d
 
 ## Guardrails and bounded variation
 
+The [branded-demand diagnostic](branded-demand.md) belongs in the existing narrative bindings and
+an explicitly labeled report appendix when more comparison detail is needed. Keep appendix writes,
+source evidence and readback separate from the base-template plan; its validator does not attest to
+later content. The clean canonical template remains unchanged until a deliberate versioned revision.
+
 - A missing binding, protected target ID, mismatched analysis, changed template, stale cell, or
   overflowing block fails clearly. Empty narrative/action rows are allowed; never invent an action
   to fill the layout. Null data remains absent, not observed zero.
