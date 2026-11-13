@@ -185,18 +185,19 @@ function pillarRow(
   const gaRows = members.flatMap((row) => ga.get(row.path) ?? []);
   const sessions = gaRows.reduce((sum, row) => sum + row.sessions, 0);
   const engaged = gaRows.reduce((sum, row) => sum + row.engagedSessions, 0);
+  const undated = members.filter((row) => row.publishedOn === null).length;
   return [
     audience,
     label,
     periodLabel,
-    members.length,
+    undated ? null : members.length,
     searchRows.length ? searchRows.reduce((sum, row) => sum + row.clicks, 0) : null,
     searchRows.length ? searchRows.reduce((sum, row) => sum + row.impressions, 0) : null,
     gaRows.length ? sessions : null,
     gaRows.length ? engaged : null,
     gaRows.length ? ratio(engaged, sessions) : null,
     gaRows.length ? gaRows.reduce((sum, row) => sum + row.keyEvents, 0) : null,
-    `${String(searchRows.length)}/${String(members.length)} GSC; ${String(gaRows.length)}/${String(members.length)} GA`,
+    `${String(searchRows.length)}/${String(members.length)} GSC; ${String(gaRows.length)}/${String(members.length)} GA${undated ? `; ${String(undated)} undated, publication count unavailable` : ''}`,
   ];
 }
 
@@ -272,7 +273,7 @@ function outcomes(blocks: Blocks, evidence: WorkbookEvidence, context: ReportCon
         const row = evidence.bundle.sources.ga4.outcomeRows?.find(
           (item) => item.audience === outcome.audience && item.period === id
         );
-        const event = evidence.bundle.sources.ga4.eventRows.find(
+        const events = evidence.bundle.sources.ga4.eventRows.filter(
           (item) => item.eventName === outcome.eventName && item.period === id
         );
         return [
@@ -285,7 +286,9 @@ function outcomes(blocks: Blocks, evidence: WorkbookEvidence, context: ReportCon
             ? null
             : outcome.measurement
               ? (row?.value ?? null)
-              : (event?.keyEvents ?? null),
+              : events.length
+                ? events.reduce((sum, event) => sum + event.keyEvents, 0)
+                : null,
         ];
       })
     )

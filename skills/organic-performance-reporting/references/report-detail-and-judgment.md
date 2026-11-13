@@ -31,7 +31,9 @@ approved RBT pillar taxonomy is available.
 **Article Performance** and **Editorial Pillar Performance** use observed GSC and GA4 evidence.
 **Content Pillar Performance** retains the prior keyword TAM/ranking coverage view. It describes
 estimated opportunity, not article traffic. Editorial rollups show returned-row coverage; absence
-from a provider's table is not measured zero. Do not rank a pillar's success from traffic alone:
+from a provider's table is not measured zero. When a group contains undated articles, its publication
+count remains unknown and coverage identifies the undated inventory; those articles stay visible
+without becoming asserted historical publications. Do not rank a pillar's success from traffic alone:
 consider its intended audience, publication age, visibility, engagement and available outcome evidence.
 
 ## Comparative search detail

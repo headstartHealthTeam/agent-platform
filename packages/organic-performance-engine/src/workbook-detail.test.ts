@@ -171,6 +171,34 @@ describe('expanded reporting evidence', () => {
     expect(missing?.slice(2, 6)).toEqual([null, 0, null, null]);
     expect(missing?.[16]).toContain('not inferred zero');
   });
+  it('keeps undated articles visible without asserting historical publication counts', async () => {
+    const input = context();
+    required(input.editorial.articles[0], 'article').publishedOn = null;
+    const result = buildDetailedFacts(await workbookFixture(), input);
+    expect(result.get('detail.articles')).toHaveLength(1);
+    const rows = required(result.get('detail.pillars'), 'pillars').filter(
+      (row) => row[0] === 'bcbas' && row[1] === 'Business'
+    );
+    expect(rows).toHaveLength(3);
+    for (const row of rows) {
+      expect(row[3]).toBeNull();
+      expect(row[10]).toContain('1 undated, publication count unavailable');
+    }
+    expect(rows[0]?.[4]).toBe(87);
+  });
+  it('sums repeated outcome events while preserving absent and measured-zero values', async () => {
+    const evidence = await workbookFixture();
+    evidence.bundle.sources.ga4.eventRows = [
+      { period: 'current', eventName: 'interest_form_submit', keyEvents: 2 },
+      { period: 'current', eventName: 'interest_form_submit', keyEvents: 3 },
+      { period: 'previous', eventName: 'interest_form_submit', keyEvents: 0 },
+    ];
+    const rows = required(
+      buildDetailedFacts(evidence, context()).get('detail.outcomes'),
+      'outcomes'
+    ).filter((row) => row[0] === 'bcbas');
+    expect(rows.map((row) => row[5])).toEqual([5, 0, null]);
+  });
   it('shows launch-month observations without a misleading full-month growth rate', async () => {
     const input = context();
     required(input.editorial.articles[0], 'article').publishedOn = '2026-07-24';
