@@ -332,6 +332,11 @@ corepack pnpm qa
 
 ## Testing
 
+- For runtime, adapter or shared-contract changes affecting state, effects, authority, credentials
+  or capacity, follow [Behavioral boundary verification](standards/testing-and-release.md#behavioral-boundary-verification)
+  before implementation and handoff. Select applicable counterexamples through real callers and
+  alternate entry paths; this does not add a new test lane or change the quality gates below.
+
 - Every skill needs positive, near-miss, and boundary cases in `evals/evals.json`.
 - Every managed workflow needs schema-valid fixtures, happy-path and policy-boundary evaluation
   definitions, deterministic adapter tests where applicable, and representative repeated model

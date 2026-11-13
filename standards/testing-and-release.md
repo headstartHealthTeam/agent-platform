@@ -59,6 +59,48 @@ install from canonical source, start a fresh supported agent session, use an aut
 other than the creator, and verify the behavioral contract with documented inputs. Record hidden
 dependencies as defects. Equivalent behavior is required; identical prose is not.
 
+## Behavioral Boundary Verification
+
+Use this section for runtime, adapter or shared-contract changes affecting state, external effects,
+authority, credentials or capacity. Select the relevant cases; prompt-only wording or unrelated
+documentation does not require every lifecycle scenario. Existing runtime and consuming-system
+contracts own business policy and authority.
+
+Before implementation, identify the invariant, its enforcing owner, the final effect/result and
+every entry point that can reach it. Include resumed, scheduled, callback, error and alternate
+credential-delivery paths where applicable. Test the production adapter or caller, with synthetic
+external boundaries, rather than reconstructing its decisions in a fixture.
+
+- **Continuation and partial success:** exercise a second invocation or restored state after an
+  external step succeeds but acknowledgement or retention fails. Preserve work identity, original
+  payload and the distinction between undispatched, confirmed and uncertain outcomes. Reconcile
+  uncertain effects through the owning contract; do not silently replay them or switch adapters.
+- **Final authority and freshness:** pause the last relevant asynchronous dependency, revoke or
+  change the governing permission/revision, then resume. Prove each inference, write or artifact
+  delivery has the current authority its contract requires; permission to read state must not
+  implicitly authorize a distinct execution or write. Include a permitted companion case.
+- **Enforced credential/data boundaries:** exercise every supported delivery path and the actual
+  SDK/CLI options and defaults that can read files, retain content or transmit data. A prompt
+  prohibition, valid artifact name or one validated input shape is not enforcement of those effects.
+  Keep credential scope and egress controls in the runtime/tool boundary under the
+  [security standard](security-and-data-handling.md), using synthetic secrets and destinations.
+- **Failure isolation and budgets:** combine a failed/uncertain candidate with healthy retained work
+  and constrained capacity. Prove documented backoff, deadlines, priority and failure reporting;
+  neither permanent starvation nor a silently successful aggregate is acceptable under a contract
+  that requires progress and visible failures.
+- **Complete consumer contract:** follow changed identities, limits and output guarantees through
+  persistence, public interfaces and consuming packages/applications. A hash, schema-valid fixture
+  or parser pass does not prove complete retained bytes or downstream compatibility. Keep domain
+  enforcement with its owning system instead of adding a duplicate policy to the shared runtime.
+
+Before handoff, name the invariant, exercised production path, focused counterexample and remaining
+consumer/connected-execution limitations in the PR evidence. For corrections, demonstrate failure
+against the original behavior when practical. Assert both the intended result and prohibited effects;
+use controlled dependency completion rather than timing-sensitive sleeps for races.
+
+Use existing synthetic test lanes, normal hooks and required CI. These selection rules do not grant
+live access, widen permissions, change retry policy or require additional full-suite runs.
+
 ## Repository Quality Gates
 
 Every pull request must pass the canonical `pnpm qa` command. It includes:

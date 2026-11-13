@@ -152,6 +152,10 @@ host-specific test adapter. Isolation and control-plane acceptance still belong 
 
 ## Stable Ownership And Contracts
 
+For changes at these boundaries, use the canonical
+[behavioral verification cases](../standards/testing-and-release.md#behavioral-boundary-verification)
+to test continuation, final authority and the actual adapter/consumer path before handoff.
+
 Keep instructions, tools, schemas, fixtures and workflow-specific code together in Agent Platform.
 The application owns its business records, permissions, review/action enforcement and operator UI.
 Use one run-control authority; do not create an application scheduler/retry engine that competes
