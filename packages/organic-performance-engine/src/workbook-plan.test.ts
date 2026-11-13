@@ -221,6 +221,34 @@ describe('native approved-template population plan', () => {
     expect(() => buildWorkbookPlan({ ...input, template })).toThrow('overlaps another binding');
   });
 
+  it.each([0, 1])(
+    'rejects growing tables that reach an optional section in column %s',
+    (column) => {
+      const input = setup();
+      const template = workbookTemplateSchema.parse(input.template);
+      const sheet = template.sheets[0];
+      const raw = sheet?.bindings[2];
+      if (!sheet || !raw) throw new Error('Missing fixture');
+      raw.range.columns = 1;
+      sheet.bindings.push({
+        ...raw,
+        id: 'empty',
+        expandRows: undefined,
+        range: { row: 5, column, rows: 1, columns: 1 },
+        optionalSection: { startRow: 5, endRow: 6 },
+      });
+      const facts = new Map(input.facts);
+      facts.set('raw', [[1], [2], [3], [4], [5], [6]]);
+      facts.set('empty', []);
+      expect(() => buildWorkbookPlan({ ...input, template, facts })).toThrow(
+        'overlaps another binding'
+      );
+      raw.expandRows = 2;
+      facts.set('raw', [[1], [2]]);
+      expect(() => buildWorkbookPlan({ ...input, template, facts })).not.toThrow();
+    }
+  );
+
   it('sizes only populated rows for opted-in detail tables', () => {
     const input = setup();
     const template = workbookTemplateSchema.parse(input.template);

@@ -17,7 +17,9 @@ export function validateOptionalSections(sheet: TemplateSheet): void {
     for (const other of sheet.bindings) {
       if (other === binding) continue;
       const start = other.optionalSection?.startRow ?? other.range.row;
-      const end = other.optionalSection?.endRow ?? other.range.row + other.range.rows;
+      const end =
+        other.optionalSection?.endRow ??
+        other.range.row + Math.max(other.range.rows, other.expandRows ?? other.range.rows);
       if (start < section.endRow && end > section.startRow)
         throw new Error('Optional section overlaps another binding: ' + binding.id);
     }
