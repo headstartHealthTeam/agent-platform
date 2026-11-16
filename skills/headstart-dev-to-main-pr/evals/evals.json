@@ -22,6 +22,18 @@
       ]
     },
     {
+      "name": "salesforce-staged-promotion",
+      "prompt": "Prepare the headstartHealthTeam/headstart-salesforce Production release PR under Saurabh's November 10 process. Keep it draft and do not merge.",
+      "shouldActivate": true,
+      "expectedBehaviors": [
+        "Uses staging as the Production PR source and main as the target",
+        "Verifies the requested scope reached Staging and its required acceptance",
+        "Uses all local Production Apex tests when Apex changes",
+        "Reports that Production deployment requires separate approval after merge",
+        "Performs no merge or deployment"
+      ]
+    },
+    {
       "name": "ordinary-feature-pr",
       "prompt": "Open a feature PR from my branch into dev.",
       "shouldActivate": false,
