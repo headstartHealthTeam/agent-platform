@@ -45,6 +45,10 @@ export const measurementLifecycleSchema = z
     comparisonPolicy: z.literal('complete-post-launch-months'),
   })
   .strict();
+export const unavailableGscComparisonsSchema = z.partialRecord(
+  z.enum(['previous', 'year_ago']),
+  z.string().trim().min(1)
+);
 const finiteNumberSchema = z.number();
 const periodSchema = z
   .object({
@@ -82,6 +86,7 @@ export const routeRuleSchema = z
 const gscSchema = z
   .object({
     metadata: metadataBaseSchema.extend({
+      unavailableComparisons: unavailableGscComparisonsSchema.optional(),
       filters: z.array(
         z
           .object({

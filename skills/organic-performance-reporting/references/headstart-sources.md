@@ -15,7 +15,7 @@ versioned configuration before claiming complete audience/category coverage. Pre
 rows and report coverage. Outcome instrumentation has its own optional `measurementLifecycle`
 effective date; do not apply the site launch date to established audience acquisition history.
 
-Read [headstart-sources.json](headstart-sources.json) before preparing a Headstart monthly report.
+Read [headstart-sources.v2.json](headstart-sources.v2.json) before preparing a Headstart monthly report.
 These non-secret identifiers locate sources; they grant no access. Google permissions remain
 authoritative. Credentials, source exports, personal profiles, and run artifacts stay outside Git.
 
@@ -41,7 +41,7 @@ with the owning source; do not guess a substitute.
 Use the collector's optional explicit selection:
 
     headstart-organic-collect --plan collection-plan.json --profile local-profile.json \
-      --sources headstart-sources.json --output new-run
+      --sources headstart-sources.v2.json --output new-run
 
 The resolver fills only an unselected TAM source, validates an existing matching choice, and
 preserves a deliberate TAM omission. It rejects conflicts. Collection records the source
@@ -51,3 +51,8 @@ analytics properties, grant permissions, install providers, or publish a report.
 Review source references when owners revise strategy, TAM headers/ranges, the reporting standard,
 or file access. Preserve historical IDs. Template changes require an explicit version update and
 numeric/visual regression verification; month changes do not.
+
+The v2 registry adds the October 26 review direction and the September historical report. Keep
+`headstart-sources.json` with v1 for historical replay. New reports use the v2 native template and
+[detail/context contract](report-detail-and-judgment.md); do not silently apply current classifications
+to an old published report.

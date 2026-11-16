@@ -29,11 +29,36 @@ export class GoogleAnalyticsRestProvider implements GoogleAnalyticsReadProvider 
   }
   public async runReport(input: Ga4ReportRequest): Promise<unknown> {
     const { property, ...body } = ga4ReportRequestSchema.parse(input);
-    return this.#http.request(`https://analyticsdata.googleapis.com/v1beta/${property}:runReport`, {
-      ...body,
-      limit: String(body.limit),
-      offset: String(body.offset),
-    });
+    const response = ga4ReportResponseSchema.parse(
+      await this.#http.request(
+        `https://analyticsdata.googleapis.com/v1beta/${property}:runReport`,
+        {
+          ...body,
+          limit: String(body.limit),
+          offset: String(body.offset),
+        }
+      )
+    );
+    // ProtoJSON omits implicit scalar defaults. A structurally verified empty REST report
+    // therefore omits rowCount=0; an arbitrary partial response must still fail closed.
+    // https://protobuf.dev/programming-guides/json/#presence-and-default-values
+    const names = (headers: readonly { name: string }[]): string =>
+      JSON.stringify(headers.map(({ name }) => name));
+    const headersMatch =
+      names(response.metricHeaders) === names(body.metrics) &&
+      names(response.dimensionHeaders) === names(body.dimensions);
+    const emptyHeaders =
+      response.metricHeaders.length === 0 &&
+      response.dimensionHeaders.length === 0 &&
+      response.metadata?.timeZone !== undefined;
+    if (
+      response.rowCount === undefined &&
+      response.rows.length === 0 &&
+      response['kind'] === 'analyticsData#runReport' &&
+      (headersMatch || emptyHeaders)
+    )
+      return { ...response, rowCount: 0, rowCountDefaultedFromProtoJson: true };
+    return response;
   }
 }
 

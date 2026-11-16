@@ -4,7 +4,7 @@ description: Build decision-ready SEO and organic acquisition reports using Goog
 compatibility: Requires Node.js 22+, the headstart-organic-analyze TypeScript CLI, and authenticated read-only Search Console and GA4 capabilities; the full headstart-organic-collect profile also requires Google Cloud ADC, Google Sheets, and a separately provisioned Semrush provider.
 metadata:
   author: headstart-health
-  version: '0.7.2'
+  version: '0.10.1'
   deterministic_engine: '@headstart-health/organic-performance-engine@0.1.0'
 ---
 
@@ -330,6 +330,17 @@ choose material hypotheses, request targeted evidence, research uncertain mechan
 useful, and revise or reject explanations. The baseline collection is a starting point, not a
 ceiling on investigation. There is no requirement to find a positive impact or recommend a change.
 
+Before writing each monthly summary, complete the
+[branded-demand diagnostic](references/branded-demand.md). Separate observed brand/non-brand
+click movement, changes in demand, ranking/visibility, and click-through. A total-click decline or
+GA4 session trend alone cannot establish a slowdown in non-brand SEO. Use comparable query cohorts,
+appropriate aggregation, daily exposure, and device/market checks; retain conflicting evidence and
+explicitly identify conclusions the available data cannot support. The existing read capabilities
+support these targeted slices; the core collector's completion marker does not complete this analysis.
+For material branded CTR or click shifts, consider the read-only
+[paid-versus-organic context check](references/paid-organic-context.md) before assigning a cause.
+Use agent judgment to decide its value; retain missing access and contrary evidence explicitly.
+
 Analyze at least:
 
 - business outcome: organic key events, key-event rate, and qualified intake or revenue metric when configured
@@ -386,7 +397,12 @@ Describe GA4 URL-section rollups as **organic sessions by landing-page segment**
 
 ### 11. Build the standard monthly workbook
 
-Deliver recurring leadership reports as a native Google Sheet with these tabs in this order:
+The v2 native workbook preserves the approved scorecard and supporting sections below, adding
+Performance Highlights, GSC Comparisons, Article Performance, Editorial Pillar Performance,
+AI Visibility and Outcome Diagnostics. Read [detail and judgment](references/report-detail-and-judgment.md)
+for their evidence contracts; the versioned template owns the exact 20-tab order.
+
+The established sections retain these responsibilities:
 
 1. **Executive Summary** - reporting period and freshness, three to seven KPI cards, the most important wins and risks, the top actions or decisions, and a concise scope/limitations note.
 2. **KPI Scorecard** - current month, prior month, year-over-year comparison, source, leadership interpretation, and comparison caveat for each KPI.

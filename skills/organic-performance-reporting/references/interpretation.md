@@ -7,6 +7,10 @@ their normal approval boundaries.
 
 ## Investigate the question, not a predetermined story
 
+Each monthly run includes the [branded-demand diagnostic](branded-demand.md) before its summary.
+It owns the specific demand-versus-CTR method, aggregation and market/device checks. The broader
+judgment and research guidance below still applies; no diagnostic preselects the conclusion.
+
 Start with the verified baseline and its coverage/quality notes. Identify the movements material to
 the report's decision. Form plausible competing explanations; a decline, improvement, or flat
 result need not have a single identifiable cause. Decide what observation would strengthen or

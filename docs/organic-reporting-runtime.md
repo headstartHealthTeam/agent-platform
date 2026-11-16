@@ -143,7 +143,7 @@ headstart-organic-analyze --input new-run/report-bundle.json --output replay-ana
 ```
 
 For a new Headstart report, explicitly add `--sources` with the skill's
-`references/headstart-sources.json` and `--cohorts` with its `references/headstart-cohorts.json`.
+`references/headstart-sources.v2.json` and `--cohorts` with its `references/headstart-cohorts.json`.
 Both selected configurations are persisted and fingerprinted. The source resolver supplies the
 approved TAM reference without changing a conflicting explicit scope. The cohort resolver replaces
 only route/audience classification; it preserves periods, source scope, and outcome definitions.
@@ -215,3 +215,15 @@ outside the checkout. Live evidence belongs in approved ignored storage, never G
 
 See the [documentation hub](README.md) and
 [reusable capability pattern](reusable-data-capabilities.md) for ownership and reuse boundaries.
+
+### Reporting detail v2
+
+New workbooks use `templates/headstart-report.v2.json` with the matching v2 source registry and
+`--context report-context.json`. The context carries agent-verified editorial classifications,
+AI visibility availability, selected highlights, dated follow-ups and journey evidence. See the
+[detail and judgment contract](../skills/organic-performance-reporting/references/report-detail-and-judgment.md).
+The older v1 manifest and source registry remain available for exact historical replays.
+
+During implementation or report validation, invoke source entrypoints from the selected worktree
+with `node --conditions=development --import tsx`, and record its revision and diff fingerprint.
+Do not use an installed command that may resolve to a different reviewed runtime.

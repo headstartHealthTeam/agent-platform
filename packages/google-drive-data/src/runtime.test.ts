@@ -173,8 +173,9 @@ describe('deployable Drive runtime CLI', () => {
       });
       const path = await runDriveCli(input);
       const artifactPath = join(input.output, 'evidence-0.json');
-      expect(await readFile(artifactPath)).toEqual(bytes);
-      const saved: unknown = JSON.parse(await readFile(path, 'utf8'));
+      expect((await readFile(artifactPath)).equals(bytes)).toBe(true);
+      const savedText = await readFile(path, 'utf8');
+      const saved: unknown = JSON.parse(savedText);
       expect(saved).toMatchObject({
         document: {
           mode: 'text',
@@ -197,8 +198,8 @@ describe('deployable Drive runtime CLI', () => {
         ],
       });
       expect((await readdir(input.output)).sort()).toEqual(['evidence-0.json', 'result.json']);
-      expect(await readFile(path, 'utf8')).not.toContain('blob');
-      expect(await readFile(path, 'utf8')).not.toContain('exportMimeType');
+      expect(savedText).not.toContain('blob');
+      expect(savedText).not.toContain('exportMimeType');
       expect(fetcher).toHaveBeenCalledTimes(4);
     }
   );

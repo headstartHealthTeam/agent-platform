@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { compare } from './analysis.js';
 import { buildLifecycle, type CohortLifecycle } from './lifecycle.js';
+import { gscPeriodAvailable } from './report-contract.js';
 import type { OrganicPerformanceBundle, PeriodId, RouteRule } from './schemas.js';
 import type { ReportRows, ReportValue } from './workbook-contract.js';
 import { ratio, type WorkbookEvidence } from './workbook-evidence.js';
@@ -88,7 +89,8 @@ export function cohortValue(
         : lifecycle?.year_ago;
   if (
     !evidence.bundle.report.periods.some((p) => p.id === period) ||
-    window?.status === 'pre_launch'
+    window?.status === 'pre_launch' ||
+    (['clicks', 'impressions'].includes(metric) && !gscPeriodAvailable(evidence.bundle, period))
   )
     return null;
   const row = item(item(values, period) ?? {}, id) ?? {};
@@ -137,6 +139,7 @@ export function total(
   metric: string,
   nonbrand = false
 ): number | null {
+  if (source === 'gsc' && !gscPeriodAvailable(bundle, id)) return null;
   const rows =
     source === 'gsc' && nonbrand
       ? bundle.sources.gsc.nonBrandedTotals

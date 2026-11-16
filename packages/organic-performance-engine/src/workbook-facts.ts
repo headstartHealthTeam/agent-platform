@@ -3,9 +3,11 @@ import { z } from 'zod';
 import { analyzeBundle, classifyPath, normalizeKeyword, sha256Json } from './analysis.js';
 import { compareCanonicalText } from './canonical-order.js';
 import { buildLifecycle } from './lifecycle.js';
+import { gscPeriodAvailable } from './report-contract.js';
 import { keywordSnapshotDate } from './semrush-snapshot.js';
 import { reportingSourcesSchema, validateCollectedSources } from './source-config.js';
 import { workbookTemplateSchema, type ReportRows, type ReportValue } from './workbook-contract.js';
+import { buildDetailedFacts } from './workbook-detail.js';
 import {
   evidenceReferences,
   gaView,
@@ -87,7 +89,12 @@ function title(id: string): string {
   return id.replaceAll('_', ' ');
 }
 function scope(evidence: WorkbookEvidence): string {
-  return `${evidence.bundle.config.publicHostname}; ${evidence.bundle.report.periods.map((p) => `${p.label}: ${p.startDate} to ${p.endDate}`).join('; ')}. Source timestamps are retained in raw tabs.`;
+  const exclusions = Object.entries(
+    evidence.bundle.sources.gsc.metadata.unavailableComparisons ?? {}
+  )
+    .map(([id, reason]) => `GSC ${id} comparison unavailable: ${reason}`)
+    .join(' ');
+  return `${exclusions} ${evidence.bundle.config.publicHostname}; ${evidence.bundle.report.periods.map((p) => `${p.label}: ${p.startDate} to ${p.endDate}`).join('; ')}. Source timestamps are retained in raw tabs.`;
 }
 function cards(blocks: Blocks, analysis: WorkbookAnalysis): void {
   const key = (name: string): z.infer<typeof workbookAnalysisSchema>['kpis'][string] =>
@@ -232,7 +239,8 @@ function segments(blocks: Blocks, evidence: WorkbookEvidence, analysis: Workbook
   blocks.set(
     'segments.rankingBands',
     orderedPeriods.map((id) => {
-      if (!period(evidence, id)) return [label(evidence, id), null, null, null, null, null];
+      if (!gscPeriodAvailable(evidence.bundle, id))
+        return [label(evidence, id), null, null, null, null, null];
       const rows = gscView(evidence, id, 'nonbranded-queries');
       return [
         label(evidence, id),
@@ -320,7 +328,12 @@ function segmentEventRate(
     selected.reduce((sum, row) => sum + row.sessions, 0)
   );
 }
-function search(blocks: Blocks, evidence: WorkbookEvidence, selection: Selection): void {
+function search(
+  blocks: Blocks,
+  evidence: WorkbookEvidence,
+  selection: Selection,
+  missingPageClicks: 0 | null
+): void {
   for (const [binding, nonbrand] of [
     ['search.totals', false],
     ['search.nonbrand', true],
@@ -356,12 +369,16 @@ function search(blocks: Blocks, evidence: WorkbookEvidence, selection: Selection
       r.position,
       delta(
         r.clicks,
-        period(evidence, 'previous') ? (previous.get(r.key)?.clicks ?? 0) : null,
+        gscPeriodAvailable(evidence.bundle, 'previous')
+          ? (previous.get(r.key)?.clicks ?? missingPageClicks)
+          : null,
         'absolute'
       ),
       delta(
         r.clicks,
-        period(evidence, 'year_ago') ? (yearAgo.get(r.key)?.clicks ?? 0) : null,
+        gscPeriodAvailable(evidence.bundle, 'year_ago')
+          ? (yearAgo.get(r.key)?.clicks ?? missingPageClicks)
+          : null,
         'absolute'
       ),
     ])
@@ -471,7 +488,12 @@ function acquisition(blocks: Blocks, evidence: WorkbookEvidence, selection: Sele
     ],
   ]);
 }
-function content(blocks: Blocks, evidence: WorkbookEvidence, selection: Selection): void {
+function content(
+  blocks: Blocks,
+  evidence: WorkbookEvidence,
+  selection: Selection,
+  missingPageClicks: 0 | null
+): void {
   const pages = publicPages(evidence, 'current');
   const landing = landingPages(evidence, 'current');
   const ga = new Map(landing.map((r) => [r.path, r]));
@@ -496,12 +518,16 @@ function content(blocks: Blocks, evidence: WorkbookEvidence, selection: Selectio
         r.position,
         delta(
           r.clicks,
-          period(evidence, 'previous') ? (previous.get(r.key)?.clicks ?? 0) : null,
+          gscPeriodAvailable(evidence.bundle, 'previous')
+            ? (previous.get(r.key)?.clicks ?? missingPageClicks)
+            : null,
           'absolute'
         ),
         delta(
           r.clicks,
-          period(evidence, 'year_ago') ? (yearAgo.get(r.key)?.clicks ?? 0) : null,
+          gscPeriodAvailable(evidence.bundle, 'year_ago')
+            ? (yearAgo.get(r.key)?.clicks ?? missingPageClicks)
+            : null,
           'absolute'
         ),
         g?.sessions ?? null,
@@ -635,6 +661,7 @@ export function buildWorkbookFacts(input: {
   readonly sources: unknown;
   readonly template: unknown;
   readonly selection?: unknown;
+  readonly context?: unknown;
 }): {
   analysis: Readonly<Record<string, unknown>>;
   facts: {
@@ -654,6 +681,10 @@ export function buildWorkbookFacts(input: {
     sources.template.version !== template.version
   )
     throw new Error('Workbook template differs from collected source configuration');
+  const expected = template.sheets.flatMap((s) => s.bindings.filter((b) => b.owner === 'facts'));
+  const detailed = expected.some((binding) => binding.id.startsWith('detail.'));
+  // Preserve historical v1 replay; v2 never infers a zero from an absent page row.
+  const missingPageClicks = detailed ? null : 0;
   const selection = workbookSelectionSchema.parse(input.selection);
   const analysis = analyzeBundle(evidence.bundle);
   const typed = workbookAnalysisSchema.parse(analysis);
@@ -664,19 +695,25 @@ export function buildWorkbookFacts(input: {
   cards(blocks, typed);
   scorecard(blocks, evidence, typed);
   segments(blocks, evidence, typed);
-  search(blocks, evidence, selection);
+  search(blocks, evidence, selection, missingPageClicks);
   acquisition(blocks, evidence, selection);
-  content(blocks, evidence, selection);
+  content(blocks, evidence, selection, missingPageClicks);
   pillars(blocks, evidence, typed);
   const remaining = supplementalFacts(evidence, sources);
   for (const [key, rows] of remaining) blocks.set(key, rows);
-  const expected = template.sheets.flatMap((s) => s.bindings.filter((b) => b.owner === 'facts'));
+  if (detailed) {
+    for (const [key, rows] of buildDetailedFacts(evidence, input.context)) blocks.set(key, rows);
+  } else if (input.context !== undefined) {
+    throw new Error('This template does not consume report context; select the updated template');
+  }
   if (
     expected.some((binding) => !blocks.has(binding.id)) ||
     [...blocks.keys()].some((key) => !expected.some((binding) => binding.id === key))
   )
     throw new Error('Template fact bindings and deterministic projector disagree');
   const references = evidenceReferences(evidence);
+  if (input.context !== undefined)
+    references.push({ source: 'report-context', sourceSha256: sha256Json(input.context) });
   return {
     analysis,
     facts: {

@@ -4,6 +4,7 @@ import { compareCanonicalText } from './canonical-order.js';
 import { buildHistoricalContext } from './historical-context.js';
 import { buildLifecycle } from './lifecycle.js';
 import {
+  gscPeriodAvailable,
   evidenceCoverage,
   validateOptionalSources,
   validateReportPeriods,
@@ -433,6 +434,7 @@ type QueryMetricsByPeriod = Readonly<
 function gscQueryMap(bundle: OrganicPerformanceBundle): QueryMetricsByPeriod {
   const totals: Record<string, Record<string, NumericRecord>> = {};
   for (const row of bundle.sources.gsc.queryRows) {
+    if (!gscPeriodAvailable(bundle, row.period)) continue;
     const period = ownValue(totals, row.period) ?? {};
     totals[row.period] = period;
     const keyword = normalizeKeyword(row.query);
@@ -573,11 +575,7 @@ function contentPillars(
   for (const [pillar, summary] of [...pillars.entries()].sort(([left], [right]) =>
     compareCanonicalText(left, right)
   )) {
-    output[pillar] = pillarOutput(
-      summary,
-      hasRankings,
-      bundle.report.periods.some((period) => period.id === 'previous')
-    );
+    output[pillar] = pillarOutput(summary, hasRankings, gscPeriodAvailable(bundle, 'previous'));
     totalVolume += summary.searchVolume;
     confirmedVolume += summary.confirmedSearchVolume;
     confirmedTop10Volume += summary.confirmedTop10Volume;
@@ -761,18 +759,29 @@ export function analyzeBundle(input: unknown): Readonly<Record<string, unknown>>
   const coverage = evidenceCoverage(bundle);
 
   const periods = bundle.report.periods;
-  const gscTotals = periodMap(bundle.sources.gsc.periodTotals, 'sources.gsc.periodTotals', periods);
+  const availableSearch = <T extends { readonly period: PeriodId }>(
+    rows: readonly T[]
+  ): readonly T[] => rows.filter((row) => gscPeriodAvailable(bundle, row.period));
+  // Validate the retained raw period inventory before excluding a reviewed incomplete comparison.
+  periodMap(bundle.sources.gsc.periodTotals, 'sources.gsc.periodTotals', periods);
+  periodMap(bundle.sources.gsc.nonBrandedTotals, 'sources.gsc.nonBrandedTotals', periods);
+  const searchPeriods = periods.filter((period) => gscPeriodAvailable(bundle, period.id));
+  const gscTotals = periodMap(
+    availableSearch(bundle.sources.gsc.periodTotals),
+    'sources.gsc.periodTotals',
+    searchPeriods
+  );
   const ga4Totals = periodMap(bundle.sources.ga4.periodTotals, 'sources.ga4.periodTotals', periods);
   const semrushTotals = bundle.sources.semrush
     ? periodMap(bundle.sources.semrush.domainSnapshots, 'sources.semrush.domainSnapshots', periods)
     : {};
   const nonbrandedTotals = periodMap(
-    bundle.sources.gsc.nonBrandedTotals,
+    availableSearch(bundle.sources.gsc.nonBrandedTotals),
     'sources.gsc.nonBrandedTotals',
-    periods
+    searchPeriods
   );
   const gsc = aggregateRows({
-    rows: bundle.sources.gsc.pageRows,
+    rows: availableSearch(bundle.sources.gsc.pageRows),
     registry: bundle.config.routeRegistry,
     unmatched: bundle.config.unmatchedSegment,
     hostname: bundle.config.publicHostname,
@@ -789,7 +798,7 @@ export function analyzeBundle(input: unknown): Readonly<Record<string, unknown>>
   const semrush = bestSemrushRankings(bundle);
   const queries = gscQueryMap(bundle);
   const audienceGsc = aggregateRows({
-    rows: bundle.sources.gsc.pageRows,
+    rows: availableSearch(bundle.sources.gsc.pageRows),
     registry: bundle.config.audienceRegistry,
     unmatched: bundle.config.unmatchedAudience,
     hostname: bundle.config.publicHostname,

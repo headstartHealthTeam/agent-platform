@@ -38,6 +38,7 @@ import { analyzeBundle } from './analysis.js';
 import { validateOptionalSources, validateReportPeriods } from './report-contract.js';
 import {
   organicPerformanceBundleSchema,
+  unavailableGscComparisonsSchema,
   periodIdSchema,
   type OrganicPerformanceBundle,
   type PeriodId,
@@ -54,6 +55,7 @@ export const collectionPlanSchema = z
       .object({
         siteUrl: z.string().min(1),
         brandRegex: z.string().min(1),
+        unavailableComparisons: unavailableGscComparisonsSchema.optional(),
         maxRows: z.number().int().positive().default(100_000),
       })
       .strict(),
@@ -345,6 +347,9 @@ export async function collectOrganicEvidence(
       dataState: 'final',
       filters: [exactPublicHostFilter(plan.config.publicHostname)],
       brandRegex: plan.gsc.brandRegex,
+      ...(plan.gsc.unavailableComparisons
+        ? { unavailableComparisons: plan.gsc.unavailableComparisons }
+        : {}),
     },
     periodTotals: [],
     nonBrandedTotals: [],
