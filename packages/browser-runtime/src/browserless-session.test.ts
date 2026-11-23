@@ -10,6 +10,7 @@ import {
 } from './browserless-session.js';
 
 const io = vi.hoisted(() => {
+  const mainFrame = { evaluateHandle: vi.fn(), evaluate: vi.fn() };
   const element = {
     evaluate: vi.fn(),
     click: vi.fn(),
@@ -24,6 +25,7 @@ const io = vi.hoisted(() => {
     detach: vi.fn(),
   };
   const page = {
+    mainFrame: (): typeof mainFrame => mainFrame,
     url: vi.fn(),
     mouse: { click: vi.fn(), move: vi.fn(), wheel: vi.fn() },
     isClosed: vi.fn(() => false),
@@ -33,8 +35,10 @@ const io = vi.hoisted(() => {
     setContent: vi.fn(),
     setBypassServiceWorker: vi.fn(),
     setRequestInterception: vi.fn(),
-    on: vi.fn(),
+    on: vi.fn<(event: string, listener: (frame: typeof mainFrame) => void) => void>(),
     goto: vi.fn(),
+    waitForNavigation: vi.fn(),
+    waitForFunction: vi.fn(),
     locator: vi.fn(),
     evaluate: vi.fn(),
     screenshot: vi.fn(),
@@ -87,11 +91,14 @@ beforeEach(() => {
   io.browser.newPage.mockResolvedValue(io.page);
   io.browser.pages.mockResolvedValue([io.page]);
   io.page.frames.mockReturnValue([io.page]);
+  io.page.mainFrame().evaluateHandle.mockResolvedValue({ asElement: () => null, dispose: vi.fn() });
   io.page.bringToFront.mockResolvedValue(undefined);
   io.page.url.mockReturnValue('https://payer.example/login');
   io.element.evaluate.mockResolvedValue({ visible: false });
   io.lookup.mockResolvedValue([{ address: '93.184.216.34', family: 4 }]);
   io.page.goto.mockResolvedValue({ status: () => 200 });
+  io.page.waitForNavigation.mockResolvedValue(null);
+  io.page.waitForFunction.mockResolvedValue({ dispose: vi.fn() });
   io.page.locator.mockReturnValue({
     map: () => ({ wait: async (): Promise<string> => 'Synthetic page' }),
   });
@@ -445,6 +452,65 @@ describe('documented Browserless CDP control', () => {
       await session.stop();
     }
   });
+  it.each([
+    'public',
+    'capture-timeout',
+    'unknown-timeout',
+    'late-event',
+    'private',
+    'no-navigation',
+    'unreadable',
+    'dispatch-failed',
+  ] as const)(
+    'handles a replaced execution context after a native click (%s)',
+    async (destination) => {
+      const { session } = await observedPortalWithPopup();
+      const contextGone = new Error(
+        'Execution context was destroyed, most likely because of a navigation.'
+      );
+      try {
+        io.page.screenshot.mockClear();
+        io.page.mouse.click.mockImplementationOnce(async () => {
+          const navigation = io.page.on.mock.calls.find(
+            ([event]) => event === 'framenavigated'
+          )?.[1];
+          if (destination === 'late-event')
+            io.page.waitForNavigation.mockImplementationOnce(async () =>
+              navigation?.(io.page.mainFrame())
+            );
+          else if (destination !== 'no-navigation') navigation?.(io.page.mainFrame());
+          if (destination === 'dispatch-failed') throw contextGone;
+          if (destination === 'capture-timeout' || destination === 'unknown-timeout') {
+            const method =
+              destination === 'capture-timeout'
+                ? 'Page.captureScreenshot'
+                : 'Target.attachToTarget';
+            io.page.screenshot.mockRejectedValueOnce(
+              Object.assign(new Error(`${method} timed out.`), { name: 'ProtocolError' })
+            );
+          } else io.page.evaluate.mockRejectedValueOnce(contextGone);
+          if (destination === 'private') io.page.evaluate.mockResolvedValue(true);
+          if (destination === 'unreadable') io.page.evaluate.mockRejectedValue(contextGone);
+          io.page.title.mockResolvedValue('New draft page');
+        });
+        const result = session.computer({ type: 'click', x: 15, y: 12, button: 'left' }, []);
+        if (
+          destination === 'public' ||
+          destination === 'late-event' ||
+          destination === 'capture-timeout'
+        ) {
+          expect((await result).text).toContain('New draft page');
+        } else {
+          await expect(result).rejects.toMatchObject({ code: 'dispatch_uncertain' });
+          await expect(session.inspectComputer()).rejects.toMatchObject({ code: 'ended' });
+          if (destination === 'private') expect(io.page.screenshot).not.toHaveBeenCalled();
+        }
+        expect(io.page.mouse.click).toHaveBeenCalledOnce();
+      } finally {
+        await session.stop();
+      }
+    }
+  );
   it('keeps the popup inspectable if it replaces the observed tab after validation and before input', async () => {
     const { session, openPopup } = await observedPortalWithPopup();
     try {

@@ -30,6 +30,14 @@ const privateInputSelector = 'input[type="password"], input[autocomplete~="one-t
 const tabSelectionPhase = 'tab-selection';
 const handoffObservation = 'handoff-observation';
 const openTab = (page: Page): boolean => !page.isClosed() && page.url() !== 'about:blank';
+function interruptedDocumentRead(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.message === 'Execution context was destroyed, most likely because of a navigation.' ||
+      (error.name === 'ProtocolError' &&
+        error.message.startsWith('Page.captureScreenshot timed out.')))
+  );
+}
 const configSchema = z
   .object({
     origin: z.enum([
@@ -175,6 +183,7 @@ class PuppeteerConnection implements BrowserConnection {
   private readonly native: NativeBrowserComputer | undefined;
   private readonly observed: ObservedControls;
   private readonly tabs = new Map<string, Page>();
+  private readonly navigated = new WeakSet<Page>();
   private selectedPage: Page;
   private observedPage?: Page;
   private readonly guarded = new WeakSet<Page>();
@@ -188,7 +197,7 @@ class PuppeteerConnection implements BrowserConnection {
     private readonly nativePortal = false
   ) {
     this.selectedPage = page;
-    this.tabs.set(randomUUID(), page);
+    this.registerTab(page);
     const observed = observedBrowser(browser, page);
     this.observed = new ObservedControls(observed.browser, observed.page);
     this.native = nativeComputer && !nativePortal ? new NativeBrowserComputer(page) : undefined;
@@ -213,7 +222,12 @@ class PuppeteerConnection implements BrowserConnection {
   }
 
   private registerTab(page: Page): void {
-    if (![...this.tabs.values()].includes(page)) this.tabs.set(randomUUID(), page);
+    if ([...this.tabs.values()].includes(page)) return;
+    this.tabs.set(randomUUID(), page);
+    if (this.nativePortal)
+      page.on('framenavigated', (frame) => {
+        if (frame === page.mainFrame()) this.navigated.add(page);
+      });
   }
 
   private async nativeDriver(
@@ -283,7 +297,40 @@ class PuppeteerConnection implements BrowserConnection {
     return tabs;
   }
 
-  async inspectComputer(): Promise<BrowserInspection> {
+  async inspectComputer(afterInput = false): Promise<BrowserInspection> {
+    const selected = this.selectedPage;
+    try {
+      return await this.readComputer();
+    } catch (error) {
+      // A completed input can navigate while the first read still holds its old CDP context.
+      // Re-read the destination once, including every privacy check. Never replay the input.
+      if (
+        !afterInput ||
+        !this.nativePortal ||
+        selected !== this.selectedPage ||
+        selected.isClosed() ||
+        !interruptedDocumentRead(error)
+      )
+        throw error;
+      // CDP can reject an evaluation before Puppeteer delivers the frame navigation event.
+      if (!this.navigated.has(selected))
+        await selected
+          .waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 2000 })
+          .catch(() => undefined);
+      if (!this.navigated.has(selected) || selected !== this.selectedPage || selected.isClosed())
+        throw error;
+      const ready = await selected.waitForFunction(() => document.readyState !== 'loading', {
+        timeout: 2000,
+      });
+      await ready.dispose();
+      const fresh = await this.readComputer();
+      if (selected !== this.selectedPage || selected !== this.observedPage || selected.isClosed())
+        throw error;
+      return fresh;
+    }
+  }
+
+  private async readComputer(): Promise<BrowserInspection> {
     const { page: inspected, driver } = await this.nativeDriver(true);
     const captured = await driver.inspect();
     const tabs = this.nativePortal ? await this.tabList(inspected) : [];
@@ -292,6 +339,7 @@ class PuppeteerConnection implements BrowserConnection {
     const result = driver.finishObservation(captured, clear);
     if (!this.nativePortal) return result;
     this.observedPage = inspected;
+    this.navigated.delete(inspected);
     return {
       ...result,
       text: `${result.text}\nBrowser tabs (untrusted titles): ${JSON.stringify(tabs)}`,

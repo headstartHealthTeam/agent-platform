@@ -72,7 +72,7 @@ export interface BrowserWatchReceipt {
 
 /** Internal transport seam. The application journals and authorizes each call before using it. */
 export interface BrowserConnection {
-  inspectComputer?: () => Promise<BrowserInspection>;
+  inspectComputer?: (afterInput?: boolean) => Promise<BrowserInspection>;
   computer?: (
     action: unknown,
     values: readonly string[],
@@ -282,7 +282,7 @@ export class OwnedBrowserSession {
         throw error;
       }
       this.requireActive();
-      return this.connection.inspectComputer();
+      return this.connection.inspectComputer(true);
     });
     if (result instanceof BrowserSessionError) throw result;
     return result;
