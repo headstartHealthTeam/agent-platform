@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-import { browserFunctionDefinition } from '@headstart-health/browser-runtime';
+import { browserFunctionDefinition } from '@headstart-health/browser-runtime/function-definition';
 import { collectSkillFiles } from '@headstart-health/workflow-runtime';
 
 import { hostedDeliveryDefinition } from './hosted-delivery-definition.js';

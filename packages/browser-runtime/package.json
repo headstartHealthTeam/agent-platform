@@ -18,10 +18,18 @@
       },
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./function-definition": {
+      "development": {
+        "types": "./src/function-definition.ts",
+        "default": "./src/function-definition.ts"
+      },
+      "types": "./dist/function-definition.d.ts",
+      "default": "./dist/function-definition.js"
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean --target node22",
+    "build": "tsup src/index.ts src/function-definition.ts --format esm --dts --clean --target node22",
     "check-types": "tsc --noEmit",
     "lint": "eslint --quiet --no-cache src vitest.config.ts",
     "test": "vitest run --silent",
