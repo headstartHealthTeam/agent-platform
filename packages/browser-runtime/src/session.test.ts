@@ -99,6 +99,24 @@ describe('one owned browser', () => {
     expect(connection.inspectComputer).not.toHaveBeenCalled();
     await session.stop();
   });
+  it('preserves only an upload rejection before input, even if the later observation reports the same error', async () => {
+    const { session, connection } = fixture();
+    const stale = new BrowserSessionError('invalid_action', 'tab-selection');
+    const upload = vi.fn().mockRejectedValueOnce(stale).mockResolvedValueOnce(undefined);
+    const inspect = vi.fn(async () => ({ text: 'New tab', image: 'fresh image' }));
+    connection.uploadComputer = upload;
+    connection.inspectComputer = inspect;
+    await expect(session.uploadComputer({ x: 2, y: 3 }, [])).rejects.toBe(stale);
+    expect(inspect).not.toHaveBeenCalled();
+    await expect(session.inspectComputer()).resolves.toHaveProperty('text', 'New tab');
+    inspect.mockRejectedValueOnce(stale);
+    await expect(session.uploadComputer({ x: 2, y: 3 }, [])).rejects.toMatchObject({
+      code: 'dispatch_uncertain',
+    });
+    await expect(session.inspectComputer()).rejects.toMatchObject({ code: 'ended' });
+    await session.stop();
+  });
+
   it('never repeats a native mutation after its screenshot becomes uncertain', async () => {
     const { session, connection } = fixture();
     connection.validateComputer = vi.fn(async () => undefined);

@@ -104,7 +104,8 @@ type BrowserSessionPhase =
   | 'authentication'
   | 'handoff-revocation'
   | 'handoff-observation'
-  | 'handoff-viewer';
+  | 'handoff-viewer'
+  | 'tab-selection';
 export class BrowserSessionError extends Error {
   constructor(
     public readonly code: BrowserSessionFailure,
@@ -178,12 +179,9 @@ export class OwnedBrowserSession {
     await this.validateComputer(action, values);
     if (this.#humanControl || epoch !== this.#handoffEpoch)
       throw new BrowserSessionError('human_control');
-    return this.exclusive(false, async () => {
-      if (!this.connection.computer || !this.connection.inspectComputer)
-        throw new BrowserSessionError('invalid_action');
+    return this.nativeInput(async () => {
+      if (!this.connection.computer) throw new BrowserSessionError('invalid_action');
       await this.connection.computer(action, values);
-      this.requireActive();
-      return this.connection.inspectComputer();
     });
   }
 
@@ -193,13 +191,32 @@ export class OwnedBrowserSession {
   ): Promise<BrowserInspection> {
     this.requireActive();
     if (this.#humanControl) throw new BrowserSessionError('human_control');
-    return this.exclusive(false, async () => {
-      if (!this.connection.uploadComputer || !this.connection.inspectComputer)
-        throw new BrowserSessionError('invalid_action');
+    return this.nativeInput(async () => {
+      if (!this.connection.uploadComputer) throw new BrowserSessionError('invalid_action');
       await this.connection.uploadComputer(point, files);
+    });
+  }
+
+  private async nativeInput(dispatch: () => Promise<void>): Promise<BrowserInspection> {
+    const result = await this.exclusive(false, async () => {
+      if (!this.connection.inspectComputer) throw new BrowserSessionError('invalid_action');
+      try {
+        await dispatch();
+      } catch (error) {
+        // Only the driver's confirmed pre-input rejection leaves this session inspectable.
+        if (
+          error instanceof BrowserSessionError &&
+          error.code === 'invalid_action' &&
+          error.phase === 'tab-selection'
+        )
+          return error;
+        throw error;
+      }
       this.requireActive();
       return this.connection.inspectComputer();
     });
+    if (result instanceof BrowserSessionError) throw result;
+    return result;
   }
 
   async validate(input: unknown): Promise<void> {

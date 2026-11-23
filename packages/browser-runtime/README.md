@@ -92,6 +92,17 @@ the provider must issue a different private capability. Reused viewer IDs/URLs f
 than upgrading a link already shared with other readers. Failed revocation remains uncertain.
 Stop closes the owned browser. Neither handoff nor viewer reload extends its absolute deadline.
 
+Portal screenshots are checked across the capture interval, including embedded frames and closed
+shadow trees. A visible password or one-time-code field requires private control. If page changes
+make a capture unverifiable, the runtime discards the pixels and tries once more. A continuously
+changing page can therefore require another inspection. A dialog can reuse only a previously
+cleared image.
+
+With a reviewed package, the agent sees the updated screen before choosing another consequential
+gesture. This also applies when the model proposes several actions together. A tab change caught
+before any input was sent leaves inspection available. If input may have reached the previous tab,
+the operator reconciles the outcome before continuing.
+
 `operate_application_browser` exposes native tasks and inspection. The model delegates a
 plain-language task plus released requirement/attachment IDs to `openai-platform`'s Responses
 computer loop, using the same browser visible to Ops. The older observed-control implementation

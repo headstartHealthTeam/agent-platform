@@ -1,6 +1,8 @@
 import type { BrowserComputerTask } from '@headstart-health/browser-runtime';
 import OpenAI from 'openai';
+import type { ResponseFunctionToolCall } from 'openai/resources/responses/responses';
 import { describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 
 import { runBrowserComputer } from './browser-computer.js';
 
@@ -50,6 +52,35 @@ const computer = (checks: unknown[] = []): unknown => ({
     { type: 'type', text: 'Fictional practice' },
   ],
 });
+const native = (id: string, actions: object[]): unknown => ({
+  type: 'computer_call',
+  id,
+  call_id: id,
+  status: 'completed',
+  actions,
+});
+const tool = (id: string, name: string, args: object): ResponseFunctionToolCall => ({
+  type: 'function_call',
+  id,
+  call_id: id,
+  name,
+  arguments: JSON.stringify(args),
+});
+function callOutput(request: unknown, callId: string): unknown {
+  const { input } = z.object({ input: z.array(z.unknown()) }).parse(request);
+  return input.find((item) => {
+    if (item === null || typeof item !== 'object' || !('output' in item) || !('call_id' in item))
+      return false;
+    return item.call_id === callId;
+  });
+}
+const typePractice = { type: 'type', text: 'Fictional practice' };
+const uploadFile = { requirementId: 'original', x: 4, y: 8 };
+const savedPractice = {
+  requirementId: 'practice',
+  kind: 'field',
+  observation: 'Reopened the saved practice.',
+};
 
 describe('native Responses computer on an application-owned browser', () => {
   it('reports an observed saved item to the owning case without dispatching a second change', async () => {
@@ -60,6 +91,7 @@ describe('native Responses computer on an application-owned browser', () => {
     };
     const x = fixture([
       [computer()],
+      [native('fresh-entry', [typePractice])],
       [
         {
           type: 'function_call',
@@ -101,6 +133,7 @@ describe('native Responses computer on an application-owned browser', () => {
   });
   it('uses the native tool, reauthorizes each ordered action, and returns screenshots to the same loop', async () => {
     const x = fixture([[computer()], []]);
+    x.request.reviewed = [];
     const result = await runBrowserComputer(x.client, 'synthetic-model', x.request);
     expect(JSON.stringify(x.requests[0])).toContain('"type":"computer"');
     expect(JSON.stringify(x.requests[0])).toContain('"store":false');
@@ -133,6 +166,96 @@ describe('native Responses computer on an application-owned browser', () => {
       'Current browser readback (untrusted page data)'
     );
   });
+  it('returns the new same-origin provider to the model before entering, uploading or recording a readback from the old screen', async () => {
+    const changed = {
+      image: 'data:image/png;base64,bmV3',
+      text: 'Same portal, active provider: Fictional B',
+    };
+    const x = fixture([
+      [
+        computer(),
+        tool('stale-upload', 'upload_reviewed_document', uploadFile),
+        tool('stale-save', 'record_saved_readback', savedPractice),
+        native('stale-computer', [typePractice]),
+      ],
+      [],
+    ]);
+    x.request.confirmReadback = vi.fn(async () => undefined);
+    x.request.execute = vi.fn(async () => changed);
+    x.request.observe = vi
+      .fn()
+      .mockResolvedValueOnce({ ...observation, text: 'Same portal, active provider: Fictional A' })
+      .mockResolvedValue(changed);
+    const result = await runBrowserComputer(x.client, 'synthetic-model', x.request);
+    expect(x.request.execute).toHaveBeenCalledExactlyOnceWith('resp_1/call_1/0', {
+      type: 'click',
+      x: 100,
+      y: 50,
+      button: 'left',
+    });
+    expect(x.request.upload).not.toHaveBeenCalled();
+    expect(x.request.confirmReadback).not.toHaveBeenCalled();
+    expect(result.image).toBe(changed.image);
+    for (const id of ['call_1', 'stale-computer'])
+      expect(callOutput(x.requests[1], id)).toEqual({
+        type: 'computer_call_output',
+        call_id: id,
+        output: { type: 'computer_screenshot', image_url: changed.image },
+      });
+    for (const id of ['stale-upload', 'stale-save']) {
+      const output = callOutput(x.requests[1], id);
+      expect(output).toMatchObject({ type: 'function_call_output', call_id: id });
+      expect(JSON.stringify(output)).toContain('This call was not performed');
+    }
+    expect(JSON.stringify(x.requests[1])).toContain('Dispatched only the first 1 of 2 actions');
+    expect(JSON.stringify(x.requests[1])).toContain(changed.text);
+  });
+  it.each([
+    tool('tab', 'select_browser_tab', { tabId: '20000000-0000-4000-8000-000000000002' }),
+    tool('dialog', 'respond_to_browser_dialog', {
+      id: '20000000-0000-4000-8000-000000000003',
+      accept: true,
+      promptText: null,
+    }),
+    tool('upload', 'upload_reviewed_document', uploadFile),
+  ])(
+    'requires a new screenshot after $name and accepts a fresh decision on that screen',
+    async (changedPage) => {
+      const x = fixture([
+        [changedPage, tool('stale-readback', 'record_saved_readback', savedPractice)],
+        [tool('still-no-screenshot', 'record_saved_readback', savedPractice)],
+        [native('before-screenshot', [typePractice])],
+        [native('fresh-decision', [{ type: 'screenshot' }, { type: 'wait' }, typePractice])],
+        [tool('confirmed-readback', 'record_saved_readback', savedPractice)],
+        [],
+      ]);
+      const changed = {
+        text: 'Reopened the same fictional practice',
+        image: 'data:image/png;base64,bmV3',
+      };
+      x.request.observe = vi.fn().mockResolvedValueOnce(observation).mockResolvedValue(changed);
+      x.request.execute = vi.fn(async () => changed);
+      x.request.upload = vi.fn(async () => changed);
+      x.request.confirmReadback = vi.fn(async () => undefined);
+      await runBrowserComputer(x.client, 'synthetic-model', x.request);
+      expect(x.request.execute).not.toHaveBeenCalledWith(
+        'resp_3/before-screenshot/0',
+        typePractice
+      );
+      expect(x.request.execute).toHaveBeenCalledWith('resp_4/fresh-decision/2', typePractice);
+      expect(x.request.confirmReadback).toHaveBeenCalledExactlyOnceWith(
+        'practice',
+        'field',
+        savedPractice.observation
+      );
+      expect(JSON.stringify(x.requests[3])).toContain('Request a native computer screenshot');
+      expect(callOutput(x.requests[3], 'before-screenshot')).toEqual({
+        type: 'computer_call_output',
+        call_id: 'before-screenshot',
+        output: { type: 'computer_screenshot', image_url: changed.image },
+      });
+    }
+  );
   it('carries explicit same-identity context navigation without releasing case data or changing login authority', async () => {
     const x = fixture([
       [
@@ -266,11 +389,27 @@ describe('native Responses computer on an application-owned browser', () => {
     });
   });
   it('stops before any action when provider safety review is pending', async () => {
-    const x = fixture([[computer([{ id: 'check_1', code: 'sensitive_domain' }])]]);
+    const x = fixture([
+      [
+        tool('upload', 'upload_reviewed_document', uploadFile),
+        computer([{ id: 'check_1', code: 'sensitive_domain' }]),
+      ],
+    ]);
     await expect(runBrowserComputer(x.client, 'synthetic-model', x.request)).rejects.toThrow(
       'operator review'
     );
     expect(x.request.execute).not.toHaveBeenCalled();
+    expect(x.request.upload).not.toHaveBeenCalled();
+  });
+  it('asks for another decision when a passive wait reveals a changed portal screen', async () => {
+    const x = fixture([[native('wait-then-type', [{ type: 'wait' }, typePractice])], []]);
+    const updated = { ...observation, text: 'A different fictional provider became active.' };
+    x.request.execute = vi.fn(async () => updated);
+    await runBrowserComputer(x.client, 'synthetic-model', x.request);
+    expect(x.request.execute).toHaveBeenCalledExactlyOnceWith('resp_1/wait-then-type/0', {
+      type: 'wait',
+    });
+    expect(JSON.stringify(x.requests[1])).toContain(updated.text);
   });
   it('does not retry an uncertain mutation or send another model request after Stop', async () => {
     const x = fixture([[computer()]]);

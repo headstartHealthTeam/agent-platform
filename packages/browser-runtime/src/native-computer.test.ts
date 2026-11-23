@@ -46,7 +46,8 @@ const surface = vi.fn(() => {
           selector?: string;
           files?: { content: string; name: string; mimeType: string }[];
         }
-      ) => {
+      ): Promise<unknown> => {
+        if (method === 'DOM.getDocument') return { root: { localName: '#document' } };
         if (method === 'Browserless.uploadFile' && params?.selector && params.files) {
           const input = document.querySelector(params.selector);
           if (!input) throw new Error('Missing synthetic input');
@@ -211,7 +212,7 @@ describe('native browser controls on a fictional provider profile', () => {
     expect(nativeSyntheticReceipts(actual)).toEqual({ draftWrites: 1, finalAttempts: 1 });
     expect(navigation.goto).toHaveBeenCalledTimes(2);
   });
-  it('screens each open portal page once and records a denied destination even when the tab closes', async () => {
+  it('keeps a page unavailable after interception setup fails', async () => {
     const { actual, page } = await fixture();
     const screen = Object.assign(page, {
       setBypassServiceWorker: vi.fn(),
@@ -223,8 +224,18 @@ describe('native browser controls on a fictional provider profile', () => {
     });
     await expect(screenPortalPage(actual)).rejects.toThrow('Synthetic setup interrupted');
     expect(page.listenerCount('request')).toBe(0);
+    await expect(screenPortalPage(actual)).rejects.toThrow('Synthetic setup interrupted');
+    expect(screen.setRequestInterception).toHaveBeenCalledOnce();
+  });
+  it('shares successful screening and records a denied destination even when the tab closes', async () => {
+    const { actual, page } = await fixture();
+    const screen = Object.assign(page, {
+      setBypassServiceWorker: vi.fn(),
+      setRequestInterception: vi.fn(),
+    });
     await Promise.all([screenPortalPage(actual), screenPortalPage(actual)]);
-    expect(screen.setRequestInterception).toHaveBeenCalledTimes(2);
+    expect(screen.setRequestInterception).toHaveBeenCalledOnce();
+    expect(page.listenerCount('request')).toBe(1);
     const abort = vi.fn(async (): Promise<void> => {
       throw new Error('Closed synthetic tab');
     });
@@ -458,15 +469,37 @@ describe('native browser controls on a fictional provider profile', () => {
     cdp.emit('Page.javascriptDialogClosed');
     expect(browserDialog(actual)).toBeNull();
   });
+  it('releases only attempted keys in reverse order when a down acknowledgement is lost', async () => {
+    const { driver, page } = await fixture();
+    page.keyboard.down
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error('Acknowledgement lost'));
+    await expect(
+      driver.act({ type: 'keypress', keys: ['Control', 'Shift', 'a'] }, [])
+    ).rejects.toThrow('Acknowledgement lost');
+    expect(page.keyboard.down.mock.calls).toEqual([['Control'], ['Shift']]);
+    expect(page.keyboard.up.mock.calls).toEqual([['Shift'], ['Control']]);
+  });
+
   it('checks the selected tab at the point of dispatch', async () => {
-    const { actual, page } = await fixture();
-    const assertSelected = vi.fn(() => {
-      throw new Error('Tab changed while preparing action');
+    const { actual, page, frame } = await fixture();
+    const otherTab = (await fixture()).actual;
+    let selected = actual;
+    const driver = new NativeBrowserComputer(actual, 'portal', origin, () => {
+      if (selected !== actual) throw new Error('Tab changed while preparing action');
     });
-    const driver = new NativeBrowserComputer(actual, 'portal', origin, assertSelected);
-    await expect(driver.act({ type: 'click', button: 'left', x: 2, y: 2 }, [])).rejects.toThrow(
-      'Tab changed'
-    );
+    const action = { type: 'click', button: 'left', x: 2, y: 2, keys: ['Shift'] };
+    await driver.validate(action, []);
+    const getHandle = frame.evaluateHandle.getMockImplementation();
+    if (!getHandle) throw new Error('Missing synthetic target');
+    frame.evaluateHandle.mockImplementationOnce(() => {
+      selected = otherTab;
+      return getHandle();
+    });
+    await expect(driver.act(action, [])).rejects.toThrow('Tab changed');
+    expect(selected).toBe(otherTab);
+    expect(page.keyboard.down).not.toHaveBeenCalled();
+    expect(page.keyboard.up).not.toHaveBeenCalled();
     expect(page.mouse.click).not.toHaveBeenCalled();
   });
   it('retains only an accepted observation for paused dialogs', async () => {
@@ -478,6 +511,72 @@ describe('native browser controls on a fictional provider profile', () => {
     expect(() => driver.finishObservation(candidate, false)).toThrow('human_control');
     cdp.emit('Page.javascriptDialogOpening', { type: 'alert', message: 'Synthetic notice' });
     expect((await driver.inspect()).image).toBe(approved.image);
+  });
+  it('discards pixels when a private field appears during capture and disappears before readback', async () => {
+    const { driver, page, cdp } = await fixture();
+    const accepted = driver.finishObservation(await driver.inspect(), true);
+    page.screenshot.mockImplementation(async () => {
+      cdp.emit('DOM.attributeModified', { name: 'autocomplete', value: 'one-time-code' });
+      cdp.emit('DOM.attributeRemoved', { name: 'autocomplete' });
+      return 'frame-with-private-input';
+    });
+    await expect(driver.inspect()).rejects.toMatchObject({ code: 'read_failed' });
+    cdp.emit('Page.javascriptDialogOpening', { type: 'confirm', message: 'Synthetic dialog' });
+    const paused = await driver.inspect();
+    expect(paused.image).toBe(accepted.image);
+    cdp.emit('Page.javascriptDialogClosed');
+    expect(() => driver.finishObservation(paused, true)).toThrow('read_failed');
+    page.screenshot.mockResolvedValue('new-safe-observation');
+    expect(driver.finishObservation(await driver.inspect(), true).pauseBatch).toBeUndefined();
+  });
+  it('returns only fresh safe pixels after a transient private field and permits unrelated visible text updates', async () => {
+    const { driver, page, cdp } = await fixture();
+    page.screenshot
+      .mockImplementationOnce(async () => {
+        cdp.emit('DOM.childNodeInserted', {
+          node: { localName: 'input', attributes: ['type', 'password'] },
+        });
+        return 'unsafe-first-capture';
+      })
+      .mockImplementationOnce(async () => {
+        cdp.emit('DOM.childNodeInserted', {
+          node: { localName: '#text', nodeValue: 'Updated draft status' },
+        });
+        return 'safe-second-capture';
+      });
+    const result = driver.finishObservation(await driver.inspect(), true);
+    expect(result.image).toBe('data:image/png;base64,safe-second-capture');
+    expect(page.screenshot).toHaveBeenCalledTimes(2);
+  });
+  it('captures no pixels with a password inside a shadow tree and discards pixels when the frame tree changes', async () => {
+    const { driver, page, cdp, actual } = await fixture();
+    await trackBrowserDialogClosure(actual);
+    const root = {
+      localName: 'form',
+      shadowRoots: [
+        {
+          localName: '#document-fragment',
+          children: [{ localName: 'input', attributes: ['type', 'password'] }],
+        },
+      ],
+    };
+    cdp.send
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ root })
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ metrics: [{ name: 'LayoutCount', value: 1 }] })
+      .mockResolvedValueOnce({ model: {} });
+    await expect(driver.inspect()).rejects.toMatchObject({
+      code: 'human_control',
+      phase: 'authentication',
+    });
+    expect(page.screenshot).not.toHaveBeenCalled();
+    page.screenshot.mockImplementation(async () => {
+      page.emit('frameattached');
+      page.emit('framedetached');
+      return 'frame-with-uninspected-content';
+    });
+    await expect(driver.inspect()).rejects.toMatchObject({ code: 'read_failed' });
   });
   it('returns interrupted reads without replay and preserves operator authority over first-observation dialogs', async () => {
     const { actual, page, cdp, driver } = await fixture();

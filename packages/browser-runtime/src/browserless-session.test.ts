@@ -1,4 +1,5 @@
 import { JSDOM } from 'jsdom';
+import type { Page } from 'puppeteer-core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
@@ -24,6 +25,7 @@ const io = vi.hoisted(() => {
   };
   const page = {
     url: vi.fn(),
+    mouse: { click: vi.fn(), move: vi.fn(), wheel: vi.fn() },
     isClosed: vi.fn(() => false),
     title: vi.fn(async () => 'Synthetic portal'),
     bringToFront: vi.fn(),
@@ -65,6 +67,10 @@ const io = vi.hoisted(() => {
   };
 });
 vi.mock('puppeteer-core', () => ({ default: { connect: io.connect } }));
+vi.mock('./portal-capture.js', () => ({
+  portalScreenshot: (page: Page): Promise<string> =>
+    page.screenshot({ type: 'png', encoding: 'base64' }),
+}));
 vi.mock('./transport.js', () => ({ BrowserSocket: { connect: io.socketConnect } }));
 vi.mock('node:dns/promises', () => ({ lookup: io.lookup }));
 
@@ -319,6 +325,72 @@ describe('documented Browserless CDP control', () => {
     );
     await session.stop();
   });
+  async function observedPortalWithPopup(): Promise<{
+    session: Awaited<ReturnType<typeof createBrowserlessPortalSession>>;
+    openPopup: () => Promise<void>;
+  }> {
+    const session = await createBrowserlessPortalSession(
+      config,
+      'https://payer.example',
+      Date.now() + 90_000
+    );
+    await session.startHumanControl();
+    io.cdp.send.mockResolvedValueOnce({ error: null, liveURLId: 'synthetic' });
+    await session.resumeAutomation();
+    await session.inspectComputer();
+    const popup = {
+      ...io.page,
+      title: vi.fn(async () => 'Fictional popup'),
+      bringToFront: vi.fn(),
+    };
+    const opened = io.browser.on.mock.calls.find(([name]) => name === 'targetcreated')?.[1];
+    if (!opened) throw new Error('Expected popup handler');
+    const openPopup = async (): Promise<void> => {
+      opened({ page: async () => popup });
+      io.browser.pages.mockResolvedValue([io.page, popup]);
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    };
+    return { session, openPopup };
+  }
+  it('keeps the popup inspectable if it replaces the observed tab after validation and before input', async () => {
+    const { session, openPopup } = await observedPortalWithPopup();
+    try {
+      // The first activation belongs to validation. The second is the actual dispatch path.
+      io.page.bringToFront.mockResolvedValueOnce(undefined).mockImplementationOnce(openPopup);
+      await expect(
+        session.computer({ type: 'click', button: 'left', x: 2, y: 2 }, [])
+      ).rejects.toMatchObject({
+        name: 'BrowserSessionError',
+        code: 'invalid_action',
+        phase: 'tab-selection',
+      });
+      expect(io.page.mouse.click).not.toHaveBeenCalled();
+      expect((await session.inspectComputer()).text).toContain(
+        '"title":"Fictional popup","current":true'
+      );
+    } finally {
+      await session.stop();
+    }
+  });
+
+  it('keeps a gesture uncertain if a popup takes selection after its first native input', async () => {
+    const { session, openPopup } = await observedPortalWithPopup();
+    try {
+      io.page.mouse.move.mockImplementationOnce(openPopup);
+      await expect(
+        session.computer({ type: 'scroll', x: 2, y: 2, scroll_x: 0, scroll_y: 25 }, [])
+      ).rejects.toMatchObject({
+        code: 'dispatch_uncertain',
+        phase: 'tab-selection',
+      });
+      expect(io.page.mouse.move).toHaveBeenCalledOnce();
+      expect(io.page.mouse.wheel).not.toHaveBeenCalled();
+      await expect(session.inspectComputer()).rejects.toMatchObject({ code: 'ended' });
+    } finally {
+      await session.stop();
+    }
+  });
+
   it('withholds an observation when authentication remains in another frame or popup', async () => {
     const privateFrame = { evaluate: vi.fn(async () => true) };
     io.browser.pages.mockResolvedValue([

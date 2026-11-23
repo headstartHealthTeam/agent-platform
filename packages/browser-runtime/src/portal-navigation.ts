@@ -70,10 +70,9 @@ export function screenPortalPage(page: Page): Promise<void> {
       throw error;
     }
   };
-  const ready = enable().catch((error: unknown) => {
-    screened.delete(page);
-    throw error;
-  });
+  // Puppeteer can remember an enabled interception flag before the protocol acknowledges it.
+  // A failed setup therefore stays failed for this Page. A fresh Page has its own setup.
+  const ready = enable();
   screened.set(page, { counts, ready });
   return ready;
 }

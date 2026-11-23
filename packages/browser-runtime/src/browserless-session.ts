@@ -27,6 +27,7 @@ import { BrowserSocket } from './transport.js';
 import { containsViewerToken, isBrowserlessViewerPath } from './viewer-path.js';
 
 const privateInputSelector = 'input[type="password"], input[autocomplete~="one-time-code" i]';
+const tabSelectionPhase = 'tab-selection';
 const configSchema = z
   .object({
     origin: z.enum([
@@ -227,7 +228,10 @@ class PuppeteerConnection implements BrowserConnection {
     const available = pages.includes(this.selectedPage) ? this.selectedPage : pages.at(-1);
     const current = observing ? available : this.observedPage;
     if (!current || !pages.includes(current))
-      throw new BrowserSessionError(observing ? 'read_failed' : 'invalid_action');
+      throw new BrowserSessionError(
+        observing ? 'read_failed' : 'invalid_action',
+        tabSelectionPhase
+      );
     for (const page of pages) {
       if (!(await publicOriginAllowed(new URL(page.url()).origin)))
         throw new BrowserSessionError('invalid_action');
@@ -235,8 +239,10 @@ class PuppeteerConnection implements BrowserConnection {
       this.registerTab(page);
     }
     if (observing && !pages.includes(this.selectedPage)) this.selectedPage = current;
-    const assertSelected = (): void => {
-      this.assertSelectedTab(current);
+    let inputAttempted = false;
+    const assertSelected = (sendingInput = false): void => {
+      this.assertSelectedTab(current, inputAttempted);
+      if (sendingInput) inputAttempted = true;
     };
     if (!observing) assertSelected();
     await current.bringToFront();
@@ -252,9 +258,12 @@ class PuppeteerConnection implements BrowserConnection {
     };
   }
 
-  private assertSelectedTab(page: Page): void {
+  private assertSelectedTab(page: Page, inputAttempted: boolean): void {
     if (page.isClosed() || this.selectedPage !== page || this.observedPage !== page)
-      throw new BrowserSessionError('invalid_action');
+      throw new BrowserSessionError(
+        inputAttempted ? 'dispatch_uncertain' : 'invalid_action',
+        tabSelectionPhase
+      );
   }
 
   async inspectComputer(): Promise<BrowserInspection> {
@@ -274,7 +283,7 @@ class PuppeteerConnection implements BrowserConnection {
         });
       }
     }
-    // Only a completed privacy scan of the captured tab can approve fresh pixels for dialog reuse.
+    // The capture guards its pixels. Separately recheck current authority on every surviving tab.
     const clear = await this.requireNonPrivatePage(true, inspected);
     const result = driver.finishObservation(captured, clear);
     if (!this.nativePortal) return result;
@@ -304,7 +313,8 @@ class PuppeteerConnection implements BrowserConnection {
       .safeParse(action);
     if (!parsed.success) return undefined;
     const page = this.tabs.get(parsed.data.tabId);
-    if (!page || page.isClosed()) throw new BrowserSessionError('invalid_action');
+    if (!page || page.isClosed())
+      throw new BrowserSessionError('invalid_action', tabSelectionPhase);
     return page;
   }
   async uploadComputer(

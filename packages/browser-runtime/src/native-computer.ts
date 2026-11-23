@@ -13,6 +13,7 @@ import {
 } from './native-dialog.js';
 import { browserKeys } from './native-keys.js';
 import { nativeTarget, nativeTargetStructure } from './native-target.js';
+import { portalScreenshot } from './portal-capture.js';
 import { portalRequestCounts } from './portal-navigation.js';
 import { BrowserSessionError, type BrowserAction, type BrowserInspection } from './session.js';
 import { nativeSyntheticReceipts, syntheticOrigin } from './synthetic-page.js';
@@ -72,7 +73,7 @@ export class NativeBrowserComputer {
     private readonly page: Page,
     private readonly boundary: 'synthetic' | 'portal' = 'synthetic',
     private readonly interactionOrigin?: string,
-    private readonly assertSelected?: () => void
+    private readonly assertSelected?: (sendingInput?: boolean) => void
   ) {
     observeBrowserDialogs(page);
   }
@@ -98,12 +99,13 @@ export class NativeBrowserComputer {
     return reading.interrupted ? this.inspect() : reading.value;
   }
 
-  /** Cache only pixels accepted by the connection after its post-capture privacy check. */
+  /** Cache an isolated capture only while the application still allows this observation. */
   finishObservation(captured: BrowserInspection, privacyVerified: boolean): BrowserInspection {
     const dialog = this.dialogObservation();
     if (dialog) return dialog;
+    if (captured.pauseBatch) throw new BrowserSessionError('read_failed');
     if (!privacyVerified) throw new BrowserSessionError('human_control', 'handoff-observation');
-    if (!captured.pauseBatch) lastObservations.set(this.page, captured);
+    lastObservations.set(this.page, captured);
     return captured;
   }
 
@@ -142,7 +144,10 @@ export class NativeBrowserComputer {
         }),
       ariaLabel
     );
-    const image = await this.page.screenshot({ type: 'png', encoding: 'base64' });
+    const image =
+      this.boundary === 'portal'
+        ? await portalScreenshot(this.page)
+        : await this.page.screenshot({ type: 'png', encoding: 'base64' });
     if (image.length > 5_000_000) throw new Error('Browser screenshot too large');
     const diagnostics =
       this.boundary === 'portal'
@@ -226,7 +231,7 @@ export class NativeBrowserComputer {
       )
         throw new Error('Typing needs the same focused editable field on the reviewed destination');
       if (text !== undefined) {
-        this.assertSelected?.();
+        this.assertSelected?.(true);
         await this.page.keyboard.sendCharacter(text);
       }
     } finally {
@@ -241,18 +246,22 @@ export class NativeBrowserComputer {
       lastTargets.set(this.page, await target.frame.evaluate(nativeTargetStructure, target.point));
     }
     if (action.type === 'dialog') {
-      this.assertSelected?.();
+      this.assertSelected?.(true);
       await respondToBrowserDialog(this.page, action);
       return;
     }
     await dispatchWithDialogs(this.page, async () => {
-      const held = browserKeys('keys' in action ? (action.keys ?? []) : []);
+      const requestedKeys = browserKeys('keys' in action ? (action.keys ?? []) : []);
+      const attemptedKeys: typeof requestedKeys = [];
       try {
-        for (const key of held) {
-          this.assertSelected?.();
+        for (const key of requestedKeys) {
+          this.assertSelected?.(true);
+          attemptedKeys.push(key);
           await this.page.keyboard.down(key);
         }
-        this.assertSelected?.();
+        this.assertSelected?.(
+          ['click', 'double_click', 'move', 'scroll', 'drag'].includes(action.type)
+        );
         switch (action.type) {
           case 'click':
             await this.page.mouse.click(action.x, action.y, {
@@ -298,7 +307,7 @@ export class NativeBrowserComputer {
             break;
         }
       } finally {
-        for (const key of held.reverse()) await this.page.keyboard.up(key);
+        for (const key of attemptedKeys.reverse()) await this.page.keyboard.up(key);
       }
     });
   }
@@ -339,7 +348,7 @@ export class NativeBrowserComputer {
     let cdp: CDPSession | undefined;
     try {
       cdp = await this.page.createCDPSession();
-      this.assertSelected?.();
+      this.assertSelected?.(true);
       z.object({ ok: z.literal(true) }).parse(
         await cdp.send('Browserless.uploadFile', {
           selector: `[data-native-upload="${id}"]`,
