@@ -108,6 +108,7 @@ flowchart TD
   the globally installable entry point for selecting an artifact shape before implementation.
 - [`workflows/`](../workflows/) owns deployable workflow prompts, schemas, policies, and
   optional workflow-specific deterministic adapters.
+- [Browser runtime](../packages/browser-runtime/README.md) connects a private operator-controlled browser to reviewed agent tasks.
 - [`packages/workflow-contracts/`](../packages/workflow-contracts/README.md) owns runtime-neutral
   workflow and durable-run contracts.
 - [`packages/workflow-runtime/`](../packages/workflow-runtime/README.md) owns safe package loading,

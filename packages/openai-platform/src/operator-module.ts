@@ -15,6 +15,11 @@ import { launchSettings } from './session-launch.js';
 
 export const protocol = 'headstart-openai-operator/v1';
 export const adapterVersion = '0.15.1';
+export {
+  createBrowserlessSyntheticSession,
+  createBrowserlessPortalSession,
+  validateBrowserPortalTarget,
+} from '@headstart-health/browser-runtime';
 export { OperatorRuntimePort } from './operator-runtime.js';
 export { createLocalOperatorRuntimePort } from './local-operator-runtime.js';
 export { OpenAIPlatform } from './platform.js';

@@ -1,3 +1,4 @@
+import type { BrowserComputerTask } from '@headstart-health/browser-runtime';
 import { verifyCapabilityPreflight } from '@headstart-health/capability-runtime';
 import {
   agentLaunchDiagnostic,
@@ -10,6 +11,7 @@ import {
 import OpenAI from 'openai';
 
 import { pendingBrowserApprovals } from './browser-approvals.js';
+import { runBrowserComputer } from './browser-computer.js';
 import {
   ADAPTER_VERSION,
   CAPABILITY,
@@ -148,6 +150,14 @@ function pageData(page: { data: { id: string | null }[]; has_more: boolean }): u
 export class OpenAIPlatform {
   readonly #client: OpenAI;
   readonly #config: RuntimeConfig;
+
+  public async browserComputer(
+    model: string,
+    request: BrowserComputerTask
+  ): Promise<{ text: string; image: string }> {
+    await this.preflight();
+    return runBrowserComputer(this.#client, model, request);
+  }
 
   public async stagePreparedSessionFile(
     environmentId: string,

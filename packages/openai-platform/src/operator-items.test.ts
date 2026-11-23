@@ -24,6 +24,69 @@ const event = (
 });
 
 describe('operator-safe activity projection', () => {
+  it.each(['in_progress', 'completed', 'failed', 'incomplete'] as const)(
+    'projects native browser %s activity without retaining screenshot or page bytes',
+    (status) => {
+      const items = new OperatorItems('session_a', 'turn_a');
+      const call = {
+        id: 'browser_a',
+        turn_id: 'turn_a',
+        type: 'computer_use_call',
+        status,
+        title: 'Inspect the application form',
+        output: { type: 'computer_screenshot', image_url: 'private-image-bytes' },
+        url: 'private-routing',
+      };
+      items.consume(event(status === 'in_progress' ? 'item.added' : 'item.done', { item: call }));
+      expect(items.values()).toMatchObject([
+        {
+          id: 'browser_a',
+          kind: 'tool',
+          final: status !== 'in_progress',
+          activity: {
+            tool: 'browser',
+            label: 'Browser: Inspect the application form',
+            status,
+            turnId: 'turn_a',
+          },
+        },
+      ]);
+      expect(items.finalized(call)).toEqual(status === 'in_progress' ? null : items.values()[0]);
+      expect(JSON.stringify(items.values())).not.toMatch(/private|image_url|computer_screenshot/);
+    }
+  );
+  it('keeps browser final state across recovery and ignores foreign turns and malformed statuses', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    const call = {
+      id: 'browser_a',
+      turn_id: 'turn_a',
+      type: 'computer_use_call',
+      title: null,
+      output: null,
+    };
+    items.recover([{ ...call, status: 'in_progress' }]);
+    expect(items.values()[0]?.text).toBe('Browser activity · In progress');
+    items.consume(event('item.done', { item: { ...call, status: 'completed' } }));
+    items.recover([
+      { ...call, status: 'in_progress' },
+      { ...call, id: 'foreign', turn_id: 'turn_other', status: 'completed' },
+      { ...call, id: 'malformed', status: 'not-supported' },
+    ]);
+    expect(items.values()).toHaveLength(1);
+    expect(items.values()[0]?.text).toBe('Browser activity · Completed');
+  });
+  it('bounds browser titles and withholds obvious credentials without changing browser outcomes', () => {
+    const items = new OperatorItems('session_a', 'turn_a');
+    const call = { turn_id: 'turn_a', type: 'computer_use_call', status: 'failed', output: null };
+    items.recover([
+      { ...call, id: 'secret', title: 'Bearer synthetic-credential' },
+      { ...call, id: 'long', title: 'x'.repeat(5000) },
+      { ...call, id: 'missing' },
+    ]);
+    expect(items.values()[0]?.text).toBe('Browser: [Sensitive content withheld] · Failed');
+    expect(items.values()[1]?.activity?.label).toHaveLength(200);
+    expect(items.values()[2]?.text).toBe('Browser activity · Failed');
+  });
   it('labels a wrapped command and keeps a failed call distinct from a later corrected attempt', () => {
     const items = new OperatorItems('session_a', 'turn_a');
     items.recover([

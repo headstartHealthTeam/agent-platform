@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
+import { browserFunctionDefinition } from '@headstart-health/browser-runtime/function-definition';
 import { collectSkillFiles } from '@headstart-health/workflow-runtime';
 
 import { hostedDeliveryDefinition } from './hosted-delivery-definition.js';
@@ -40,7 +41,36 @@ const definition = {
     })),
   },
   tools: [
+    browserFunctionDefinition,
     hostedDeliveryDefinition,
+    {
+      type: 'function',
+      name: 'publish_credentialing_progress',
+      description:
+        'Share one cited answer, unresolved discrepancy, or retained file with the current case reviewer as soon as useful. Stable item key; expectedRevision starts at zero. Read current context after conflicts. Operator corrections take precedence. This is working material, separate from a published package, portal save or approved action.',
+      parameters: {
+        type: 'object',
+        properties: {
+          itemKey: { type: 'string', pattern: '^[a-z][a-z0-9-]{0,79}$' },
+          expectedRevision: { type: 'integer', minimum: 0 },
+          label: { type: 'string', minLength: 1, maxLength: 160 },
+          status: { type: 'string', enum: ['supported', 'needs-review'] },
+          value: { type: 'string', maxLength: 4000 },
+          evidence: { type: 'string', minLength: 1, maxLength: 2000 },
+          artifactId: { type: ['string', 'null'] },
+        },
+        additionalProperties: false,
+        required: [
+          'itemKey',
+          'expectedRevision',
+          'label',
+          'status',
+          'value',
+          'evidence',
+          'artifactId',
+        ],
+      },
+    },
     {
       type: 'function',
       name: 'lookup_credentialing_npi',

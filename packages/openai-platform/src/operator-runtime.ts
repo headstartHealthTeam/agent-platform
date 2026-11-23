@@ -1,3 +1,4 @@
+import type { BrowserComputerTask } from '@headstart-health/browser-runtime';
 import type {
   OperatorBinding,
   OperatorCommand,
@@ -60,7 +61,7 @@ import { publicBrowserDecision } from './public-browser-policy.js';
 import { publicResearchLaunch } from './public-research.js';
 import { publicResearchSettings } from './research-launch.js';
 import type { SessionExecutor } from './session-executor.js';
-import { SessionLaunchPort } from './session-launch.js';
+import { SessionLaunchPort, launchSettings as configuredLaunchSettings } from './session-launch.js';
 
 export type {
   OperatorBinding,
@@ -77,7 +78,11 @@ type Platform = Pick<OpenAIPlatform, 'read' | 'apply' | 'preflight' | 'openOpera
   Partial<
     Pick<
       OpenAIPlatform,
-      'readHostedArtifact' | 'stageResearchFile' | 'stageWorkspaceFile' | 'stagePreparedSessionFile'
+      | 'readHostedArtifact'
+      | 'stageResearchFile'
+      | 'stageWorkspaceFile'
+      | 'stagePreparedSessionFile'
+      | 'browserComputer'
     >
   >;
 function operatorStatus(
@@ -91,6 +96,27 @@ function operatorStatus(
 
 /** Case records, operator authorization and durable outbox claims remain with the owning service. */
 export class OperatorRuntimePort {
+  async browserComputer(
+    binding: OperatorBinding,
+    commandId: string,
+    request: BrowserComputerTask
+  ): Promise<{ text: string; image: string }> {
+    if (!this.platform.browserComputer || this.closed)
+      throw new Error('Native computer is unavailable');
+    const model = configuredLaunchSettings.parse(this.launchSettings).model;
+    const authorize = async (): Promise<void> => {
+      if (this.closed || binding.target !== fingerprint(this.target))
+        throw new Error('Wrong browser runtime target');
+      await requireInferenceAuthority(this.inferenceAuthority, {
+        operation: 'input',
+        binding,
+        commandId,
+      });
+      await request.authorize();
+    };
+    await authorize();
+    return this.platform.browserComputer(model, { ...request, authorize });
+  }
   private readonly turns = new OperatorTurns();
   private closed = false;
   private opening = 0;
