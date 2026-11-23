@@ -246,10 +246,8 @@ async function executeCall(
       expected
     );
   } else throw new Error('Unexpected browser function');
-  if (request.reviewed.length) {
-    decision.needsNewDecision = true;
-    decision.needsComputerScreenshot = true;
-  }
+  decision.needsNewDecision = true;
+  decision.needsComputerScreenshot = true;
   input.push({
     type: 'function_call_output',
     call_id: item.call_id,
@@ -278,6 +276,7 @@ async function recordObservedItem(
     });
     return fresh;
   }
+  await request.authorize();
   await request.confirmReadback(args.requirementId, args.kind, args.observation);
   input.push({
     type: 'function_call_output',

@@ -125,6 +125,15 @@ Observed tab IDs let the agent select a tab without guessing URL or provider IDs
 supports formatting, splitting supported facts and task-related search text; instructions prohibit
 invented case facts. The application still controls exact-package release and exact original bytes.
 
+For reviewed typing, the adapter validates the target frame and editable field, compares a new
+privacy-checked screen with the one the agent saw, and checks the same field still has focus
+immediately before native input. Chromium reads the screen and sends the keystroke in separate
+commands. A portal can still switch profiles between those commands. If a profile changes on its
+own or cannot be identified reliably, return private control to the operator before further entry.
+Reopen the draft and verify the provider and saved values before recording a result. A failed
+pre-input capture withholds both the keystroke and the image and allows another inspection or
+private control. A failure after input requires reconciliation before another attempt.
+
 Original transfer uses the documented
 [Browserless.uploadFile contract](https://docs.browserless.io/baas/features/file-transfers), capped
 at 50 MB decoded bytes. Selected file name, size and SHA-256 are independently read back. This

@@ -107,7 +107,9 @@ type BrowserSessionPhase =
   | 'handoff-revocation'
   | 'handoff-observation'
   | 'handoff-viewer'
-  | 'tab-selection';
+  | 'tab-selection'
+  | 'pre-input-observation'
+  | 'input-focus';
 export class BrowserSessionError extends Error {
   constructor(
     public readonly code: BrowserSessionFailure,
@@ -192,6 +194,7 @@ export class OwnedBrowserSession {
         const changed = await this.changedObservation(expectedObservation, () =>
           this.inspectComputer()
         );
+        if (changed instanceof BrowserSessionError) throw changed;
         if (changed) return changed;
       }
       throw error;
@@ -217,13 +220,24 @@ export class OwnedBrowserSession {
     }, expectedObservation);
   }
 
+  /** Only called while the transport still owes its first input. Never return withheld pixels. */
+  private async inspectBeforeInput(
+    inspect: () => Promise<BrowserInspection>
+  ): Promise<BrowserInspection | BrowserSessionError> {
+    const current = await inspect().catch(
+      () => new BrowserSessionError('read_failed', 'pre-input-observation')
+    );
+    this.requireActive();
+    if (this.#humanControl) throw new BrowserSessionError('human_control');
+    return current;
+  }
+
   private async changedObservation(
     expected: BrowserComputerObservation,
     inspect: () => Promise<BrowserInspection>
-  ): Promise<BrowserInspection | undefined> {
-    const current = await inspect();
-    this.requireActive();
-    if (this.#humanControl) throw new BrowserSessionError('human_control');
+  ): Promise<BrowserInspection | BrowserSessionError | undefined> {
+    const current = await this.inspectBeforeInput(inspect);
+    if (current instanceof BrowserSessionError) return current;
     if (
       expected.text !== current.text ||
       expected.image !== current.image ||
@@ -241,7 +255,7 @@ export class OwnedBrowserSession {
       if (!this.connection.inspectComputer) throw new BrowserSessionError('invalid_action');
       const inspect = this.connection.inspectComputer.bind(this.connection);
       const obsolete = new BrowserSessionError('invalid_action');
-      let changed: BrowserInspection | undefined;
+      let changed: BrowserInspection | BrowserSessionError | undefined;
       const refresh =
         expected &&
         (async (): Promise<void> => {
@@ -256,14 +270,12 @@ export class OwnedBrowserSession {
         if (
           error instanceof BrowserSessionError &&
           error.code === 'invalid_action' &&
-          error.phase === 'tab-selection'
+          (error.phase === 'tab-selection' || error.phase === 'input-focus')
         ) {
-          if (expected) {
-            const current = await inspect();
-            this.requireActive();
-            return { ...current, dispatched: false as const };
-          }
-          return error;
+          if (!expected) return error;
+          const current = await this.inspectBeforeInput(inspect);
+          if (current instanceof BrowserSessionError) return current;
+          return { ...current, dispatched: false as const };
         }
         throw error;
       }

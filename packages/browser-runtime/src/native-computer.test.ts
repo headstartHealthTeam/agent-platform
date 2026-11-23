@@ -334,7 +334,14 @@ describe('native browser controls on a fictional provider profile', () => {
       if (document.querySelector('[data-native-upload]'))
         throw new Error('The reviewed screen changed');
     });
-    await expect(driver.upload({ x: 4, y: 9 }, [], refresh)).rejects.toThrow(
+    const bytes = Buffer.from('Fictional reviewed attachment');
+    const file = {
+      name: 'reviewed.txt',
+      mimeType: 'text/plain',
+      content: bytes.toString('base64'),
+      digest: 'sha256:' + createHash('sha256').update(bytes).digest('hex'),
+    };
+    await expect(driver.upload({ x: 4, y: 9 }, [file], refresh)).rejects.toThrow(
       'reviewed screen changed'
     );
     expect(refresh).toHaveBeenCalledTimes(2);
@@ -431,6 +438,40 @@ describe('native browser controls on a fictional provider profile', () => {
     if (!later) throw new Error('Missing second dialog');
     await respondToBrowserDialog(actual, { id: later.id, accept: false, promptText: null });
     expect(browserDialog(actual)).toBeNull();
+  });
+  it('rechecks the displayed profile if it changes during validation of the same focused field', async () => {
+    const { driver, page } = await fixture();
+    const field = document.querySelector<HTMLInputElement>('#practice');
+    if (!field) throw new Error('Missing synthetic field');
+    const heading = document.createElement('h1');
+    heading.textContent = 'Fictional provider A';
+    document.body.prepend(heading);
+    field.focus();
+    const reviewed = await driver.inspect();
+    Object.defineProperty(field, 'readOnly', {
+      get(): boolean {
+        heading.textContent = 'Fictional provider B';
+        return false;
+      },
+    });
+    const changed = new Error('The reviewed screen changed');
+    await expect(
+      driver.act({ type: 'type', text: 'Reviewed value' }, [], async () => {
+        if ((await driver.inspect()).text !== reviewed.text) throw changed;
+      })
+    ).rejects.toBe(changed);
+    expect(document.activeElement).toBe(field);
+    expect(page.keyboard.sendCharacter).not.toHaveBeenCalled();
+  });
+  it('withholds typing when the held field loses focus during the final capture', async () => {
+    const { driver, page } = await fixture();
+    document.querySelector<HTMLInputElement>('#practice')?.focus();
+    await expect(
+      driver.act({ type: 'type', text: 'Reviewed value' }, [], async () => {
+        document.querySelector<HTMLTextAreaElement>('#notes')?.focus();
+      })
+    ).rejects.toMatchObject({ code: 'invalid_action', phase: 'input-focus' });
+    expect(page.keyboard.sendCharacter).not.toHaveBeenCalled();
   });
   it('declines typing when focus changes between resolving the input and sending its text', async () => {
     const { driver, frame, page } = await fixture();

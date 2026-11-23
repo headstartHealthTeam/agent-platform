@@ -117,6 +117,48 @@ describe('one owned browser', () => {
     await session.stop();
   });
 
+  it.each(['before', 'after'] as const)(
+    'classifies a capture failure %s input without exposing the rejected read',
+    async (when) => {
+      const { session, connection } = fixture();
+      const previous = { text: 'Fictional profile', image: 'first' };
+      const send = vi.fn();
+      connection.validateComputer = async (): Promise<void> => undefined;
+      connection.computer = async (_action, _values, checked): Promise<void> => {
+        await checked?.();
+        send();
+      };
+      const inspect = vi.fn(async () => previous);
+      if (when === 'after') inspect.mockResolvedValueOnce(previous);
+      inspect.mockRejectedValueOnce(new Error('unshareable pixels'));
+      connection.inspectComputer = inspect;
+      try {
+        const rejected = session.computer(
+          { type: 'click', x: 1, y: 2, button: 'left' },
+          [],
+          previous
+        );
+        if (when === 'before') {
+          await expect(rejected).rejects.toMatchObject({
+            name: 'BrowserSessionError',
+            code: 'read_failed',
+            phase: 'pre-input-observation',
+            message: 'Browser session: read_failed',
+          });
+          expect(send).not.toHaveBeenCalled();
+          await expect(session.inspectComputer()).resolves.toEqual(previous);
+          await expect(session.startHumanControl()).resolves.toHaveProperty('liveURLId', 'human');
+          await expect(session.inspectComputer()).rejects.toMatchObject({ code: 'human_control' });
+        } else {
+          await expect(rejected).rejects.toMatchObject({ code: 'dispatch_uncertain' });
+          expect(send).toHaveBeenCalledOnce();
+          await expect(session.startHumanControl()).rejects.toMatchObject({ code: 'ended' });
+        }
+      } finally {
+        await session.stop();
+      }
+    }
+  );
   it('withholds fresh pixels and input if Stop wins during the reviewed-screen recheck', async () => {
     const { session, connection } = fixture();
     const before = { text: 'Fictional first provider', image: 'first' };

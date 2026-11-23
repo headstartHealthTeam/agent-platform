@@ -538,6 +538,56 @@ describe('native Responses computer on an application-owned browser', () => {
       observation
     );
   });
+  it.each([
+    tool('select', 'select_browser_tab', { tabId: '20000000-0000-4000-8000-000000000002' }),
+    tool('dismiss', 'respond_to_browser_dialog', {
+      id: '20000000-0000-4000-8000-000000000002',
+      accept: false,
+      promptText: null,
+    }),
+  ])('requires a new screen after $name even in a navigation-only task', async (change) => {
+    const nextPage = { image: 'data:image/png;base64,Yg==', text: 'New fictional destination' };
+    const click = { type: 'click', x: 20, y: 30, button: 'left' };
+    const x = fixture([
+      [change],
+      [native('planned-from-old-screen', [click])],
+      [native('planned-from-new-screen', [click])],
+      [],
+    ]);
+    x.request.reviewed = [];
+    x.request.execute = vi.fn(async () => nextPage);
+    x.request.observe = vi.fn().mockResolvedValueOnce(observation).mockResolvedValue(nextPage);
+    await runBrowserComputer(x.client, 'synthetic-model', x.request);
+    expect(x.request.execute).toHaveBeenCalledTimes(2);
+    expect(x.request.execute).toHaveBeenLastCalledWith(
+      'resp_3/planned-from-new-screen/0',
+      click,
+      undefined
+    );
+    expect(callOutput(x.requests[2], 'planned-from-old-screen')).toMatchObject({
+      output: { image_url: nextPage.image },
+    });
+  });
+
+  it('refuses to record a readback if authority was revoked during observation', async () => {
+    const x = fixture([[tool('saved', 'record_saved_readback', savedPractice)], []]);
+    let authorized = true;
+    x.request.authorize = vi.fn(async () => {
+      if (!authorized) throw new Error('Authority revoked');
+    });
+    x.request.observe = vi
+      .fn()
+      .mockResolvedValueOnce(observation)
+      .mockImplementationOnce(async () => {
+        authorized = false;
+        return observation;
+      });
+    x.request.confirmReadback = vi.fn(async () => undefined);
+    await expect(runBrowserComputer(x.client, 'synthetic-model', x.request)).rejects.toThrow(
+      'Authority revoked'
+    );
+    expect(x.request.confirmReadback).not.toHaveBeenCalled();
+  });
   it('stops before any action when provider safety review is pending', async () => {
     const x = fixture([
       [

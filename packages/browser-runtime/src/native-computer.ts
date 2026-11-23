@@ -213,25 +213,33 @@ export class NativeBrowserComputer {
       if (!active) throw new Error('Typing needs a focused editable field');
       return active;
     });
+    const stillFocused = (): Promise<boolean> =>
+      element.evaluate((current, origin) => {
+        if (
+          !document.hasFocus() ||
+          current !== document.activeElement ||
+          (origin && location.origin !== origin)
+        )
+          return false;
+        if (current instanceof HTMLTextAreaElement) return !current.readOnly;
+        if (current instanceof HTMLInputElement)
+          return (
+            !current.readOnly &&
+            !current.autocomplete.toLowerCase().split(/\s+/).includes('one-time-code') &&
+            ['text', 'email', 'tel', 'url', 'search', 'number', 'date'].includes(current.type)
+          );
+        return current instanceof HTMLElement && current.isContentEditable;
+      }, this.interactionOrigin);
     try {
-      if (text !== undefined) await beforeInput?.();
-      if (
-        (await nativeTarget(this.page)).frame !== frame ||
-        !(await element.evaluate((current, origin) => {
-          if (current !== document.activeElement || (origin && location.origin !== origin))
-            return false;
-          if (current instanceof HTMLTextAreaElement) return !current.readOnly;
-          if (current instanceof HTMLInputElement)
-            return (
-              !current.readOnly &&
-              !current.autocomplete.toLowerCase().split(/\s+/).includes('one-time-code') &&
-              ['text', 'email', 'tel', 'url', 'search', 'number', 'date'].includes(current.type)
-            );
-          return current instanceof HTMLElement && current.isContentEditable;
-        }, this.interactionOrigin))
-      )
+      if ((await nativeTarget(this.page)).frame !== frame || !(await stillFocused()))
         throw new Error('Typing needs the same focused editable field on the reviewed destination');
       if (text !== undefined) {
+        if (beforeInput) {
+          await beforeInput();
+          // The screenshot itself can outlast focus. Recheck the held element in its renderer.
+          if (!(await stillFocused()))
+            throw new BrowserSessionError('invalid_action', 'input-focus');
+        }
         await dispatchWithDialogs(this.page, async () => {
           this.assertSelected?.(true);
           await this.page.keyboard.sendCharacter(text);
