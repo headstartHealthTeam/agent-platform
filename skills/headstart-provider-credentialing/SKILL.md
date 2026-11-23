@@ -4,15 +4,18 @@ description: Investigate provider credentialing or payer enrollment evidence and
 compatibility: Requires scoped case retrieval, evidence discovery and exact-version evidence reads. Can use synthetic tools during development. Live capabilities require separately verified identity, data authorization and destination permission.
 metadata:
   author: headstart-health
-  version: '0.5.3'
+  version: '0.5.4'
 ---
 
 # Headstart Provider Credentialing
 
-Prepare supported answers and a precise human handoff. This skill is currently read-only and
-proposal-only. It does not populate a payer destination, upload, save, attest, sign or submit.
-A future approved action capability must enforce review and current authority outside the agent;
-changing a prompt does not enable those actions.
+Prepare supported answers and a precise human handoff using read-only source evidence. Preparation
+alone does not authorize payer actions. When the host separately provides an operator-shared case
+browser and explicitly released package information, use native computer judgment for requested
+navigation, grounded entry, exact-original uploads and draft saving. The host enforces ownership,
+private control, current release and Stop; those controls do not classify every portal action.
+Judge the actual consequence and stop before signing, attestation, certification, payment, final
+submission or ambiguous consequential actions. A prompt cannot grant missing browser authority.
 
 ## Inputs And Capabilities
 
@@ -51,6 +54,7 @@ source traversal, known facts versus verification, conditional requirements and 
 It also covers autonomous public research and adaptive schema/query investigation across authorized
 sources. Do not replace that investigation with a fixed lookup list or per-website Ops approvals.
 For Headstart entity or address selection, also read the
+[reviewed CAQH profile work](references/reviewed-caqh-work.md) when CAQH is the destination, and the
 [maintained entity/address source guidance](references/headstart-entity-addresses.md). Read current
 values from its workbook; the dated Ops clarification supplies selection context, not a frozen
 address table or a substitute for the selected payer's requirements.

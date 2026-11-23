@@ -169,7 +169,9 @@ document is not the document; a declaration is not independent verification. Rec
 against known facts and conflicts, update affected dispositions, remove only genuinely resolved
 questions and publish a new complete package. Do not ask again for the same supplied information.
 Record why the remaining request persists. Preserve prior packages, current authority, Stop,
-protected human actions and renewed review; no payer/source write or automatic replay follows.
+protected human actions and renewed review. Publication does not automatically authorize payer or
+source writes or replay. Separately requested draft work requires the host's shared case browser
+and current package release; the agent still stops before final or ambiguous consequential actions.
 
 When the host supplies explicitly released saved answers, reconcile each with its question and
 linked original documents. A locally saved draft is not a message to you; a revision request is

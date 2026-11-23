@@ -51,6 +51,10 @@ describe('connected preparation tool definition', () => {
       'contentVersionId',
     ]);
     expect(
+      generated.definition.tools.find((tool) => tool.name === 'operate_application_browser')
+        ?.parameters.required
+    ).toEqual(['kind']);
+    expect(
       generated.definition.tools.find((tool) => tool.name === 'lookup_credentialing_npi')
         ?.parameters.required
     ).toEqual(['number', 'enumerationType', 'subject']);
@@ -63,7 +67,13 @@ describe('connected preparation tool definition', () => {
     expect(generated.definition.capabilities.directories).toEqual([
       '/workspace/headstart-workflow/skills',
     ]);
-    expect(generated.definition.capabilities.files).toHaveLength(7);
+    expect(generated.definition.capabilities.files).toHaveLength(8);
+    expect(generated.definition.capabilities.files.map((file) => file.path)).toContain(
+      '/workspace/headstart-workflow/skills/headstart-provider-credentialing/references/reviewed-caqh-work.md'
+    );
+    expect(
+      generated.definition.tools.find((tool) => tool.name === 'publish_credentialing_progress')
+    ).toBeDefined();
     expect(generated.definition.capabilities.files.map((file) => file.path)).toContain(
       '/workspace/headstart-workflow/skills/headstart-provider-credentialing/references/evidence-investigation.md'
     );

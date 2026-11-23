@@ -1,9 +1,9 @@
 import { isAbsolute } from 'node:path';
 
-import { AGENT_FUNCTION_PAYLOAD_LIMIT } from '@headstart-health/workflow-contracts';
 import type { AgentUpdateParams } from 'openai/resources/beta/agents/agents';
 import { z } from 'zod';
 
+import { functionOutput } from './function-output.js';
 import { hostedSetup, hostedSetupFields } from './hosted-setup.js';
 
 const reasoning = z
@@ -403,9 +403,7 @@ export const actionSchema = z.discriminatedUnion('operation', [
         z
           .object({
             success: z.literal(true),
-            output: z
-              .string()
-              .refine((value) => Buffer.byteLength(value) <= AGENT_FUNCTION_PAYLOAD_LIMIT),
+            output: functionOutput,
           })
           .strict(),
         z.object({ success: z.literal(false), error: z.string().min(1).max(10_000) }).strict(),

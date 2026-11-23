@@ -395,6 +395,13 @@ describe('OpenAI access boundary', () => {
 
   it.each([
     { success: true, output: JSON.stringify({ answer: 'Use the corrected synthetic CV.' }) },
+    {
+      success: true,
+      output: [
+        { type: 'input_text', text: 'Synthetic browser observation' },
+        { type: 'input_image', image_url: 'data:image/png;base64,iVBORw0KGgo=' },
+      ],
+    },
     { success: false, error: 'The operator cannot resolve this evidence gap.' },
   ])(
     'submits an exact approved function result only after checking pending state',

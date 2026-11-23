@@ -41,7 +41,12 @@ export {
   type PublicResearchManifestCode,
 } from './public-research-manifest.js';
 
-export type { AgentFunctionCall, AgentFunctionResult, AgentFunctionPort } from './functions.js';
+export type {
+  AgentFunctionCall,
+  AgentFunctionContent,
+  AgentFunctionResult,
+  AgentFunctionPort,
+} from './functions.js';
 export type {
   AgentBrowserRequest,
   AgentPublicBrowserDecision,
@@ -53,7 +58,7 @@ export {
   containsCredentialMaterial,
   type AgentCredentialProtection,
 } from './credential-protection.js';
-export { AGENT_FUNCTION_PAYLOAD_LIMIT } from './functions.js';
+export { AGENT_FUNCTION_PAYLOAD_LIMIT, AGENT_FUNCTION_CONTENT_LIMIT } from './functions.js';
 export type {
   AgentArtifactRequest,
   AgentArtifact,

@@ -27,6 +27,12 @@ const namedTool = itemBase.extend({
   name: z.string(),
 });
 const eventHeader = z.object({ type: z.string() });
+
+const browserTool = itemBase.extend({
+  type: z.literal('computer_use_call'),
+  status: z.enum(['in_progress', 'completed', 'failed', 'incomplete']),
+  title: z.string().max(5000).nullable().catch(null),
+});
 const event = z.object({ event_id: id, session_id: id, turn_id: id.nullable(), type: z.string() });
 const textEvent = event.extend({
   item_id: id,
@@ -204,7 +210,30 @@ export class OperatorItems {
       };
     }
     if (type === 'function_call' || type === 'mcp_call') return this.namedTool(raw, type);
+    if (type === 'computer_use_call') return this.browserTool(raw);
     return null;
+  }
+  private browserTool(raw: unknown): OperatorItem | null {
+    const parsed = browserTool.safeParse(raw);
+    if (!parsed.success) return null;
+    const item = parsed.data;
+    const title = item.title?.replace(/\p{Cc}/gu, ' ').trim();
+    const label = title ? `Browser: ${operatorText(title)}`.slice(0, 200) : 'Browser activity';
+    const status = {
+      in_progress: 'In progress',
+      completed: 'Completed',
+      failed: 'Failed',
+      incomplete: 'Interrupted',
+    }[item.status];
+    // A saved activity is not a continuous viewer or a receipt that an application was submitted.
+    // Screenshot bytes, page contents and browser routing belong outside this operator projection.
+    return {
+      id: item.id,
+      kind: 'tool',
+      text: `${label} · ${status}`,
+      final: item.status !== 'in_progress',
+      activity: { tool: 'browser', label, status: item.status, turnId: item.turn_id },
+    };
   }
   private namedTool(raw: unknown, type: string): OperatorItem | null {
     const parsed = namedTool.safeParse(raw);
