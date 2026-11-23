@@ -1,3 +1,4 @@
+import { JSDOM } from 'jsdom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
@@ -92,6 +93,7 @@ beforeEach(() => {
   io.page.screenshot.mockResolvedValue('aW1hZ2U=');
   io.page.$$.mockResolvedValue([io.element]);
   io.page.createCDPSession.mockResolvedValue(io.cdp);
+  io.cdp.detach.mockResolvedValue(undefined);
   io.cdp.send.mockResolvedValue({
     error: null,
     liveURL: viewer,
@@ -254,6 +256,67 @@ describe('documented Browserless CDP control', () => {
     await expect(session.validateComputer({ type: 'screenshot' }, [])).rejects.toMatchObject({
       code: 'invalid_action',
     });
+    await session.stop();
+  });
+  it('returns to private control after a section-qualified OTP remains at handoff', async () => {
+    const session = await createBrowserlessPortalSession(
+      config,
+      'https://payer.example',
+      Date.now() + 90000
+    );
+    await session.startHumanControl();
+    io.cdp.send.mockResolvedValueOnce({ error: null, liveURLId: 'synthetic' });
+    io.cdp.detach.mockRejectedValueOnce(new Error('Closed auxiliary CDP target'));
+    const dom = new JSDOM('<input autocomplete="section-login ONE-TIME-CODE">');
+    const input = dom.window.document.querySelector('input');
+    if (!input) throw new Error('Missing fixture');
+    Object.defineProperty(input, 'getClientRects', { value: () => [{}] });
+    const evaluate = async <T>(routine: (selector: string) => T, selector: string): Promise<T> =>
+      routine(selector);
+    vi.stubGlobal('document', dom.window.document);
+    try {
+      io.page.frames.mockReturnValue([{ evaluate }]);
+      await expect(session.resumeAutomation()).rejects.toMatchObject({
+        code: 'human_control',
+        phase: 'authentication',
+      });
+      expect(io.page.screenshot).not.toHaveBeenCalled();
+      io.cdp.send.mockResolvedValueOnce({
+        error: null,
+        liveURL: viewer + '-replacement',
+        liveURLId: 'synthetic-replacement',
+        timeout: 5000,
+      });
+      expect((await session.startHumanControl()).liveURLId).toBe('synthetic-replacement');
+    } finally {
+      dom.window.close();
+      vi.unstubAllGlobals();
+      await session.stop();
+    }
+  });
+  it('rejects a stale action when a popup becomes selected during asynchronous admission', async () => {
+    const session = await createBrowserlessPortalSession(
+      config,
+      'https://payer.example',
+      Date.now() + 90000
+    );
+    await session.startHumanControl();
+    io.cdp.send.mockResolvedValueOnce({ error: null, liveURLId: 'synthetic' });
+    await session.resumeAutomation();
+    const popup = { ...io.page, title: vi.fn(async () => 'Other draft'), bringToFront: vi.fn() };
+    const opened = io.browser.on.mock.calls.find(([name]) => name === 'targetcreated')?.[1];
+    if (!opened) throw new Error('Missing popup handler');
+    io.page.bringToFront.mockImplementationOnce(async () => {
+      opened({ page: async () => popup });
+      io.browser.pages.mockResolvedValue([io.page, popup]);
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    });
+    await expect(session.validateComputer({ type: 'screenshot' }, [])).rejects.toMatchObject({
+      code: 'invalid_action',
+    });
+    expect((await session.inspectComputer()).text).toContain(
+      '"title":"Other draft","current":true'
+    );
     await session.stop();
   });
   it('withholds an observation when authentication remains in another frame or popup', async () => {

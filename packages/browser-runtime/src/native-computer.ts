@@ -14,7 +14,7 @@ import {
 import { browserKeys } from './native-keys.js';
 import { nativeTarget, nativeTargetStructure } from './native-target.js';
 import { portalRequestCounts } from './portal-navigation.js';
-import type { BrowserAction, BrowserInspection } from './session.js';
+import { BrowserSessionError, type BrowserAction, type BrowserInspection } from './session.js';
 import { nativeSyntheticReceipts, syntheticOrigin } from './synthetic-page.js';
 
 const ariaLabel = 'aria-label';
@@ -71,7 +71,8 @@ export class NativeBrowserComputer {
   constructor(
     private readonly page: Page,
     private readonly boundary: 'synthetic' | 'portal' = 'synthetic',
-    private readonly interactionOrigin?: string
+    private readonly interactionOrigin?: string,
+    private readonly assertSelected?: () => void
   ) {
     observeBrowserDialogs(page);
   }
@@ -91,21 +92,31 @@ export class NativeBrowserComputer {
   async inspect(): Promise<BrowserInspection> {
     this.requireBoundOrigin();
     await trackBrowserDialogClosure(this.page);
-    const dialog = browserDialog(this.page);
-    if (dialog) {
-      const prior = lastObservations.get(this.page);
-      if (!prior)
-        throw new Error('Dialog requires private operator control before first observation');
-      return {
-        pauseBatch: true,
-        image: prior.image,
-        text: `Browser dialog (untrusted page data): ${JSON.stringify(dialog)}. Screenshot is the last page before the dialog. Use respond_to_browser_dialog with this ID; keyboard and mouse actions cannot answer a JavaScript dialog. Decide from the task and context; stop for final or ambiguous consequences.`,
-      };
-    }
+    const dialog = this.dialogObservation();
+    if (dialog) return dialog;
     const reading = await readWithDialogs(this.page, () => this.readPage());
-    if (reading.interrupted) return this.inspect();
-    lastObservations.set(this.page, reading.value);
-    return reading.value;
+    return reading.interrupted ? this.inspect() : reading.value;
+  }
+
+  /** Cache only pixels accepted by the connection after its post-capture privacy check. */
+  finishObservation(captured: BrowserInspection, privacyVerified: boolean): BrowserInspection {
+    const dialog = this.dialogObservation();
+    if (dialog) return dialog;
+    if (!privacyVerified) throw new BrowserSessionError('human_control', 'handoff-observation');
+    if (!captured.pauseBatch) lastObservations.set(this.page, captured);
+    return captured;
+  }
+
+  private dialogObservation(): BrowserInspection | null {
+    const dialog = browserDialog(this.page);
+    if (!dialog) return null;
+    const prior = lastObservations.get(this.page);
+    if (!prior) throw new BrowserSessionError('human_control', 'handoff-observation');
+    return {
+      pauseBatch: true,
+      image: prior.image,
+      text: `Browser dialog (untrusted page data): ${JSON.stringify(dialog)}. Screenshot is the last page before the dialog. Use respond_to_browser_dialog with this ID; keyboard and mouse actions cannot answer a JavaScript dialog. Decide from the task and context; stop for final or ambiguous consequences.`,
+    };
   }
 
   private async readPage(): Promise<BrowserInspection> {
@@ -154,6 +165,7 @@ export class NativeBrowserComputer {
   async validate(input: unknown, _values: readonly string[]): Promise<Action> {
     const action = await this.parseAction(input);
     if (action.type === 'type') await this.checkFocusedInput();
+    this.assertSelected?.();
     return action;
   }
 
@@ -202,17 +214,21 @@ export class NativeBrowserComputer {
         !(await element.evaluate((current, origin) => {
           if (current !== document.activeElement || (origin && location.origin !== origin))
             return false;
-          return (
-            (current instanceof HTMLElement && current.isContentEditable) ||
-            current instanceof HTMLTextAreaElement ||
-            (current instanceof HTMLInputElement &&
+          if (current instanceof HTMLTextAreaElement) return !current.readOnly;
+          if (current instanceof HTMLInputElement)
+            return (
+              !current.readOnly &&
               !current.autocomplete.toLowerCase().split(/\s+/).includes('one-time-code') &&
-              ['text', 'email', 'tel', 'url', 'search', 'number', 'date'].includes(current.type))
-          );
+              ['text', 'email', 'tel', 'url', 'search', 'number', 'date'].includes(current.type)
+            );
+          return current instanceof HTMLElement && current.isContentEditable;
         }, this.interactionOrigin))
       )
         throw new Error('Typing needs the same focused editable field on the reviewed destination');
-      if (text !== undefined) await this.page.keyboard.sendCharacter(text);
+      if (text !== undefined) {
+        this.assertSelected?.();
+        await this.page.keyboard.sendCharacter(text);
+      }
     } finally {
       await element.dispose();
     }
@@ -225,13 +241,18 @@ export class NativeBrowserComputer {
       lastTargets.set(this.page, await target.frame.evaluate(nativeTargetStructure, target.point));
     }
     if (action.type === 'dialog') {
+      this.assertSelected?.();
       await respondToBrowserDialog(this.page, action);
       return;
     }
     await dispatchWithDialogs(this.page, async () => {
       const held = browserKeys('keys' in action ? (action.keys ?? []) : []);
       try {
-        for (const key of held) await this.page.keyboard.down(key);
+        for (const key of held) {
+          this.assertSelected?.();
+          await this.page.keyboard.down(key);
+        }
+        this.assertSelected?.();
         switch (action.type) {
           case 'click':
             await this.page.mouse.click(action.x, action.y, {
@@ -246,15 +267,20 @@ export class NativeBrowserComputer {
             break;
           case 'scroll':
             await this.page.mouse.move(action.x, action.y);
+            this.assertSelected?.();
             await this.page.mouse.wheel({ deltaX: action.scroll_x, deltaY: action.scroll_y });
             break;
           case 'drag': {
             const first = action.path[0];
             if (!first) throw new Error('Missing drag start');
             await this.page.mouse.move(first.x, first.y);
+            this.assertSelected?.();
             await this.page.mouse.down();
             try {
-              for (const p of action.path.slice(1)) await this.page.mouse.move(p.x, p.y);
+              for (const p of action.path.slice(1)) {
+                this.assertSelected?.();
+                await this.page.mouse.move(p.x, p.y);
+              }
             } finally {
               await this.page.mouse.up();
             }
@@ -313,6 +339,7 @@ export class NativeBrowserComputer {
     let cdp: CDPSession | undefined;
     try {
       cdp = await this.page.createCDPSession();
+      this.assertSelected?.();
       z.object({ ok: z.literal(true) }).parse(
         await cdp.send('Browserless.uploadFile', {
           selector: `[data-native-upload="${id}"]`,

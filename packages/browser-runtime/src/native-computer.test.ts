@@ -141,6 +141,35 @@ afterEach(() => {
 });
 
 describe('native browser controls on a fictional provider profile', () => {
+  it.each(['#practice', '#notes'])(
+    'rejects read-only typing before validation or dispatch on %s',
+    async (selector) => {
+      const { driver, page } = await fixture();
+      const field = document.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector);
+      if (!field) throw new Error('Missing synthetic field');
+      const action = { type: 'type', text: 'Example value' };
+      field.focus();
+      await driver.validate(action, []);
+      field.readOnly = true;
+      await expect(driver.validate(action, [])).rejects.toThrow('editable');
+      await expect(driver.act(action, [])).rejects.toThrow('editable');
+      expect(page.keyboard.sendCharacter).not.toHaveBeenCalled();
+      field.readOnly = false;
+      await driver.act(action, []);
+      expect(page.keyboard.sendCharacter).toHaveBeenCalledWith(action.text);
+    }
+  );
+  it('still accepts typing into a focused contenteditable region', async () => {
+    const { driver, page } = await fixture();
+    const editable = document.createElement('div');
+    editable.setAttribute('contenteditable', 'true');
+    // jsdom does not implement the browser's computed isContentEditable property.
+    Object.defineProperty(editable, 'isContentEditable', { value: true });
+    document.body.append(editable);
+    editable.focus();
+    await driver.act({ type: 'type', text: 'Synthetic note' }, []);
+    expect(page.keyboard.sendCharacter).toHaveBeenCalledWith('Synthetic note');
+  });
   it('tracks draft and final fixture requests separately on the actual interception path', async () => {
     const { actual, page } = await fixture();
     const navigation = Object.assign(page, {
@@ -188,9 +217,14 @@ describe('native browser controls on a fictional provider profile', () => {
       setBypassServiceWorker: vi.fn(),
       setRequestInterception: vi.fn(),
     });
-    await screenPortalPage(actual);
-    await screenPortalPage(actual);
-    expect(screen.setRequestInterception).toHaveBeenCalledTimes(1);
+    screen.setRequestInterception.mockImplementationOnce(async () => {
+      expect(page.listenerCount('request')).toBe(1);
+      throw new Error('Synthetic setup interrupted');
+    });
+    await expect(screenPortalPage(actual)).rejects.toThrow('Synthetic setup interrupted');
+    expect(page.listenerCount('request')).toBe(0);
+    await Promise.all([screenPortalPage(actual), screenPortalPage(actual)]);
+    expect(screen.setRequestInterception).toHaveBeenCalledTimes(2);
     const abort = vi.fn(async (): Promise<void> => {
       throw new Error('Closed synthetic tab');
     });
@@ -405,7 +439,7 @@ describe('native browser controls on a fictional provider profile', () => {
   });
   it('handles a dialog after a native action exactly once, including an externally closed prompt', async () => {
     const { driver, cdp, actual } = await fixture();
-    await driver.inspect();
+    driver.finishObservation(await driver.inspect(), true);
     await dispatchWithDialogs(actual, async () => {
       cdp.emit('Page.javascriptDialogOpening', { type: 'confirm', message: 'Save this draft?' });
     });
@@ -424,6 +458,27 @@ describe('native browser controls on a fictional provider profile', () => {
     cdp.emit('Page.javascriptDialogClosed');
     expect(browserDialog(actual)).toBeNull();
   });
+  it('checks the selected tab at the point of dispatch', async () => {
+    const { actual, page } = await fixture();
+    const assertSelected = vi.fn(() => {
+      throw new Error('Tab changed while preparing action');
+    });
+    const driver = new NativeBrowserComputer(actual, 'portal', origin, assertSelected);
+    await expect(driver.act({ type: 'click', button: 'left', x: 2, y: 2 }, [])).rejects.toThrow(
+      'Tab changed'
+    );
+    expect(page.mouse.click).not.toHaveBeenCalled();
+  });
+  it('retains only an accepted observation for paused dialogs', async () => {
+    const { driver, page, cdp } = await fixture();
+    const approved = driver.finishObservation(await driver.inspect(), true);
+    page.screenshot.mockResolvedValueOnce('second-synthetic-capture');
+    const candidate = await driver.inspect();
+    expect(candidate.image).not.toBe(approved.image);
+    expect(() => driver.finishObservation(candidate, false)).toThrow('human_control');
+    cdp.emit('Page.javascriptDialogOpening', { type: 'alert', message: 'Synthetic notice' });
+    expect((await driver.inspect()).image).toBe(approved.image);
+  });
   it('returns interrupted reads without replay and preserves operator authority over first-observation dialogs', async () => {
     const { actual, page, cdp, driver } = await fixture();
     const dismiss = vi.fn(),
@@ -432,7 +487,10 @@ describe('native browser controls on a fictional provider profile', () => {
     page.emit('dialog', { type: () => 'prompt', message: () => 'Private prompt', accept, dismiss });
     const first = browserDialog(actual);
     if (!first) throw new Error('Missing prompt');
-    await expect(driver.inspect()).rejects.toThrow('private operator');
+    await expect(driver.inspect()).rejects.toMatchObject({
+      code: 'human_control',
+      phase: 'handoff-observation',
+    });
     await respondToBrowserDialog(actual, { id: first.id, accept: false, promptText: null });
     expect(dismiss).toHaveBeenCalledOnce();
     const read = vi.fn(async () => {

@@ -122,7 +122,9 @@ export class OwnedBrowserSession {
   #uncertain = false;
   #watchViewer: BrowserWatchReceipt | undefined;
   #humanControl = false;
+  #handoffEpoch = 0;
   #humanViewer: BrowserWatchReceipt | undefined;
+  #revokedPrivateViewer: BrowserWatchReceipt | undefined;
   #closing: Promise<void> | undefined;
   readonly #expiry: ReturnType<typeof setTimeout>;
 
@@ -172,8 +174,10 @@ export class OwnedBrowserSession {
   }
 
   async computer(action: unknown, values: readonly string[]): Promise<BrowserInspection> {
+    const epoch = this.#handoffEpoch;
     await this.validateComputer(action, values);
-    if (this.#humanControl) throw new BrowserSessionError('human_control');
+    if (this.#humanControl || epoch !== this.#handoffEpoch)
+      throw new BrowserSessionError('human_control');
     return this.exclusive(false, async () => {
       if (!this.connection.computer || !this.connection.inspectComputer)
         throw new BrowserSessionError('invalid_action');
@@ -209,6 +213,11 @@ export class OwnedBrowserSession {
   async watch(): Promise<BrowserWatchReceipt> {
     if (this.#humanControl) throw new BrowserSessionError('human_control');
     return this.exclusive(false, async () => {
+      if (this.#watchViewer) {
+        await this.connection.closeViewer(this.#watchViewer.liveURLId);
+        this.#watchViewer = undefined;
+        this.requireActive();
+      }
       const started = Date.now();
       const receipt = await this.connection.watch(this.notAfter - started);
       // Retain a receipt even if Stop raced the call. The application must not expose it after Stop.
@@ -231,6 +240,7 @@ export class OwnedBrowserSession {
     }
     return this.exclusive(false, async () => {
       this.#humanControl = true;
+      this.#handoffEpoch++;
       const previousWatch = this.#watchViewer;
       if (this.#watchViewer) {
         await this.connection.closeViewer(this.#watchViewer.liveURLId);
@@ -240,12 +250,16 @@ export class OwnedBrowserSession {
       const started = Date.now();
       const receipt = await this.connection.human(this.notAfter - started);
       if (
-        previousWatch &&
-        (receipt.liveURLId === previousWatch.liveURLId || receipt.liveURL === previousWatch.liveURL)
+        [previousWatch, this.#revokedPrivateViewer].some(
+          (previous) =>
+            previous &&
+            (receipt.liveURLId === previous.liveURLId || receipt.liveURL === previous.liveURL)
+        )
       ) {
         await this.connection.closeViewer(receipt.liveURLId);
         throw new BrowserSessionError('dispatch_uncertain', 'handoff-revocation');
       }
+      this.#revokedPrivateViewer = undefined;
       this.#humanViewer = {
         liveURL: receipt.liveURL,
         liveURLId: receipt.liveURLId,
@@ -257,22 +271,25 @@ export class OwnedBrowserSession {
 
   /** No page read occurs until the provider acknowledges revoking interactive access. */
   async resumeAutomation(): Promise<BrowserWatchReceipt> {
+    const observationPhase = 'handoff-observation';
     this.requireActive();
     if (this.#busy) throw new BrowserSessionError('busy');
     const viewer = this.#humanViewer;
     if (!this.#humanControl || !viewer) throw new BrowserSessionError('invalid_action');
     // Before revocation, only consult tracked dialog metadata. The private viewer can still clear it.
     if (this.connection.hasPendingDialog && (await this.connection.hasPendingDialog()))
-      throw new BrowserSessionError('human_control', 'handoff-observation');
+      throw new BrowserSessionError('human_control', observationPhase);
     if (viewer !== this.#humanViewer) throw new BrowserSessionError('invalid_action');
-    return this.exclusive(false, async () => {
+    const result = await this.exclusive(false, async () => {
       let phase: BrowserSessionPhase = 'handoff-revocation';
       try {
         await this.connection.closeViewer(viewer.liveURLId);
+        this.#revokedPrivateViewer = viewer;
+        this.#humanViewer = undefined;
         this.requireActive();
         // Revocation alone does not mean login finished. Keep all shared capabilities withheld
         // until a fresh observation succeeds, including authentication checks in every frame.
-        phase = 'handoff-observation';
+        phase = observationPhase;
         const observation = await this.connection.inspect();
         if (observation.pauseBatch) throw new BrowserSessionError('human_control', phase);
         await this.connection.verifyHandoff?.();
@@ -281,7 +298,6 @@ export class OwnedBrowserSession {
         phase = 'handoff-viewer';
         const receipt = await this.connection.watch(this.notAfter - started);
         this.#humanControl = false;
-        this.#humanViewer = undefined;
         this.#watchViewer = {
           liveURL: receipt.liveURL,
           liveURLId: receipt.liveURLId,
@@ -289,12 +305,23 @@ export class OwnedBrowserSession {
         };
         return this.#watchViewer;
       } catch (error) {
+        // Revocation succeeded and no shared link was requested. Explicit private-page evidence
+        // allows the operator to obtain a fresh private viewer without repeating revocation.
+        if (
+          phase === observationPhase &&
+          error instanceof BrowserSessionError &&
+          error.code === 'human_control' &&
+          (error.phase === 'authentication' || error.phase === phase)
+        )
+          return error;
         throw new BrowserSessionError(
           'dispatch_uncertain',
           error instanceof BrowserSessionError ? (error.phase ?? phase) : phase
         );
       }
     });
+    if (result instanceof BrowserSessionError) throw result;
+    return result;
   }
 
   async stop(): Promise<void> {

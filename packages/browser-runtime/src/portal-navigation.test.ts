@@ -4,6 +4,11 @@ import { describe, expect, it, vi, type Mock } from 'vitest';
 import { portalUrl, routePortalRequest } from './portal-navigation.js';
 import { publicOriginAllowed } from './public-origin.js';
 
+const { resolver } = vi.hoisted(() => ({
+  resolver: vi.fn<() => Promise<{ address: string; family: number }[]>>(),
+}));
+vi.mock('node:dns/promises', () => ({ lookup: resolver }));
+
 const publicDns = async (): Promise<{ address: string; family: number }[]> => [
   { address: '93.184.216.34', family: 4 },
 ];
@@ -76,6 +81,31 @@ describe('public portal target admission', () => {
       ).toBe(false);
     }
   );
+  it('shares an unfinished lookup across caller deadlines and refreshes after it settles', async () => {
+    vi.useFakeTimers();
+    try {
+      let complete: (addresses: Awaited<ReturnType<typeof publicDns>>) => void = () => {
+        throw new Error('Missing DNS lookup');
+      };
+      const pending = new Promise<Awaited<ReturnType<typeof publicDns>>>((resolve) => {
+        complete = resolve;
+      });
+      resolver.mockImplementationOnce(() => pending);
+      const origin = 'https://portal.example';
+      const first = expect(publicOriginAllowed(origin)).rejects.toThrow('Lookup timeout');
+      await vi.advanceTimersByTimeAsync(5000);
+      await first;
+      const next = publicOriginAllowed(origin);
+      expect(resolver).toHaveBeenCalledTimes(1);
+      complete(await publicDns());
+      await expect(next).resolves.toBe(true);
+      resolver.mockResolvedValueOnce(await publicDns());
+      await expect(publicOriginAllowed(origin)).resolves.toBe(true);
+      expect(resolver).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
   it('requires all addresses to be public and preserves resolver failures', async () => {
     expect(await publicOriginAllowed('https://payer.example', async () => [])).toBe(false);
     expect(

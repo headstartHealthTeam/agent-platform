@@ -42,24 +42,40 @@ export async function routePortalRequest(
   }
 }
 
-const screened = new WeakMap<Page, { destination: number }>();
+const screened = new WeakMap<Page, { counts: { destination: number }; ready: Promise<void> }>();
 /** Public-network isolation only. HTTP verbs do not identify final submission. */
 export function portalRequestCounts(page: Page): { destination: number } {
-  return { destination: screened.get(page)?.destination ?? 0 };
+  return { destination: screened.get(page)?.counts.destination ?? 0 };
 }
-export async function screenPortalPage(page: Page): Promise<void> {
-  if (screened.has(page)) return;
-  const policy = { destination: 0 };
-  await page.setBypassServiceWorker(true);
-  await page.setRequestInterception(true);
-  screened.set(page, policy);
-  page.on('request', (request) => {
+
+export function screenPortalPage(page: Page): Promise<void> {
+  const existing = screened.get(page);
+  if (existing) return existing.ready;
+
+  const counts = { destination: 0 };
+  const onRequest = (request: HTTPRequest): void => {
     routePortalRequest(request, publicOriginAllowed, () => {
-      policy.destination++;
+      counts.destination++;
     }).catch(() => {
       // Target shutdown can race an intercepted request. No automatic replay.
     });
+  };
+  const enable = async (): Promise<void> => {
+    await page.setBypassServiceWorker(true);
+    page.on('request', onRequest);
+    try {
+      await page.setRequestInterception(true);
+    } catch (error) {
+      page.off('request', onRequest);
+      throw error;
+    }
+  };
+  const ready = enable().catch((error: unknown) => {
+    screened.delete(page);
+    throw error;
   });
+  screened.set(page, { counts, ready });
+  return ready;
 }
 
 export async function openPortalPage(page: Page, url: URL): Promise<void> {

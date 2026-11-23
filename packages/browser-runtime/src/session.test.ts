@@ -114,6 +114,31 @@ describe('one owned browser', () => {
     expect(connection.computer).toHaveBeenCalledOnce();
     await session.stop();
   });
+  it('requires fresh native validation after an entire private handoff completes', async () => {
+    const { session, connection } = fixture();
+    let completeValidation: (() => void) | undefined;
+    connection.validateComputer = vi
+      .fn(async (): Promise<void> => undefined)
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            completeValidation = resolve;
+          })
+      );
+    connection.computer = vi.fn(async () => undefined);
+    connection.inspectComputer = vi.fn(async () => ({ text: 'Current draft', image: 'image' }));
+    const click = { type: 'click', x: 10, y: 10, button: 'left' };
+    const pending = session.computer(click, []);
+    await session.startHumanControl();
+    await session.resumeAutomation();
+    completeValidation?.();
+    await expect(pending).rejects.toMatchObject({ code: 'human_control' });
+    expect(connection.computer).not.toHaveBeenCalled();
+    await expect(session.computer(click, [])).resolves.toHaveProperty('text', 'Current draft');
+    expect(connection.validateComputer).toHaveBeenCalledTimes(2);
+    expect(connection.computer).toHaveBeenCalledOnce();
+    await session.stop();
+  });
   it.each([
     { operation: 'closeViewer', phase: 'handoff-revocation' },
     { operation: 'inspect', phase: 'handoff-observation' },
@@ -171,23 +196,34 @@ describe('one owned browser', () => {
       pauseBatch: true,
     });
     await expect(session.resumeAutomation()).rejects.toMatchObject({
-      code: 'dispatch_uncertain',
+      code: 'human_control',
       phase: 'handoff-observation',
     });
     expect(connection.watch).not.toHaveBeenCalled();
+    await expect(session.startHumanControl()).rejects.toMatchObject({ code: 'dispatch_uncertain' });
     await session.stop();
   });
   it('preserves a safe authentication phase while withholding the watch viewer', async () => {
     const { session, connection } = fixture();
-    await session.startHumanControl();
+    const original = await session.startHumanControl();
     vi.mocked(connection.inspect).mockRejectedValueOnce(
       new BrowserSessionError('human_control', 'authentication')
     );
     await expect(session.resumeAutomation()).rejects.toMatchObject({
-      code: 'dispatch_uncertain',
+      code: 'human_control',
       phase: 'authentication',
     });
     expect(connection.watch).not.toHaveBeenCalled();
+    await expect(session.inspectComputer()).rejects.toMatchObject({ code: 'human_control' });
+    vi.mocked(connection.human).mockResolvedValueOnce({
+      liveURLId: 'renewed',
+      liveURL: 'https://example.test/private/renewed',
+      timeout: 3000,
+    });
+    expect((await session.startHumanControl()).liveURLId).not.toBe(original.liveURLId);
+    await session.resumeAutomation();
+    expect(connection.closeViewer).toHaveBeenLastCalledWith('renewed');
+    expect(connection.watch).toHaveBeenCalledOnce();
     await session.stop();
   });
   it('excludes automation reads, screenshots and actions throughout initial private control', async () => {
@@ -222,6 +258,11 @@ describe('one owned browser', () => {
     await expect(session.inspectComputer()).rejects.toMatchObject({ code: 'human_control' });
     await session.resumeAutomation();
     await expect(session.resumeAutomation()).rejects.toMatchObject({ code: 'invalid_action' });
+    vi.mocked(connection.human).mockResolvedValueOnce({
+      liveURLId: 'second',
+      liveURL: 'https://example.test/private/second',
+      timeout: 5000,
+    });
     await session.startHumanControl();
     expect(connection.human).toHaveBeenCalledTimes(2);
     expect(connection.closeViewer).toHaveBeenCalledTimes(3);
@@ -237,6 +278,42 @@ describe('one owned browser', () => {
     await expect(session.execute({ kind: 'inspect' })).rejects.toMatchObject({
       code: 'human_control',
     });
+    await session.stop();
+  });
+  it('revokes each watch viewer before issuing its replacement or entering private control', async () => {
+    const { session, connection } = fixture();
+    const first = await session.watch();
+    vi.mocked(connection.watch).mockResolvedValueOnce({
+      liveURL: 'https://example.test/next',
+      liveURLId: 'next',
+      timeout: 5000,
+    });
+    let revoked: (() => void) | undefined;
+    vi.mocked(connection.closeViewer).mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          revoked = resolve;
+        })
+    );
+    const renewing = session.watch();
+    expect(connection.closeViewer).toHaveBeenCalledWith(first.liveURLId);
+    expect(connection.watch).toHaveBeenCalledOnce();
+    await expect(session.startHumanControl()).rejects.toMatchObject({ code: 'busy' });
+    revoked?.();
+    expect((await renewing).liveURLId).toBe('next');
+    await session.startHumanControl();
+    expect(connection.closeViewer).toHaveBeenNthCalledWith(2, 'next');
+    await session.stop();
+  });
+  it('withholds new viewers and private control when a shared viewer revocation is uncertain', async () => {
+    const { session, connection } = fixture();
+    const first = await session.watch();
+    vi.mocked(connection.closeViewer).mockRejectedValueOnce(new Error('Unknown revocation'));
+    await expect(session.watch()).rejects.toMatchObject({ code: 'dispatch_uncertain' });
+    expect(connection.closeViewer).toHaveBeenCalledWith(first.liveURLId);
+    expect(connection.watch).toHaveBeenCalledOnce();
+    await expect(session.startHumanControl()).rejects.toMatchObject({ code: 'ended' });
+    expect(connection.human).not.toHaveBeenCalled();
     await session.stop();
   });
   it('keeps automation blocked when interactive revocation is uncertain', async () => {

@@ -65,11 +65,20 @@ function publicHostname(origin: string): string | null {
   }
 }
 
-async function lookupPublicHost(hostname: string): Promise<Awaited<ReturnType<ResolveHost>>> {
+const inFlightLookups = new Map<string, ReturnType<ResolveHost>>();
+
+async function resolvePublicHost(hostname: string): ReturnType<ResolveHost> {
+  let pending = inFlightLookups.get(hostname);
+  if (!pending) {
+    pending = lookup(hostname, { all: true, verbatim: true }).finally(() => {
+      inFlightLookups.delete(hostname);
+    });
+    inFlightLookups.set(hostname, pending);
+  }
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     return await Promise.race([
-      lookup(hostname, { all: true, verbatim: true }),
+      pending,
       new Promise<never>((_resolve, reject) => {
         timer = setTimeout(() => {
           reject(new Error('Lookup timeout'));
@@ -80,18 +89,6 @@ async function lookupPublicHost(hostname: string): Promise<Awaited<ReturnType<Re
   } finally {
     if (timer !== undefined) clearTimeout(timer);
   }
-}
-
-const inFlightLookups = new Map<string, ReturnType<ResolveHost>>();
-function resolvePublicHost(hostname: string): ReturnType<ResolveHost> {
-  let lookup = inFlightLookups.get(hostname);
-  if (!lookup) {
-    lookup = lookupPublicHost(hostname).finally(() => {
-      inFlightLookups.delete(hostname);
-    });
-    inFlightLookups.set(hostname, lookup);
-  }
-  return lookup;
 }
 
 /** Public-origin screening shared by research and supervised browser navigation.
