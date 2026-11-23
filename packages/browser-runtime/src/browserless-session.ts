@@ -297,14 +297,20 @@ class PuppeteerConnection implements BrowserConnection {
     if (this.tabAction(action)) return;
     await (await this.nativeDriver()).driver.validate(action, values);
   }
-  async computer(action: unknown, values: readonly string[]): Promise<void> {
+  async computer(
+    action: unknown,
+    values: readonly string[],
+    beforeInput?: () => Promise<void>
+  ): Promise<void> {
     const tab = this.tabAction(action);
     if (tab) {
+      await beforeInput?.();
+      if (tab.isClosed()) throw new BrowserSessionError('invalid_action', tabSelectionPhase);
       this.selectedPage = tab;
       await tab.bringToFront();
       return;
     }
-    await (await this.nativeDriver()).driver.act(action, values);
+    await (await this.nativeDriver()).driver.act(action, values, beforeInput);
   }
   private tabAction(action: unknown): Page | undefined {
     const parsed = z
@@ -319,9 +325,10 @@ class PuppeteerConnection implements BrowserConnection {
   }
   async uploadComputer(
     point: { x: number; y: number },
-    files: Extract<BrowserAction, { kind: 'upload' }>['files']
+    files: Extract<BrowserAction, { kind: 'upload' }>['files'],
+    beforeInput?: () => Promise<void>
   ): Promise<void> {
-    await (await this.nativeDriver()).driver.upload(point, files);
+    await (await this.nativeDriver()).driver.upload(point, files, beforeInput);
   }
 
   async inspect(): Promise<BrowserInspection> {

@@ -327,6 +327,21 @@ describe('native browser controls on a fictional provider profile', () => {
     );
     await expect(new NativeBrowserComputer(actual).inspect()).rejects.toThrow('authorized');
   });
+  it('withholds a reviewed original if the screen changes after preparing its file input', async () => {
+    const { driver, cdp } = await fixture();
+    hit = document.querySelector('#file');
+    const refresh = vi.fn(async () => {
+      if (document.querySelector('[data-native-upload]'))
+        throw new Error('The reviewed screen changed');
+    });
+    await expect(driver.upload({ x: 4, y: 9 }, [], refresh)).rejects.toThrow(
+      'reviewed screen changed'
+    );
+    expect(refresh).toHaveBeenCalledTimes(2);
+    expect(cdp.send).not.toHaveBeenCalledWith('Browserless.uploadFile', expect.anything());
+    expect(cdp.detach).toHaveBeenCalled();
+    expect(document.querySelector('[data-native-upload]')).toBeNull();
+  });
   it('uses exact file bytes, reads the selected file and cleans the temporary handle', async () => {
     const { driver, cdp } = await fixture();
     hit = document.querySelector('#file');

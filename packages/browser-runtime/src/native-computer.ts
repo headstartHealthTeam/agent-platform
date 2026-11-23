@@ -206,7 +206,7 @@ export class NativeBrowserComputer {
     }
   }
 
-  private async checkFocusedInput(text?: string): Promise<void> {
+  private async checkFocusedInput(text?: string, beforeInput?: () => Promise<void>): Promise<void> {
     const { frame } = await nativeTarget(this.page);
     const element = await frame.evaluateHandle(() => {
       const active = document.activeElement;
@@ -214,6 +214,7 @@ export class NativeBrowserComputer {
       return active;
     });
     try {
+      if (text !== undefined) await beforeInput?.();
       if (
         (await nativeTarget(this.page)).frame !== frame ||
         !(await element.evaluate((current, origin) => {
@@ -231,20 +232,30 @@ export class NativeBrowserComputer {
       )
         throw new Error('Typing needs the same focused editable field on the reviewed destination');
       if (text !== undefined) {
-        this.assertSelected?.(true);
-        await this.page.keyboard.sendCharacter(text);
+        await dispatchWithDialogs(this.page, async () => {
+          this.assertSelected?.(true);
+          await this.page.keyboard.sendCharacter(text);
+        });
       }
     } finally {
       await element.dispose();
     }
   }
 
-  async act(input: unknown, _values: readonly string[]): Promise<void> {
+  async act(
+    input: unknown,
+    _values: readonly string[],
+    beforeInput?: () => Promise<void>
+  ): Promise<void> {
     const action = await this.parseAction(input);
+    if (action.type === 'type') return this.checkFocusedInput(action.text, beforeInput);
+    let evidence: ReturnType<typeof nativeTargetStructure> | undefined;
     if (this.boundary === 'portal' && ['click', 'double_click', 'keypress'].includes(action.type)) {
       const target = await nativeTarget(this.page, 'x' in action ? action : undefined);
-      lastTargets.set(this.page, await target.frame.evaluate(nativeTargetStructure, target.point));
+      evidence = await target.frame.evaluate(nativeTargetStructure, target.point);
     }
+    await beforeInput?.();
+    if (evidence) lastTargets.set(this.page, evidence);
     if (action.type === 'dialog') {
       this.assertSelected?.(true);
       await respondToBrowserDialog(this.page, action);
@@ -295,9 +306,6 @@ export class NativeBrowserComputer {
             }
             break;
           }
-          case 'type':
-            await this.checkFocusedInput(action.text);
-            break;
           case 'keypress':
             break; // down/up above and below dispatch the requested combination once.
           case 'wait':
@@ -312,7 +320,13 @@ export class NativeBrowserComputer {
     });
   }
 
-  async upload(point: { x: number; y: number }, files: Files): Promise<void> {
+  async upload(
+    point: { x: number; y: number },
+    files: Files,
+    beforeInput?: () => Promise<void>
+  ): Promise<void> {
+    // The application may have been loading the reviewed original while the portal changed.
+    await beforeInput?.();
     this.requireBoundOrigin();
     const { frame } = await nativeTarget(this.page, point);
     if (this.interactionOrigin && new URL(frame.url()).origin !== this.interactionOrigin)
@@ -348,6 +362,7 @@ export class NativeBrowserComputer {
     let cdp: CDPSession | undefined;
     try {
       cdp = await this.page.createCDPSession();
+      await beforeInput?.();
       this.assertSelected?.(true);
       z.object({ ok: z.literal(true) }).parse(
         await cdp.send('Browserless.uploadFile', {

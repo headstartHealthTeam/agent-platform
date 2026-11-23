@@ -352,6 +352,23 @@ describe('documented Browserless CDP control', () => {
     };
     return { session, openPopup };
   }
+  it('withholds a reviewed coordinate from a new same-tab provider until the model sees it', async () => {
+    const { session } = await observedPortalWithPopup();
+    try {
+      const reviewed = await session.inspectComputer();
+      const move = { type: 'move', x: 2, y: 3 };
+      io.page.title.mockResolvedValue('Fictional second provider');
+      io.page.screenshot.mockResolvedValue('bmV3');
+      const fresh = await session.computer(move, ['Released field'], reviewed);
+      expect(fresh.text).toContain('Fictional second provider');
+      expect(fresh.dispatched).toBe(false);
+      expect(io.page.mouse.move).not.toHaveBeenCalled();
+      expect((await session.computer(move, ['Released field'], fresh)).dispatched).toBeUndefined();
+      expect(io.page.mouse.move).toHaveBeenCalledOnce();
+    } finally {
+      await session.stop();
+    }
+  });
   it('keeps the popup inspectable if it replaces the observed tab after validation and before input', async () => {
     const { session, openPopup } = await observedPortalWithPopup();
     try {

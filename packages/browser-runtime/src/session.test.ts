@@ -117,6 +117,25 @@ describe('one owned browser', () => {
     await session.stop();
   });
 
+  it('withholds fresh pixels and input if Stop wins during the reviewed-screen recheck', async () => {
+    const { session, connection } = fixture();
+    const before = { text: 'Fictional first provider', image: 'first' };
+    const sendInput = vi.fn();
+    connection.validateComputer = async (): Promise<void> => undefined;
+    connection.computer = async (_action, _values, check): Promise<void> => {
+      await check?.();
+      sendInput();
+    };
+    connection.inspectComputer = async (): Promise<typeof before> => {
+      await session.stop();
+      return { text: 'Fictional second provider', image: 'second' };
+    };
+    await expect(
+      session.computer({ type: 'click', x: 1, y: 1, button: 'left' }, [], before)
+    ).rejects.toMatchObject({ code: 'dispatch_uncertain' });
+    expect(sendInput).not.toHaveBeenCalled();
+    await expect(session.inspectComputer()).rejects.toMatchObject({ code: 'ended' });
+  });
   it('never repeats a native mutation after its screenshot becomes uncertain', async () => {
     const { session, connection } = fixture();
     connection.validateComputer = vi.fn(async () => undefined);

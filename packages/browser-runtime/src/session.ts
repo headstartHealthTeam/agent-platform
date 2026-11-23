@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { BrowserEntryReadback } from './entry-contract.js';
+import type { BrowserComputerObservation, BrowserEntryReadback } from './entry-contract.js';
 
 export const browserAction = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('inspect') }).strict(),
@@ -60,10 +60,7 @@ export const browserAction = z.discriminatedUnion('kind', [
     .strict(),
 ]);
 export type BrowserAction = z.infer<typeof browserAction>;
-export interface BrowserInspection {
-  text: string;
-  image: string;
-  pauseBatch?: boolean;
+export interface BrowserInspection extends BrowserComputerObservation {
   /** Transport evidence only, not payer acceptance. Contains no file bytes or entered values. */
   readback?: BrowserEntryReadback;
 }
@@ -76,11 +73,16 @@ export interface BrowserWatchReceipt {
 /** Internal transport seam. The application journals and authorizes each call before using it. */
 export interface BrowserConnection {
   inspectComputer?: () => Promise<BrowserInspection>;
-  computer?: (action: unknown, values: readonly string[]) => Promise<void>;
+  computer?: (
+    action: unknown,
+    values: readonly string[],
+    beforeInput?: () => Promise<void>
+  ) => Promise<void>;
   validateComputer?: (action: unknown, values: readonly string[]) => Promise<void>;
   uploadComputer?: (
     point: { x: number; y: number },
-    files: Extract<BrowserAction, { kind: 'upload' }>['files']
+    files: Extract<BrowserAction, { kind: 'upload' }>['files'],
+    beforeInput?: () => Promise<void>
   ) => Promise<void>;
   hasPendingDialog?: () => Promise<boolean>;
   verifyHandoff?: () => Promise<void>;
@@ -174,42 +176,95 @@ export class OwnedBrowserSession {
     await this.connection.validateComputer(action, values);
   }
 
-  async computer(action: unknown, values: readonly string[]): Promise<BrowserInspection> {
+  async computer(
+    action: unknown,
+    values: readonly string[],
+    expectedObservation?: BrowserComputerObservation
+  ): Promise<BrowserInspection> {
     const epoch = this.#handoffEpoch;
-    await this.validateComputer(action, values);
+    try {
+      await this.validateComputer(action, values);
+    } catch (error) {
+      this.requireActive();
+      if (this.#humanControl || epoch !== this.#handoffEpoch)
+        throw new BrowserSessionError('human_control');
+      if (expectedObservation) {
+        const changed = await this.changedObservation(expectedObservation, () =>
+          this.inspectComputer()
+        );
+        if (changed) return changed;
+      }
+      throw error;
+    }
     if (this.#humanControl || epoch !== this.#handoffEpoch)
       throw new BrowserSessionError('human_control');
-    return this.nativeInput(async () => {
+    return this.nativeInput(async (beforeInput) => {
       if (!this.connection.computer) throw new BrowserSessionError('invalid_action');
-      await this.connection.computer(action, values);
-    });
+      await this.connection.computer(action, values, beforeInput);
+    }, expectedObservation);
   }
 
   async uploadComputer(
     point: { x: number; y: number },
-    files: Extract<BrowserAction, { kind: 'upload' }>['files']
+    files: Extract<BrowserAction, { kind: 'upload' }>['files'],
+    expectedObservation?: BrowserComputerObservation
   ): Promise<BrowserInspection> {
     this.requireActive();
     if (this.#humanControl) throw new BrowserSessionError('human_control');
-    return this.nativeInput(async () => {
+    return this.nativeInput(async (beforeInput) => {
       if (!this.connection.uploadComputer) throw new BrowserSessionError('invalid_action');
-      await this.connection.uploadComputer(point, files);
-    });
+      await this.connection.uploadComputer(point, files, beforeInput);
+    }, expectedObservation);
   }
 
-  private async nativeInput(dispatch: () => Promise<void>): Promise<BrowserInspection> {
+  private async changedObservation(
+    expected: BrowserComputerObservation,
+    inspect: () => Promise<BrowserInspection>
+  ): Promise<BrowserInspection | undefined> {
+    const current = await inspect();
+    this.requireActive();
+    if (this.#humanControl) throw new BrowserSessionError('human_control');
+    if (
+      expected.text !== current.text ||
+      expected.image !== current.image ||
+      !!expected.pauseBatch !== !!current.pauseBatch
+    )
+      return { ...current, dispatched: false };
+    return undefined;
+  }
+
+  private async nativeInput(
+    dispatch: (beforeInput?: () => Promise<void>) => Promise<void>,
+    expected?: BrowserComputerObservation
+  ): Promise<BrowserInspection> {
     const result = await this.exclusive(false, async () => {
       if (!this.connection.inspectComputer) throw new BrowserSessionError('invalid_action');
+      const inspect = this.connection.inspectComputer.bind(this.connection);
+      const obsolete = new BrowserSessionError('invalid_action');
+      let changed: BrowserInspection | undefined;
+      const refresh =
+        expected &&
+        (async (): Promise<void> => {
+          changed = await this.changedObservation(expected, inspect);
+          if (changed) throw obsolete;
+        });
       try {
-        await dispatch();
+        await dispatch(refresh);
       } catch (error) {
+        if (error === obsolete && changed) return changed;
         // Only the driver's confirmed pre-input rejection leaves this session inspectable.
         if (
           error instanceof BrowserSessionError &&
           error.code === 'invalid_action' &&
           error.phase === 'tab-selection'
-        )
+        ) {
+          if (expected) {
+            const current = await inspect();
+            this.requireActive();
+            return { ...current, dispatched: false as const };
+          }
           return error;
+        }
         throw error;
       }
       this.requireActive();

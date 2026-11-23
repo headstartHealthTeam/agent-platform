@@ -99,9 +99,12 @@ changing page can therefore require another inspection. A dialog can reuse only 
 cleared image.
 
 With a reviewed package, the agent sees the updated screen before choosing another consequential
-gesture. This also applies when the model proposes several actions together. A tab change caught
-before any input was sent leaves inspection available. If input may have reached the previous tab,
-the operator reconciles the outcome before continuing.
+gesture. The driver compares the reviewed observation with the current screen immediately before
+sending input or a file. A changed screen goes back to the agent for a fresh decision. A dialog
+can be answered from its current prompt, but recording a saved value or upload requires a fresh
+page observation after the dialog closes. If an animated or frequently changing page prevents a
+stable comparison, return control to the operator. If an earlier input may have reached the portal,
+the operator reconciles that result before another attempt.
 
 `operate_application_browser` exposes native tasks and inspection. The model delegates a
 plain-language task plus released requirement/attachment IDs to `openai-platform`'s Responses

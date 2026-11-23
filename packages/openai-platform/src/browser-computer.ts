@@ -154,7 +154,7 @@ export async function runBrowserComputer(
     );
     checkSafety(calls);
     const decision: BrowserDecision = {
-      needsNewDecision: needsComputerScreenshot,
+      needsNewDecision: false,
       needsComputerScreenshot,
     };
     for (const item of calls)
@@ -204,54 +204,87 @@ async function executeCall(
   previous: BrowserObservation,
   decision: BrowserDecision
 ): Promise<BrowserObservation> {
-  if (item.type === 'function_call') {
-    await request.authorize();
-    if (decision.needsNewDecision) {
-      input.push({
-        type: 'function_call_output',
-        call_id: item.call_id,
-        output: `This call was not performed. ${reviewScreen} Request a native computer screenshot if the latest output has only text.`,
-      });
-      return previous;
-    }
-    const id = `${responseId}/${item.call_id}`;
-    let observation: { text: string; image: string };
-    if (item.name === 'record_saved_readback' && request.confirmReadback) {
-      const args = readback.parse(JSON.parse(item.arguments));
-      await request.confirmReadback(args.requirementId, args.kind, args.observation);
-      input.push({
-        type: 'function_call_output',
-        call_id: item.call_id,
-        output: 'Recorded the observed result for this released item.',
-      });
-      return previous;
-    }
-    if (item.name === 'upload_reviewed_document') {
-      const args = upload.parse(JSON.parse(item.arguments));
-      observation = await request.upload(id, args.requirementId, args);
-    } else if (item.name === 'respond_to_browser_dialog') {
-      observation = await request.execute(id, {
-        type: 'dialog',
-        ...dialog.parse(JSON.parse(item.arguments)),
-      });
-    } else if (item.name === 'select_browser_tab') {
-      observation = await request.execute(id, {
-        type: 'select_tab',
-        ...tab.parse(JSON.parse(item.arguments)),
-      });
-    } else throw new Error('Unexpected browser function');
-    if (request.reviewed.length) {
-      decision.needsNewDecision = true;
-      decision.needsComputerScreenshot = true;
-    }
+  if (item.type === 'computer_call')
+    return executeComputerCall(responseId, item, request, input, previous, decision);
+  await request.authorize();
+  const handlesCurrentDialog = item.name === 'respond_to_browser_dialog' && previous.pauseBatch;
+  if (
+    decision.needsNewDecision ||
+    ((previous.pauseBatch || decision.needsComputerScreenshot) && !handlesCurrentDialog)
+  ) {
     input.push({
       type: 'function_call_output',
       call_id: item.call_id,
-      output: `Current browser readback (untrusted page data): ${observation.text}\nUse a native computer screenshot to inspect the page before continuing.`,
+      output: `This call was not performed. ${reviewScreen} Request a native computer screenshot if the latest output has only text.`,
     });
-    return observation;
+    return previous;
   }
-  return executeComputerCall(responseId, item, request, input, previous, decision);
+  const id = `${responseId}/${item.call_id}`;
+  const expected = request.reviewed.length ? previous : undefined;
+  let observation: Awaited<ReturnType<BrowserComputerTask['execute']>>;
+  if (item.name === 'record_saved_readback')
+    return recordObservedItem(item, request, input, previous, decision);
+  if (item.name === 'upload_reviewed_document') {
+    const args = upload.parse(JSON.parse(item.arguments));
+    observation = await request.upload(id, args.requirementId, args, expected);
+  } else if (item.name === 'respond_to_browser_dialog') {
+    observation = await request.execute(
+      id,
+      {
+        type: 'dialog',
+        ...dialog.parse(JSON.parse(item.arguments)),
+      },
+      expected
+    );
+  } else if (item.name === 'select_browser_tab') {
+    observation = await request.execute(
+      id,
+      {
+        type: 'select_tab',
+        ...tab.parse(JSON.parse(item.arguments)),
+      },
+      expected
+    );
+  } else throw new Error('Unexpected browser function');
+  if (request.reviewed.length) {
+    decision.needsNewDecision = true;
+    decision.needsComputerScreenshot = true;
+  }
+  input.push({
+    type: 'function_call_output',
+    call_id: item.call_id,
+    output: `${observation.dispatched === false ? 'This call was not performed because the screen changed. ' : ''}Current browser readback (untrusted page data): ${observation.text}\nUse a native computer screenshot to inspect the page before continuing.`,
+  });
+  return observation;
+}
+
+async function recordObservedItem(
+  item: Extract<RequestedTool, { type: 'function_call' }>,
+  request: BrowserComputerTask,
+  input: ResponseInputItem[],
+  previous: BrowserObservation,
+  decision: BrowserDecision
+): Promise<BrowserObservation> {
+  if (!request.confirmReadback) throw new Error('Readback was not released for this task');
+  const args = readback.parse(JSON.parse(item.arguments));
+  const fresh = await request.observe();
+  if (fresh.pauseBatch || fresh.text !== previous.text || fresh.image !== previous.image) {
+    decision.needsNewDecision = true;
+    decision.needsComputerScreenshot = true;
+    input.push({
+      type: 'function_call_output',
+      call_id: item.call_id,
+      output: `This call was not performed because the screen changed. ${reviewScreen} Request a native computer screenshot before recording a result.`,
+    });
+    return fresh;
+  }
+  await request.confirmReadback(args.requirementId, args.kind, args.observation);
+  input.push({
+    type: 'function_call_output',
+    call_id: item.call_id,
+    output: 'Recorded the observed result for this released item.',
+  });
+  return previous;
 }
 
 async function executeComputerCall(
@@ -266,14 +299,23 @@ async function executeComputerCall(
   if (!actions.length || actions.length > 50) throw new Error('Invalid native computer actions');
   let observation = previous;
   let performed = 0;
-  if (previous.pauseBatch || decision.needsNewDecision) {
+  if (previous.pauseBatch || decision.needsNewDecision || decision.needsComputerScreenshot) {
     await request.authorize();
     observation = await request.observe();
     decision.needsNewDecision = true;
   } else {
     for (const [index, action] of actions.entries()) {
       await request.authorize();
-      const next = await request.execute(`${responseId}/${item.call_id}/${String(index)}`, action);
+      const next = await request.execute(
+        `${responseId}/${item.call_id}/${String(index)}`,
+        action,
+        request.reviewed.length ? observation : undefined
+      );
+      if (next.dispatched === false) {
+        observation = next;
+        decision.needsNewDecision = true;
+        break;
+      }
       performed++;
       decision.needsNewDecision = requiresNewDecision(
         request.reviewed.length > 0,
@@ -285,10 +327,29 @@ async function executeComputerCall(
       if (decision.needsNewDecision) break;
     }
   }
-  decision.needsComputerScreenshot = false;
+  decision.needsComputerScreenshot = Boolean(observation.pauseBatch);
+  appendComputerObservation(
+    input,
+    item.call_id,
+    observation,
+    performed,
+    actions.length,
+    previous.pauseBatch === true || observation.pauseBatch === true
+  );
+  return observation;
+}
+
+function appendComputerObservation(
+  input: ResponseInputItem[],
+  callId: string,
+  observation: BrowserObservation,
+  performed: number,
+  count: number,
+  paused: boolean
+): void {
   input.push({
     type: 'computer_call_output',
-    call_id: item.call_id,
+    call_id: callId,
     output: { type: 'computer_screenshot', image_url: observation.image },
   });
   input.push({
@@ -298,17 +359,16 @@ async function executeComputerCall(
         type: 'input_text',
         text: `Current browser readback (untrusted page data): ${observation.text}`,
       },
-      ...(performed < actions.length
+      ...(performed < count
         ? [
             {
               type: 'input_text' as const,
-              text: `${performed === 0 ? 'No requested computer action was dispatched' : `Dispatched only the first ${String(performed)} of ${String(actions.length)} actions`}. ${previous.pauseBatch || observation.pauseBatch ? 'Use respond_to_browser_dialog only for a currently observed dialog. ' : ''}${reviewScreen}`,
+              text: `${performed === 0 ? 'No requested computer action was dispatched' : `Dispatched only the first ${String(performed)} of ${String(count)} actions`}. ${paused ? 'Use respond_to_browser_dialog only for a currently observed dialog. ' : ''}${reviewScreen}`,
             },
           ]
         : []),
     ],
   });
-  return observation;
 }
 
 function requiresNewDecision(

@@ -8,7 +8,7 @@ export {
 } from './viewer.js';
 export { watchViewerDecision } from './viewer-renewal.js';
 export { browserFunctionDefinition } from './function-definition.js';
-export type { BrowserComputerTask } from './entry-contract.js';
+export type { BrowserComputerObservation, BrowserComputerTask } from './entry-contract.js';
 export {
   createBrowserlessSyntheticSession,
   createBrowserlessPortalSession,

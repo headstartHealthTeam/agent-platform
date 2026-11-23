@@ -14,6 +14,14 @@ export interface BrowserPackageRelease {
   origin: string;
   releasedAt: string;
 }
+/** Observed in memory; never put screenshots or their text in the application journal. */
+export interface BrowserComputerObservation {
+  text: string;
+  image: string;
+  pauseBatch?: boolean;
+  /** The page changed before the requested input was sent. Replan from this observation. */
+  dispatched?: false;
+}
 /** In-memory bridge to native computer use. The application owns authority and the action journal.
  * No model-supplied browser endpoint, credentials, scripts, paths or file bytes are accepted. */
 export interface BrowserComputerTask {
@@ -26,14 +34,16 @@ export interface BrowserComputerTask {
     observation: string
   ) => Promise<void>;
   authorize: () => Promise<void>;
-  observe: () => Promise<{ text: string; image: string; pauseBatch?: boolean }>;
+  observe: () => Promise<BrowserComputerObservation>;
   execute: (
     actionId: string,
-    action: unknown
-  ) => Promise<{ text: string; image: string; pauseBatch?: boolean }>;
+    action: unknown,
+    expectedObservation?: BrowserComputerObservation
+  ) => Promise<BrowserComputerObservation>;
   upload: (
     actionId: string,
     requirementId: string,
-    point: { x: number; y: number }
-  ) => Promise<{ text: string; image: string; pauseBatch?: boolean }>;
+    point: { x: number; y: number },
+    expectedObservation?: BrowserComputerObservation
+  ) => Promise<BrowserComputerObservation>;
 }
