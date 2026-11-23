@@ -68,6 +68,14 @@ const lastTargets = new WeakMap<Page, ReturnType<typeof nativeTargetStructure>>(
 
 /** Thin coordinate driver on the application's browser. Portal requests are screened by its owner.
  * Native clicks follow page JavaScript, unlike the old href-only path. */
+/** Only a positively identified, different HTTPS origin is recoverable as private control. */
+export function requireReviewedOrigin(url: URL, expected?: string): void {
+  if (!expected) return;
+  if (url.protocol !== 'https:' || url.username || url.password)
+    throw new BrowserSessionError('read_failed');
+  if (url.origin !== expected) throw new BrowserSessionError('human_control', 'reviewed-origin');
+}
+
 export class NativeBrowserComputer {
   constructor(
     private readonly page: Page,
@@ -80,8 +88,7 @@ export class NativeBrowserComputer {
 
   private requireBoundOrigin(): void {
     const url = new URL(this.page.url());
-    if (this.interactionOrigin && url.origin !== this.interactionOrigin)
-      throw new Error('Return to the reviewed portal in private control');
+    requireReviewedOrigin(url, this.interactionOrigin);
     if (
       this.boundary === 'portal'
         ? url.protocol !== 'https:' || !!url.username || !!url.password
@@ -101,6 +108,7 @@ export class NativeBrowserComputer {
 
   /** Cache an isolated capture only while the application still allows this observation. */
   finishObservation(captured: BrowserInspection, privacyVerified: boolean): BrowserInspection {
+    this.requireBoundOrigin();
     const dialog = this.dialogObservation();
     if (dialog) return dialog;
     if (captured.pauseBatch) throw new BrowserSessionError('read_failed');

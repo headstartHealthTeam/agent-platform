@@ -167,6 +167,82 @@ describe('documented Browserless CDP control', () => {
     expect(io.page.screenshot).toHaveBeenCalledTimes(screenshotsBeforeRedirect);
     await session.stop();
   });
+  it('keeps a selected sign-in popup without credential fields private until the operator returns to the reviewed portal', async () => {
+    const receipts: boolean[] = [];
+    const revoked: string[] = [];
+    io.cdp.send.mockImplementation(async (method, params) => {
+      if (method === 'Browserless.liveURL') {
+        receipts.push(z.object({ interactable: z.boolean() }).parse(params).interactable);
+        const id = 'viewer-' + String(receipts.length);
+        return {
+          error: null,
+          liveURL: config.origin + '/live/index.html?i=' + id,
+          liveURLId: id,
+          timeout: 10_000,
+        };
+      }
+      if (method === 'Browserless.closeLiveURL') {
+        const { liveURLId } = z.object({ liveURLId: z.string() }).parse(params);
+        revoked.push(liveURLId);
+        return { error: null, liveURLId };
+      }
+      return {};
+    });
+    let portalFocused = false;
+    const focusRead = (operation: unknown): boolean =>
+      typeof operation === 'function' && String(operation).includes('document.hasFocus()');
+    io.page.evaluate.mockImplementation(
+      async (operation: unknown) => focusRead(operation) && portalFocused
+    );
+    const popup = {
+      ...io.page,
+      url: vi.fn(() => 'https://signin.example/complete'),
+      title: vi.fn(async () => 'Private identity title'),
+      screenshot: vi.fn(),
+      frames: vi.fn(() => []),
+      evaluate: vi.fn(async (operation: unknown) => focusRead(operation) && !portalFocused),
+      setRequestInterception: vi.fn(),
+    };
+    const session = await createBrowserlessPortalSession(
+      { ...config, interactionOrigin: 'https://payer.example' },
+      'https://payer.example/login',
+      Date.now() + 90_000
+    );
+    try {
+      const first = await session.startHumanControl();
+      const opened = io.browser.on.mock.calls.find(([event]) => event === 'targetcreated')?.[1];
+      if (!opened) throw new Error('Missing popup listener');
+      opened({ page: async () => popup });
+      io.browser.pages.mockResolvedValue([io.page, popup]);
+      await vi.waitFor(() => {
+        expect(popup.setRequestInterception).toHaveBeenCalled();
+      });
+      await expect(session.resumeAutomation()).rejects.toMatchObject({
+        code: 'human_control',
+        phase: 'handoff-observation',
+      });
+      expect(revoked).toEqual([first.liveURLId]);
+      expect(receipts).toEqual([true]);
+      expect(popup.screenshot).not.toHaveBeenCalled();
+      expect(popup.title).not.toHaveBeenCalled();
+      await expect(session.inspectComputer()).rejects.toMatchObject({ code: 'human_control' });
+      await expect(session.watch()).rejects.toMatchObject({ code: 'human_control' });
+      const replacement = await session.startHumanControl();
+      expect(replacement.liveURL).not.toBe(first.liveURL);
+      expect(replacement.liveURLId).not.toBe(first.liveURLId);
+      portalFocused = true;
+      await session.resumeAutomation();
+      expect(revoked).toEqual([first.liveURLId, replacement.liveURLId]);
+      expect(receipts).toEqual([true, true, false]);
+      const observed = await session.inspectComputer();
+      expect(observed.text).toContain('Synthetic portal');
+      expect(observed.text).not.toContain('Private identity title');
+      expect(popup.screenshot).not.toHaveBeenCalled();
+      expect(popup.title).not.toHaveBeenCalled();
+    } finally {
+      await session.stop();
+    }
+  });
   it('returns control to the original tab after a separate same-origin provider profile opens', async () => {
     const session = await createBrowserlessPortalSession(
       config,

@@ -321,7 +321,7 @@ describe('native browser controls on a fictional provider profile', () => {
     );
     await expect(driver.upload({ x: 2, y: 2 }, [])).rejects.toThrow('another destination');
     page.url.mockReturnValue('http://portal.example/');
-    await expect(driver.inspect()).rejects.toThrow('reviewed portal');
+    await expect(driver.inspect()).rejects.toMatchObject({ code: 'read_failed' });
     await expect(new NativeBrowserComputer(actual, 'portal').inspect()).rejects.toThrow(
       'authorized'
     );

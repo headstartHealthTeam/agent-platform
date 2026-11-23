@@ -90,7 +90,10 @@ visible password/one-time-code controls, and issues a watch-only viewer. An oper
 to private control after the current task settles: the prior watch viewer must be revoked and
 the provider must issue a different private capability. Reused viewer IDs/URLs fail closed rather
 than upgrading a link already shared with other readers. Failed revocation remains uncertain.
-Stop closes the owned browser. Neither handoff nor viewer reload extends its absolute deadline.
+If a separate sign-in tab is still selected after its credential fields disappear, the operator
+receives fresh private access. Return to the reviewed portal, then choose Share with agent again.
+The agent's tab list omits tabs from other origins. Stop closes the owned browser. Neither handoff
+nor viewer reload extends its absolute deadline.
 
 Portal screenshots are checked across the capture interval, including embedded frames and closed
 shadow trees. A visible password or one-time-code field requires private control. If page changes

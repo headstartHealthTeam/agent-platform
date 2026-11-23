@@ -85,6 +85,7 @@ export interface BrowserConnection {
     beforeInput?: () => Promise<void>
   ) => Promise<void>;
   hasPendingDialog?: () => Promise<boolean>;
+  inspectHandoff?: () => Promise<BrowserInspection>;
   verifyHandoff?: () => Promise<void>;
   inspect: () => Promise<BrowserInspection>;
   act: (action: Exclude<BrowserAction, { kind: 'inspect' }>) => Promise<void>;
@@ -109,7 +110,8 @@ type BrowserSessionPhase =
   | 'handoff-viewer'
   | 'tab-selection'
   | 'pre-input-observation'
-  | 'input-focus';
+  | 'input-focus'
+  | 'reviewed-origin';
 export class BrowserSessionError extends Error {
   constructor(
     public readonly code: BrowserSessionFailure,
@@ -374,7 +376,7 @@ export class OwnedBrowserSession {
         // Revocation alone does not mean login finished. Keep all shared capabilities withheld
         // until a fresh observation succeeds, including authentication checks in every frame.
         phase = observationPhase;
-        const observation = await this.connection.inspect();
+        const observation = await (this.connection.inspectHandoff?.() ?? this.connection.inspect());
         if (observation.pauseBatch) throw new BrowserSessionError('human_control', phase);
         await this.connection.verifyHandoff?.();
         const started = Date.now();
@@ -391,6 +393,13 @@ export class OwnedBrowserSession {
       } catch (error) {
         // Revocation succeeded and no shared link was requested. Explicit private-page evidence
         // allows the operator to obtain a fresh private viewer without repeating revocation.
+        if (
+          error instanceof BrowserSessionError &&
+          error.code === 'human_control' &&
+          error.phase === 'reviewed-origin' &&
+          (phase === observationPhase || phase === 'handoff-viewer')
+        )
+          return new BrowserSessionError('human_control', observationPhase);
         if (
           phase === observationPhase &&
           error instanceof BrowserSessionError &&

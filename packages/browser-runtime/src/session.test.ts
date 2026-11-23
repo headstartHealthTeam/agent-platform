@@ -218,6 +218,23 @@ describe('one owned browser', () => {
     expect(connection.computer).toHaveBeenCalledOnce();
     await session.stop();
   });
+  it('keeps an unacknowledged revocation uncertain even when it carries an origin refusal', async () => {
+    const { session, connection } = fixture();
+    try {
+      await session.startHumanControl();
+      vi.mocked(connection.closeViewer).mockRejectedValueOnce(
+        new BrowserSessionError('human_control', 'reviewed-origin')
+      );
+      await expect(session.resumeAutomation()).rejects.toMatchObject({
+        code: 'dispatch_uncertain',
+      });
+      expect(connection.inspect).not.toHaveBeenCalled();
+      expect(connection.watch).not.toHaveBeenCalled();
+      await expect(session.startHumanControl()).rejects.toMatchObject({ code: 'ended' });
+    } finally {
+      await session.stop();
+    }
+  });
   it.each([
     { operation: 'closeViewer', phase: 'handoff-revocation' },
     { operation: 'inspect', phase: 'handoff-observation' },
