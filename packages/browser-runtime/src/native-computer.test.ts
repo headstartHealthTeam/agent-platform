@@ -16,6 +16,13 @@ import {
   trackBrowserDialogClosure,
 } from './native-dialog.js';
 import { nativeTarget, nativeTargetStructure } from './native-target.js';
+import { portalRequestCounts, screenPortalPage } from './portal-navigation.js';
+import {
+  nativeSyntheticReceipts,
+  openNativeSyntheticPage,
+  openReviewedSyntheticPage,
+  syntheticOrigin,
+} from './synthetic-page.js';
 
 const chrome = vi.hoisted(() => ({ newPage: vi.fn() }));
 vi.mock('puppeteer-core', () => ({
@@ -123,6 +130,69 @@ afterEach(() => {
 });
 
 describe('native browser controls on a fictional provider profile', () => {
+  it('tracks draft and final fixture requests separately on the actual interception path', async () => {
+    const { actual, page } = await fixture();
+    const navigation = Object.assign(page, {
+      setBypassServiceWorker: vi.fn(),
+      setRequestInterception: vi.fn(),
+      goto: vi.fn(),
+    });
+    const send = (
+      path: string,
+      method = 'GET',
+      fail = false
+    ): ReturnType<typeof vi.fn<() => Promise<void>>> => {
+      const respond = vi.fn(async (): Promise<void> => {
+        if (fail) throw new Error('Closed synthetic tab');
+      });
+      page.emit('request', {
+        url: (): string => syntheticOrigin + path,
+        method: (): string => method,
+        isInterceptResolutionHandled: (): boolean => false,
+        respond,
+        fetchPostData: async (): Promise<string> => '{"field":"fictional"}',
+      });
+      return respond;
+    };
+    expect(nativeSyntheticReceipts(actual)).toBeUndefined();
+    await openReviewedSyntheticPage(actual, 'Review example');
+    expect(send('/review')).toHaveBeenCalledWith(
+      expect.objectContaining({ body: 'Review example' })
+    );
+    send('/entry', 'GET', true);
+    page.removeAllListeners('request');
+    await openNativeSyntheticPage(actual, 'Native example');
+    const draft = send('/draft-save', 'POST');
+    await vi.waitFor(() => {
+      expect(draft).toHaveBeenCalledOnce();
+    });
+    expect(nativeSyntheticReceipts(actual)).toEqual({ draftWrites: 1, finalAttempts: 0 });
+    send('/final-submit', 'POST', true);
+    expect(nativeSyntheticReceipts(actual)).toEqual({ draftWrites: 1, finalAttempts: 1 });
+    expect(navigation.goto).toHaveBeenCalledTimes(2);
+  });
+  it('screens each open portal page once and records a denied destination even when the tab closes', async () => {
+    const { actual, page } = await fixture();
+    const screen = Object.assign(page, {
+      setBypassServiceWorker: vi.fn(),
+      setRequestInterception: vi.fn(),
+    });
+    await screenPortalPage(actual);
+    await screenPortalPage(actual);
+    expect(screen.setRequestInterception).toHaveBeenCalledTimes(1);
+    const abort = vi.fn(async (): Promise<void> => {
+      throw new Error('Closed synthetic tab');
+    });
+    page.emit('request', {
+      url: (): string => 'about:blank',
+      isInterceptResolutionHandled: (): boolean => false,
+      abort,
+    });
+    await vi.waitFor(() => {
+      expect(abort).toHaveBeenCalledOnce();
+    });
+    expect(portalRequestCounts(actual)).toEqual({ destination: 1 });
+  });
   it.each(['new', 'existing'])('reads, edits and reopens a %s Headstart entry', async (kind) => {
     const { driver, page } = await fixture();
     const field = document.querySelector('#practice');

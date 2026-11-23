@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 
 import {
   createBrowserlessSyntheticSession,
@@ -38,7 +39,17 @@ const io = vi.hoisted(() => {
     createCDPSession: vi.fn(),
     frames: vi.fn(),
   };
-  const browser = { on: vi.fn(), newPage: vi.fn(), close: vi.fn(), pages: vi.fn() };
+  const browser = {
+    on: vi.fn<
+      (
+        event: string,
+        listener: (target: { page: () => Promise<typeof page | null> }) => void
+      ) => void
+    >(),
+    newPage: vi.fn(),
+    close: vi.fn(),
+    pages: vi.fn(),
+  };
   const socket = { close: vi.fn(), closed: Promise.resolve() };
   return {
     element,
@@ -145,6 +156,43 @@ describe('documented Browserless CDP control', () => {
     io.page.url.mockReturnValue('https://elsewhere.example/profile');
     await expect(session.inspectComputer()).rejects.toThrow();
     expect(io.page.screenshot).toHaveBeenCalledTimes(screenshotsBeforeRedirect);
+    await session.stop();
+  });
+  it('returns control to the original tab after a separate same-origin provider profile opens', async () => {
+    const session = await createBrowserlessPortalSession(
+      config,
+      'https://payer.example/login',
+      Date.now() + 90_000
+    );
+    await session.startHumanControl();
+    io.cdp.send.mockResolvedValueOnce({ error: null, liveURLId: 'synthetic' });
+    await session.resumeAutomation();
+    const first = await session.inspectComputer();
+    const tabs = (text: string): { tabId: string; title: string; current: boolean }[] =>
+      z
+        .array(z.object({ tabId: z.uuid(), title: z.string(), current: z.boolean() }))
+        .parse(JSON.parse(text.split('Browser tabs (untrusted titles): ')[1] ?? 'null'));
+    const original = tabs(first.text).find((tab) => tab.current);
+    if (!original) throw new Error('Expected initial tab');
+    const popup = {
+      ...io.page,
+      title: vi.fn(async () => 'Fictional second practice'),
+      bringToFront: vi.fn(),
+      isClosed: vi.fn(() => false),
+    };
+    const opened = io.browser.on.mock.calls.find(([name]) => name === 'targetcreated')?.[1];
+    if (typeof opened !== 'function') throw new Error('Missing popup handler');
+    opened({ page: async (): Promise<typeof popup> => popup });
+    io.browser.pages.mockResolvedValue([io.page, popup]);
+    await vi.waitFor(async () => {
+      expect(tabs((await session.inspectComputer()).text)).toContainEqual(
+        expect.objectContaining({ title: 'Fictional second practice', current: true })
+      );
+    });
+    const returned = await session.computer({ type: 'select_tab', tabId: original.tabId }, []);
+    expect(tabs(returned.text)).toContainEqual({ ...original, current: true });
+    popup.isClosed.mockReturnValue(true);
+    expect(tabs((await session.inspectComputer()).text)).toHaveLength(1);
     await session.stop();
   });
   it('withholds an observation when authentication remains in another frame or popup', async () => {
