@@ -97,6 +97,24 @@ describe('owned websocket transport', () => {
     remote.emit('message', Buffer.from('binary'), true);
     await transport.closed;
     expect(transport.onclose).toHaveBeenCalledOnce();
+    expect(transport.onmessage).toHaveBeenCalledTimes(3);
+  });
+  it('limits total handshake time and settles closure if a subscriber throws', async () => {
+    vi.useFakeTimers();
+    const slow = expect(BrowserSocket.connect('wss://example.test')).rejects.toThrow(
+      'dispatch_uncertain'
+    );
+    await vi.advanceTimersByTimeAsync(15_000);
+    await slow;
+    expect(socket().terminate).toHaveBeenCalledOnce();
+    const opening = BrowserSocket.connect('wss://example.test');
+    socket().emit('open');
+    const transport = await opening;
+    transport.onclose = (): void => {
+      throw new Error('Observer failed');
+    };
+    transport.close();
+    await transport.closed;
   });
   it('terminates a half-open socket after an unanswered heartbeat', async () => {
     vi.useFakeTimers();

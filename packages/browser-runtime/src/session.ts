@@ -82,6 +82,8 @@ export interface BrowserConnection {
     point: { x: number; y: number },
     files: Extract<BrowserAction, { kind: 'upload' }>['files']
   ) => Promise<void>;
+  hasPendingDialog?: () => Promise<boolean>;
+  verifyHandoff?: () => Promise<void>;
   inspect: () => Promise<BrowserInspection>;
   act: (action: Exclude<BrowserAction, { kind: 'inspect' }>) => Promise<void>;
   watch: (timeoutMs: number) => Promise<{ liveURL: string; liveURLId: string; timeout: number }>;
@@ -146,7 +148,10 @@ export class OwnedBrowserSession {
     const parsed = browserAction.safeParse(input);
     if (!parsed.success) throw new BrowserSessionError('invalid_action');
     return this.exclusive(parsed.data.kind === 'inspect', async () => {
-      if (parsed.data.kind !== 'inspect') await this.connection.act(parsed.data);
+      if (parsed.data.kind !== 'inspect') {
+        await this.connection.act(parsed.data);
+        this.requireActive();
+      }
       return this.connection.inspect();
     });
   }
@@ -168,10 +173,12 @@ export class OwnedBrowserSession {
 
   async computer(action: unknown, values: readonly string[]): Promise<BrowserInspection> {
     await this.validateComputer(action, values);
+    if (this.#humanControl) throw new BrowserSessionError('human_control');
     return this.exclusive(false, async () => {
       if (!this.connection.computer || !this.connection.inspectComputer)
         throw new BrowserSessionError('invalid_action');
       await this.connection.computer(action, values);
+      this.requireActive();
       return this.connection.inspectComputer();
     });
   }
@@ -186,6 +193,7 @@ export class OwnedBrowserSession {
       if (!this.connection.uploadComputer || !this.connection.inspectComputer)
         throw new BrowserSessionError('invalid_action');
       await this.connection.uploadComputer(point, files);
+      this.requireActive();
       return this.connection.inspectComputer();
     });
   }
@@ -216,7 +224,11 @@ export class OwnedBrowserSession {
   /** Revoke the existing viewer before issuing private control; never upgrade a shared URL. */
   async startHumanControl(): Promise<BrowserWatchReceipt> {
     this.requireActive();
-    if (this.#humanViewer) return this.#humanViewer;
+    if (this.#busy) throw new BrowserSessionError('busy');
+    if (this.#humanViewer) {
+      if (Date.now() >= this.#humanViewer.notAfter) throw new BrowserSessionError('ended');
+      return this.#humanViewer;
+    }
     return this.exclusive(false, async () => {
       this.#humanControl = true;
       const previousWatch = this.#watchViewer;
@@ -245,8 +257,14 @@ export class OwnedBrowserSession {
 
   /** No page read occurs until the provider acknowledges revoking interactive access. */
   async resumeAutomation(): Promise<BrowserWatchReceipt> {
+    this.requireActive();
+    if (this.#busy) throw new BrowserSessionError('busy');
     const viewer = this.#humanViewer;
     if (!this.#humanControl || !viewer) throw new BrowserSessionError('invalid_action');
+    // Before revocation, only consult tracked dialog metadata. The private viewer can still clear it.
+    if (this.connection.hasPendingDialog && (await this.connection.hasPendingDialog()))
+      throw new BrowserSessionError('human_control', 'handoff-observation');
+    if (viewer !== this.#humanViewer) throw new BrowserSessionError('invalid_action');
     return this.exclusive(false, async () => {
       let phase: BrowserSessionPhase = 'handoff-revocation';
       try {
@@ -255,7 +273,9 @@ export class OwnedBrowserSession {
         // Revocation alone does not mean login finished. Keep all shared capabilities withheld
         // until a fresh observation succeeds, including authentication checks in every frame.
         phase = 'handoff-observation';
-        await this.connection.inspect();
+        const observation = await this.connection.inspect();
+        if (observation.pauseBatch) throw new BrowserSessionError('human_control', phase);
+        await this.connection.verifyHandoff?.();
         const started = Date.now();
         this.requireActive();
         phase = 'handoff-viewer';

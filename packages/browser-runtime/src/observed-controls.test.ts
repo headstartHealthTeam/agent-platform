@@ -75,6 +75,7 @@ function harness(): {
   target: (label: string) => Promise<{ observationId: string; selector: string }>;
   page: ObservedPage;
   pages: ObservedPage[];
+  handle: (node: Node) => ObservedElement;
   send: Mock<(method: string, input: unknown) => Promise<{ ok: boolean }>>;
   detach: Mock<() => Promise<void>>;
 } {
@@ -150,10 +151,71 @@ function harness(): {
     if (!control) throw new Error('Missing observed control');
     return { observationId: found.observationId, selector: control.selector };
   };
-  return { controls, observe, target, page, pages, send, detach };
+  return { controls, observe, target, page, pages, send, detach, handle };
 }
 
 describe('observation-bound portal controls', () => {
+  it('skips an SVG anchor and private fields without accessing their values or losing ordinary HTML controls', async () => {
+    const body = dom.window.document.body;
+    body.insertAdjacentHTML(
+      'afterbegin',
+      '<svg><a href="/logo"><text>Linked logo</text></a></svg><input type="password"><input autocomplete="section-login ONE-TIME-CODE"><input type="hidden">'
+    );
+    const h = harness();
+    const svg = body.querySelector('svg a');
+    if (!svg) throw new Error('Missing SVG fixture');
+    const privateInputs = body.querySelectorAll(
+      'input[type=password], input[autocomplete], input[type=hidden]'
+    );
+    const disposed = [svg, ...privateInputs].map((element) =>
+      vi.spyOn(h.handle(element), 'dispose')
+    );
+    const getter = vi.fn(() => 'private-synthetic-value');
+    privateInputs.forEach((input) => Object.defineProperty(input, 'value', { get: getter }));
+    const json = await h.controls.inspectText();
+    const controls = observation.parse(JSON.parse(json)).frames.flatMap((frame) => frame.controls);
+    expect(controls.some((control) => control.label === 'Documents')).toBe(true);
+    expect(controls.some((control) => control.label === 'Linked logo')).toBe(false);
+    for (const dispose of disposed) expect(dispose).toHaveBeenCalledOnce();
+    expect(getter).not.toHaveBeenCalled();
+    expect(json).not.toContain('private-synthetic-value');
+  });
+  it('disposes surplus handles without calling describe beyond the visible control limit', async () => {
+    const h = harness();
+    dom.window.document.body.innerHTML = '<input>'.repeat(152);
+    const nodes = dom.window.document.querySelectorAll('input');
+    const extra = nodes[150];
+    if (!extra) throw new Error('Missing surplus fixture');
+    const evaluate = vi.spyOn(h.handle(extra), 'evaluate');
+    const dispose = vi.spyOn(h.handle(extra), 'dispose');
+    expect((await h.observe()).frames[0]?.controls).toHaveLength(150);
+    expect(evaluate).not.toHaveBeenCalled();
+    expect(dispose).toHaveBeenCalledOnce();
+  });
+  it('advertises only navigation and uploads that can be dispatched for the observed frame and destination', async () => {
+    const h = harness();
+    dom.window.document.body.insertAdjacentHTML(
+      'beforeend',
+      '<a href="https://different.example/">External</a>'
+    );
+    const main = h.page.mainFrame();
+    vi.spyOn(h.page, 'frames').mockReturnValue([main, { ...main }]);
+    const { frames } = await h.observe();
+    expect(
+      frames[0]?.controls.find((control) => control.label === 'Original')?.permittedKinds
+    ).toEqual(['upload']);
+    expect(
+      frames[1]?.controls.find((control) => control.label === 'Original')?.permittedKinds
+    ).toEqual([]);
+    for (const frame of frames) {
+      expect(
+        frame.controls.find((control) => control.label === 'External')?.permittedKinds
+      ).toEqual([]);
+      expect(
+        frame.controls.find((control) => control.label === 'Documents')?.permittedKinds
+      ).toEqual(['navigate']);
+    }
+  });
   it('blocks implicit submit events and native form.submit/requestSubmit after handoff', async () => {
     const form = dom.window.document.createElement('form');
     dom.window.document.body.append(form);
@@ -293,7 +355,17 @@ describe('observation-bound portal controls', () => {
   });
   it('marks an unconfirmed upload uncertain and does not replay it', async () => {
     const h = harness();
-    h.send.mockResolvedValueOnce({ ok: false });
+    const send = h.send.getMockImplementation();
+    if (!send) throw new Error('Missing upload transport');
+    h.send.mockImplementationOnce(async (...args) => {
+      await send(...args);
+      throw new Error('Upload acknowledgement lost');
+    });
+    h.detach.mockRejectedValueOnce(new Error('Detach failed'));
+    const input = dom.window.document.querySelector<HTMLInputElement>('input[type=file]');
+    if (!input) throw new Error('Missing file input');
+    const changed = vi.fn();
+    input.addEventListener('change', changed);
     const file = {
       name: 'original.txt',
       content: 'eA==',
@@ -301,9 +373,31 @@ describe('observation-bound portal controls', () => {
       digest: `sha256:${createHash('sha256').update('x').digest('hex')}`,
     };
     const action = { kind: 'upload' as const, ...(await h.target('Original')), files: [file] };
-    await expect(h.controls.act(action)).rejects.toThrow();
+    await expect(h.controls.act(action)).rejects.toThrow('Upload acknowledgement lost');
+    expect(input.outerHTML).not.toContain('data-headstart-upload-');
+    expect(input.files?.[0]?.name).toBe(file.name);
     await expect(h.controls.validate(action)).rejects.toThrow();
+    await expect(h.controls.act(action)).rejects.toThrow();
     expect(h.send).toHaveBeenCalledOnce();
+    expect(changed).toHaveBeenCalledOnce();
+    expect(input.files?.[0]?.name).toBe(file.name);
+  });
+  it('leaves no upload marker or file operation if opening the CDP session fails', async () => {
+    const h = harness();
+    vi.spyOn(h.page, 'createCDPSession').mockRejectedValueOnce(new Error('CDP unavailable'));
+    const file = {
+      name: 'original.txt',
+      content: 'eA==',
+      mimeType: 'text/plain',
+      digest: `sha256:${createHash('sha256').update('x').digest('hex')}`,
+    };
+    await expect(
+      h.controls.act({ kind: 'upload', ...(await h.target('Original')), files: [file] })
+    ).rejects.toThrow('CDP unavailable');
+    expect(dom.window.document.querySelector('input[type=file]')?.outerHTML).not.toContain(
+      'data-headstart-upload-'
+    );
+    expect(h.send).not.toHaveBeenCalled();
   });
   it('switches only observed same-origin targets and consumes their observation', async () => {
     const h = harness();

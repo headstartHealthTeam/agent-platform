@@ -28,7 +28,9 @@ export async function routePortalRequest(
   if (request.isInterceptResolutionHandled()) return;
   let permit = false;
   try {
-    permit = await allowed(portalUrl(request.url()).origin);
+    const url = new URL(request.url());
+    if (url.protocol === 'https:' && !url.username && !url.password)
+      permit = await allowed(url.origin);
   } catch {
     // Invalid targets and failed lookups stay blocked. Never return URL/token-bearing errors.
   }

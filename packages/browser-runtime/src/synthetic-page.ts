@@ -99,6 +99,12 @@ export async function openNativeSyntheticPage(page: Page, html: string): Promise
   await page.goto(`${syntheticOrigin}/entry`, { waitUntil: 'domcontentloaded' });
 }
 
+const nativeHtmlHeaders = {
+  'content-security-policy':
+    "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-src 'self'; form-action 'self'; base-uri 'none'",
+  'cache-control': 'no-store',
+};
+
 export async function routeNativeSyntheticRequest(
   request: Parameters<typeof routeSyntheticRequest>[0],
   html: string,
@@ -114,11 +120,7 @@ export async function routeNativeSyntheticRequest(
     await request.respond({
       status: 200,
       contentType: 'text/html',
-      headers: {
-        'content-security-policy':
-          "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-src 'self'; form-action 'self'; base-uri 'none'",
-        'cache-control': 'no-store',
-      },
+      headers: nativeHtmlHeaders,
       body: html,
     });
     return;
@@ -145,6 +147,7 @@ export async function routeNativeSyntheticRequest(
     await request.respond({
       status: 200,
       contentType: 'text/html',
+      headers: nativeHtmlHeaders,
       body: `<p id="context-result">Fictional context selected</p>${html}`,
     });
     return;

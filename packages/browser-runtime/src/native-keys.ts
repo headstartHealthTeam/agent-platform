@@ -270,7 +270,7 @@ const aliases = new Map<string, KeyInput>([
   ['RIGHT', 'ArrowRight'],
   ['RETURN', 'Enter'],
 ]);
-export function browserKeys(values: readonly string[]): KeyInput[] {
+export function browserKeys(values: readonly string[]): (typeof keyNames)[number][] {
   return values.map((value) => {
     const key =
       aliases.get(value.toUpperCase()) ??

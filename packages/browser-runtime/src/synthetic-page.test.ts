@@ -55,6 +55,15 @@ describe('closed-network synthetic draft receiver', () => {
     await routeNativeSyntheticRequest(malformed, '');
     expect(malformed.respond).toHaveBeenCalledWith(expect.objectContaining({ status: 400 }));
   });
+  it('keeps the same browser policy across a context switch', async () => {
+    const entry = request('/entry');
+    const context = request('/context', 'POST');
+    await routeNativeSyntheticRequest(entry, 'Synthetic');
+    await routeNativeSyntheticRequest(context, 'Synthetic');
+    const headers = entry.respond.mock.calls[0]?.[0].headers;
+    expect(headers).toMatchObject({ 'cache-control': 'no-store' });
+    expect(context.respond.mock.calls[0]?.[0].headers).toEqual(headers);
+  });
   it('serves only the four fixture routes with form submission disabled', async () => {
     for (const path of ['/entry', '/attachments', '/frame', '/review']) {
       const value = request(path);

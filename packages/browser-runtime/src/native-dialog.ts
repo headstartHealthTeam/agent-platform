@@ -14,6 +14,7 @@ const pending = new WeakMap<
 >();
 const waiting = new WeakMap<Page, Set<() => void>>();
 const dispatching = new WeakMap<Page, Promise<void>>();
+const cdpReady = new WeakSet<Page>();
 const tracking = new WeakMap<Page, Promise<void>>();
 
 /** Another CDP client (the private viewer) may answer a dialog. Puppeteer's Dialog.handled
@@ -26,6 +27,7 @@ export async function trackBrowserDialogClosure(page: Page): Promise<void> {
       // Both events use this same ordered CDP connection. Mixing Puppeteer's opening event
       // with another connection's close event can erase a newly opened follow-up dialog.
       cdp.on('Page.javascriptDialogOpening', (event) => {
+        cdpReady.add(page);
         pending.set(page, {
           id: randomUUID(),
           type: event.type,
@@ -40,14 +42,26 @@ export async function trackBrowserDialogClosure(page: Page): Promise<void> {
         notify(page);
       });
       cdp.on('Page.javascriptDialogClosed', () => pending.delete(page));
-      page.on('close', () => {
-        cdp.detach().catch(() => undefined);
-      });
-      await cdp.send('Page.enable');
+      try {
+        await cdp.send('Page.enable');
+        cdpReady.add(page);
+        page.on('close', () => {
+          cdp.detach().catch(() => undefined);
+        });
+      } catch (error) {
+        cdpReady.delete(page);
+        await cdp.detach().catch(() => undefined);
+        throw error;
+      }
     })();
     tracking.set(page, ready);
   }
-  await ready;
+  try {
+    await ready;
+  } catch (error) {
+    if (tracking.get(page) === ready) tracking.delete(page);
+    throw error;
+  }
 }
 
 /** Transport only: the agent or operator decides a dialog's meaning. Never auto-dismiss it. */
@@ -55,7 +69,7 @@ export function observeBrowserDialogs(page: Page): void {
   if (observed.has(page)) return;
   observed.add(page);
   page.on('dialog', (dialog) => {
-    if (tracking.has(page)) return;
+    if (cdpReady.has(page)) return;
     pending.set(page, {
       id: randomUUID(),
       type: dialog.type(),
@@ -122,8 +136,8 @@ export async function dispatchWithDialogs(
   action.catch(() => undefined);
   try {
     await Promise.race([action, dialog]);
-    if (!pending.has(page)) dispatching.delete(page);
   } finally {
+    if (!pending.has(page) && dispatching.get(page) === action) dispatching.delete(page);
     stopListening();
   }
 }

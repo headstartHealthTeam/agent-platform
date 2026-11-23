@@ -65,7 +65,7 @@ function publicHostname(origin: string): string | null {
   }
 }
 
-async function resolvePublicHost(hostname: string): Promise<Awaited<ReturnType<ResolveHost>>> {
+async function lookupPublicHost(hostname: string): Promise<Awaited<ReturnType<ResolveHost>>> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     return await Promise.race([
@@ -80,6 +80,18 @@ async function resolvePublicHost(hostname: string): Promise<Awaited<ReturnType<R
   } finally {
     if (timer !== undefined) clearTimeout(timer);
   }
+}
+
+const inFlightLookups = new Map<string, ReturnType<ResolveHost>>();
+function resolvePublicHost(hostname: string): ReturnType<ResolveHost> {
+  let lookup = inFlightLookups.get(hostname);
+  if (!lookup) {
+    lookup = lookupPublicHost(hostname).finally(() => {
+      inFlightLookups.delete(hostname);
+    });
+    inFlightLookups.set(hostname, lookup);
+  }
+  return lookup;
 }
 
 /** Public-origin screening shared by research and supervised browser navigation.

@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 
-import type { Page } from 'puppeteer-core';
+import type { CDPSession, Page } from 'puppeteer-core';
 import { z } from 'zod';
 
 import {
@@ -103,7 +103,9 @@ export class NativeBrowserComputer {
       };
     }
     const reading = await readWithDialogs(this.page, () => this.readPage());
-    return reading.interrupted ? this.inspect() : reading.value;
+    if (reading.interrupted) return this.inspect();
+    lastObservations.set(this.page, reading.value);
+    return reading.value;
   }
 
   private async readPage(): Promise<BrowserInspection> {
@@ -120,7 +122,8 @@ export class NativeBrowserComputer {
               return null;
             if (
               element instanceof HTMLInputElement &&
-              ['password', 'hidden'].includes(element.type)
+              (['password', 'hidden'].includes(element.type) ||
+                element.autocomplete.toLowerCase().split(/\s+/).includes('one-time-code'))
             )
               return null;
             return { label: element.getAttribute(ariaLabel) ?? element.id, value: element.value };
@@ -145,11 +148,16 @@ export class NativeBrowserComputer {
         : `${text}\nSynthetic receiver: ${JSON.stringify(nativeSyntheticReceipts(this.page) ?? null)}`,
       image: `data:image/png;base64,${image}`,
     };
-    lastObservations.set(this.page, observation);
     return observation;
   }
 
   async validate(input: unknown, _values: readonly string[]): Promise<Action> {
+    const action = await this.parseAction(input);
+    if (action.type === 'type') await this.checkFocusedInput();
+    return action;
+  }
+
+  private async parseAction(input: unknown): Promise<Action> {
     await trackBrowserDialogClosure(this.page);
     this.requireBoundOrigin();
     const action = computerAction.parse(input);
@@ -165,7 +173,6 @@ export class NativeBrowserComputer {
       throw new Error('Point outside browser');
     if ('keys' in action) browserKeys(action.keys ?? []);
     await this.checkFrameOrigins(action, points);
-    if (action.type === 'type') await this.validateType();
     return action;
   }
 
@@ -182,23 +189,37 @@ export class NativeBrowserComputer {
     }
   }
 
-  private async validateType(): Promise<void> {
-    const target = await nativeTarget(this.page);
-    const editable = await target.frame.evaluate(() => {
-      const element = document.activeElement;
-      return (
-        (element instanceof HTMLElement && element.isContentEditable) ||
-        element instanceof HTMLTextAreaElement ||
-        (element instanceof HTMLInputElement &&
-          ['text', 'email', 'tel', 'url', 'search', 'number', 'date'].includes(element.type))
-      );
+  private async checkFocusedInput(text?: string): Promise<void> {
+    const { frame } = await nativeTarget(this.page);
+    const element = await frame.evaluateHandle(() => {
+      const active = document.activeElement;
+      if (!active) throw new Error('Typing needs a focused editable field');
+      return active;
     });
-    if (!editable)
-      throw new Error('Typing needs an editable field; credentials require private control');
+    try {
+      if (
+        (await nativeTarget(this.page)).frame !== frame ||
+        !(await element.evaluate((current, origin) => {
+          if (current !== document.activeElement || (origin && location.origin !== origin))
+            return false;
+          return (
+            (current instanceof HTMLElement && current.isContentEditable) ||
+            current instanceof HTMLTextAreaElement ||
+            (current instanceof HTMLInputElement &&
+              !current.autocomplete.toLowerCase().split(/\s+/).includes('one-time-code') &&
+              ['text', 'email', 'tel', 'url', 'search', 'number', 'date'].includes(current.type))
+          );
+        }, this.interactionOrigin))
+      )
+        throw new Error('Typing needs the same focused editable field on the reviewed destination');
+      if (text !== undefined) await this.page.keyboard.sendCharacter(text);
+    } finally {
+      await element.dispose();
+    }
   }
 
-  async act(input: unknown, values: readonly string[]): Promise<void> {
-    const action = await this.validate(input, values);
+  async act(input: unknown, _values: readonly string[]): Promise<void> {
+    const action = await this.parseAction(input);
     if (this.boundary === 'portal' && ['click', 'double_click', 'keypress'].includes(action.type)) {
       const target = await nativeTarget(this.page, 'x' in action ? action : undefined);
       lastTargets.set(this.page, await target.frame.evaluate(nativeTargetStructure, target.point));
@@ -240,7 +261,7 @@ export class NativeBrowserComputer {
             break;
           }
           case 'type':
-            await this.page.keyboard.sendCharacter(action.text);
+            await this.checkFocusedInput(action.text);
             break;
           case 'keypress':
             break; // down/up above and below dispatch the requested combination once.
@@ -258,11 +279,11 @@ export class NativeBrowserComputer {
 
   async upload(point: { x: number; y: number }, files: Files): Promise<void> {
     this.requireBoundOrigin();
-    if (
-      this.interactionOrigin &&
-      new URL((await nativeTarget(this.page, point)).frame.url()).origin !== this.interactionOrigin
-    )
+    const { frame } = await nativeTarget(this.page, point);
+    if (this.interactionOrigin && new URL(frame.url()).origin !== this.interactionOrigin)
       throw new Error('The upload belongs to another destination');
+    if (frame !== this.page.mainFrame())
+      throw new Error('File upload requires a main-frame file input');
     const payload = files.map((file) => {
       const bytes = Buffer.from(file.content, 'base64');
       if (
@@ -289,8 +310,9 @@ export class NativeBrowserComputer {
       },
       { point, id, count: files.length }
     );
-    const cdp = await this.page.createCDPSession();
+    let cdp: CDPSession | undefined;
     try {
+      cdp = await this.page.createCDPSession();
       z.object({ ok: z.literal(true) }).parse(
         await cdp.send('Browserless.uploadFile', {
           selector: `[data-native-upload="${id}"]`,
@@ -327,14 +349,16 @@ export class NativeBrowserComputer {
       )
         throw new Error('Original upload readback mismatch');
     } finally {
-      await cdp.detach();
-      await this.page.evaluate(
-        (id) =>
-          document
-            .querySelector(`[data-native-upload="${id}"]`)
-            ?.removeAttribute('data-native-upload'),
-        id
-      );
+      await cdp?.detach().catch(() => undefined);
+      await this.page
+        .evaluate(
+          (id) =>
+            document
+              .querySelector(`[data-native-upload="${id}"]`)
+              ?.removeAttribute('data-native-upload'),
+          id
+        )
+        .catch(() => undefined);
     }
   }
 }

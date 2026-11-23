@@ -51,9 +51,9 @@ export async function nativeTarget(
       const child = await element.contentFrame();
       if (!child) return { frame, point: local };
       if (point) {
-        const box = await element.boundingBox();
+        const box = await element.boxModel();
         if (!box) throw new Error('Browser frame is unavailable');
-        local = { x: point.x - box.x, y: point.y - box.y };
+        local = { x: point.x - box.content[0].x, y: point.y - box.content[0].y };
       }
       frame = child;
     } finally {

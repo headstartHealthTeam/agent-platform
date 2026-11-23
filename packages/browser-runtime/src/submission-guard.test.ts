@@ -23,6 +23,23 @@ afterEach(() => {
 });
 
 describe('blocked portal transition evidence', () => {
+  it.each(['submit', 'requestSubmit'] as const)(
+    'refuses a non-configurable foreign %s before enabling draft interaction',
+    (name) => {
+      const prototype = dom.window.HTMLFormElement.prototype;
+      const original: unknown = Object.getOwnPropertyDescriptor(prototype, name)?.value;
+      Object.defineProperty(prototype, name, {
+        value: original,
+        configurable: false,
+        writable: false,
+      });
+      Object.defineProperty(dom.window.document, '__headstartFormGuards', {
+        value: Object.freeze({ [name]: original }),
+      });
+      expect(disableFormSubmission).toThrow('Cannot establish the form submission guard');
+      expect(Object.getOwnPropertyDescriptor(prototype, name)?.value).toBe(original);
+    }
+  );
   it('reports direct postbacks, requestSubmit and submit events without allowing them', () => {
     disableFormSubmission();
     disableFormSubmission();

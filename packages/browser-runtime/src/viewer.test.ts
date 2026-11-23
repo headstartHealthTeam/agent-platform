@@ -131,6 +131,7 @@ describe('documented watch-only viewer transport', () => {
     `${liveURL}&token=unexpected`,
     `${liveURL}&x=${token}`,
     `${liveURL}&x=${token.replace('synthetic', '%73ynthetic')}`,
+    `${liveURL}&${token.replace('synthetic', '%73ynthetic')}=1`,
     `${liveURL}#fragment`,
     `https://user:pass@browser.example/live/index.html?i=${liveURLId}`,
     'not a URL',
@@ -212,6 +213,15 @@ describe('documented watch-only viewer transport', () => {
     expect(request).toHaveBeenCalledTimes(1);
   });
 
+  it('classifies server status failures as reads', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 503 }))
+    );
+    await expect(client().status(browserId, liveURLId, signal())).rejects.toMatchObject({
+      code: 'read_failed',
+    });
+  });
   it('bounds and validates response bodies without exposing content', async () => {
     const request = vi
       .fn<typeof fetch>()

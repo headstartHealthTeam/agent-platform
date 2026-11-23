@@ -4,6 +4,7 @@ import { z } from 'zod';
 import {
   createBrowserlessSyntheticSession,
   createBrowserlessPortalSession,
+  validateBrowserPortalTarget,
 } from './browserless-session.js';
 
 const io = vi.hoisted(() => {
@@ -154,7 +155,7 @@ describe('documented Browserless CDP control', () => {
     await session.resumeAutomation();
     const screenshotsBeforeRedirect = io.page.screenshot.mock.calls.length;
     io.page.url.mockReturnValue('https://elsewhere.example/profile');
-    await expect(session.inspectComputer()).rejects.toThrow();
+    await expect(session.inspectComputer()).rejects.toMatchObject({ code: 'read_failed' });
     expect(io.page.screenshot).toHaveBeenCalledTimes(screenshotsBeforeRedirect);
     await session.stop();
   });
@@ -195,6 +196,66 @@ describe('documented Browserless CDP control', () => {
     expect(tabs((await session.inspectComputer()).text)).toHaveLength(1);
     await session.stop();
   });
+  it('requires inspection before using a surviving portal tab and reuses its observed ID', async () => {
+    const session = await createBrowserlessPortalSession(
+      config,
+      'https://payer.example',
+      Date.now() + 90_000
+    );
+    await session.startHumanControl();
+    io.cdp.send.mockResolvedValueOnce({ error: null, liveURLId: 'synthetic' });
+    await session.resumeAutomation();
+    const popup = {
+      ...io.page,
+      isClosed: vi.fn(() => false),
+      title: vi.fn(async () => 'Other draft'),
+      createCDPSession: vi.fn(async () => io.cdp),
+    };
+    io.page.isClosed.mockReturnValue(true);
+    io.browser.pages.mockResolvedValue([popup]);
+    await expect(session.validateComputer({ type: 'screenshot' }, [])).rejects.toMatchObject({
+      code: 'invalid_action',
+    });
+    const fresh = await session.inspectComputer();
+    expect(fresh.text).toContain('"title":"Other draft","current":true');
+    expect((await session.inspectComputer()).text).toBe(fresh.text);
+    io.cdp.send.mockResolvedValueOnce({ error: null, liveURLId: 'synthetic' });
+    io.cdp.send.mockResolvedValueOnce({
+      error: null,
+      liveURL: viewer + '-new',
+      liveURLId: 'synthetic-new',
+      timeout: 5000,
+    });
+    await session.startHumanControl();
+    expect(popup.createCDPSession).toHaveBeenCalled();
+    await session.stop();
+  });
+  it('labels the captured tab if a popup opens while reading its title', async () => {
+    const session = await createBrowserlessPortalSession(
+      config,
+      'https://payer.example',
+      Date.now() + 90_000
+    );
+    await session.startHumanControl();
+    io.cdp.send.mockResolvedValueOnce({ error: null, liveURLId: 'synthetic' });
+    await session.resumeAutomation();
+    const popup = { ...io.page, title: vi.fn(async () => 'Popup target'), bringToFront: vi.fn() };
+    const opened = io.browser.on.mock.calls.find(([name]) => name === 'targetcreated')?.[1];
+    if (!opened) throw new Error('Expected popup handler');
+    io.page.title.mockImplementationOnce(async () => {
+      opened({ page: async () => popup });
+      io.browser.pages.mockResolvedValue([io.page, popup]);
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      return 'Original draft';
+    });
+    expect((await session.inspectComputer()).text).toContain(
+      '"title":"Original draft","current":true'
+    );
+    await expect(session.validateComputer({ type: 'screenshot' }, [])).rejects.toMatchObject({
+      code: 'invalid_action',
+    });
+    await session.stop();
+  });
   it('withholds an observation when authentication remains in another frame or popup', async () => {
     const privateFrame = { evaluate: vi.fn(async () => true) };
     io.browser.pages.mockResolvedValue([
@@ -212,6 +273,15 @@ describe('documented Browserless CDP control', () => {
     expect(io.page.locator).not.toHaveBeenCalled();
     expect(io.page.screenshot).not.toHaveBeenCalled();
     await session.stop();
+  });
+  it('shares concurrent DNS checks only until the lookup settles', async () => {
+    await Promise.all([
+      validateBrowserPortalTarget('https://payer.example/a'),
+      validateBrowserPortalTarget('https://payer.example/b'),
+    ]);
+    expect(io.lookup).toHaveBeenCalledOnce();
+    await validateBrowserPortalTarget('https://payer.example/next');
+    expect(io.lookup).toHaveBeenCalledTimes(2);
   });
   it('rejects private DNS before creating a browser and sanitizes unavailable DNS', async () => {
     io.lookup.mockResolvedValue([{ address: '10.0.0.1', family: 4 }]);

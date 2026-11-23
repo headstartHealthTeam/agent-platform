@@ -127,9 +127,17 @@ export function allowedControl(control: ControlDescription, kind: BrowserAction[
   return false;
 }
 
+const privateControls = [
+  'input[type="hidden" i]',
+  'input[type="password" i]',
+  '[autocomplete~="current-password" i]',
+  '[autocomplete~="new-password" i]',
+  '[autocomplete~="one-time-code" i]',
+].join(',');
+
 /** Runs against a held node, never a model-provided script or arbitrary selector. */
-function describe(element: Node): ControlDescription {
-  if (!(element instanceof HTMLElement)) throw new Error('Unsupported control');
+function describe(element: Node, privateSelector: string): ControlDescription | null {
+  if (!(element instanceof HTMLElement) || element.matches(privateSelector)) return null;
   const input =
     element instanceof HTMLInputElement ||
     element instanceof HTMLTextAreaElement ||
@@ -182,6 +190,32 @@ interface Held {
   description: ControlDescription;
 }
 
+const actionKinds = ['fill', 'select', 'upload', 'navigate'] as const;
+function availableAction(
+  control: ControlDescription,
+  kind: BrowserAction['kind'],
+  frame: ObservedFrame,
+  page: ObservedPage
+): boolean {
+  if (!allowedControl(control, kind)) return false;
+  // Browserless resolves the documented upload selector in the main frame.
+  if (kind === 'upload') return frame === page.mainFrame();
+  if (kind === 'navigate') {
+    try {
+      const url = new URL(control.href ?? '');
+      return (
+        url.protocol === 'https:' &&
+        url.origin === new URL(page.url()).origin &&
+        !url.username &&
+        !url.password
+      );
+    } catch {
+      return false;
+    }
+  }
+  return true;
+}
+
 function displayUrl(value: string): string {
   try {
     const url = new URL(value);
@@ -215,9 +249,7 @@ export class ObservedControls {
     return this.page;
   }
 
-  async inspectText(): Promise<string> {
-    await this.clear();
-    this.observationId = randomUUID();
+  private async refreshTargets(): Promise<void> {
     this.targets = new Map();
     const pages = await this.browser.pages();
     for (const page of pages) {
@@ -226,16 +258,22 @@ export class ObservedControls {
       this.targets.set(id, page);
     }
     if (!pages.includes(this.page)) throw new BrowserSessionError('read_failed');
+  }
+
+  async inspectText(): Promise<string> {
+    await this.clear();
+    this.observationId = randomUUID();
+    await this.refreshTargets();
     const frames = [];
     let remaining = 150;
     for (const frame of this.page.frames()) {
       await frame.evaluate(disableFormSubmission);
       const frameId = randomUUID();
       const controls = [];
-      const elements = await frame.$$('input, select, textarea, button, a');
+      const elements = remaining ? await frame.$$('input, select, textarea, button, a') : [];
       for (const element of elements) {
-        const description = await element.evaluate(describe);
-        if (!description.visible || remaining <= 0) {
+        const description = remaining ? await element.evaluate(describe, privateControls) : null;
+        if (!description?.visible) {
           await element.dispose();
           continue;
         }
@@ -253,11 +291,8 @@ export class ObservedControls {
           selector,
           ...description,
           href: description.href ? displayUrl(description.href) : null,
-          permittedKinds: ['fill', 'select', 'upload', 'navigate'].filter((kind) =>
-            allowedControl(
-              description,
-              kind === 'fill' || kind === 'select' || kind === 'upload' ? kind : 'navigate'
-            )
+          permittedKinds: actionKinds.filter((kind) =>
+            availableAction(description, kind, frame, this.page)
           ),
         });
       }
@@ -314,7 +349,7 @@ export class ObservedControls {
       held.frameUrl !== held.frame.url()
     )
       throw new BrowserSessionError('invalid_action');
-    const fresh = await held.element.evaluate(describe);
+    const fresh = await held.element.evaluate(describe, privateControls);
     if (
       'approvedOrigin' in action &&
       action.approvedOrigin &&
@@ -323,43 +358,30 @@ export class ObservedControls {
     )
       throw new BrowserSessionError('invalid_action');
     if (
+      !fresh ||
       JSON.stringify(fresh) !== JSON.stringify(held.description) ||
-      !allowedControl(fresh, action.kind)
+      !availableAction(fresh, action.kind, held.frame, this.page)
     )
       throw new BrowserSessionError('invalid_action');
-    this.validateArguments(action, held, fresh);
+    this.validateArguments(action, fresh);
   }
 
   private validateArguments(
     action: Exclude<BrowserAction, { kind: 'inspect' | 'target' | 'click' }>,
-    held: Held,
     fresh: ControlDescription
   ): void {
     if (action.kind === 'fill' && unsafeText(action.value))
       throw new BrowserSessionError('invalid_action');
     if (action.kind === 'select' && !fresh.options.some((option) => option.value === action.value))
       throw new BrowserSessionError('invalid_action');
-    if (action.kind === 'navigate') {
-      const url = new URL(fresh.href ?? '');
-      if (
-        url.protocol !== 'https:' ||
-        url.origin !== new URL(this.page.url()).origin ||
-        url.username ||
-        url.password
-      )
-        throw new BrowserSessionError('invalid_action');
-    }
-    if (action.kind === 'upload') this.validateUpload(action, held, fresh);
+    if (action.kind === 'upload') this.validateUpload(action, fresh);
   }
 
   private validateUpload(
     action: Extract<BrowserAction, { kind: 'upload' }>,
-    held: Held,
     fresh: ControlDescription
   ): void {
-    // Browserless documents CSS selection in the page, not a frame-target upload extension.
-    if (held.frame !== this.page.mainFrame() || (action.files.length > 1 && !fresh.multiple))
-      throw new BrowserSessionError('invalid_action');
+    if (action.files.length > 1 && !fresh.multiple) throw new BrowserSessionError('invalid_action');
     let total = 0;
     for (const file of action.files) {
       const bytes = Buffer.from(file.content, 'base64');
@@ -414,23 +436,23 @@ export class ObservedControls {
       }, action.value);
       this.result = {
         kind: 'fill',
-        matched: (await held.element.evaluate(describe)).value === action.value,
+        matched: (await held.element.evaluate(describe, privateControls))?.value === action.value,
       };
     } else if (action.kind === 'select') {
       await held.element.select(action.value);
       this.result = {
         kind: 'select',
-        matched: (await held.element.evaluate(describe)).value === action.value,
+        matched: (await held.element.evaluate(describe, privateControls))?.value === action.value,
       };
     } else {
       const attribute = `data-headstart-upload-${randomUUID()}`;
-      await held.element.evaluate((element, name) => {
-        if (!(element instanceof HTMLInputElement) || element.type !== 'file')
-          throw new Error('Not a file input');
-        element.setAttribute(name, '');
-      }, attribute);
       const cdp = await this.page.createCDPSession();
       try {
+        await held.element.evaluate((element, name) => {
+          if (!(element instanceof HTMLInputElement) || element.type !== 'file')
+            throw new Error('Not a file input');
+          element.setAttribute(name, '');
+        }, attribute);
         z.object({ ok: z.literal(true) }).parse(
           await cdp.send('Browserless.uploadFile', {
             selector: `[${attribute}]`,
@@ -466,12 +488,13 @@ export class ObservedControls {
           files: selected,
         };
       } finally {
-        await cdp.detach();
         await held.element
           .evaluate((element, name) => {
             if (element instanceof Element) element.removeAttribute(name);
           }, attribute)
           .catch(() => undefined);
+        // Losing the cleanup connection cannot undo a verified upload or replace its original error.
+        await cdp.detach().catch(() => undefined);
       }
     }
     if (this.result?.matched === false) throw new BrowserSessionError('dispatch_uncertain');

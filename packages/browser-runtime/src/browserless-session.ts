@@ -5,7 +5,12 @@ import puppeteer, { type Browser, type Page } from 'puppeteer-core';
 import { z } from 'zod';
 
 import { NativeBrowserComputer } from './native-computer.js';
-import { browserDialog, readWithDialogs } from './native-dialog.js';
+import {
+  browserDialog,
+  observeBrowserDialogs,
+  readWithDialogs,
+  trackBrowserDialogClosure,
+} from './native-dialog.js';
 import { ObservedControls, observedBrowser } from './observed-controls.js';
 import { openPortalPage, portalUrl, screenPortalPage } from './portal-navigation.js';
 import { publicOriginAllowed } from './public-origin.js';
@@ -19,7 +24,7 @@ import {
 import { disableFormSubmission } from './submission-guard.js';
 import { openReviewedSyntheticPage, openNativeSyntheticPage } from './synthetic-page.js';
 import { BrowserSocket } from './transport.js';
-import { isBrowserlessViewerPath } from './viewer-path.js';
+import { containsViewerToken, isBrowserlessViewerPath } from './viewer-path.js';
 
 const privateInputSelector = 'input[type="password"], input[autocomplete="one-time-code"]';
 const configSchema = z
@@ -132,20 +137,21 @@ async function createSession(
     // Synthetic fixtures retain their closed-network CSP. Portal sessions instead screen public
     // HTTPS requests and prohibit automation for the entire initial private-login checkpoint.
     phase = 'fixture';
-    await openContent(page, content);
-    return new OwnedBrowserSession(
-      new PuppeteerConnection(
-        browser,
-        page,
-        config,
-        transport,
-        content.kind === 'portal' || content.reviewedEntry,
-        content.kind === 'portal' || content.nativeComputer,
-        content.kind === 'portal'
-      ),
-      started + timeout,
+    const connection = new PuppeteerConnection(
+      browser,
+      page,
+      config,
+      transport,
+      content.kind === 'portal' || content.reviewedEntry,
+      content.kind === 'portal' || content.nativeComputer,
       content.kind === 'portal'
     );
+    if (content.kind === 'portal') {
+      observeBrowserDialogs(page);
+      await trackBrowserDialogClosure(page);
+    }
+    await openContent(page, content);
+    return new OwnedBrowserSession(connection, started + timeout, content.kind === 'portal');
   } catch {
     if (browser) {
       try {
@@ -167,6 +173,7 @@ class PuppeteerConnection implements BrowserConnection {
   private readonly observed: ObservedControls;
   private readonly tabs = new Map<string, Page>();
   private selectedPage: Page;
+  private observedPage?: Page;
   private readonly guarded = new WeakSet<Page>();
   constructor(
     private readonly browser: Browser,
@@ -188,8 +195,10 @@ class PuppeteerConnection implements BrowserConnection {
           .page()
           .then(async (opened) => {
             if (opened) {
+              observeBrowserDialogs(opened);
+              await trackBrowserDialogClosure(opened);
               await screenPortalPage(opened);
-              this.tabs.set(randomUUID(), opened);
+              this.registerTab(opened);
               this.selectedPage = opened;
             }
             return undefined;
@@ -200,30 +209,48 @@ class PuppeteerConnection implements BrowserConnection {
       });
   }
 
-  private async nativeDriver(): Promise<NativeBrowserComputer> {
+  private registerTab(page: Page): void {
+    if (![...this.tabs.values()].includes(page)) this.tabs.set(randomUUID(), page);
+  }
+
+  private async nativeDriver(
+    observing = false
+  ): Promise<{ page: Page; driver: NativeBrowserComputer }> {
     await this.requireNonPrivatePage();
     if (!this.nativePortal) {
       if (!this.native) throw new BrowserSessionError('invalid_action');
-      return this.native;
+      return { page: this.page, driver: this.native };
     }
-    const pages = (await this.browser.pages()).filter((page) => page.url() !== 'about:blank');
-    const current = pages.includes(this.selectedPage) ? this.selectedPage : pages.at(-1);
+    const pages = (await this.browser.pages()).filter(
+      (page) => !page.isClosed() && page.url() !== 'about:blank'
+    );
+    const current = observing
+      ? pages.includes(this.selectedPage)
+        ? this.selectedPage
+        : pages.at(-1)
+      : this.observedPage;
+    if (!observing && (!current || current !== this.selectedPage || !pages.includes(current)))
+      throw new BrowserSessionError('invalid_action');
     if (!current) throw new BrowserSessionError('read_failed');
     for (const page of pages) {
       if (!(await publicOriginAllowed(new URL(page.url()).origin)))
         throw new BrowserSessionError('invalid_action');
       await screenPortalPage(page);
+      this.registerTab(page);
     }
-    this.selectedPage = current;
+    if (observing && !pages.includes(this.selectedPage)) this.selectedPage = current;
     await current.bringToFront();
-    return new NativeBrowserComputer(current, 'portal', this.config.interactionOrigin);
+    return {
+      page: current,
+      driver: new NativeBrowserComputer(current, 'portal', this.config.interactionOrigin),
+    };
   }
 
   async inspectComputer(): Promise<BrowserInspection> {
-    const driver = await this.nativeDriver();
+    const { page: inspected, driver } = await this.nativeDriver(true);
     let result = await driver.inspect();
     await this.requireNonPrivatePage();
-    if (browserDialog(this.selectedPage) && !result.pauseBatch) result = await driver.inspect();
+    if (browserDialog(inspected) && !result.pauseBatch) result = await driver.inspect();
     if (!this.nativePortal) return result;
     const tabs: { tabId: string; title: string; current: boolean }[] = [];
     for (const [tabId, page] of this.tabs) {
@@ -234,9 +261,10 @@ class PuppeteerConnection implements BrowserConnection {
       tabs.push({
         tabId,
         title: browserDialog(page) ? 'Dialog open' : await page.title(),
-        current: page === this.selectedPage,
+        current: page === inspected,
       });
     }
+    this.observedPage = inspected;
     return {
       ...result,
       text: `${result.text}\nBrowser tabs (untrusted titles): ${JSON.stringify(tabs)}`,
@@ -244,7 +272,7 @@ class PuppeteerConnection implements BrowserConnection {
   }
   async validateComputer(action: unknown, values: readonly string[]): Promise<void> {
     if (this.tabAction(action)) return;
-    await (await this.nativeDriver()).validate(action, values);
+    await (await this.nativeDriver()).driver.validate(action, values);
   }
   async computer(action: unknown, values: readonly string[]): Promise<void> {
     const tab = this.tabAction(action);
@@ -253,7 +281,7 @@ class PuppeteerConnection implements BrowserConnection {
       await tab.bringToFront();
       return;
     }
-    await (await this.nativeDriver()).act(action, values);
+    await (await this.nativeDriver()).driver.act(action, values);
   }
   private tabAction(action: unknown): Page | undefined {
     const parsed = z
@@ -269,7 +297,7 @@ class PuppeteerConnection implements BrowserConnection {
     point: { x: number; y: number },
     files: Extract<BrowserAction, { kind: 'upload' }>['files']
   ): Promise<void> {
-    await (await this.nativeDriver()).upload(point, files);
+    await (await this.nativeDriver()).driver.upload(point, files);
   }
 
   async inspect(): Promise<BrowserInspection> {
@@ -379,25 +407,43 @@ class PuppeteerConnection implements BrowserConnection {
     if (this.portal && !this.nativePortal) await this.observed.validate(action);
   }
 
-  private async requireNonPrivatePage(): Promise<void> {
+  async hasPendingDialog(): Promise<boolean> {
+    return (await this.browser.pages()).some((page) => browserDialog(page) !== null);
+  }
+
+  async verifyHandoff(): Promise<void> {
+    await this.requireNonPrivatePage(false);
+  }
+
+  private async requireNonPrivatePage(allowDialogs = true): Promise<void> {
     // Login can move to an iframe or a popup. Never treat a clean top document as proof that
     // the browser is clear of credentials. Unreadable/closed frames fail closed too.
     for (const page of await this.browser.pages()) {
-      // A modal blocks DOM evaluation. Its observation uses the last non-private screenshot.
-      if (browserDialog(page)) continue;
-      for (const frame of page.frames()) {
-        const authentication = await readWithDialogs(page, () =>
-          frame.evaluate(
-            (selector) =>
-              Array.from(document.querySelectorAll(selector)).some(
-                (element) => element.getClientRects().length > 0
-              ),
-            privateInputSelector
-          )
-        );
-        if (authentication.interrupted) break;
-        if (authentication.value) throw new BrowserSessionError('human_control', 'authentication');
+      await this.checkPrivacyOnPage(page, allowDialogs);
+    }
+  }
+
+  private async checkPrivacyOnPage(page: Page, allowDialogs: boolean): Promise<void> {
+    // A modal blocks DOM evaluation. Its observation uses the last non-private screenshot.
+    if (browserDialog(page)) {
+      if (!allowDialogs) throw new BrowserSessionError('human_control', 'handoff-observation');
+      return;
+    }
+    for (const frame of page.frames()) {
+      const authentication = await readWithDialogs(page, () =>
+        frame.evaluate(
+          (selector) =>
+            Array.from(document.querySelectorAll(selector)).some(
+              (element) => element.getClientRects().length > 0
+            ),
+          privateInputSelector
+        )
+      );
+      if (authentication.interrupted) {
+        if (!allowDialogs) throw new BrowserSessionError('human_control', 'handoff-observation');
+        break;
       }
+      if (authentication.value) throw new BrowserSessionError('human_control', 'authentication');
     }
   }
 
@@ -409,8 +455,17 @@ class PuppeteerConnection implements BrowserConnection {
     return this.viewer(timeoutMs, true);
   }
 
+  private async viewerPage(): Promise<Page> {
+    if (!this.selectedPage.isClosed()) return this.selectedPage;
+    const surviving = (await this.browser.pages()).find(
+      (page) => !page.isClosed() && page.url() !== 'about:blank'
+    );
+    if (!surviving) throw new BrowserSessionError('ended');
+    return surviving;
+  }
+
   async closeViewer(liveURLId: string): Promise<void> {
-    const cdp = await this.page.createCDPSession();
+    const cdp = await (await this.viewerPage()).createCDPSession();
     try {
       const result = z.object({ error: z.null(), liveURLId: z.literal(liveURLId) });
       result.parse(await cdp.send('Browserless.closeLiveURL', { liveURLId }));
@@ -423,7 +478,7 @@ class PuppeteerConnection implements BrowserConnection {
     timeoutMs: number,
     interactable: boolean
   ): Promise<{ liveURL: string; liveURLId: string; timeout: number }> {
-    const cdp = await this.page.createCDPSession();
+    const cdp = await (await this.viewerPage()).createCDPSession();
     try {
       const result = liveResponse.parse(
         await cdp.send('Browserless.liveURL', {
@@ -448,8 +503,7 @@ class PuppeteerConnection implements BrowserConnection {
         url.searchParams.getAll('i').length !== 1 ||
         url.searchParams.get('i') !== result.liveURLId ||
         url.searchParams.has('token') ||
-        result.liveURL.includes(this.config.token) ||
-        [...url.searchParams.values()].some((part) => part.includes(this.config.token)) ||
+        containsViewerToken(result.liveURL, url, this.config.token) ||
         result.timeout > timeoutMs
       )
         throw new BrowserSessionError('dispatch_uncertain');

@@ -20,6 +20,38 @@ export function disableFormSubmission(): void {
     );
   }
   const blocked = isCounts(previous) ? previous : { event: 0, submit: 0, requestSubmit: 0 };
+  const guards = Object.freeze({
+    submit: () => {
+      blocked.submit++;
+      throw new Error('Application submission is disabled for this browser session');
+    },
+    requestSubmit: () => {
+      blocked.requestSubmit++;
+      throw new Error('Application submission is disabled for this browser session');
+    },
+  });
+  const priorGuards: unknown = Object.getOwnPropertyDescriptor(
+    document,
+    '__headstartFormGuards'
+  )?.value;
+  for (const [name, guard] of Object.entries(guards)) {
+    const existing = Object.getOwnPropertyDescriptor(HTMLFormElement.prototype, name);
+    if (existing?.configurable !== false) continue;
+    const installed: unknown =
+      priorGuards !== null && typeof priorGuards === 'object'
+        ? Object.getOwnPropertyDescriptor(priorGuards, name)?.value
+        : undefined;
+    if (
+      typeof installed !== 'function' ||
+      existing.value !== installed ||
+      existing.writable !== false ||
+      Function.prototype.toString.call(installed) !== Function.prototype.toString.call(guard)
+    )
+      throw new Error('Cannot establish the form submission guard');
+  }
+  if (priorGuards === undefined) {
+    Object.defineProperty(document, '__headstartFormGuards', { value: guards });
+  }
   if (!Object.getOwnPropertyDescriptor(document, '__headstartBlockedForms'))
     Object.defineProperty(document, '__headstartBlockedForms', {
       value: blocked,
@@ -39,17 +71,13 @@ export function disableFormSubmission(): void {
     },
     true
   );
-  for (const name of ['submit', 'requestSubmit'] as const) {
+  for (const [name, guard] of Object.entries(guards)) {
     const descriptor = Object.getOwnPropertyDescriptor(HTMLFormElement.prototype, name);
     if (descriptor?.configurable === false) continue;
     Object.defineProperty(HTMLFormElement.prototype, name, {
       configurable: false,
       writable: false,
-      value: () => {
-        if (name === 'submit') blocked.submit++;
-        else blocked.requestSubmit++;
-        throw new Error('Application submission is disabled for this browser session');
-      },
+      value: guard,
     });
   }
 }

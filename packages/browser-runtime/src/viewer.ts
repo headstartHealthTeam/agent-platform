@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { boundedJson } from './response.js';
-import { isBrowserlessViewerPath } from './viewer-path.js';
+import { containsViewerToken, isBrowserlessViewerPath } from './viewer-path.js';
 
 const identifier = z.string().regex(/^[A-Za-z0-9_-]{1,256}$/);
 const createResponse = z.object({ liveURL: z.string().max(4096), liveURLId: identifier });
@@ -76,12 +76,12 @@ function exactId(value: string): string {
   return parsed.data;
 }
 
-function responseFailure(status: number): BrowserViewerFailure {
+function responseFailure(status: number, method: string): BrowserViewerFailure {
   if (status === 401 || status === 403) return 'access_rejected';
   if (status === 404) return 'unavailable';
   if (status === 400 || status === 429) return 'request_rejected';
   // A server/proxy error after mutation dispatch cannot establish that nothing happened.
-  return 'dispatch_uncertain';
+  return method === 'GET' ? 'read_failed' : 'dispatch_uncertain';
 }
 
 /** One documented REST request per method. No retries, provisioning, control or browser revival. */
@@ -160,8 +160,7 @@ export class BrowserlessViewerClient {
         url.searchParams.getAll('i').length !== 1 ||
         url.searchParams.get('i') !== id ||
         url.searchParams.has('token') ||
-        value.includes(this.#token) ||
-        [...url.searchParams.values()].some((part) => part.includes(this.#token))
+        containsViewerToken(value, url, this.#token)
       )
         throw new Error('Viewer routing');
       return url.href;
@@ -198,7 +197,7 @@ export class BrowserlessViewerClient {
       });
       if (!response.ok) {
         await response.body?.cancel();
-        throw new BrowserViewerError(responseFailure(response.status));
+        throw new BrowserViewerError(responseFailure(response.status, method));
       }
       if (response.redirected) {
         await response.body?.cancel();

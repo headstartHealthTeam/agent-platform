@@ -11,3 +11,12 @@ export function isBrowserlessViewerPath(path: string): boolean {
     parts[4] === 'index.html'
   );
 }
+
+/** A provider token must never be conveyed in the returned viewer capability. */
+export function containsViewerToken(raw: string, url: URL, token: string): boolean {
+  return (
+    raw.includes(token) ||
+    url.href.includes(token) ||
+    [...url.searchParams].some(([key, value]) => key.includes(token) || value.includes(token))
+  );
+}

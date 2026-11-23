@@ -119,6 +119,18 @@ describe('portal request screening', () => {
     expect(request_.continue).toHaveBeenCalledOnce();
     expect(request_.abort).not.toHaveBeenCalled();
   });
+  it('screens long redirect queries and fragments on their HTTPS origin', async () => {
+    const allowed = vi.fn(async () => true);
+    const redirected = request(
+      'https://identity.example/redirect?state=' + 'x'.repeat(2200) + '#section'
+    );
+    await routePortalRequest(redirected, allowed);
+    expect(redirected.continue).toHaveBeenCalledOnce();
+    expect(allowed).toHaveBeenCalledWith('https://identity.example');
+    const credentials = request('https://name:private@identity.example');
+    await routePortalRequest(credentials, allowed);
+    expect(credentials.abort).toHaveBeenCalledOnce();
+  });
   it('blocks unsafe destinations and lookup failures before continuation', async () => {
     for (const url of ['https://metadata.internal', 'http://payer.example']) {
       const request_ = request(url);

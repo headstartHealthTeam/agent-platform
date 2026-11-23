@@ -65,12 +65,19 @@ const surface = vi.fn(() => {
   const frame = {
     url: vi.fn(() => origin),
     evaluate: invoke,
-    evaluateHandle: vi.fn(() => ({
-      asElement: (): { contentFrame: () => Promise<null> } => ({
-        contentFrame: async (): Promise<null> => null,
-      }),
-      dispose: vi.fn(),
-    })),
+    evaluateHandle: vi.fn(() => {
+      const active = document.activeElement;
+      return {
+        evaluate: <T>(
+          fun: (current: Element | null, bound: string | undefined) => T,
+          bound: string | undefined
+        ): T => fun(active, bound),
+        asElement: (): { contentFrame: () => Promise<null> } => ({
+          contentFrame: async (): Promise<null> => null,
+        }),
+        dispose: vi.fn(),
+      };
+    }),
   };
   const page = Object.assign(events, {
     url: vi.fn(() => origin + '/practice'),
@@ -83,9 +90,12 @@ const surface = vi.fn(() => {
         if (document.activeElement instanceof HTMLInputElement) document.activeElement.value = text;
       }),
     },
-    evaluate: invoke,
+    evaluate: async <Args extends unknown[], Result>(
+      fun: (...args: Args) => Result,
+      ...args: Args
+    ) => fun(...args),
     screenshot: vi.fn(async () => 'cGl4ZWxz'),
-    createCDPSession: async () => cdp,
+    createCDPSession: vi.fn(async () => cdp),
     $eval: async <Result>(selector: string, function_: (element: Element) => Result) => {
       const element = document.querySelector(selector);
       if (!element) throw new Error('Missing test element');
@@ -113,6 +123,7 @@ beforeEach(() => {
   vi.stubGlobal('HTMLFormElement', dom.window.HTMLFormElement);
   vi.stubGlobal('HTMLElement', dom.window.HTMLElement);
   vi.stubGlobal('document', dom.window.document);
+  vi.stubGlobal('location', dom.window.location);
   vi.stubGlobal('innerWidth', 1200);
   vi.stubGlobal('innerHeight', 760);
   vi.stubGlobal('crypto', webcrypto);
@@ -322,19 +333,75 @@ describe('native browser controls on a fictional provider profile', () => {
     const leaf = {
       evaluateHandle: vi.fn(async () => ({ asElement: (): null => null, dispose: vi.fn() })),
     };
-    const box = vi.fn(async () => ({ x: 20, y: 15 }));
+    const box = vi.fn(async () => ({ content: [{ x: 28, y: 19 }], border: [{ x: 20, y: 15 }] }));
     const dispose = vi.fn();
-    const frameElement = { contentFrame: async (): Promise<typeof leaf> => leaf, boundingBox: box };
+    const frameElement = { contentFrame: async (): Promise<typeof leaf> => leaf, boxModel: box };
     const handle = { dispose, asElement: (): typeof frameElement => frameElement };
     const parent = {
       evaluateHandle: async (): Promise<typeof handle> => handle,
     };
     chrome.newPage.mockResolvedValue({ mainFrame: () => parent });
     const page = await (await puppeteer.connect({})).newPage();
-    expect((await nativeTarget(page, { x: 40, y: 35 })).point).toEqual({ x: 20, y: 20 });
+    expect((await nativeTarget(page, { x: 40, y: 35 })).point).toEqual({ x: 12, y: 16 });
     await nativeTarget(page);
     expect(box).toHaveBeenCalledOnce();
     expect(dispose).toHaveBeenCalledTimes(2);
+  });
+  it('keeps fallback dialogs observed during setup and retries a failed tracker without a stale dispatch', async () => {
+    const { page, actual, cdp } = await fixture();
+    observeBrowserDialogs(actual);
+    cdp.send.mockRejectedValueOnce(new Error('Synthetic enable failure'));
+    const first = trackBrowserDialogClosure(actual);
+    const dismiss = vi.fn(async () => undefined);
+    page.emit('dialog', { type: () => 'alert', message: () => 'Synthetic modal', dismiss });
+    await expect(first).rejects.toThrow('enable failure');
+    expect(cdp.detach).toHaveBeenCalledOnce();
+    const early = browserDialog(actual);
+    if (!early) throw new Error('Missing early dialog');
+    await respondToBrowserDialog(actual, { id: early.id, accept: false, promptText: null });
+    expect(dismiss).toHaveBeenCalledOnce();
+    await trackBrowserDialogClosure(actual);
+    await expect(
+      dispatchWithDialogs(actual, async () => {
+        throw new Error('Synthetic input failure');
+      })
+    ).rejects.toThrow('input failure');
+    cdp.emit('Page.javascriptDialogOpening', { type: 'confirm', message: 'Continue draft?' });
+    const later = browserDialog(actual);
+    if (!later) throw new Error('Missing second dialog');
+    await respondToBrowserDialog(actual, { id: later.id, accept: false, promptText: null });
+    expect(browserDialog(actual)).toBeNull();
+  });
+  it('declines typing when focus changes between resolving the input and sending its text', async () => {
+    const { driver, frame, page } = await fixture();
+    document.querySelector<HTMLInputElement>('#practice')?.focus();
+    const original = frame.evaluateHandle.getMockImplementation();
+    if (!original) throw new Error('Missing fake frame');
+    let resolutions = 0;
+    frame.evaluateHandle.mockImplementation(() => {
+      const result = original();
+      if (++resolutions === 3) document.querySelector<HTMLTextAreaElement>('#notes')?.focus();
+      return result;
+    });
+    await expect(driver.act({ type: 'type', text: 'Synthetic draft' }, [])).rejects.toThrow(
+      'focused editable'
+    );
+    expect(page.keyboard.sendCharacter).not.toHaveBeenCalled();
+  });
+  it('never types an OTP and clears upload markers when establishing CDP fails', async () => {
+    const { page, driver } = await fixture();
+    const field = document.querySelector<HTMLInputElement>('#practice');
+    if (!field) throw new Error('Missing field');
+    field.autocomplete = 'one-time-code';
+    field.value = 'fictional-one-time-code';
+    field.focus();
+    expect((await driver.inspect()).text).not.toContain(field.value);
+    await expect(driver.act({ type: 'type', text: 'Example' }, [])).rejects.toThrow('editable');
+    expect(page.keyboard.sendCharacter).not.toHaveBeenCalled();
+    hit = document.querySelector('#file');
+    page.createCDPSession.mockRejectedValueOnce(new Error('Synthetic connection failure'));
+    await expect(driver.upload({ x: 2, y: 2 }, [])).rejects.toThrow('connection failure');
+    expect(document.querySelector('[data-native-upload]')).toBeNull();
   });
   it('handles a dialog after a native action exactly once, including an externally closed prompt', async () => {
     const { driver, cdp, actual } = await fixture();

@@ -80,6 +80,25 @@ describe('one owned browser', () => {
     await expect(pending).rejects.toMatchObject({ code: 'ended' });
     expect(connection.computer).not.toHaveBeenCalled();
   });
+  it('honors a private handoff that finishes during native validation', async () => {
+    const { session, connection } = fixture();
+    let completeValidation: (() => void) | undefined;
+    connection.validateComputer = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          completeValidation = resolve;
+        })
+    );
+    connection.computer = vi.fn(async () => undefined);
+    connection.inspectComputer = vi.fn(async () => ({ text: 'Draft', image: 'image' }));
+    const pending = session.computer({ type: 'screenshot' }, []);
+    await session.startHumanControl();
+    completeValidation?.();
+    await expect(pending).rejects.toMatchObject({ code: 'human_control' });
+    expect(connection.computer).not.toHaveBeenCalled();
+    expect(connection.inspectComputer).not.toHaveBeenCalled();
+    await session.stop();
+  });
   it('never repeats a native mutation after its screenshot becomes uncertain', async () => {
     const { session, connection } = fixture();
     connection.validateComputer = vi.fn(async () => undefined);
@@ -124,6 +143,40 @@ describe('one owned browser', () => {
       await session.stop();
     }
   );
+  it('leaves the operator in control to dismiss a known modal before retrying handoff', async () => {
+    const { session, connection } = fixture();
+    connection.hasPendingDialog = vi.fn().mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+    const viewer = await session.startHumanControl();
+    await expect(session.resumeAutomation()).rejects.toMatchObject({ code: 'human_control' });
+    expect(await session.startHumanControl()).toEqual(viewer);
+    expect(connection.closeViewer).not.toHaveBeenCalled();
+    await session.resumeAutomation();
+    expect(connection.watch).toHaveBeenCalledOnce();
+    await session.stop();
+  });
+  it('withholds a watch viewer when the handoff shows a dialog or a private link expires', async () => {
+    vi.useFakeTimers();
+    const { session, connection } = fixture();
+    vi.mocked(connection.human).mockResolvedValueOnce({
+      liveURLId: 'human',
+      liveURL: 'private',
+      timeout: 50,
+    });
+    await session.startHumanControl();
+    await vi.advanceTimersByTimeAsync(50);
+    await expect(session.startHumanControl()).rejects.toMatchObject({ code: 'ended' });
+    vi.mocked(connection.inspect).mockResolvedValueOnce({
+      text: 'Dialog',
+      image: 'Prior image',
+      pauseBatch: true,
+    });
+    await expect(session.resumeAutomation()).rejects.toMatchObject({
+      code: 'dispatch_uncertain',
+      phase: 'handoff-observation',
+    });
+    expect(connection.watch).not.toHaveBeenCalled();
+    await session.stop();
+  });
   it('preserves a safe authentication phase while withholding the watch viewer', async () => {
     const { session, connection } = fixture();
     await session.startHumanControl();
@@ -210,6 +263,7 @@ describe('one owned browser', () => {
         })
     );
     const pending = session.resumeAutomation();
+    await expect(session.startHumanControl()).rejects.toMatchObject({ code: 'busy' });
     await expect(session.resumeAutomation()).rejects.toMatchObject({ code: 'busy' });
     await session.stop();
     finish?.();
@@ -317,7 +371,8 @@ describe('one owned browser', () => {
     await session.stop();
     expect(connection.close).toHaveBeenCalledTimes(1);
     finish?.();
-    await pending;
+    await expect(pending).rejects.toMatchObject({ code: 'dispatch_uncertain' });
+    expect(connection.inspect).not.toHaveBeenCalled();
     await expect(session.execute({ kind: 'inspect' })).rejects.toMatchObject({ code: 'ended' });
   });
   it('coalesces concurrent Stop and retains uncertain close for reconciliation', async () => {

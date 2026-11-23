@@ -14,8 +14,12 @@ export class BrowserSocket implements ConnectionTransport {
     this.closed = new Promise((resolve) => {
       socket.once('close', () => {
         clearInterval(this.#heartbeat);
-        this.onclose?.();
         resolve();
+        try {
+          this.onclose?.();
+        } catch {
+          /* A subscriber cannot invalidate socket closure. */
+        }
       });
     });
     socket.on('message', (data, binary) => {
@@ -53,7 +57,10 @@ export class BrowserSocket implements ConnectionTransport {
           cleanup();
           reject(new BrowserSessionError('dispatch_uncertain'));
         };
+        const deadline = setTimeout(failed, 15_000);
+        deadline.unref();
         const cleanup = (): void => {
+          clearTimeout(deadline);
           socket.off('open', opened);
           socket.off('error', failed);
           socket.off('close', failed);

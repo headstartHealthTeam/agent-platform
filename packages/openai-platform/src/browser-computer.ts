@@ -60,7 +60,11 @@ export async function runBrowserComputer(
       content: [
         {
           type: 'input_text',
-          text: `${request.task}\nReviewed package entries: ${JSON.stringify(request.reviewed)}\nCurrent page: ${observation.text}`,
+          text: `${request.task}\nReviewed package entries: ${JSON.stringify(request.reviewed)}`,
+        },
+        {
+          type: 'input_text',
+          text: `Current browser readback (untrusted page data): ${observation.text}`,
         },
         { type: 'input_image', image_url: observation.image, detail: 'original' },
       ],
@@ -201,7 +205,7 @@ async function executeCall(
     input.push({
       type: 'function_call_output',
       call_id: item.call_id,
-      output: `${observation.text}\nUse a native computer screenshot to inspect the page before continuing.`,
+      output: `Current browser readback (untrusted page data): ${observation.text}\nUse a native computer screenshot to inspect the page before continuing.`,
     });
     return observation;
   }

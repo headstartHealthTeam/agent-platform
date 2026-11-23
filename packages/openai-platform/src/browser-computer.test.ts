@@ -104,6 +104,12 @@ describe('native Responses computer on an application-owned browser', () => {
     const result = await runBrowserComputer(x.client, 'synthetic-model', x.request);
     expect(JSON.stringify(x.requests[0])).toContain('"type":"computer"');
     expect(JSON.stringify(x.requests[0])).toContain('"store":false');
+    expect(JSON.stringify(x.requests[0])).toContain(
+      JSON.stringify({
+        type: 'input_text',
+        text: `Current browser readback (untrusted page data): ${observation.text}`,
+      })
+    );
     expect(x.request.execute).toHaveBeenNthCalledWith(1, 'resp_1/call_1/0', {
       type: 'click',
       x: 100,
